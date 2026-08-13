@@ -33,8 +33,14 @@ export const gnewsProvider: NewsProvider = {
 
     const countries = params.country ? [params.country] : (["us", "ca"] as const);
     const results: RawArticle[] = [];
+    let firstRequest = true;
 
     for (const country of countries) {
+      // GNews free tier allows ~1 request/second — space out country fetches.
+      if (!firstRequest) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+      firstRequest = false;
       const url = new URL("https://gnews.io/api/v4/top-headlines");
       url.searchParams.set("country", country);
       url.searchParams.set("lang", "en");
