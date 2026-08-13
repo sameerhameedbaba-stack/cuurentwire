@@ -1,88 +1,106 @@
+import { revalidateTag, unstable_cache } from "next/cache";
 import { env } from "@/lib/env";
 import { runPipeline } from "@/lib/news/pipeline";
 import type { NewsDataset } from "@/lib/news/types";
 import { logger } from "@/lib/utils/logger";
 
 /**
- * In-process news cache with stale-while-revalidate semantics.
+ * News cache, layered for both serverless and long-lived servers:
  *
- * - Data refreshes roughly every NEWS_REFRESH_MINUTES (default 5).
- * - A stale dataset is served immediately while a background refresh runs.
- * - If every provider fails, the last successful dataset keeps serving —
- *   the homepage is never replaced by an error because one provider broke.
+ * 1. Shared data cache (unstable_cache) — persisted by the platform and
+ *    shared across serverless instances, so providers are hit roughly once
+ *    per refresh interval globally, not once per instance. An empty pipeline
+ *    result throws inside the cached function so an outage is NEVER cached.
+ * 2. In-process last-good dataset — instant serving within a warm instance
+ *    and the fallback when the shared layer has nothing.
  *
- * The module-level singleton survives across requests within a server
- * process. The scheduled /api/cron/news-refresh endpoint forces refreshes in
- * serverless deployments where processes are short-lived.
+ * The homepage is never replaced by an error because one provider broke:
+ * worst case an empty dataset is returned and the UI shows a friendly
+ * "temporarily unavailable" state.
  */
+
+export const NEWS_CACHE_TAG = "news-dataset";
 
 interface CacheState {
   dataset: NewsDataset | null;
   refreshedAt: number;
-  refreshing: Promise<NewsDataset> | null;
 }
 
 const globalCache = globalThis as unknown as { __newsCache?: CacheState };
 
 function state(): CacheState {
-  globalCache.__newsCache ??= { dataset: null, refreshedAt: 0, refreshing: null };
+  globalCache.__newsCache ??= { dataset: null, refreshedAt: 0 };
   return globalCache.__newsCache;
 }
 
-async function refresh(): Promise<NewsDataset> {
-  const cache = state();
-  if (cache.refreshing) return cache.refreshing;
-
-  cache.refreshing = runPipeline()
-    .then((dataset) => {
-      // Keep the previous dataset if the new run produced nothing usable.
-      if (dataset.articles.length > 0 || cache.dataset === null) {
-        cache.dataset = dataset;
-      } else {
-        logger.warn("cache.empty_refresh_kept_previous");
-      }
-      cache.refreshedAt = Date.now();
-      return cache.dataset as NewsDataset;
-    })
-    .catch((error: unknown) => {
-      logger.error("cache.refresh_failed", {
-        error: error instanceof Error ? error.message : "unknown",
-      });
-      cache.refreshedAt = Date.now();
-      if (cache.dataset) return cache.dataset;
-      throw error;
-    })
-    .finally(() => {
-      cache.refreshing = null;
-    });
-
-  return cache.refreshing;
-}
+/** Shared-cache producer. Throws on empty results so they are not cached. */
+const fetchDatasetShared = unstable_cache(
+  async (): Promise<NewsDataset> => {
+    const dataset = await runPipeline();
+    if (dataset.articles.length === 0) {
+      throw new Error("Pipeline produced an empty dataset");
+    }
+    return dataset;
+  },
+  ["news-dataset-v1"],
+  {
+    tags: [NEWS_CACHE_TAG],
+    // Seconds; NEWS_REFRESH_MINUTES governs the global refresh cadence
+    // (30 min in production keeps GNews free-tier usage under its daily cap).
+    revalidate: Math.max(60, Math.floor(env.refreshIntervalMs / 1000)),
+  },
+);
 
 /**
- * Get the current dataset. Fresh-enough data returns instantly; stale data
- * returns instantly while a background refresh starts; no data blocks on the
- * first pipeline run.
+ * Get the current dataset: shared cache first, then in-process last-good,
+ * then a direct pipeline run as the final fallback.
  */
 export async function getDataset(): Promise<NewsDataset> {
   const cache = state();
-  const age = Date.now() - cache.refreshedAt;
 
-  if (cache.dataset === null) {
-    return refresh();
+  try {
+    const dataset = await fetchDatasetShared();
+    cache.dataset = dataset;
+    cache.refreshedAt = Date.now();
+    return dataset;
+  } catch (error) {
+    logger.warn("cache.shared_layer_miss", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
   }
-  if (age > env.refreshIntervalMs && !cache.refreshing) {
-    // Stale: kick off a background refresh, serve current data now.
-    void refresh();
+
+  if (cache.dataset && cache.dataset.articles.length > 0) {
+    return cache.dataset;
   }
-  return cache.dataset;
+
+  // Last resort: run the pipeline directly (never throws; providers are
+  // isolated). May legitimately be empty — the UI handles that state.
+  const direct = await runPipeline();
+  if (direct.articles.length > 0 || cache.dataset === null) {
+    cache.dataset = direct;
+    cache.refreshedAt = Date.now();
+  }
+  return cache.dataset ?? direct;
 }
 
-/** Force a refresh (used by the cron endpoint). */
+/** Force a refresh (cron endpoint): expire the shared entry and repopulate. */
 export async function forceRefresh(): Promise<NewsDataset> {
+  revalidateTag(NEWS_CACHE_TAG, "max");
   const cache = state();
   cache.refreshedAt = 0;
-  return refresh();
+
+  try {
+    const dataset = await fetchDatasetShared();
+    cache.dataset = dataset;
+    cache.refreshedAt = Date.now();
+    return dataset;
+  } catch (error) {
+    logger.error("cache.force_refresh_failed", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    if (cache.dataset) return cache.dataset;
+    return runPipeline();
+  }
 }
 
 /** Cache metadata for diagnostics. */
@@ -91,6 +109,6 @@ export function cacheInfo(): { refreshedAt: number; hasData: boolean; refreshing
   return {
     refreshedAt: cache.refreshedAt,
     hasData: cache.dataset !== null,
-    refreshing: cache.refreshing !== null,
+    refreshing: false,
   };
 }

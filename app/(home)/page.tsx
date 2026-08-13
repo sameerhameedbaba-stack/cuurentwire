@@ -37,6 +37,20 @@ export default async function HomePage() {
 
   const container = "mx-auto max-w-[1360px] px-4 sm:px-6";
 
+  // A provider outage must never leave a silently blank front page.
+  if (!data.hero) {
+    return (
+      <div className={`${container} py-16`}>
+        <EmptyState
+          title="News feed temporarily unavailable"
+          message="Fresh coverage is being fetched. Please check back in a few minutes."
+          actionLabel="Retry"
+          actionHref="/"
+        />
+      </div>
+    );
+  }
+
   return (
     <>
       <OrganizationJsonLd />
