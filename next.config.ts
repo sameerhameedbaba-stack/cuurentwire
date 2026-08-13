@@ -16,7 +16,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   // Self-contained server bundle for Docker/generic Node hosting.
-  output: "standalone",
+  // Vercel's build pipeline conflicts with standalone output, so skip it there.
+  output: process.env.VERCEL ? undefined : "standalone",
   images: {
     // Publisher imagery comes from arbitrary news CDNs; https only.
     remotePatterns: [{ protocol: "https", hostname: "**" }],
