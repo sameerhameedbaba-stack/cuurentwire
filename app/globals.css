@@ -1,26 +1,175 @@
 @import "tailwindcss";
 
+/* Class-based dark mode (toggled on <html>, persisted in localStorage). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * CurrentWire editorial design tokens.
+ * Semantic runtime variables flip in dark mode; Tailwind utilities map to
+ * them via @theme inline so components use one vocabulary everywhere.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f7f7f5;        /* page background */
+  --surface: #ffffff;      /* cards, panels */
+  --wash: #efefed;         /* secondary section background */
+  --ink: #151515;          /* primary text */
+  --ink-deep: #090909;     /* near-black premium sections */
+  --muted: #666666;        /* metadata, secondary text */
+  --faint: #8a8a85;        /* tertiary text */
+  --rule: #e5e5e2;         /* borders, dividers */
+  --rule-strong: #cfcfca;
+  --brand: #c91920;        /* editorial red */
+  --brand-ink: #a91218;    /* red that passes contrast on light bg */
+  --canada: #d52b1e;
+  --usa: #274690;
+  --live: #c91920;
+}
+
+.dark {
+  --paper: #101010;
+  --surface: #181818;
+  --wash: #1d1d1c;
+  --ink: #f4f4f2;
+  --ink-deep: #ffffff;
+  --muted: #a3a39d;
+  --faint: #7c7c76;
+  --rule: #303030;
+  --rule-strong: #444442;
+  --brand: #e0343b;
+  --brand-ink: #e8555b;
+  --canada: #e04a3e;
+  --usa: #6b8ecb;
+  --live: #e0343b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-wash: var(--wash);
+  --color-ink: var(--ink);
+  --color-ink-deep: var(--ink-deep);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-canada: var(--canada);
+  --color-usa: var(--usa);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-archivo), var(--font-inter), ui-sans-serif, sans-serif;
+
+  --radius-news: 0.25rem; /* editorial: small radii only */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headline utility — tight editorial display type. */
+.headline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+/* Understated link underline animation for headlines. */
+.story-link {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1.5px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size 180ms ease;
+}
+a:hover .story-link,
+a:focus-visible .story-link {
+  background-size: 100% 1.5px;
+}
+
+/* Image hover treatment: subtle scale inside a cropping frame. */
+.img-frame {
+  overflow: hidden;
+  background-color: var(--wash);
+}
+.img-frame img,
+.img-frame svg {
+  transition: transform 200ms ease;
+}
+a:hover .img-frame img,
+a:hover .img-frame svg {
+  transform: scale(1.02);
+}
+
+/* Live indicator: gentle pulse, never a flash. */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.live-dot {
+  animation: live-pulse 2.4s ease-in-out infinite;
+}
+
+/* Section entrance: barely-there fade/rise. */
+@keyframes section-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.section-in {
+  animation: section-in 260ms ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot, .section-in { animation: none; }
+  .story-link, .img-frame img, .img-frame svg { transition: none; }
+  * { scroll-behavior: auto !important; }
+}
+
+/* Visible focus for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Skeleton shimmer — restrained. */
+@keyframes skeleton {
+  0% { opacity: 0.55; }
+  50% { opacity: 0.85; }
+  100% { opacity: 0.55; }
+}
+.skeleton {
+  background-color: var(--wash);
+  animation: skeleton 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+}
+
+/* Print: strip chrome, keep the journalism. */
+@media print {
+  header, footer, nav, .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.75em;
+    color: #555555;
+  }
 }

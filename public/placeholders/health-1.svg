@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" role="img" aria-label="Abstract editorial graphic">
+  <rect width="400" height="225" fill="#2b1f33"/>
+  <line x1="0" y1="205" x2="400" y2="45" stroke="#a191b0" stroke-opacity="0.5" stroke-width="1.5"/>
+  <line x1="0" y1="155" x2="400" y2="55" stroke="#a191b0" stroke-opacity="0.3" stroke-width="1"/>
+  <circle cx="345" cy="35" r="22" fill="none" stroke="#a191b0" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="340" y="70" width="43.2" height="43.2" fill="none" stroke="#a191b0" stroke-opacity="0.35" stroke-width="1.5" transform="rotate(-5 340 70)"/>
+  <circle cx="335" cy="105" r="32" fill="none" stroke="#a191b0" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="330" y="140" width="59.2" height="59.2" fill="none" stroke="#a191b0" stroke-opacity="0.35" stroke-width="1.5" transform="rotate(-15 330 140)"/>
+  <circle cx="325" cy="175" r="42" fill="none" stroke="#a191b0" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="235" y="150" width="12" height="44" fill="#C91920"/>
+  <rect x="253" y="166" width="12" height="28" fill="#C91920" opacity="0.55"/>
+  <text x="24" y="200" font-family="Arial, sans-serif" font-size="13" font-weight="bold" letter-spacing="4" fill="#ffffff" opacity="0.55">HEALTH</text>
+</svg>

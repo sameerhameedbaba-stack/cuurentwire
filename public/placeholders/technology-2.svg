@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" role="img" aria-label="Abstract editorial graphic">
+  <rect width="400" height="225" fill="#111827"/>
+  <line x1="0" y1="186" x2="400" y2="86" stroke="#64748b" stroke-opacity="0.5" stroke-width="1.5"/>
+  <line x1="0" y1="156" x2="400" y2="36" stroke="#64748b" stroke-opacity="0.3" stroke-width="1"/>
+  <circle cx="136" cy="20" r="44" fill="none" stroke="#64748b" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="288" y="148" width="32" height="32" fill="none" stroke="#64748b" stroke-opacity="0.35" stroke-width="1.5" transform="rotate(-4 288 148)"/>
+  <circle cx="100" cy="116" r="36" fill="none" stroke="#64748b" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="252" y="84" width="19.200000000000003" height="19.200000000000003" fill="none" stroke="#64748b" stroke-opacity="0.35" stroke-width="1.5" transform="rotate(-12 252 84)"/>
+  <circle cx="64" cy="52" r="28" fill="none" stroke="#64748b" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="304" y="150" width="12" height="44" fill="#C91920"/>
+  <rect x="322" y="166" width="12" height="28" fill="#C91920" opacity="0.55"/>
+  <text x="24" y="200" font-family="Arial, sans-serif" font-size="13" font-weight="bold" letter-spacing="4" fill="#ffffff" opacity="0.55">TECHNOLOGY</text>
+</svg>

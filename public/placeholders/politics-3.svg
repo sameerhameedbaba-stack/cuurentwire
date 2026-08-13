@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" role="img" aria-label="Abstract editorial graphic">
+  <rect width="400" height="225" fill="#1f2937"/>
+  <line x1="0" y1="185" x2="400" y2="85" stroke="#94a3b8" stroke-opacity="0.5" stroke-width="1.5"/>
+  <line x1="0" y1="155" x2="400" y2="35" stroke="#94a3b8" stroke-opacity="0.3" stroke-width="1"/>
+  <circle cx="25" cy="75" r="22" fill="none" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="140" y="150" width="43.2" height="43.2" fill="none" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="1.5" transform="rotate(-5 140 150)"/>
+  <circle cx="255" cy="65" r="32" fill="none" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="30" y="140" width="59.2" height="59.2" fill="none" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="1.5" transform="rotate(-15 30 140)"/>
+  <circle cx="145" cy="55" r="42" fill="none" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="275" y="150" width="12" height="44" fill="#C91920"/>
+  <rect x="293" y="166" width="12" height="28" fill="#C91920" opacity="0.55"/>
+  <text x="24" y="200" font-family="Arial, sans-serif" font-size="13" font-weight="bold" letter-spacing="4" fill="#ffffff" opacity="0.55">POLITICS</text>
+</svg>

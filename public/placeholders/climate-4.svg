@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" role="img" aria-label="Abstract editorial graphic">
+  <rect width="400" height="225" fill="#16302b"/>
+  <line x1="0" y1="191" x2="400" y2="41" stroke="#7fa39a" stroke-opacity="0.5" stroke-width="1.5"/>
+  <line x1="0" y1="161" x2="400" y2="41" stroke="#7fa39a" stroke-opacity="0.3" stroke-width="1"/>
+  <circle cx="351" cy="65" r="34" fill="none" stroke="#7fa39a" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="348" y="138" width="40" height="40" fill="none" stroke="#7fa39a" stroke-opacity="0.35" stroke-width="1.5" transform="rotate(1 348 138)"/>
+  <circle cx="345" cy="51" r="16" fill="none" stroke="#7fa39a" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="342" y="124" width="75.2" height="75.2" fill="none" stroke="#7fa39a" stroke-opacity="0.35" stroke-width="1.5" transform="rotate(3 342 124)"/>
+  <circle cx="339" cy="37" r="38" fill="none" stroke="#7fa39a" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="169" y="150" width="12" height="44" fill="#C91920"/>
+  <rect x="187" y="166" width="12" height="28" fill="#C91920" opacity="0.55"/>
+  <text x="24" y="200" font-family="Arial, sans-serif" font-size="13" font-weight="bold" letter-spacing="4" fill="#ffffff" opacity="0.55">CLIMATE</text>
+</svg>

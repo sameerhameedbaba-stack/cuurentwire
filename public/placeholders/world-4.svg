@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" role="img" aria-label="Abstract editorial graphic">
+  <rect width="400" height="225" fill="#1c2b2d"/>
+  <line x1="0" y1="207" x2="400" y2="77" stroke="#8aa0a3" stroke-opacity="0.5" stroke-width="1.5"/>
+  <line x1="0" y1="147" x2="400" y2="27" stroke="#8aa0a3" stroke-opacity="0.3" stroke-width="1"/>
+  <circle cx="157" cy="35" r="46" fill="none" stroke="#8aa0a3" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="316" y="166" width="68.8" height="68.8" fill="none" stroke="#8aa0a3" stroke-opacity="0.35" stroke-width="1.5" transform="rotate(-13 316 166)"/>
+  <circle cx="135" cy="137" r="40" fill="none" stroke="#8aa0a3" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="294" y="108" width="59.2" height="59.2" fill="none" stroke="#8aa0a3" stroke-opacity="0.35" stroke-width="1.5" transform="rotate(1 294 108)"/>
+  <circle cx="113" cy="79" r="34" fill="none" stroke="#8aa0a3" stroke-opacity="0.45" stroke-width="1.5"/>
+  <rect x="43" y="150" width="12" height="44" fill="#C91920"/>
+  <rect x="61" y="166" width="12" height="28" fill="#C91920" opacity="0.55"/>
+  <text x="24" y="200" font-family="Arial, sans-serif" font-size="13" font-weight="bold" letter-spacing="4" fill="#ffffff" opacity="0.55">WORLD</text>
+</svg>

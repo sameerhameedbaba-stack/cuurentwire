@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 96" role="img" aria-label="CurrentWire">
+  <rect x="8" y="12" width="10" height="72" fill="#C91920"/>
+  <rect x="24" y="40" width="10" height="44" fill="#C91920"/>
+  <text x="48" y="72" font-family="Archivo, Arial, sans-serif" font-size="64" font-weight="800" letter-spacing="-2" fill="#090909">Current<tspan fill="#C91920">Wire</tspan></text>
+</svg>

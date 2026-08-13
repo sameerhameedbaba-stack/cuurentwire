@@ -1,0 +1,117 @@
+/**
+ * Source authority configuration.
+ *
+ * Tiers reflect journalistic reputation and reach — never political ideology.
+ * Values are configuration so they can be edited without touching pipeline code.
+ *
+ * Tier A — major wire services, public-service broadcasters, national publications.
+ * Tier B — strong regional and specialist publications.
+ * Tier C — smaller credible publications and unknown-but-valid sources.
+ */
+
+export type SourceTier = "A" | "B" | "C";
+
+export interface SourceDefinition {
+  /** Canonical display name. */
+  name: string;
+  /** Primary domain (no protocol, no www). */
+  domain: string;
+  tier: SourceTier;
+  /** Home country of the publication (weak geography signal only). */
+  country?: "US" | "CA" | "INTL";
+  /** True for clearly-labeled demo/mock outlets used in development. */
+  demo?: boolean;
+}
+
+export const TIER_WEIGHT: Record<SourceTier, number> = {
+  A: 1.0,
+  B: 0.7,
+  C: 0.45,
+};
+
+export const SOURCES: SourceDefinition[] = [
+  // ── Tier A: wires, public broadcasters, major nationals ──────────────
+  { name: "Reuters", domain: "reuters.com", tier: "A", country: "INTL" },
+  { name: "Associated Press", domain: "apnews.com", tier: "A", country: "US" },
+  { name: "CBC News", domain: "cbc.ca", tier: "A", country: "CA" },
+  { name: "NPR", domain: "npr.org", tier: "A", country: "US" },
+  { name: "BBC News", domain: "bbc.com", tier: "A", country: "INTL" },
+  { name: "The New York Times", domain: "nytimes.com", tier: "A", country: "US" },
+  { name: "The Washington Post", domain: "washingtonpost.com", tier: "A", country: "US" },
+  { name: "The Wall Street Journal", domain: "wsj.com", tier: "A", country: "US" },
+  { name: "Bloomberg", domain: "bloomberg.com", tier: "A", country: "US" },
+  { name: "The Globe and Mail", domain: "theglobeandmail.com", tier: "A", country: "CA" },
+  { name: "Financial Times", domain: "ft.com", tier: "A", country: "INTL" },
+  { name: "The Canadian Press", domain: "thecanadianpress.com", tier: "A", country: "CA" },
+  { name: "CTV News", domain: "ctvnews.ca", tier: "A", country: "CA" },
+  { name: "PBS NewsHour", domain: "pbs.org", tier: "A", country: "US" },
+
+  // ── Tier B: strong regional / specialist ─────────────────────────────
+  { name: "Politico", domain: "politico.com", tier: "B", country: "US" },
+  { name: "Axios", domain: "axios.com", tier: "B", country: "US" },
+  { name: "CNBC", domain: "cnbc.com", tier: "B", country: "US" },
+  { name: "CNN", domain: "cnn.com", tier: "B", country: "US" },
+  { name: "ABC News", domain: "abcnews.go.com", tier: "B", country: "US" },
+  { name: "CBS News", domain: "cbsnews.com", tier: "B", country: "US" },
+  { name: "NBC News", domain: "nbcnews.com", tier: "B", country: "US" },
+  { name: "Global News", domain: "globalnews.ca", tier: "B", country: "CA" },
+  { name: "National Post", domain: "nationalpost.com", tier: "B", country: "CA" },
+  { name: "Toronto Star", domain: "thestar.com", tier: "B", country: "CA" },
+  { name: "The Guardian", domain: "theguardian.com", tier: "B", country: "INTL" },
+  { name: "The Verge", domain: "theverge.com", tier: "B", country: "US" },
+  { name: "Ars Technica", domain: "arstechnica.com", tier: "B", country: "US" },
+  { name: "TechCrunch", domain: "techcrunch.com", tier: "B", country: "US" },
+  { name: "Wired", domain: "wired.com", tier: "B", country: "US" },
+  { name: "The Athletic", domain: "theathletic.com", tier: "B", country: "US" },
+  { name: "ESPN", domain: "espn.com", tier: "B", country: "US" },
+  { name: "TSN", domain: "tsn.ca", tier: "B", country: "CA" },
+  { name: "Financial Post", domain: "financialpost.com", tier: "B", country: "CA" },
+  { name: "The Hill", domain: "thehill.com", tier: "B", country: "US" },
+  { name: "MarketWatch", domain: "marketwatch.com", tier: "B", country: "US" },
+
+  // ── Tier C: smaller credible publications ────────────────────────────
+  { name: "Vancouver Sun", domain: "vancouversun.com", tier: "C", country: "CA" },
+  { name: "Calgary Herald", domain: "calgaryherald.com", tier: "C", country: "CA" },
+  { name: "Montreal Gazette", domain: "montrealgazette.com", tier: "C", country: "CA" },
+  { name: "Seattle Times", domain: "seattletimes.com", tier: "C", country: "US" },
+  { name: "Chicago Tribune", domain: "chicagotribune.com", tier: "C", country: "US" },
+  { name: "Los Angeles Times", domain: "latimes.com", tier: "C", country: "US" },
+  { name: "Boston Globe", domain: "bostonglobe.com", tier: "C", country: "US" },
+  { name: "Houston Chronicle", domain: "houstonchronicle.com", tier: "C", country: "US" },
+
+  // ── Demo outlets (development mock mode only) ────────────────────────
+  { name: "Continental Wire", domain: "continentalwire.demo", tier: "A", country: "INTL", demo: true },
+  { name: "North American Press", domain: "napress.demo", tier: "A", country: "US", demo: true },
+  { name: "True North Broadcasting", domain: "truenorth.demo", tier: "A", country: "CA", demo: true },
+  { name: "Capitol Journal", domain: "capitoljournal.demo", tier: "B", country: "US", demo: true },
+  { name: "Maple Leaf Times", domain: "mapleleaftimes.demo", tier: "B", country: "CA", demo: true },
+  { name: "Atlantic Business Review", domain: "atlanticbusiness.demo", tier: "B", country: "US", demo: true },
+  { name: "Pacific Standard News", domain: "pacificstandard.demo", tier: "B", country: "US", demo: true },
+  { name: "Prairie Post", domain: "prairiepost.demo", tier: "C", country: "CA", demo: true },
+  { name: "Great Lakes Gazette", domain: "greatlakesgazette.demo", tier: "C", country: "US", demo: true },
+  { name: "Northern Tech Desk", domain: "northerntechdesk.demo", tier: "C", country: "CA", demo: true },
+];
+
+const byDomain = new Map<string, SourceDefinition>(
+  SOURCES.map((s) => [s.domain, s]),
+);
+const byName = new Map<string, SourceDefinition>(
+  SOURCES.map((s) => [s.name.toLowerCase(), s]),
+);
+
+export function lookupSourceByDomain(domain: string): SourceDefinition | undefined {
+  return byDomain.get(domain.replace(/^www\./, "").toLowerCase());
+}
+
+export function lookupSourceByName(name: string): SourceDefinition | undefined {
+  return byName.get(name.trim().toLowerCase());
+}
+
+/** Resolve tier for an article's source; unknown sources default to Tier C. */
+export function resolveTier(sourceName: string, sourceDomain: string): SourceTier {
+  return (
+    lookupSourceByDomain(sourceDomain)?.tier ??
+    lookupSourceByName(sourceName)?.tier ??
+    "C"
+  );
+}
