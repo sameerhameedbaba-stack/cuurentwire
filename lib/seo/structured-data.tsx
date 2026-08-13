@@ -52,23 +52,46 @@ export function WebSiteJsonLd() {
   );
 }
 
-/** Story page: summary Article citing the original publisher's report. */
+/**
+ * Story page: summary NewsArticle citing the original publishers' reports.
+ * Dates are SOURCE coverage times (never our render time): datePublished is
+ * the earliest coverage, dateModified the latest — matching the visible
+ * "First coverage" / "Latest coverage" labels on the page. Authorship is the
+ * algorithmic news desk, never a fabricated human byline.
+ */
 export function StoryJsonLd({ cluster }: { cluster: StoryCluster }) {
+  const storyUrl = `${siteConfig.url}/story/${cluster.slug}`;
+  const image = [
+    // Only https publisher images; the OG card is always available.
+    ...(cluster.imageUrl?.startsWith("https://") ? [cluster.imageUrl] : []),
+    `${storyUrl}/opengraph-image`,
+  ];
   return (
     <JsonLd
       data={{
         "@context": "https://schema.org",
-        "@type": "Article",
+        "@type": "NewsArticle",
         headline: cluster.title,
         description: cluster.summary,
         datePublished: cluster.firstPublishedAt,
         dateModified: cluster.lastPublishedAt,
-        url: `${siteConfig.url}/story/${cluster.slug}`,
+        url: storyUrl,
+        mainEntityOfPage: storyUrl,
+        image,
+        author: {
+          "@type": "Organization",
+          name: "CurrentWire News Desk",
+          url: `${siteConfig.url}/methodology`,
+        },
         isBasedOn: cluster.articles.map((a) => a.url),
         publisher: {
           "@type": "Organization",
           name: siteConfig.name,
           url: siteConfig.url,
+          logo: {
+            "@type": "ImageObject",
+            url: `${siteConfig.url}/logo.svg`,
+          },
         },
         about: cluster.entities.map((name) => ({ "@type": "Thing", name })),
       }}

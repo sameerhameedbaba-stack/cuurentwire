@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { cacheInfo, getDataset } from "@/lib/cache/store";
+import { cookies, headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
+import { ADMIN_COOKIE } from "@/lib/admin/auth";
+import { cacheInfo, datasetAgeMs, getDataset } from "@/lib/cache/store";
 import { isDatabaseConfigured } from "@/lib/database/client";
 import { env, getDataMode } from "@/lib/env";
+import { classifyCategory } from "@/lib/news/classification/category";
 import { LIVE_PROVIDERS } from "@/lib/news/providers";
+import { secureCompare, sha256Hex } from "@/lib/utils/secure-compare";
 import { relativeTime } from "@/lib/utils/time";
 
 export const dynamic = "force-dynamic";
@@ -15,8 +19,11 @@ export const metadata: Metadata = {
 
 /**
  * Protected diagnostics view.
- * Production access requires ?key=<ADMIN_SECRET>; without ADMIN_SECRET set,
- * the route does not exist in production. Development access is open.
+ * Production access requires the httpOnly cookie set by /admin/auth?key=
+ * (visited once per browser) or an `x-admin-key: <ADMIN_SECRET>` header;
+ * without ADMIN_SECRET set, the route does not exist in production.
+ * Development access is open. A legacy ?key= query param is bounced to
+ * /admin/auth so the secret leaves the address bar (and logs/history).
  * Never renders provider secrets — only whether they are configured.
  */
 export default async function AdminStatusPage({
@@ -26,20 +33,33 @@ export default async function AdminStatusPage({
 }) {
   const params = await searchParams;
   const key = Array.isArray(params.key) ? params.key[0] : params.key;
+  if (key) redirect(`/admin/auth?key=${encodeURIComponent(key)}`);
   if (env.isProduction) {
-    if (!env.adminSecret || key !== env.adminSecret) notFound();
+    const secret = env.adminSecret;
+    if (!secret) notFound();
+    const cookieValue = (await cookies()).get(ADMIN_COOKIE)?.value;
+    const headerKey = (await headers()).get("x-admin-key");
+    const authorized =
+      secureCompare(cookieValue, sha256Hex(secret)) ||
+      secureCompare(headerKey, secret);
+    if (!authorized) notFound();
   }
 
   const dataset = await getDataset();
   const cache = cacheInfo();
   const stats = dataset.ingestion;
 
+  const rssFeedHealth =
+    stats.providers.find((p) => p.provider === "rss")?.feeds ?? [];
+
   const rows: [string, string | number][] = [
     ["Data mode", getDataMode()],
     ["Generated", `${relativeTime(dataset.generatedAt)} (${dataset.generatedAt})`],
+    ["Dataset age", `${Math.round(datasetAgeMs(dataset) / 1000)} s`],
     ["Cache holds data", String(cache.hasData)],
     ["Background refresh running", String(cache.refreshing)],
-    ["Refresh interval", `${env.refreshIntervalMs / 60000} min`],
+    ["Dataset/RSS refresh interval", `${env.rssRefreshMinutes} min`],
+    ["GNews refresh interval", `${env.gnewsRefreshMinutes} min`],
     ["Database configured", String(isDatabaseConfigured())],
     ["Ingestion duration", `${stats.durationMs} ms`],
     ["Articles received", stats.articlesReceived],
@@ -48,6 +68,17 @@ export default async function AdminStatusPage({
     ["Exact duplicates removed", stats.duplicatesRemoved],
     ["Story clusters", stats.clusterCount],
     ["Trending topics", dataset.trending.length],
+    [
+      "Coverage age at ingest (median)",
+      `${Math.round(stats.articleAgeAtIngestMedianMs / 60_000)} min`,
+    ],
+    [
+      "Coverage age at ingest (p90)",
+      `${Math.round(stats.articleAgeAtIngestP90Ms / 60_000)} min`,
+    ],
+    ["Highest ranking score", stats.highestRankingScore],
+    ["Breaking clusters", stats.breakingCount],
+    ["Near-breaking clusters (score ≥ 75)", stats.nearBreakingCount],
   ];
 
   return (
@@ -99,6 +130,83 @@ export default async function AdminStatusPage({
                     </td>
                     <td className="py-2 pr-4 tabular-nums">{run?.articleCount ?? "—"}</td>
                     <td className="py-2 text-muted">{run?.error ?? ""}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {rssFeedHealth.length > 0 && (
+        <section aria-label="RSS feed health" className="mt-8">
+          <h2 className="headline text-xl">RSS feed health (last run)</h2>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full border-y border-rule text-left text-sm">
+              <thead>
+                <tr className="border-b border-rule text-xs uppercase tracking-wider text-muted">
+                  <th className="py-2 pr-4">Feed</th>
+                  <th className="py-2 pr-4">Status</th>
+                  <th className="py-2 pr-4">Items</th>
+                  <th className="py-2 pr-4">Skipped</th>
+                  <th className="py-2 pr-4">Duration</th>
+                  <th className="py-2">Error</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-rule">
+                {rssFeedHealth.map((feed) => (
+                  <tr key={feed.url}>
+                    <td className="max-w-80 truncate py-2 pr-4">{feed.url}</td>
+                    <td className="py-2 pr-4">{feed.ok ? "ok" : "failed"}</td>
+                    <td className="py-2 pr-4 tabular-nums">{feed.itemsParsed}</td>
+                    <td className="py-2 pr-4 tabular-nums">{feed.itemsSkipped}</td>
+                    <td className="py-2 pr-4 tabular-nums">{feed.durationMs} ms</td>
+                    <td className="py-2 text-muted">{feed.error ?? ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      <section aria-label="Classification debug" className="mt-8">
+        <h2 className="headline text-xl">Top 10 classification debug</h2>
+        <p className="mt-1 text-xs text-muted">
+          Confidence and scores recomputed from the lead headline (provider
+          category is not retained on stored articles).
+        </p>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full border-y border-rule text-left text-sm">
+            <thead>
+              <tr className="border-b border-rule text-xs uppercase tracking-wider text-muted">
+                <th className="py-2 pr-3">#</th>
+                <th className="py-2 pr-3">Story</th>
+                <th className="py-2 pr-3">Category</th>
+                <th className="py-2 pr-3">Confidence</th>
+                <th className="py-2">Top scores</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-rule">
+              {dataset.clusters.slice(0, 10).map((cluster, index) => {
+                const debug = classifyCategory({
+                  title: cluster.lead.title,
+                  description: cluster.lead.description,
+                });
+                const topScores = Object.entries(debug.scores)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 3)
+                  .map(([id, score]) => `${id} ${score}`)
+                  .join(" · ");
+                return (
+                  <tr key={cluster.id}>
+                    <td className="py-2 pr-3 tabular-nums">{index + 1}</td>
+                    <td className="max-w-72 truncate py-2 pr-3">{cluster.title}</td>
+                    <td className="py-2 pr-3 font-semibold">{cluster.category}</td>
+                    <td className="py-2 pr-3 tabular-nums">
+                      {debug.confidence.toFixed(2)}
+                    </td>
+                    <td className="py-2 text-muted">{topScores || "—"}</td>
                   </tr>
                 );
               })}

@@ -179,11 +179,22 @@ export async function getHomepageData(): Promise<HomepageData> {
   };
 }
 
-/** Reverse-chronological article feed for /latest. */
+/**
+ * Reverse-chronological article feed for /latest, paginated so every
+ * article (and therefore every story cluster) is reachable from a
+ * crawlable page. `page` is 1-based and clamped to the valid range.
+ */
 export async function getLatest(
   country: CountryFilter = "all",
   limit = 60,
-): Promise<{ articles: Article[]; dataset: NewsDataset }> {
+  page = 1,
+): Promise<{
+  articles: Article[];
+  total: number;
+  page: number;
+  pageCount: number;
+  dataset: NewsDataset;
+}> {
   const dataset = await getDataset();
   let articles = dataset.articles;
   if (country !== "all") {
@@ -192,15 +203,34 @@ export async function getLatest(
   articles = [...articles].sort(
     (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
   );
-  return { articles: articles.slice(0, limit), dataset };
+  const total = articles.length;
+  const pageCount = Math.max(1, Math.ceil(total / limit));
+  const current = Math.min(Math.max(1, Math.floor(page)), pageCount);
+  const start = (current - 1) * limit;
+  return {
+    articles: articles.slice(start, start + limit),
+    total,
+    page: current,
+    pageCount,
+    dataset,
+  };
+}
+
+/** Parse a 1-based ?page= value; anything invalid falls back to page 1. */
+export function parsePageParam(value: string | undefined): number {
+  const parsed = Number.parseInt(value ?? "", 10);
+  return Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
 }
 
 export async function getClusterBySlug(slug: string): Promise<StoryCluster | null> {
   const dataset = await getDataset();
+  // Stable-id fallback: bare cluster ids and re-titled old links resolve,
+  // but only when the token after the LAST hyphen IS the id exactly — no
+  // open-ended alias URLs.
+  const idToken = slug.slice(slug.lastIndexOf("-") + 1);
   return (
     dataset.clusters.find((c) => c.slug === slug) ??
-    // Stable-id fallback: bare cluster ids and re-titled old links resolve.
-    dataset.clusters.find((c) => c.id === slug || slug.endsWith(c.id)) ??
+    dataset.clusters.find((c) => c.id === slug || c.id === idToken) ??
     null
   );
 }

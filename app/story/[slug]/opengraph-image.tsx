@@ -1,0 +1,102 @@
+import { ImageResponse } from "next/og";
+import { CATEGORIES } from "@/config/categories";
+import { siteConfig } from "@/config/site";
+import { getClusterBySlug } from "@/lib/news/queries";
+import { truncate } from "@/lib/utils/text";
+
+export const dynamic = "force-dynamic";
+
+export const alt = "CurrentWire story headline card";
+export const size = { width: 1200, height: 630 };
+export const contentType = "image/png";
+
+/**
+ * Branded per-story social card: headline, coverage count, category and
+ * domain rendered as text on the CurrentWire ground. Publisher imagery is
+ * NEVER embedded — copyright stays with the original publishers.
+ */
+export default async function OpenGraphImage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const cluster = await getClusterBySlug(slug).catch(() => null);
+
+  // Generic branded fallback when the story is unknown or expired.
+  const headline = cluster ? truncate(cluster.title, 140) : siteConfig.tagline;
+  const kicker = cluster ? CATEGORIES[cluster.category].label : "News discovery";
+  const coverage = cluster
+    ? `Coverage from ${cluster.sourceCount} ${cluster.sourceCount === 1 ? "source" : "sources"}`
+    : "Top 100 stories · ranked · attributed";
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          backgroundColor: "#090909",
+          padding: 64,
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 5 }}>
+            <div style={{ width: 12, height: 56, backgroundColor: "#C91920" }} />
+            <div style={{ width: 12, height: 36, backgroundColor: "#C91920" }} />
+          </div>
+          <div
+            style={{
+              fontSize: 40,
+              fontWeight: 800,
+              color: "#FFFFFF",
+              letterSpacing: -1,
+              display: "flex",
+            }}
+          >
+            Current<span style={{ color: "#C91920" }}>Wire</span>
+          </div>
+          <div
+            style={{
+              fontSize: 26,
+              color: "#C91920",
+              letterSpacing: 5,
+              textTransform: "uppercase",
+              marginLeft: "auto",
+            }}
+          >
+            {kicker}
+          </div>
+        </div>
+        <div
+          style={{
+            fontSize: headline.length > 90 ? 52 : 64,
+            fontWeight: 800,
+            color: "#FFFFFF",
+            lineHeight: 1.15,
+            letterSpacing: -1,
+          }}
+        >
+          {headline}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            fontSize: 26,
+            color: "#B9B9B4",
+          }}
+        >
+          <div>{coverage}</div>
+          <div style={{ color: "#7C7C76" }}>{siteConfig.domain}</div>
+        </div>
+      </div>
+    ),
+    size,
+  );
+}

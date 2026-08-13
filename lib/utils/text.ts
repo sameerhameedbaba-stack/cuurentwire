@@ -1,6 +1,17 @@
+import { createHash } from "node:crypto";
+
 /** Small deterministic text utilities shared across the news pipeline. */
 
-/** FNV-1a 32-bit hash rendered as 8-char hex — stable article/cluster IDs. */
+/**
+ * sha256-based stable id, first 12 hex chars — used for article and cluster
+ * ids. 48 bits keeps the collision birthday bound far beyond dataset sizes
+ * (the previous 32-bit FNV-1a bound was ~77k inputs).
+ */
+export function stableId(input: string): string {
+  return createHash("sha256").update(input).digest("hex").slice(0, 12);
+}
+
+/** FNV-1a 32-bit hash rendered as 8-char hex. Kept for non-id hashing needs. */
 export function fnv1a(input: string): string {
   let hash = 0x811c9dc5;
   for (let i = 0; i < input.length; i++) {

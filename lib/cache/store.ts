@@ -1,6 +1,7 @@
 import { revalidateTag, unstable_cache } from "next/cache";
 import { env } from "@/lib/env";
 import { runPipeline } from "@/lib/news/pipeline";
+import { setPreviousDataset } from "@/lib/news/previous";
 import type { NewsDataset } from "@/lib/news/types";
 import { logger } from "@/lib/utils/logger";
 
@@ -45,11 +46,31 @@ const fetchDatasetShared = unstable_cache(
   ["news-dataset-v1"],
   {
     tags: [NEWS_CACHE_TAG],
-    // Seconds; NEWS_REFRESH_MINUTES governs the global refresh cadence
-    // (30 min in production keeps GNews free-tier usage under its daily cap).
-    revalidate: Math.max(60, Math.floor(env.refreshIntervalMs / 1000)),
+    // Seconds; RSS_REFRESH_MINUTES governs the dataset (fast lane) cadence.
+    // GNews serves from its own slower cache entry (see providers/gnews.ts),
+    // so a fast dataset cadence never spends extra GNews quota.
+    revalidate: Math.max(60, env.rssRefreshMinutes * 60),
   },
 );
+
+// Coalescing locks: concurrent callers within one instance share a single
+// pipeline run instead of stampeding providers.
+let inFlightShared: Promise<NewsDataset> | null = null;
+let inFlightDirect: Promise<NewsDataset> | null = null;
+
+function fetchDatasetSharedCoalesced(): Promise<NewsDataset> {
+  inFlightShared ??= fetchDatasetShared().finally(() => {
+    inFlightShared = null;
+  });
+  return inFlightShared;
+}
+
+function runPipelineCoalesced(): Promise<NewsDataset> {
+  inFlightDirect ??= runPipeline().finally(() => {
+    inFlightDirect = null;
+  });
+  return inFlightDirect;
+}
 
 /**
  * Get the current dataset: shared cache first, then in-process last-good,
@@ -59,9 +80,12 @@ export async function getDataset(): Promise<NewsDataset> {
   const cache = state();
 
   try {
-    const dataset = await fetchDatasetShared();
+    const dataset = await fetchDatasetSharedCoalesced();
     cache.dataset = dataset;
     cache.refreshedAt = Date.now();
+    // Feed the previous-run registry so the next clustering pass can keep
+    // cluster ids (story URLs) stable.
+    setPreviousDataset(dataset);
     return dataset;
   } catch (error) {
     logger.warn("cache.shared_layer_miss", {
@@ -75,32 +99,46 @@ export async function getDataset(): Promise<NewsDataset> {
 
   // Last resort: run the pipeline directly (never throws; providers are
   // isolated). May legitimately be empty — the UI handles that state.
-  const direct = await runPipeline();
+  const direct = await runPipelineCoalesced();
   if (direct.articles.length > 0 || cache.dataset === null) {
     cache.dataset = direct;
     cache.refreshedAt = Date.now();
+    setPreviousDataset(direct);
   }
   return cache.dataset ?? direct;
 }
 
-/** Force a refresh (cron endpoint): expire the shared entry and repopulate. */
+/**
+ * Force a refresh (cron endpoint): expire the shared dataset entry and
+ * repopulate. Only the dataset tag is revalidated — the GNews layer keeps
+ * its own revalidate window so cron calls never spend extra GNews quota.
+ */
 export async function forceRefresh(): Promise<NewsDataset> {
   revalidateTag(NEWS_CACHE_TAG, "max");
   const cache = state();
   cache.refreshedAt = 0;
 
   try {
-    const dataset = await fetchDatasetShared();
+    const dataset = await fetchDatasetSharedCoalesced();
     cache.dataset = dataset;
     cache.refreshedAt = Date.now();
+    setPreviousDataset(dataset);
     return dataset;
   } catch (error) {
     logger.error("cache.force_refresh_failed", {
       error: error instanceof Error ? error.message : "unknown",
     });
     if (cache.dataset) return cache.dataset;
-    return runPipeline();
+    return runPipelineCoalesced();
   }
+}
+
+/** Age of a dataset in milliseconds, from its generatedAt stamp. */
+export function datasetAgeMs(
+  dataset: Pick<NewsDataset, "generatedAt">,
+  now: Date = new Date(),
+): number {
+  return Math.max(0, now.getTime() - new Date(dataset.generatedAt).getTime());
 }
 
 /** Cache metadata for diagnostics. */
@@ -109,6 +147,6 @@ export function cacheInfo(): { refreshedAt: number; hasData: boolean; refreshing
   return {
     refreshedAt: cache.refreshedAt,
     hasData: cache.dataset !== null,
-    refreshing: false,
+    refreshing: inFlightShared !== null || inFlightDirect !== null,
   };
 }

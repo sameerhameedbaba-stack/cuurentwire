@@ -21,7 +21,7 @@ describe("normalizeArticle", () => {
     const article = normalizeArticle(raw(), NOW);
     expect(article).not.toBeNull();
     expect(article!.canonicalUrl).toBe("https://example.com/story");
-    expect(article!.id).toMatch(/^[0-9a-f]{8}$/);
+    expect(article!.id).toMatch(/^[0-9a-f]{12}$/);
     expect(article!.slug.endsWith(article!.id)).toBe(true);
     expect(article!.publishedAt).toBe(raw().publishedAt);
   });

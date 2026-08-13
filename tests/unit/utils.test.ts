@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bigrams, fnv1a, jaccard, significantTokens, slugify, truncate } from "@/lib/utils/text";
+import { bigrams, fnv1a, jaccard, significantTokens, slugify, stableId, truncate } from "@/lib/utils/text";
 import { relativeTime } from "@/lib/utils/time";
 
 describe("slugify", () => {
@@ -20,6 +20,16 @@ describe("fnv1a", () => {
     expect(fnv1a("https://example.com/story")).toBe(fnv1a("https://example.com/story"));
     expect(fnv1a("x")).toMatch(/^[0-9a-f]{8}$/);
     expect(fnv1a("a")).not.toBe(fnv1a("b"));
+  });
+});
+
+describe("stableId", () => {
+  it("is stable and 12 hex chars (sha256-based)", () => {
+    expect(stableId("https://example.com/story")).toBe(
+      stableId("https://example.com/story"),
+    );
+    expect(stableId("x")).toMatch(/^[0-9a-f]{12}$/);
+    expect(stableId("a")).not.toBe(stableId("b"));
   });
 });
 

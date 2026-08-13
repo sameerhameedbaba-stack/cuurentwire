@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { CATEGORIES } from "@/config/categories";
 import { CategoryLabel, CountryBadge, SourceLine, StatusBadge, BreakingLabel } from "@/components/news/atoms";
@@ -58,8 +58,10 @@ export default async function StoryPage({
   const { slug } = await params;
   const cluster = await getClusterBySlug(slug);
   if (!cluster) notFound();
-  // Old or shortened links resolve by stable id — send them to the canonical URL.
-  if (slug !== cluster.slug) permanentRedirect(`/story/${cluster.slug}`);
+  // Old or shortened links resolve by stable id — send them to the canonical
+  // URL. Temporary (307): cluster URLs are ephemeral, a 308 would strand
+  // crawlers on retired aliases.
+  if (slug !== cluster.slug) redirect(`/story/${cluster.slug}`);
 
   const related = await getRelatedClusters(cluster);
   const lead = cluster.lead;
@@ -141,11 +143,31 @@ export default async function StoryPage({
               isMock={cluster.isMock}
               sourceCount={cluster.sourceCount}
             />
+            {/* SOURCE coverage times, labeled truthfully — these back the
+                JSON-LD datePublished/dateModified, never our render time. */}
             <p className="mt-1.5 text-xs text-muted">
-              Published {fullTimestamp(cluster.firstPublishedAt)}
+              First coverage{" "}
+              <time dateTime={cluster.firstPublishedAt}>
+                {fullTimestamp(cluster.firstPublishedAt)}
+              </time>
               {cluster.lastPublishedAt !== cluster.firstPublishedAt ? (
-                <> · Updated {fullTimestamp(cluster.lastPublishedAt)}</>
+                <>
+                  {" "}
+                  · Latest coverage{" "}
+                  <time dateTime={cluster.lastPublishedAt}>
+                    {fullTimestamp(cluster.lastPublishedAt)}
+                  </time>
+                </>
               ) : null}
+            </p>
+            <p className="mt-1.5 text-xs text-muted">
+              Compiled by{" "}
+              <Link
+                href="/methodology"
+                className="font-semibold underline hover:text-brand-ink"
+              >
+                CurrentWire News Desk
+              </Link>
             </p>
             {cluster.sourceCount > 1 ? (
               <p className="mt-1.5 text-xs text-muted">

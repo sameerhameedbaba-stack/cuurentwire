@@ -87,13 +87,15 @@ See [.env.example](.env.example) for the full annotated list.
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | prod | Canonical site URL (SEO, RSS, OG) |
 | `NEWS_DATA_MODE` | no | `mock` / `live`; unset = auto |
-| `NEWS_REFRESH_MINUTES` | no | Cache refresh interval (default 5) |
+| `NEWS_REFRESH_MINUTES` | no | Legacy overall refresh interval (default 5; also the GNews fallback) |
+| `RSS_REFRESH_MINUTES` | no | RSS fast-lane refresh interval (default 5) |
+| `GNEWS_REFRESH_MINUTES` | no | GNews refresh interval (default `NEWS_REFRESH_MINUTES` or 30; keep ≥30 on the free tier) |
 | `GNEWS_API_KEY` | live mode | [gnews.io](https://gnews.io) API key |
 | `NEWS_API_KEY` | live mode | [newsapi.org](https://newsapi.org) key (their free tier is dev-only) |
 | `RSS_FEEDS` | live mode | Comma-separated publisher RSS URLs you may use |
 | `DATABASE_URL` | no | PostgreSQL connection string |
 | `CRON_SECRET` | prod | Bearer token protecting `/api/cron/news-refresh` |
-| `ADMIN_SECRET` | prod | Key for `/admin/status?key=...` diagnostics |
+| `ADMIN_SECRET` | prod | Admin diagnostics key — visit `/admin/auth?key=...` once per browser to set the access cookie |
 | `CONTACT_EMAIL` etc. | no | Contact addresses shown on the site |
 
 Configure **at least one** provider for live news. Multiple providers improve
@@ -179,8 +181,9 @@ Schedule the cron endpoint with your platform's scheduler.
 - **All providers fail:** the last successful dataset keeps serving
   (stale-while-revalidate); the homepage never becomes an error page.
 - **No key at all:** demo mode, clearly labeled.
-- **Diagnostics:** `/admin/status` (open in dev; `?key=<ADMIN_SECRET>` in
-  prod) shows ingestion stats, provider health and ranking breakdowns.
+- **Diagnostics:** `/admin/status` (open in dev; in prod visit
+  `/admin/auth?key=<ADMIN_SECRET>` once per browser to set the access cookie)
+  shows ingestion stats, provider and feed health, and ranking breakdowns.
 - **Observability:** structured JSON logs for ingestion start/finish, provider
   errors, and counts. Secrets are never logged.
 
@@ -190,7 +193,7 @@ Schedule the cron endpoint with your platform's scheduler.
 | --- | --- |
 | Site shows DEMO DATA banner | No provider configured or `NEWS_DATA_MODE=mock` — add a key and set `live` |
 | `401` from cron endpoint | Send `Authorization: Bearer <CRON_SECRET>` |
-| `/admin/status` 404 in prod | Set `ADMIN_SECRET` and pass `?key=` |
+| `/admin/status` 404 in prod | Set `ADMIN_SECRET`, then visit `/admin/auth?key=<value>` once |
 | Empty category page | Normal when the current window has no matching stories; check `/latest` |
 | DB writes failing | App keeps serving from cache; check `DATABASE_URL` and run `npm run db:migrate` |
 

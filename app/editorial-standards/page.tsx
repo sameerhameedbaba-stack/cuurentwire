@@ -17,6 +17,16 @@ export default function EditorialStandardsPage() {
       title="Editorial Standards"
       intro="CurrentWire is a news discovery platform. These principles govern how we select, summarize and present reporting."
     >
+      <h2>Automated compilation</h2>
+      <p>
+        CurrentWire is an aggregator, not a newsroom. Stories are collected
+        from publisher feeds and APIs and compiled algorithmically — no human
+        journalists, no AI-generated reporting. Summaries derive from
+        publisher-provided metadata, and every story links out to the original
+        reporting; CurrentWire does not host article bodies. The{" "}
+        <Link href="/methodology">methodology</Link> describes the process.
+      </p>
+
       <h2>Accuracy</h2>
       <p>
         CurrentWire should never knowingly present fabricated information.

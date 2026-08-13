@@ -24,6 +24,11 @@ export interface RawArticle {
   imageUrl?: string;
   author?: string;
   providerCategory?: string;
+  /**
+   * True when providerCategory is an inferred feed-section prior (RSS
+   * domain → section) rather than an explicit publisher category.
+   */
+  providerCategoryIsPrior?: boolean;
   providerCountry?: string;
   provider: string;
   isMock?: boolean;
@@ -118,12 +123,37 @@ export interface IngestionStats {
   articlesRejected: number;
   duplicatesRemoved: number;
   clusterCount: number;
+  /**
+   * Coverage age at ingest (pipeline run time minus article publishedAt),
+   * across accepted articles. Measures how old our coverage is when we
+   * pick it up — not how fast publishers report.
+   */
+  articleAgeAtIngestMedianMs: number;
+  articleAgeAtIngestP90Ms: number;
+  /** Top cluster's ranking score (0–100); 0 when there are no clusters. */
+  highestRankingScore: number;
+  /** Clusters carrying the BREAKING label (at most one by design). */
+  breakingCount: number;
+  /** Clusters with rankingScore >= 75 — near or at breaking intensity. */
+  nearBreakingCount: number;
 }
 
 export interface ProviderRunStat {
   provider: string;
   ok: boolean;
   articleCount: number;
+  error?: string;
+  durationMs: number;
+  /** Per-feed health, populated by multi-feed providers (RSS only). */
+  feeds?: FeedHealth[];
+}
+
+/** Health of a single configured feed during the last provider run. */
+export interface FeedHealth {
+  url: string;
+  ok: boolean;
+  itemsParsed: number;
+  itemsSkipped: number;
   error?: string;
   durationMs: number;
 }

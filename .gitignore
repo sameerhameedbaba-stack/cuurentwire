@@ -42,3 +42,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local audit notes - shared privately with reviewers, never published
+PROJECT_AUDIT.md
+IMPLEMENTATION_REPORT.md

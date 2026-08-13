@@ -4,7 +4,7 @@ import { classifyGeography } from "@/lib/news/classification/geography";
 import { extractEntities } from "@/lib/news/classification/entities";
 import { canonicalizeUrl, domainFromUrl } from "@/lib/news/normalization/canonicalize";
 import type { Article, RawArticle } from "@/lib/news/types";
-import { fnv1a, slugify, truncate } from "@/lib/utils/text";
+import { slugify, stableId, truncate } from "@/lib/utils/text";
 
 const MAX_TITLE_LENGTH = 300;
 const MAX_DESCRIPTION_LENGTH = 500;
@@ -41,6 +41,7 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
     title: cleanTitle,
     description,
     providerCategory: raw.providerCategory,
+    providerCategoryIsPrior: raw.providerCategoryIsPrior,
   });
   const country = classifyGeography({
     title: cleanTitle,
@@ -49,7 +50,7 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
     providerCountry: raw.providerCountry,
   });
 
-  const id = fnv1a(canonicalUrl);
+  const id = stableId(canonicalUrl);
   // Root-relative paths are local assets (demo art); remote URLs must be http(s).
   const imageUrl =
     raw.imageUrl &&

@@ -174,6 +174,81 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
   },
 };
 
+/**
+ * Entity → category signals for the classifier. A hit weighs like a title
+ * keyword hit. Matched on word boundaries — "NFL" never fires inside
+ * "inflation". Keep entries unambiguous (no "Amazon", no "Meta", no "WHO").
+ */
+export const ENTITY_CATEGORY_SIGNALS: Record<string, CategoryId> = {
+  // Sports leagues and governing bodies
+  "nfl": "sports", "nba": "sports", "mlb": "sports", "nhl": "sports",
+  "mls": "sports", "cfl": "sports", "fifa": "sports", "uefa": "sports",
+  "wnba": "sports", "ncaa": "sports", "pga tour": "sports",
+  // Markets and economic institutions
+  "federal reserve": "business", "s&p 500": "business", "dow jones": "business",
+  "nasdaq": "business", "bank of canada": "business", "wall street": "business",
+  "earnings": "business", "ipo": "business", "opec": "business", "imf": "business",
+  // Space and research
+  "spacex": "science", "nasa": "science", "james webb": "science",
+  "canadian space agency": "science",
+  // Big Tech
+  "openai": "technology", "microsoft": "technology", "google": "technology",
+  "nvidia": "technology", "intel": "technology",
+  // Health agencies and pharma
+  "cdc": "health", "fda": "health", "health canada": "health",
+  "pfizer": "health", "moderna": "health",
+  // Government institutions
+  "white house": "politics", "congress": "politics", "supreme court": "politics",
+  // International bodies
+  "united nations": "world", "nato": "world", "european union": "world",
+  // Environment
+  "epa": "climate", "ipcc": "climate",
+  // Screen and streaming
+  "netflix": "culture", "hollywood": "culture",
+};
+
+/**
+ * Negative keywords per category — conservative kill list for obvious false
+ * positives (e.g. player-trade sports headlines matching business "trade").
+ * A hit subtracts the weight of a title keyword hit.
+ */
+export const NEGATIVE_KEYWORDS: Partial<Record<CategoryId, string[]>> = {
+  sports: ["tariff", "trade deal", "trade war", "interest rate"],
+  business: ["box office", "trade deadline", "touchdown", "home run"],
+  politics: ["quarterback", "playoff"],
+};
+
+/**
+ * Feed-section priors: domains whose feeds are dedicated to one section.
+ * Applied to RSS articles as providerCategory with the PRIOR flag — a weak
+ * nudge (weight 2 in the classifier), never absolute.
+ */
+export const FEED_CATEGORY_PRIORS: Record<string, CategoryId> = {
+  "espn.com": "sports",
+  "tsn.ca": "sports",
+  "theathletic.com": "sports",
+  "cnbc.com": "business",
+  "financialpost.com": "business",
+  "marketwatch.com": "business",
+  "theverge.com": "technology",
+  "arstechnica.com": "technology",
+  "techcrunch.com": "technology",
+  "wired.com": "technology",
+  "politico.com": "politics",
+  "thehill.com": "politics",
+};
+
+/** Prior for a domain, matching exact domains and their subdomains. */
+export function feedCategoryPrior(domain: string | undefined): CategoryId | undefined {
+  if (!domain) return undefined;
+  const clean = domain.toLowerCase().replace(/^www\./, "");
+  if (FEED_CATEGORY_PRIORS[clean]) return FEED_CATEGORY_PRIORS[clean];
+  for (const [key, value] of Object.entries(FEED_CATEGORY_PRIORS)) {
+    if (clean.endsWith(`.${key}`)) return value;
+  }
+  return undefined;
+}
+
 export function categoryLabel(id: CategoryId): string {
   return CATEGORIES[id].label;
 }

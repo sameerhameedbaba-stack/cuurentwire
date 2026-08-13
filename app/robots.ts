@@ -10,6 +10,9 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/admin/", "/search"],
       },
     ],
-    sitemap: `${siteConfig.url}/sitemap.xml`,
+    sitemap: [
+      `${siteConfig.url}/sitemap.xml`,
+      `${siteConfig.url}/news-sitemap.xml`,
+    ],
   };
 }

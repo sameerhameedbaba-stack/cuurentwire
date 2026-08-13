@@ -7,8 +7,9 @@ export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteConfig.url;
+  // /search is intentionally absent: it is noindex and robots-disallowed.
   const staticPaths = [
-    "", "/latest", "/top-100", "/us", "/canada", "/search", "/topics",
+    "", "/latest", "/top-100", "/us", "/canada", "/topics",
     "/sources", "/about", "/methodology", "/editorial-standards",
     "/corrections", "/contact", "/privacy", "/terms", "/copyright",
   ];

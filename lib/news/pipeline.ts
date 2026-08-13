@@ -2,6 +2,7 @@ import { getDataMode } from "@/lib/env";
 import { clusterArticles } from "@/lib/news/clustering/cluster";
 import { dedupeExact, normalizeArticle } from "@/lib/news/normalization/normalize";
 import { activeProviders } from "@/lib/news/providers";
+import { getLastFeedHealth } from "@/lib/news/providers/rss";
 import { rankClusters } from "@/lib/news/ranking/score";
 import { deriveTrending } from "@/lib/news/trending";
 import type {
@@ -14,6 +15,16 @@ import type {
 import { logger } from "@/lib/utils/logger";
 
 const MAX_ARTICLE_AGE_HOURS = 72;
+
+/** Nearest-rank percentile of a pre-sorted ascending array; 0 when empty. */
+function percentile(sortedValues: number[], fraction: number): number {
+  if (sortedValues.length === 0) return 0;
+  const index = Math.min(
+    sortedValues.length - 1,
+    Math.max(0, Math.ceil(sortedValues.length * fraction) - 1),
+  );
+  return sortedValues[index];
+}
 
 /**
  * Full ingestion pipeline:
@@ -63,6 +74,11 @@ export async function runPipeline(now: Date = new Date()): Promise<NewsDataset> 
     }
   }
 
+  // Attach per-feed health to the RSS provider entry (module-level last run).
+  for (const stat of providerStats) {
+    if (stat.provider === "rss") stat.feeds = getLastFeedHealth();
+  }
+
   // Normalize + validate.
   const normalized: Article[] = [];
   let rejected = 0;
@@ -86,6 +102,12 @@ export async function runPipeline(now: Date = new Date()): Promise<NewsDataset> 
   const clusters = rankClusters(clusterArticles(unique, now), now);
   const trending = deriveTrending(clusters);
 
+  // Coverage age at ingest: how old accepted articles already are when we
+  // pick them up (run time minus publishedAt).
+  const ages = unique
+    .map((a) => now.getTime() - new Date(a.publishedAt).getTime())
+    .sort((a, b) => a - b);
+
   const finishedAt = new Date();
   const ingestion: IngestionStats = {
     startedAt: startedAt.toISOString(),
@@ -97,6 +119,11 @@ export async function runPipeline(now: Date = new Date()): Promise<NewsDataset> 
     articlesRejected: rejected,
     duplicatesRemoved: removed,
     clusterCount: clusters.length,
+    articleAgeAtIngestMedianMs: percentile(ages, 0.5),
+    articleAgeAtIngestP90Ms: percentile(ages, 0.9),
+    highestRankingScore: clusters[0]?.rankingScore ?? 0,
+    breakingCount: clusters.filter((c) => c.isBreaking).length,
+    nearBreakingCount: clusters.filter((c) => c.rankingScore >= 75).length,
   };
 
   logger.info("ingestion.complete", {

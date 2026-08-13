@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ProsePage } from "@/components/layout/ProsePage";
 import { RANKING_WEIGHTS } from "@/lib/news/ranking/score";
 import { pageMetadata } from "@/lib/seo/metadata";
@@ -17,6 +18,26 @@ export default function MethodologyPage() {
       title="How CurrentWire Ranks the News"
       intro="CurrentWire uses a combination of freshness, source authority, breadth of coverage, geographic relevance and the speed at which a story is developing to identify major current-affairs stories."
     >
+      <h2>How stories are compiled</h2>
+      <p>
+        CurrentWire collects stories from publisher RSS feeds and news APIs and
+        compiles them <strong>algorithmically</strong>. There are no human
+        journalists on staff and no AI-generated reporting: headlines and
+        summaries are derived from the metadata publishers provide with their
+        own feeds, and every story links to the original reporting. CurrentWire
+        does not host article bodies.
+      </p>
+
+      <h2>The “CurrentWire News Desk” byline</h2>
+      <p>
+        Story pages carry the byline <strong>“Compiled by CurrentWire News
+        Desk”</strong>. This byline does not refer to a person or a newsroom —
+        it identifies the automated compilation described on this page:
+        collecting publisher reports, grouping them into one story and ranking
+        them. The journalism itself belongs to the attributed publishers.
+      </p>
+
+      <h2>Ranking</h2>
       <p>
         No single signal determines placement. The ranking system is designed to
         distinguish between something that is merely <em>new</em> and something
@@ -90,7 +111,8 @@ export default function MethodologyPage() {
 
       <p>
         Ranking systems can make mistakes. CurrentWire continuously evaluates
-        and improves its methodology.
+        and improves its methodology. Spotted an error? See the{" "}
+        <Link href="/corrections">corrections process</Link>.
       </p>
     </ProsePage>
   );

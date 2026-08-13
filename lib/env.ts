@@ -50,6 +50,21 @@ export const env = {
     const minutes = Number(process.env.NEWS_REFRESH_MINUTES ?? "5");
     return (Number.isFinite(minutes) && minutes > 0 ? minutes : 5) * 60_000;
   },
+  /** RSS fast lane: dataset + RSS refresh cadence in minutes (default 5). */
+  get rssRefreshMinutes(): number {
+    const minutes = Number(process.env.RSS_REFRESH_MINUTES ?? "5");
+    return Number.isFinite(minutes) && minutes > 0 ? minutes : 5;
+  },
+  /**
+   * GNews refresh cadence in minutes. Defaults to NEWS_REFRESH_MINUTES when
+   * set (production sets 30 for free-tier safety), otherwise 30.
+   */
+  get gnewsRefreshMinutes(): number {
+    const raw =
+      process.env.GNEWS_REFRESH_MINUTES ?? process.env.NEWS_REFRESH_MINUTES;
+    const minutes = Number(raw ?? "30");
+    return Number.isFinite(minutes) && minutes > 0 ? minutes : 30;
+  },
   get isProduction(): boolean {
     return process.env.NODE_ENV === "production";
   },

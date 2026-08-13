@@ -25,6 +25,13 @@ export default function AboutPage() {
         fast, clear and transparent news experience.
       </p>
       <p>
+        CurrentWire is a news <strong>aggregator</strong>: stories are collected
+        from publisher feeds and news APIs and compiled algorithmically. We
+        employ no journalists and publish no AI-generated reporting — summaries
+        come from the metadata publishers supply with their own feeds. Our{" "}
+        <Link href="/methodology">methodology</Link> explains how this works.
+      </p>
+      <p>
         We do not aim to replace original journalism. We help readers discover
         it.
       </p>
@@ -32,7 +39,8 @@ export default function AboutPage() {
         CurrentWire attributes reporting to its original publishers and provides
         direct access to source coverage wherever possible. Every story page
         lists the publications covering it, when each report appeared, and links
-        straight to the original reporting.
+        straight to the original reporting. CurrentWire links out — it does not
+        host publisher article bodies.
       </p>
       <h2>What makes CurrentWire different</h2>
       <ul>
@@ -52,6 +60,24 @@ export default function AboutPage() {
           signals shape placement.
         </li>
       </ul>
+      <h2>Who runs CurrentWire</h2>
+      <p>
+        CurrentWire ({siteConfig.domain}) is an independently operated news
+        aggregation service. General enquiries:{" "}
+        <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>.
+        Corrections:{" "}
+        <a href={`mailto:${siteConfig.correctionsEmail}`}>
+          {siteConfig.correctionsEmail}
+        </a>
+        . Publishers:{" "}
+        <a href={`mailto:${siteConfig.publishersEmail}`}>
+          {siteConfig.publishersEmail}
+        </a>
+        .
+      </p>
+      <p>
+        <em>Operator details: to be published.</em>
+      </p>
       <h2>Contact</h2>
       <p>
         Questions, corrections and publisher enquiries:{" "}

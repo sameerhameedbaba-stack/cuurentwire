@@ -56,6 +56,25 @@ describe("pipeline (mock providers)", () => {
   it("allows at most one breaking story", () => {
     expect(dataset.clusters.filter((c) => c.isBreaking).length).toBeLessThanOrEqual(1);
   });
+
+  it("reports coverage-age and ranking telemetry", () => {
+    const stats = dataset.ingestion;
+    expect(stats.articleAgeAtIngestMedianMs).toBeGreaterThanOrEqual(0);
+    expect(stats.articleAgeAtIngestP90Ms).toBeGreaterThanOrEqual(
+      stats.articleAgeAtIngestMedianMs,
+    );
+    // Accepted articles are at most 72h old, so ingest age is bounded too.
+    expect(stats.articleAgeAtIngestP90Ms).toBeLessThanOrEqual(72 * 3_600_000);
+    expect(stats.highestRankingScore).toBe(dataset.clusters[0]?.rankingScore ?? 0);
+    expect(stats.breakingCount).toBe(
+      dataset.clusters.filter((c) => c.isBreaking).length,
+    );
+    expect(stats.nearBreakingCount).toBe(
+      dataset.clusters.filter((c) => c.rankingScore >= 75).length,
+    );
+    // Breaking requires score >= 85, so every breaking cluster is near-breaking.
+    expect(stats.breakingCount).toBeLessThanOrEqual(stats.nearBreakingCount);
+  });
 });
 
 describe("Top 100 filtering", () => {

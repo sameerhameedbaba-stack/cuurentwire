@@ -74,6 +74,59 @@ describe("classifyCategory", () => {
   it("falls back to world when nothing matches", () => {
     const result = classifyCategory({ title: "Completely generic headline" });
     expect(result.primary).toBe("world");
+    expect(result.confidence).toBe(0);
+    expect(result.scores).toEqual({});
+  });
+
+  it("reports deterministic confidence, scores and matched signals", () => {
+    const result = classifyCategory({
+      title: "Federal Reserve holds interest rate steady as inflation cools",
+    });
+    expect(result.primary).toBe("business");
+    expect(result.confidence).toBeGreaterThan(0);
+    expect(result.confidence).toBeLessThanOrEqual(1);
+    expect(result.scores.business).toBeGreaterThan(0);
+    expect(
+      result.matchedSignals.some((s) => s.startsWith("business:")),
+    ).toBe(true);
+    // Deterministic: identical input, identical output.
+    expect(
+      classifyCategory({
+        title: "Federal Reserve holds interest rate steady as inflation cools",
+      }),
+    ).toEqual(result);
+  });
+
+  it("uses entity signals on word boundaries (SpaceX -> science, not inside words)", () => {
+    const result = classifyCategory({
+      title: "SpaceX completes crewed launch to orbiting research station",
+    });
+    expect(result.primary).toBe("science");
+    expect(result.matchedSignals).toContain("science:entity:spacex");
+  });
+
+  it("applies negative keywords to kill obvious false positives", () => {
+    // "Box office earnings" is culture, not business — without the negative
+    // keyword the business/culture tie would break toward business.
+    const result = classifyCategory({
+      title: "Box office earnings surge as new superhero film tops weekend charts",
+    });
+    expect(result.primary).toBe("culture");
+    expect(result.matchedSignals).toContain("business:negative:box office");
+    expect(result.scores.business ?? 0).toBeLessThan(result.scores.culture!);
+  });
+
+  it("weighs a feed-section prior below an explicit provider category", () => {
+    const base = { title: "A short headline with no obvious keywords" };
+    const explicit = classifyCategory({ ...base, providerCategory: "technology" });
+    const prior = classifyCategory({
+      ...base,
+      providerCategory: "technology",
+      providerCategoryIsPrior: true,
+    });
+    expect(explicit.primary).toBe("technology");
+    expect(prior.primary).toBe("technology");
+    expect(prior.scores.technology!).toBeLessThan(explicit.scores.technology!);
   });
 });
 

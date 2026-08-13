@@ -4,6 +4,7 @@ import { ArticleRow } from "@/components/news/cards";
 import { LastUpdated } from "@/components/news/LastUpdated";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getSourceStories } from "@/lib/news/queries";
+import { NOINDEX_FOLLOW, shouldIndexCollection } from "@/lib/seo/indexing";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { BreadcrumbJsonLd } from "@/lib/seo/structured-data";
 
@@ -15,14 +16,19 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const { sourceName } = await getSourceStories(slug);
+  const { sourceName, articles } = await getSourceStories(slug);
   // Real 404 status requires notFound() before the response starts streaming.
   if (!sourceName) notFound();
-  return pageMetadata({
+  const metadata = pageMetadata({
     title: `${sourceName} — Latest stories`,
     description: `Latest stories sourced from ${sourceName}, with links to the original reporting.`,
     path: `/source/${slug}`,
   });
+  // Thin source pages stay crawlable (follow) but out of the index.
+  if (!shouldIndexCollection(articles.length)) {
+    metadata.robots = NOINDEX_FOLLOW;
+  }
+  return metadata;
 }
 
 export default async function SourcePage({

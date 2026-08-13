@@ -3,6 +3,7 @@ import { RankedStory } from "@/components/news/cards";
 import { LastUpdated } from "@/components/news/LastUpdated";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getTopicStories } from "@/lib/news/queries";
+import { NOINDEX_FOLLOW, shouldIndexCollection } from "@/lib/seo/indexing";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { BreadcrumbJsonLd, ItemListJsonLd } from "@/lib/seo/structured-data";
 
@@ -14,13 +15,18 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const { topicName } = await getTopicStories(slug);
+  const { topicName, stories } = await getTopicStories(slug);
   const name = topicName ?? "Topic";
-  return pageMetadata({
+  const metadata = pageMetadata({
     title: `${name} — Coverage`,
     description: `Current stories about ${name} across the United States and Canada, ranked by importance.`,
     path: `/topic/${slug}`,
   });
+  // Thin topic pages stay crawlable (follow) but out of the index.
+  if (!shouldIndexCollection(stories.length)) {
+    metadata.robots = NOINDEX_FOLLOW;
+  }
+  return metadata;
 }
 
 export default async function TopicPage({
