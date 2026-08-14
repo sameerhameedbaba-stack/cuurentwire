@@ -5,6 +5,7 @@ import { classifyGeography } from "@/lib/news/classification/geography";
 import { extractEntities } from "@/lib/news/classification/entities";
 import { cleanDescription, cleanDisplayTitle } from "@/lib/news/normalization/boilerplate";
 import { canonicalizeUrl, domainFromUrl } from "@/lib/news/normalization/canonicalize";
+import { upgradeImageUrl } from "@/lib/news/normalization/image-upgrade";
 import type { Article, RawArticle } from "@/lib/news/types";
 import { slugify, stableId, truncate } from "@/lib/utils/text";
 
@@ -72,11 +73,14 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
   });
 
   const id = stableId(canonicalUrl);
-  // Root-relative paths are local assets (demo art); remote URLs must be http(s).
+  // Root-relative paths are local assets (demo art); remote URLs must be
+  // http(s), and known CDN thumbnails are upgraded to larger renditions.
   const imageUrl =
     raw.imageUrl &&
     (raw.imageUrl.startsWith("/") || canonicalizeUrl(raw.imageUrl))
-      ? raw.imageUrl
+      ? raw.imageUrl.startsWith("/")
+        ? raw.imageUrl
+        : upgradeImageUrl(raw.imageUrl)
       : undefined;
 
   return {

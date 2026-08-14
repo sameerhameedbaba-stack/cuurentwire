@@ -222,11 +222,14 @@ function firstTag(block: string, tag: string): string | undefined {
 
 function decodeEntities(text: string): string {
   return text
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) =>
+      String.fromCodePoint(parseInt(hex, 16)),
+    )
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
-    .replace(/&#0?39;/g, "'")
     .replace(/&apos;/g, "'");
 }
 
