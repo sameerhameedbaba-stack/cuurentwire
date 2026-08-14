@@ -12,6 +12,8 @@ import {
   detectPossibleFalseSplits,
   summarizeClassificationQuality,
 } from "@/lib/news/quality";
+import { INTELLIGENCE_VERSIONS, semanticConfig } from "@/lib/intelligence/semantic";
+import benchmarkHistory from "@/data/benchmark-history.json";
 import { secureCompare, sha256Hex } from "@/lib/utils/secure-compare";
 import { relativeTime } from "@/lib/utils/time";
 
@@ -207,6 +209,53 @@ export default async function AdminStatusPage({
           </ul>
         </section>
       )}
+
+      <section aria-label="Intelligence quality" className="mt-8">
+        <h2 className="headline text-xl">Intelligence quality</h2>
+        <p className="mt-1 text-xs text-muted">
+          Real-production accuracy (manually validated benchmark) and fixture
+          accuracy are DIFFERENT metrics and are never combined. Semantic
+          layer mode: <strong>{semanticConfig().mode}</strong> · versions:{" "}
+          {INTELLIGENCE_VERSIONS.classifierVersion} /{" "}
+          {INTELLIGENCE_VERSIONS.clusteringVersion} /{" "}
+          {INTELLIGENCE_VERSIONS.gateVersion}
+        </p>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full border-y border-rule text-left text-sm">
+            <thead>
+              <tr className="border-b border-rule text-xs uppercase tracking-wider text-muted">
+                <th className="py-2 pr-4">Date</th>
+                <th className="py-2 pr-4">Real accuracy</th>
+                <th className="py-2 pr-4">Wrong-specific</th>
+                <th className="py-2 pr-4">Fixture (regression)</th>
+                <th className="py-2 pr-4">Cluster P / R</th>
+                <th className="py-2">Note</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-rule">
+              {benchmarkHistory.map((entry, i) => (
+                <tr key={`${entry.date}-${i}`}>
+                  <td className="py-2 pr-4 tabular-nums">{entry.date}</td>
+                  <td className="py-2 pr-4 font-semibold tabular-nums">
+                    {entry.realCategoryExactPct}%
+                  </td>
+                  <td className="py-2 pr-4 tabular-nums">{entry.realWrongSpecificPct}%</td>
+                  <td className="py-2 pr-4 tabular-nums">{entry.fixtureCategoryHighConfPct}%</td>
+                  <td className="py-2 pr-4 tabular-nums">
+                    {entry.clusteringPrecision} / {entry.clusteringRecall}
+                  </td>
+                  <td className="max-w-80 py-2 text-xs text-muted">{entry.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-xs text-muted">
+          Semantic telemetry (calls, cache hits, failures, cost) reports here
+          once SEMANTIC_MODE leaves &ldquo;off&rdquo;; current estimated
+          semantic cost: $0 (local embeddings, shadow evaluations only).
+        </p>
+      </section>
 
       <section aria-label="Category distribution" className="mt-8">
         <h2 className="headline text-xl">Category distribution</h2>

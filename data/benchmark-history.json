@@ -1,0 +1,48 @@
+[
+  {
+    "date": "2026-08-14",
+    "realCategoryExactPct": 59.7,
+    "realWrongSpecificPct": 4.5,
+    "realGeneralCount": 145,
+    "realBenchmarkSize": 313,
+    "fixtureCategoryHighConfPct": 99.6,
+    "clusteringPrecision": 0.989,
+    "clusteringRecall": 0.806,
+    "clusteringPairs": 491,
+    "note": "First real-production benchmark (manually validated). Fixture score shown for contrast — never again reported as live quality."
+  },
+  {
+    "date": "2026-08-14",
+    "realCategoryExactPct": 73.2,
+    "realWrongSpecificPct": 5.8,
+    "realGeneralCount": 109,
+    "realBenchmarkSize": 313,
+    "fixtureCategoryHighConfPct": 98.9,
+    "clusteringPrecision": 0.989,
+    "clusteringRecall": 0.806,
+    "clusteringPairs": 491,
+    "note": "After taxonomy-driven dictionary expansion (sports entities, agencies, states, cities, pathogens)."
+  },
+  {
+    "date": "2026-08-14",
+    "realCategoryExactPct": 73.2,
+    "realWrongSpecificPct": 5.8,
+    "realGeneralCount": 109,
+    "realBenchmarkSize": 313,
+    "fixtureCategoryHighConfPct": 98.9,
+    "clusteringPrecision": 0.989,
+    "clusteringRecall": 0.806,
+    "clusteringPairs": 491,
+    "shadow": {
+      "provider": "local-minilm",
+      "model": "Xenova/all-MiniLM-L6-v2",
+      "hybridCategoryExactPct": 78.3,
+      "hybridCategoryThreshold": 0.65,
+      "hybridCategoryWrongSpecific": 28,
+      "hybridClusteringPrecision": 0.98,
+      "hybridClusteringRecall": 0.863,
+      "hybridClusteringThreshold": 0.85
+    },
+    "note": "Intelligence Layer v2 SHADOW results (no production impact): semantic fallback measured on the same truth sets."
+  }
+]

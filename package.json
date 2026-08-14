@@ -14,7 +14,11 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx scripts/db-seed.ts",
-    "placeholders": "node scripts/generate-placeholders.mjs"
+    "placeholders": "node scripts/generate-placeholders.mjs",
+    "benchmark:export": "node scripts/benchmark-export.mjs",
+    "benchmark:evaluate": "vitest run tests/shadow/shadow-category.test.ts",
+    "shadow:category": "vitest run tests/shadow/shadow-category.test.ts",
+    "shadow:cluster": "vitest run tests/shadow/shadow-cluster.test.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
@@ -33,6 +37,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.5",
+    "@xenova/transformers": "^2.17.2",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
