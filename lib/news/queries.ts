@@ -2,6 +2,7 @@ import { isCategoryId, type CategoryId } from "@/config/categories";
 import { SOURCES, type SourceDefinition } from "@/config/sources";
 import { getDataset } from "@/lib/cache/store";
 import { matchesCountryFilter } from "@/lib/news/classification/geography";
+import { scoreArchiveRelatedness } from "@/lib/news/coverage-analysis";
 import { isCuratedEligible, isTop100Eligible } from "@/lib/news/ranking/score";
 import type {
   Article,
@@ -263,23 +264,26 @@ export async function getClusterBySlugWithVersion(slug: string): Promise<{
   return { cluster, datasetVersion: dataset.datasetVersion };
 }
 
+/**
+ * Live sibling of the archive's "earlier coverage" module, and held to the
+ * same bar: sharing a generic entity (or merely a category) is not a
+ * relationship, so it can never put an unrelated story in this rail. An
+ * empty result renders nothing — the story page omits the section.
+ */
 export async function getRelatedClusters(
   cluster: StoryCluster,
   limit = 4,
 ): Promise<StoryCluster[]> {
   const dataset = await getDataset();
-  const clusterEntities = new Set(cluster.entities.map((e) => e.toLowerCase()));
   return dataset.clusters
     .filter((c) => c.id !== cluster.id)
-    .map((c) => {
-      const shared = c.entities.filter((e) =>
-        clusterEntities.has(e.toLowerCase()),
-      ).length;
-      const sameCategory = c.category === cluster.category ? 1 : 0;
-      return { cluster: c, relevance: shared * 2 + sameCategory };
-    })
-    .filter((r) => r.relevance > 0)
-    .sort((a, b) => b.relevance - a.relevance || b.cluster.rankingScore - a.cluster.rankingScore)
+    .map((c) => ({ cluster: c, relatedness: scoreArchiveRelatedness(cluster, c) }))
+    .filter((r) => r.relatedness.passes)
+    .sort(
+      (a, b) =>
+        b.relatedness.score - a.relatedness.score ||
+        b.cluster.rankingScore - a.cluster.rankingScore,
+    )
     .slice(0, limit)
     .map((r) => r.cluster);
 }

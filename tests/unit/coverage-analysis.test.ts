@@ -430,3 +430,47 @@ describe("describeUpdateEvent", () => {
     ).toBe("Reclassified from world to politics");
   });
 });
+
+describe("related-coverage bar (shared with the live rail)", () => {
+  // getRelatedClusters used to score `shared * 2 + sameCategory` and keep
+  // anything above zero, so belonging to the same section was enough to put
+  // an unrelated story in the sidebar. It now uses this same gate.
+  it("rejects same-category stories that share only a generic entity", () => {
+    const story = {
+      title: "US missionary released following kidnap in Niger, Christian group says",
+      entities: ["United States"],
+    };
+    const sameSection = {
+      title: "New aircraft carrier going to Middle East amid questions over conditions on USS Abraham Lincoln",
+      entities: ["United States", "USS Abraham Lincoln"],
+    };
+    expect(scoreArchiveRelatedness(story, sameSection).passes).toBe(false);
+  });
+
+  it("still accepts a genuine follow-up on the same event", () => {
+    const story = {
+      title: "Kevin Rideout released after kidnap in Niger",
+      entities: ["United States", "Kevin Rideout"],
+    };
+    const followUp = {
+      title: "Kevin Rideout freed after kidnap in Niger",
+      entities: ["Kevin Rideout"],
+    };
+    expect(scoreArchiveRelatedness(story, followUp).passes).toBe(true);
+  });
+
+  it("errs strict: one shared name is not enough when the stories differ", () => {
+    // Deliberate trade-off — the auditor's rule is that showing nothing beats
+    // showing something irrelevant, so a lone shared name with unlike
+    // headlines stays out of the rail.
+    const story = {
+      title: "US missionary released following kidnap in Niger, Christian group says",
+      entities: ["United States", "Kevin Rideout"],
+    };
+    const looselyLinked = {
+      title: "Aid groups review security protocols across the Sahel",
+      entities: ["Kevin Rideout"],
+    };
+    expect(scoreArchiveRelatedness(story, looselyLinked).passes).toBe(false);
+  });
+});
