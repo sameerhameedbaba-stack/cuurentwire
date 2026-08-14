@@ -170,23 +170,45 @@ export function parseItemsWithStats(xml: string): {
 
       const description =
         firstTag(block, "description") ?? firstTag(block, "summary");
-      const imageUrl =
-        block.match(/<media:content[^>]*url=["']([^"']+)["']/i)?.[1] ??
-        block.match(/<media:thumbnail[^>]*url=["']([^"']+)["']/i)?.[1] ??
-        block.match(/<enclosure[^>]*url=["']([^"']+)["'][^>]*type=["']image/i)?.[1];
+      const imageUrl = bestImageUrl(block);
 
       items.push({
         title: decodeEntities(title),
         description: description ? decodeEntities(description) : undefined,
         url: decodeEntities(link.trim()),
         publishedAt: published.toISOString(),
-        imageUrl,
+        ...(imageUrl ? { imageUrl } : {}),
       });
     } catch {
       skipped++;
     }
   }
   return { items, skipped };
+}
+
+/**
+ * Best article image from a feed item block. Feeds often carry several
+ * media:content variants (The Guardian lists a 140px thumbnail first) —
+ * pick the widest one. Attribute values are XML-escaped in the source
+ * (&amp; between query params), so the winner must be entity-decoded or
+ * publishers reject the URL and the image optimizer returns 502.
+ */
+function bestImageUrl(block: string): string | undefined {
+  let best: { url: string; width: number } | undefined;
+  for (const tag of ["media:content", "media:thumbnail"]) {
+    const escaped = tag.replace(":", "\\:");
+    for (const m of block.matchAll(
+      new RegExp(`<${escaped}[^>]*url=["']([^"']+)["'][^>]*>`, "gi"),
+    )) {
+      const width = Number(m[0].match(/width=["'](\d+)["']/i)?.[1] ?? 0);
+      if (!best || width > best.width) best = { url: m[1], width };
+    }
+    if (best) break;
+  }
+  const url =
+    best?.url ??
+    block.match(/<enclosure[^>]*url=["']([^"']+)["'][^>]*type=["']image/i)?.[1];
+  return url ? decodeEntities(url.trim()) : undefined;
 }
 
 function firstTag(block: string, tag: string): string | undefined {

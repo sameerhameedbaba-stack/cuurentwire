@@ -27,6 +27,45 @@ const GOOD_FEED = `<?xml version="1.0"?>
     </item>
   </channel></rss>`;
 
+describe("item image extraction", () => {
+  it("entity-decodes image URLs and prefers the widest media:content variant", () => {
+    const xml = `<rss><channel>
+      <item>
+        <title>Story with images</title>
+        <link>https://example.com/imaged</link>
+        <pubDate>Wed, 13 Aug 2026 10:00:00 GMT</pubDate>
+        <media:content url="https://img.example.com/a.jpg?width=140&amp;quality=85" width="140" height="84"/>
+        <media:content url="https://img.example.com/a.jpg?width=700&amp;quality=85" width="700" height="420"/>
+      </item>
+    </channel></rss>`;
+    const [item] = parseItems(xml);
+    // The escaped &amp; must become & or publishers reject the URL (502s).
+    expect(item.imageUrl).toBe(
+      "https://img.example.com/a.jpg?width=700&quality=85",
+    );
+  });
+
+  it("falls back to media:thumbnail and enclosure images", () => {
+    const xml = `<rss><channel>
+      <item>
+        <title>Thumb story</title>
+        <link>https://example.com/thumb</link>
+        <pubDate>Wed, 13 Aug 2026 10:00:00 GMT</pubDate>
+        <media:thumbnail url="https://img.example.com/t.jpg?a=1&amp;b=2"/>
+      </item>
+      <item>
+        <title>Enclosure story</title>
+        <link>https://example.com/enc</link>
+        <pubDate>Wed, 13 Aug 2026 09:00:00 GMT</pubDate>
+        <enclosure url="https://img.example.com/e.jpg" type="image/jpeg"/>
+      </item>
+    </channel></rss>`;
+    const items = parseItems(xml);
+    expect(items[0].imageUrl).toBe("https://img.example.com/t.jpg?a=1&b=2");
+    expect(items[1].imageUrl).toBe("https://img.example.com/e.jpg");
+  });
+});
+
 describe("parseItemsWithStats robustness", () => {
   it("skips an item with an invalid pubDate while parsing the rest", () => {
     const xml = `<rss><channel>
