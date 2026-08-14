@@ -25,6 +25,15 @@ export const RANKING_WEIGHTS = {
   velocity: 5,
 } as const;
 
+/**
+ * Press releases are issuer communications, not journalism: the publishing
+ * outlet's tier says nothing about editorial scrutiny, so a press-release
+ * cluster's AUTHORITY INPUT is halved. This is an input adjustment (like
+ * TIER_WEIGHT), not a change to RANKING_WEIGHTS — the audit forbids weight
+ * tuning this sprint.
+ */
+export const PRESS_RELEASE_AUTHORITY_MULTIPLIER = 0.5;
+
 /** Half-life style exponential decay: 1.0 now → ~0.5 at 8h → ~0.1 at 27h. */
 export function freshnessFactor(hoursOld: number): number {
   if (hoursOld <= 0) return 1;
@@ -59,12 +68,20 @@ export function geographyFactor(country: StoryCluster["country"]): number {
   }
 }
 
-export function authorityFactor(cluster: Pick<StoryCluster, "articles">): number {
+export function authorityFactor(
+  cluster: Pick<StoryCluster, "articles" | "contentType">,
+): number {
   const tiers = cluster.articles.map((a) => TIER_WEIGHT[a.sourceTier]);
   const best = Math.max(...tiers);
   const tierACount = cluster.articles.filter((a) => a.sourceTier === "A").length;
   const bonus = Math.min(0.15, Math.max(0, tierACount - 1) * 0.05);
-  return Math.min(1, best + bonus);
+  // Press-release downgrade: issuer communications carry the outlet's tier
+  // but none of its editorial judgment (input adjustment, weights untouched).
+  const multiplier =
+    cluster.contentType === "press_release"
+      ? PRESS_RELEASE_AUTHORITY_MULTIPLIER
+      : 1;
+  return Math.min(1, best + bonus) * multiplier;
 }
 
 function prominenceFactor(cluster: StoryCluster): number {
@@ -118,12 +135,44 @@ export function qualifiesAsBreaking(
   cluster: StoryCluster,
   now: Date = new Date(),
 ): boolean {
+  // Eligibility gate: press releases and opinion essays are never BREAKING
+  // no matter how fresh or broadly syndicated — BREAKING is reserved for
+  // reported news events.
+  if (
+    cluster.contentType === "press_release" ||
+    cluster.contentType === "opinion"
+  ) {
+    return false;
+  }
   const ageMinutes = minutesSince(cluster.lastPublishedAt, now);
   const hasTierA = cluster.articles.some((a) => a.sourceTier === "A");
   return (
     cluster.rankingScore >= 85 &&
     ageMinutes <= 90 &&
     (cluster.sourceCount >= 4 || (hasTierA && cluster.sourceCount >= 3))
+  );
+}
+
+/**
+ * Top-100 eligibility: press-release clusters are excluded unless the story
+ * has genuinely independent coverage — at least one member that is NOT
+ * itself a press release, published on a different domain than the release
+ * copies. Syndicated copies of one press release (the only way an
+ * all-press-release cluster spans multiple domains) never count as
+ * independent coverage. Everything else is always eligible.
+ */
+export function isTop100Eligible(
+  cluster: Pick<StoryCluster, "articles" | "contentType">,
+): boolean {
+  if (cluster.contentType !== "press_release") return true;
+  const releaseDomains = new Set(
+    cluster.articles
+      .filter((a) => a.contentType === "press_release")
+      .map((a) => a.sourceDomain),
+  );
+  return cluster.articles.some(
+    (a) =>
+      a.contentType !== "press_release" && !releaseDomains.has(a.sourceDomain),
   );
 }
 

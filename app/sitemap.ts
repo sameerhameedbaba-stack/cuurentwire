@@ -10,8 +10,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // /search is intentionally absent: it is noindex and robots-disallowed.
   const staticPaths = [
     "", "/latest", "/top-100", "/us", "/canada", "/topics",
-    "/sources", "/about", "/methodology", "/editorial-standards",
-    "/corrections", "/contact", "/privacy", "/terms", "/copyright",
+    "/sources", "/about", "/news-desk", "/methodology",
+    "/editorial-standards", "/corrections", "/contact", "/privacy",
+    "/terms", "/copyright",
   ];
 
   const entries: MetadataRoute.Sitemap = staticPaths.map((path) => ({

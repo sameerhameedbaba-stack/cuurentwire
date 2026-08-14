@@ -1,5 +1,6 @@
+import { CATEGORIES } from "@/config/categories";
 import { siteConfig } from "@/config/site";
-import type { StoryCluster } from "@/lib/news/types";
+import { CONTENT_TYPE_LABELS, type StoryCluster } from "@/lib/news/types";
 
 /**
  * schema.org structured data. CurrentWire is an aggregator: clustered stories
@@ -54,12 +55,21 @@ export function WebSiteJsonLd() {
 
 /**
  * Story page: summary NewsArticle citing the original publishers' reports.
- * Dates are SOURCE coverage times (never our render time): datePublished is
- * the earliest coverage, dateModified the latest — matching the visible
- * "First coverage" / "Latest coverage" labels on the page. Authorship is the
- * algorithmic news desk, never a fabricated human byline.
+ * Dates are never our render time: datePublished prefers the archive's
+ * first_seen_at (when CurrentWire actually published the story page, passed
+ * in as `datePublished`), falling back to the earliest SOURCE coverage;
+ * dateModified is the latest source coverage — matching the visible
+ * "Published by CurrentWire" / "First coverage" / "Latest coverage" labels.
+ * Authorship is the algorithmic news desk, never a fabricated human byline.
  */
-export function StoryJsonLd({ cluster }: { cluster: StoryCluster }) {
+export function StoryJsonLd({
+  cluster,
+  datePublished,
+}: {
+  cluster: StoryCluster;
+  /** Archive first_seen_at ISO string; falls back to firstPublishedAt. */
+  datePublished?: string;
+}) {
   const storyUrl = `${siteConfig.url}/story/${cluster.slug}`;
   const image = [
     // Only https publisher images; the OG card is always available.
@@ -70,10 +80,17 @@ export function StoryJsonLd({ cluster }: { cluster: StoryCluster }) {
     <JsonLd
       data={{
         "@context": "https://schema.org",
+        // Always a real NewsArticle summary page — the content type is
+        // carried truthfully in NewsArticle-compatible fields below
+        // (articleSection + genre), never as a fabricated schema type.
         "@type": "NewsArticle",
         headline: cluster.title,
         description: cluster.summary,
-        datePublished: cluster.firstPublishedAt,
+        articleSection: CATEGORIES[cluster.category].label,
+        ...(cluster.contentType && cluster.contentType !== "news"
+          ? { genre: CONTENT_TYPE_LABELS[cluster.contentType] }
+          : {}),
+        datePublished: datePublished ?? cluster.firstPublishedAt,
         dateModified: cluster.lastPublishedAt,
         url: storyUrl,
         mainEntityOfPage: storyUrl,
@@ -81,7 +98,7 @@ export function StoryJsonLd({ cluster }: { cluster: StoryCluster }) {
         author: {
           "@type": "Organization",
           name: "CurrentWire News Desk",
-          url: `${siteConfig.url}/methodology`,
+          url: `${siteConfig.url}/news-desk`,
         },
         isBasedOn: cluster.articles.map((a) => a.url),
         publisher: {

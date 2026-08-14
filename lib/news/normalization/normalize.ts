@@ -1,7 +1,9 @@
 import { resolveTier, lookupSourceByDomain, lookupSourceByName } from "@/config/sources";
 import { classifyCategory } from "@/lib/news/classification/category";
+import { classifyContentType } from "@/lib/news/classification/content-type";
 import { classifyGeography } from "@/lib/news/classification/geography";
 import { extractEntities } from "@/lib/news/classification/entities";
+import { cleanDescription, cleanDisplayTitle } from "@/lib/news/normalization/boilerplate";
 import { canonicalizeUrl, domainFromUrl } from "@/lib/news/normalization/canonicalize";
 import type { Article, RawArticle } from "@/lib/news/types";
 import { slugify, stableId, truncate } from "@/lib/utils/text";
@@ -27,16 +29,35 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
   if (published.getTime() > now.getTime() + 30 * 60_000) return null;
 
   const sourceDomain = raw.sourceDomain?.trim() || domainFromUrl(raw.url);
+  // Publisher identity comes from the DOMAIN map first; the provider-supplied
+  // source string (often an RSS channel title like "ABC News: Top Stories")
+  // is only a fallback for unknown domains.
   const sourceDef =
     lookupSourceByDomain(sourceDomain) ?? lookupSourceByName(raw.source ?? "");
   const source = sourceDef?.name ?? raw.source?.trim() ?? sourceDomain;
   if (!source) return null;
 
-  const description = raw.description?.trim()
-    ? truncate(stripHtml(raw.description.trim()), MAX_DESCRIPTION_LENGTH)
+  // Content type runs on the RAW title/description BEFORE display cleaning:
+  // the "| Author" byline pipe that cleaning strips IS an opinion signal.
+  const rawTitle = stripHtml(title);
+  const rawDescription = raw.description?.trim()
+    ? stripHtml(raw.description.trim())
+    : undefined;
+  const contentType = classifyContentType({
+    title: rawTitle,
+    description: rawDescription,
+  });
+
+  // Boilerplate is stripped BEFORE truncation so a trailing "Sign up for…"
+  // sentence can never survive by being inside the length budget.
+  const cleanedDescription = rawDescription
+    ? cleanDescription(rawDescription)
+    : "";
+  const description = cleanedDescription
+    ? truncate(cleanedDescription, MAX_DESCRIPTION_LENGTH)
     : undefined;
 
-  const cleanTitle = truncate(stripHtml(title), MAX_TITLE_LENGTH);
+  const cleanTitle = truncate(cleanDisplayTitle(rawTitle), MAX_TITLE_LENGTH);
   const category = classifyCategory({
     title: cleanTitle,
     description,
@@ -76,6 +97,7 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
     country,
     category: category.primary,
     categories: category.all,
+    contentType,
     entities: extractEntities(cleanTitle, description),
     provider: raw.provider,
     isMock: raw.isMock ?? false,

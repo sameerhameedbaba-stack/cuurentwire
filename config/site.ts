@@ -64,6 +64,7 @@ export const siteConfig = {
       ],
       company: [
         { label: "About", href: "/about" },
+        { label: "News Desk", href: "/news-desk" },
         { label: "Methodology", href: "/methodology" },
         { label: "Editorial Standards", href: "/editorial-standards" },
         { label: "Corrections", href: "/corrections" },

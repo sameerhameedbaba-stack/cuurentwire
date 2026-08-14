@@ -118,6 +118,53 @@ export const articleClusterMembers = pgTable(
   ],
 );
 
+/**
+ * One row in the `sources` jsonb array of story_archive: enough to rebuild
+ * the coverage list of an archived story without the articles table.
+ */
+export interface ArchivedSourceRef {
+  name: string;
+  domain: string;
+  tier: string;
+  url: string;
+  publishedAt: string;
+  title: string;
+}
+
+/**
+ * Permanent story archive. The live 72h dataset rotates stories out, but
+ * published /story/ URLs must keep resolving for crawlers — this table is
+ * the durable fallback the story page reads when the live dataset misses.
+ * first_seen_at is when WE first archived the story (CurrentWire's real
+ * publication time) and is written once, never overwritten.
+ */
+export const storyArchive = pgTable(
+  "story_archive",
+  {
+    clusterId: varchar("cluster_id", { length: 20 }).primaryKey(),
+    slug: text("slug").notNull(),
+    title: text("title").notNull(),
+    summary: text("summary"),
+    category: varchar("category", { length: 40 }).notNull(),
+    geography: varchar("geography", { length: 12 }).notNull(),
+    contentType: varchar("content_type", { length: 20 }),
+    imageUrl: text("image_url"),
+    firstPublishedAt: timestamp("first_published_at", { withTimezone: true }).notNull(),
+    lastPublishedAt: timestamp("last_published_at", { withTimezone: true }).notNull(),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    lastModifiedAt: timestamp("last_modified_at", { withTimezone: true }).notNull().defaultNow(),
+    rankingScore: real("ranking_score").notNull(),
+    sourceCount: integer("source_count").notNull(),
+    sources: jsonb("sources").$type<ArchivedSourceRef[]>().notNull().default([]),
+    entities: jsonb("entities").$type<string[]>().notNull().default([]),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("story_archive_slug_idx").on(table.slug),
+    index("story_archive_last_published_idx").on(table.lastPublishedAt),
+  ],
+);
+
 export const ingestionRuns = pgTable(
   "ingestion_runs",
   {

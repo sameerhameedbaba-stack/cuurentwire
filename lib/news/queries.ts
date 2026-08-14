@@ -2,6 +2,7 @@ import { isCategoryId, type CategoryId } from "@/config/categories";
 import { SOURCES, type SourceDefinition } from "@/config/sources";
 import { getDataset } from "@/lib/cache/store";
 import { matchesCountryFilter } from "@/lib/news/classification/geography";
+import { isTop100Eligible } from "@/lib/news/ranking/score";
 import type {
   Article,
   NewsDataset,
@@ -83,14 +84,22 @@ export function filterClusters(
   return result;
 }
 
-/** The Top 100 — ranked clusters after filters, capped at 100. */
+/**
+ * The Top 100 — ranked clusters after filters, capped at 100. Press-release
+ * clusters without independent coverage are excluded from this slice
+ * entirely (isTop100Eligible) — the Top 100 is a news ranking, not a wire
+ * distribution channel.
+ */
 export async function getTop100(filters: Top100Filters = {}): Promise<{
   stories: StoryCluster[];
   totalAvailable: number;
   dataset: NewsDataset;
 }> {
   const dataset = await getDataset();
-  const filtered = filterClusters(dataset.clusters, filters);
+  const filtered = filterClusters(
+    dataset.clusters.filter(isTop100Eligible),
+    filters,
+  );
   return {
     stories: filtered.slice(0, 100),
     totalAvailable: filtered.length,
@@ -174,7 +183,9 @@ export async function getHomepageData(): Promise<HomepageData> {
     sections,
     us,
     canada,
-    top100Preview: clusters.slice(0, 10),
+    // The homepage "Top 100 preview" mirrors the Top 100 page, so the same
+    // press-release eligibility gate applies.
+    top100Preview: clusters.filter(isTop100Eligible).slice(0, 10),
     trending: dataset.trending,
   };
 }

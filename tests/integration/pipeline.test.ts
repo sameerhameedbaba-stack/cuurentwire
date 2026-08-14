@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { runPipeline } from "@/lib/news/pipeline";
 import { filterClusters } from "@/lib/news/queries";
+import { isTop100Eligible } from "@/lib/news/ranking/score";
 import type { NewsDataset } from "@/lib/news/types";
 
 /**
@@ -29,6 +30,13 @@ describe("pipeline (mock providers)", () => {
     );
     expect(fed).toBeDefined();
     expect(fed!.sourceCount).toBeGreaterThanOrEqual(5);
+  });
+
+  it("never builds a giant mega-cluster", () => {
+    // The fingerprint-relaxed threshold and second-pass merge must not chain
+    // unrelated stories together: no cluster may hold 12+ articles.
+    const largest = Math.max(...dataset.clusters.map((c) => c.articles.length));
+    expect(largest).toBeLessThan(12);
   });
 
   it("gives every cluster a valid ranking and sorts by importance", () => {
@@ -74,6 +82,49 @@ describe("pipeline (mock providers)", () => {
     );
     // Breaking requires score >= 85, so every breaking cluster is near-breaking.
     expect(stats.breakingCount).toBeLessThanOrEqual(stats.nearBreakingCount);
+  });
+
+  it("detects the mock press release and suppresses it from the Top 100", () => {
+    // The clearly-fictional Demo Widget Corp earnings release in mock data
+    // must be classified press_release at both article and cluster level…
+    const prArticle = dataset.articles.find((a) =>
+      a.title.startsWith("Demo Widget Corp"),
+    );
+    expect(prArticle).toBeDefined();
+    expect(prArticle!.contentType).toBe("press_release");
+
+    const prCluster = dataset.clusters.find((c) =>
+      c.title.startsWith("Demo Widget Corp"),
+    );
+    expect(prCluster).toBeDefined();
+    expect(prCluster!.contentType).toBe("press_release");
+
+    // …excluded from the Top-100 slice (single-domain issuer communication,
+    // no independent coverage) and never BREAKING.
+    expect(isTop100Eligible(prCluster!)).toBe(false);
+    const top100 = dataset.clusters.filter(isTop100Eligible).slice(0, 100);
+    expect(top100.some((c) => c.id === prCluster!.id)).toBe(false);
+    expect(prCluster!.isBreaking).toBe(false);
+
+    // Regular reported stories default to news and stay eligible.
+    const fed = dataset.clusters.find((c) =>
+      c.title.toLowerCase().includes("federal reserve"),
+    )!;
+    expect(fed.contentType).toBe("news");
+    expect(isTop100Eligible(fed)).toBe(true);
+  });
+
+  it("reports classification sanity-check warnings without blocking ingestion", () => {
+    const stats = dataset.ingestion;
+    expect(stats.classificationWarnings).toBeGreaterThanOrEqual(0);
+    expect(Array.isArray(stats.classificationWarningSamples)).toBe(true);
+    // At most the first 10 samples are exposed, never more than the count.
+    expect(stats.classificationWarningSamples.length).toBeLessThanOrEqual(10);
+    expect(stats.classificationWarningSamples.length).toBeLessThanOrEqual(
+      stats.classificationWarnings,
+    );
+    // Warnings are diagnostics only — articles were still accepted.
+    expect(dataset.articles.length).toBeGreaterThan(0);
   });
 });
 

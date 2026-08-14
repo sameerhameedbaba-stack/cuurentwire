@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Article, StoryCluster } from "@/lib/news/types";
-import { CategoryLabel, CountryBadge, SourceLine, StatusBadge, Timestamp } from "./atoms";
+import { CategoryLabel, ContentTypeBadge, CountryBadge, SourceLine, StatusBadge, Timestamp } from "./atoms";
 import { StoryImage } from "./StoryImage";
 
 function storyHref(cluster: StoryCluster): string {
@@ -25,6 +25,7 @@ export function HeroStory({ cluster }: { cluster: StoryCluster }) {
         <CategoryLabel category={cluster.category} />
         <CountryBadge country={cluster.country} />
         <StatusBadge status={cluster.status} />
+        <ContentTypeBadge contentType={cluster.contentType} />
       </div>
       <h1 className="headline mt-2 text-[2rem] leading-[1.08] sm:text-[2.5rem] lg:text-[3.25rem]">
         <Link href={storyHref(cluster)} className="hover:text-brand-ink">
@@ -63,6 +64,7 @@ export function MajorStory({ cluster }: { cluster: StoryCluster }) {
       <div className="mt-3 flex items-center gap-3">
         <CategoryLabel category={cluster.category} />
         <StatusBadge status={cluster.status} />
+        <ContentTypeBadge contentType={cluster.contentType} />
       </div>
       <h3 className="headline mt-1.5 text-xl sm:text-2xl">
         <Link href={storyHref(cluster)} className="hover:text-brand-ink">
@@ -109,6 +111,7 @@ export function StandardStory({
       <div className="flex items-center gap-2.5">
         <CategoryLabel category={cluster.category} />
         <StatusBadge status={cluster.status} />
+        <ContentTypeBadge contentType={cluster.contentType} />
       </div>
       <h3 className="headline mt-1 text-lg leading-snug">
         <Link href={storyHref(cluster)} className="hover:text-brand-ink">
@@ -141,7 +144,10 @@ export function CompactStory({ cluster }: { cluster: StoryCluster }) {
         </Link>
       </div>
       <div className="min-w-0">
-        <CategoryLabel category={cluster.category} />
+        <div className="flex items-center gap-2">
+          <CategoryLabel category={cluster.category} />
+          <ContentTypeBadge contentType={cluster.contentType} />
+        </div>
         <h3 className="headline mt-0.5 text-base leading-snug">
           <Link href={storyHref(cluster)} className="hover:text-brand-ink">
             <span className="story-link">{cluster.title}</span>
@@ -223,6 +229,7 @@ export function RankedStory({
           <CategoryLabel category={cluster.category} />
           <CountryBadge country={cluster.country} />
           <StatusBadge status={cluster.status} />
+          <ContentTypeBadge contentType={cluster.contentType} />
         </div>
         <h3 className="headline mt-1 text-lg leading-snug">
           <Link href={storyHref(cluster)} className="hover:text-brand-ink">
@@ -271,6 +278,7 @@ export function ArticleRow({ article }: { article: Article }) {
         <div className="flex items-center gap-2.5">
           <CategoryLabel category={article.category} />
           <CountryBadge country={article.country} />
+          <ContentTypeBadge contentType={article.contentType} />
         </div>
         <h3 className="mt-1 text-[0.9375rem] font-semibold leading-snug">
           {article.clusterId ? (

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CATEGORIES, type CategoryId } from "@/config/categories";
-import type { ClusterStatus, Country } from "@/lib/news/types";
-import { COUNTRY_LABELS } from "@/lib/news/types";
+import type { ClusterStatus, ContentType, Country } from "@/lib/news/types";
+import { CONTENT_TYPE_LABELS, COUNTRY_LABELS } from "@/lib/news/types";
 import { relativeTime } from "@/lib/utils/time";
 
 /** Small red uppercase category label linking to the section page. */
@@ -89,6 +89,21 @@ export function SourceLine({
         </span>
       ) : null}
     </p>
+  );
+}
+
+/**
+ * Editorial content-type tag ("Press release" / "Opinion" / "Analysis").
+ * Rendered only when the type is not plain news; live coverage already has
+ * its own status badge, so "live" renders nothing here either. Styling
+ * matches the small bordered DEMO chip.
+ */
+export function ContentTypeBadge({ contentType }: { contentType?: ContentType }) {
+  if (!contentType || contentType === "news" || contentType === "live") return null;
+  return (
+    <span className="rounded-news border border-rule px-1 py-px text-[0.625rem] font-bold uppercase tracking-wider text-faint">
+      {CONTENT_TYPE_LABELS[contentType]}
+    </span>
   );
 }
 

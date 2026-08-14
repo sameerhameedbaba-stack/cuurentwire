@@ -8,9 +8,11 @@ import type { StoryCluster } from "@/lib/news/types";
  * - real clusters only — mock/demo data is never submitted to Google News;
  * - only stories with source coverage inside the last 48 hours;
  * - newest coverage first, capped at 1000 entries;
- * - publication_date = firstPublishedAt (earliest source coverage) and
- *   lastmod = lastPublishedAt (latest source coverage) — source times, never
- *   our render time, so freshness is never faked.
+ * - publication_date prefers the archive's first_seen_at (when CurrentWire
+ *   actually published the story page, passed in via firstSeenById) and
+ *   falls back to firstPublishedAt (earliest source coverage); lastmod =
+ *   lastPublishedAt (latest source coverage). Never our render time, so
+ *   freshness is never faked.
  *
  * Pure function so it is unit-testable; the route handler feeds it data.
  */
@@ -21,6 +23,7 @@ export const NEWS_SITEMAP_MAX_ENTRIES = 1000;
 export function renderNewsSitemap(
   clusters: StoryCluster[],
   now: Date = new Date(),
+  firstSeenById?: ReadonlyMap<string, string>,
 ): string {
   const base = siteConfig.url;
   const cutoff = now.getTime() - NEWS_SITEMAP_WINDOW_HOURS * 3_600_000;
@@ -50,7 +53,7 @@ export function renderNewsSitemap(
         <news:name>${escapeXml(siteConfig.name)}</news:name>
         <news:language>en</news:language>
       </news:publication>
-      <news:publication_date>${escapeXml(cluster.firstPublishedAt)}</news:publication_date>
+      <news:publication_date>${escapeXml(firstSeenById?.get(cluster.id) ?? cluster.firstPublishedAt)}</news:publication_date>
       <news:title>${escapeXml(cluster.title)}</news:title>
     </news:news>
     <lastmod>${escapeXml(cluster.lastPublishedAt)}</lastmod>

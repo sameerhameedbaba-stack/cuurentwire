@@ -15,22 +15,30 @@ const US_TERMS = [
   "new york", "pennsylvania", "ohio", "georgia", "michigan", "arizona",
   "illinois", "virginia", "colorado", "seattle", "chicago", "los angeles",
   "boston", "houston", "atlanta", "detroit", "san francisco", "philadelphia",
-  "biden", "governor", "state department", "irs", "nasa", "capitol hill",
+  "biden", "trump", "governor", "state department", "irs", "nasa", "capitol hill",
   "democrats", "republicans", "gop", "midterm", "district of columbia",
   "national guard", "veterans affairs", "homeland security",
 ] as const;
 
+/**
+ * No "prime minister" / "house of commons": both are just as common in UK
+ * (and other Commonwealth) coverage and made every foreign-PM story claim
+ * Canada. No bare "indigenous" (generic worldwide) and no "gta" (collides
+ * with the video game); Canadian stories carry stronger terms anyway.
+ */
 const CA_TERMS = [
   "canada", "canadian", "canadians", "ottawa", "toronto", "vancouver",
   "montreal", "montréal", "calgary", "edmonton", "winnipeg", "quebec",
   "québec", "ontario", "alberta", "british columbia", "manitoba",
   "saskatchewan", "nova scotia", "new brunswick", "newfoundland",
   "prince edward island", "yukon", "nunavut", "northwest territories",
-  "parliament hill", "house of commons", "prime minister", "premier",
-  "bank of canada", "cbc", "rcmp", "trudeau", "bloc québécois", "ndp",
-  "first nations", "indigenous", "métis", "inuit", "grey cup", "tsx",
+  "parliament hill", "premier", "governor general",
+  "bank of canada", "cbc", "rcmp", "trudeau", "carney", "bloc québécois", "ndp",
+  "first nations", "métis", "inuit", "grey cup", "tsx",
   "health canada", "statistics canada", "bay street", "oil sands",
-  "loonie", "gta ", "hydro-québec", "via rail", "canada post",
+  "loonie", "hydro-québec", "via rail", "canada post",
+  // Canadian sports institutions — a Leafs or Jays story is Canadian news.
+  "maple leafs", "blue jays", "raptors", "canucks", "canadiens",
 ] as const;
 
 const GLOBAL_NA_TERMS = [
@@ -41,12 +49,34 @@ const GLOBAL_NA_TERMS = [
 
 const regexCache = new Map<string, RegExp>();
 
-/** Word-boundary term matcher — "us" must never match inside "cautious". */
+/**
+ * Context guards for terms that also appear in unrelated coverage:
+ * - "premier" is a Canadian provincial leader, never "Premier League"
+ *   soccer coverage (which put European transfer stories in CA).
+ * - "america(n)" refers to the US except in continental phrases.
+ * - "governor" is a US state governor, not Canada's governor general.
+ */
+const TERM_REGEX_OVERRIDES: Record<string, RegExp> = {
+  premier:
+    /(?<!chinese )(?<!china's )(?<![a-z0-9])premier(?![a-z0-9])(?!\s+league)/i,
+  america: /(?<!south )(?<!latin )(?<!central )(?<!north )(?<![a-z0-9])america(?![a-z0-9])/i,
+  american: /(?<!south )(?<!latin )(?<!central )(?<!north )(?<![a-z0-9])american(?![a-z0-9])/i,
+  governor: /(?<![a-z0-9])governor(?![a-z0-9])(?!\s+general)/i,
+};
+
+/**
+ * Word-boundary term matcher with an optional plural "s" — "us" must never
+ * match inside "cautious", while "tariff" still matches "tariffs".
+ */
 function termRegex(term: string): RegExp {
   let regex = regexCache.get(term);
   if (!regex) {
-    const escaped = term.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    regex = new RegExp(`(?<![a-z0-9])${escaped}(?![a-z0-9])`, "i");
+    regex =
+      TERM_REGEX_OVERRIDES[term] ??
+      new RegExp(
+        `(?<![a-z0-9])${term.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}s?(?![a-z0-9])`,
+        "i",
+      );
     regexCache.set(term, regex);
   }
   return regex;
@@ -81,10 +111,13 @@ export function classifyGeography(input: GeographyInput): Country {
     usScore += 1;
   }
 
-  // Provider-declared country is a moderate signal.
+  // Provider-declared country is a weak signal: GNews serves the same
+  // international story in its us and ca feeds (an ESPN soccer transfer
+  // story fetched with country=ca is not Canadian news), so it can support
+  // content signals but must never assign a country on its own.
   const providerCountry = input.providerCountry?.toLowerCase();
-  if (providerCountry === "us") usScore += 1;
-  if (providerCountry === "ca") caScore += 1;
+  if (providerCountry === "us") usScore += 0.5;
+  if (providerCountry === "ca") caScore += 0.5;
 
   // Source home country is only a weak tiebreaker.
   if (usScore === caScore) {

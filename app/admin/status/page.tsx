@@ -79,6 +79,7 @@ export default async function AdminStatusPage({
     ["Highest ranking score", stats.highestRankingScore],
     ["Breaking clusters", stats.breakingCount],
     ["Near-breaking clusters (score ≥ 75)", stats.nearBreakingCount],
+    ["Classification warnings", stats.classificationWarnings],
   ];
 
   return (
@@ -167,6 +168,26 @@ export default async function AdminStatusPage({
               </tbody>
             </table>
           </div>
+        </section>
+      )}
+
+      {stats.classificationWarnings > 0 && (
+        <section aria-label="Classification warnings" className="mt-8">
+          <h2 className="headline text-xl">
+            Classification warnings ({stats.classificationWarnings})
+          </h2>
+          <p className="mt-1 text-xs text-muted">
+            Suspicious patterns spotted during the last ingestion — diagnostics
+            only, ingestion is never blocked. Showing the first{" "}
+            {stats.classificationWarningSamples.length}.
+          </p>
+          <ul className="mt-3 divide-y divide-rule border-y border-rule text-sm">
+            {stats.classificationWarningSamples.map((warning) => (
+              <li key={warning} className="py-2 text-muted">
+                {warning}
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

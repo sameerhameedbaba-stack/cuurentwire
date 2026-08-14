@@ -148,6 +148,19 @@ const SEEDS: MockSeed[] = [
     coverage: [{ outlet: "Maple Leaf Times", minutesAgo: 520 }],
   },
 
+  // ── Press release (clearly fictional; exercises content-type detection,
+  //    the press-release authority downgrade and Top-100 suppression) ─────
+  {
+    key: "demo-widget-earnings-pr",
+    title:
+      "Demo Widget Corp (TSX: DEMO) Announces Q2 2026 Financial Results and Normal Course Issuer Bid",
+    description:
+      "TORONTO — Demo Widget Corp, a fictional demonstration company, today reported its financial results for the second quarter of 2026 and announced a normal course issuer bid.",
+    category: "business",
+    country: "ca",
+    coverage: [{ outlet: "Atlantic Business Review", minutesAgo: 45 }],
+  },
+
   // ── Politics ───────────────────────────────────────────────────────────
   {
     key: "us-budget-talks",

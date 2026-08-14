@@ -32,6 +32,90 @@ const knownLower = new Map<string, string>(
   KNOWN_ENTITIES.map((e) => [e.toLowerCase(), e]),
 );
 
+/**
+ * Entity alias canonicalization: every extracted entity is mapped through
+ * this table (lowercased key → canonical display) BEFORE dedupe, so topics,
+ * clustering fingerprints and trending all see one canonical entity instead
+ * of "USS Lincoln" and "USS Abraham Lincoln" as separate topics.
+ *
+ * Only SAFE pairs belong here: the short form must be unambiguous in a
+ * North-American news context. Deliberately excluded: "Abraham Lincoln"
+ * (the president), "Meta" (common noun), "Washington" variants (city vs
+ * state), "B.C." (British Columbia vs dates).
+ */
+const ENTITY_ALIASES: Record<string, string> = {
+  // Military / institutions
+  "uss lincoln": "USS Abraham Lincoln",
+  // Identity alias, but SCANNED: the phrase pass skips the leading title
+  // word, so "USS Abraham Lincoln returns…" would otherwise yield only
+  // "Abraham Lincoln" (a different topic — the president).
+  "uss abraham lincoln": "USS Abraham Lincoln",
+  "the fed": "Federal Reserve",
+  fed: "Federal Reserve",
+  scotus: "Supreme Court",
+  "us supreme court": "Supreme Court",
+  gop: "Republican Party",
+  mounties: "RCMP",
+  boc: "Bank of Canada",
+  "wall st": "Wall Street",
+  "world health organization (who)": "World Health Organization",
+  // People (short forms only canonicalize what extraction already found)
+  "president trump": "Donald Trump",
+  trump: "Donald Trump",
+  "president biden": "Joe Biden",
+  biden: "Joe Biden",
+  putin: "Vladimir Putin",
+  zelensky: "Volodymyr Zelenskyy",
+  zelenskyy: "Volodymyr Zelenskyy",
+  "elon musk": "Elon Musk",
+  // Places
+  nyc: "New York City",
+  "new york city": "New York City",
+  uk: "United Kingdom",
+  "u.k.": "United Kingdom",
+  "u.s.": "United States",
+  usa: "United States",
+  // Topics
+  ai: "Artificial Intelligence",
+  "artificial intelligence (ai)": "Artificial Intelligence",
+  covid: "COVID-19",
+  "covid-19": "COVID-19",
+  crypto: "Cryptocurrency",
+  evs: "Electric Vehicles",
+  "electric vehicle": "Electric Vehicles",
+};
+
+/**
+ * Alias keys that are ALSO scanned in the text like dictionary entries, so
+ * "The Fed hikes rates" yields Federal Reserve even though "Fed" alone is
+ * never captured by the capitalized-phrase pass. Restricted to multi-word
+ * keys and acronyms that cannot collide with ordinary lowercase words
+ * (bare "fed", "trump", "musk" are canonicalize-only for that reason).
+ */
+const SCANNED_ALIAS_KEYS = [
+  "uss lincoln",
+  "uss abraham lincoln",
+  "the fed",
+  "scotus",
+  "nyc",
+  "uk",
+  "u.s.",
+  "u.k.",
+  "ai",
+  "covid",
+  "covid-19",
+  "wall st",
+  "mounties",
+  "putin",
+  "zelensky",
+  "zelenskyy",
+] as const;
+
+/** Canonical display form of an extracted entity (identity when unaliased). */
+export function canonicalizeEntity(entity: string): string {
+  return ENTITY_ALIASES[entity.trim().toLowerCase()] ?? entity.trim();
+}
+
 /** Words that start sentences but are never entities on their own. */
 const NOISE_WORDS = new Set([
   "the", "a", "an", "in", "on", "at", "as", "after", "before", "why", "how",
@@ -57,13 +141,35 @@ function entityRegex(needle: string): RegExp {
 }
 
 export function extractEntities(title: string, description?: string): string[] {
+  // Keyed by CANONICAL lowercase name so aliases dedupe with their targets.
   const found = new Map<string, string>();
+  const add = (display: string) => {
+    const canonical = canonicalizeEntity(display);
+    const key = canonical.toLowerCase();
+    if (!found.has(key)) found.set(key, canonical);
+  };
+  // Phrase-pass variant: a capitalized phrase that is a sub-phrase of an
+  // entity the dictionary/alias scan already found ("Abraham Lincoln"
+  // inside "USS Abraham Lincoln") is the same mention, not a new topic.
+  const addPhrase = (display: string) => {
+    const canonical = canonicalizeEntity(display);
+    const key = canonical.toLowerCase();
+    for (const existing of found.keys()) {
+      if (existing.includes(key)) return;
+    }
+    if (!found.has(key)) found.set(key, canonical);
+  };
   const text = `${title}. ${description ?? ""}`;
   const lower = text.toLowerCase();
 
   // Pass 1 — dictionary matches on word boundaries.
   for (const [needle, display] of knownLower) {
-    if (entityRegex(needle).test(lower)) found.set(needle, display);
+    if (entityRegex(needle).test(lower)) add(display);
+  }
+  // Pass 1b — scanned alias keys ("the fed", "uss lincoln") emit their
+  // canonical entity the same way.
+  for (const needle of SCANNED_ALIAS_KEYS) {
+    if (entityRegex(needle).test(lower)) add(ENTITY_ALIASES[needle]);
   }
 
   // Pass 2 — capitalized phrases in the title (skip the leading word).
@@ -76,18 +182,11 @@ export function extractEntities(title: string, description?: string): string[] {
     if (isCapitalized && !isNoise && i > 0) {
       phrase.push(word);
     } else {
-      if (phrase.length >= 2) {
-        const joined = phrase.join(" ");
-        const key = joined.toLowerCase();
-        if (!found.has(key)) found.set(key, joined);
-      }
+      if (phrase.length >= 2) addPhrase(phrase.join(" "));
       phrase = [];
     }
   }
-  if (phrase.length >= 2) {
-    const joined = phrase.join(" ");
-    found.set(joined.toLowerCase(), found.get(joined.toLowerCase()) ?? joined);
-  }
+  if (phrase.length >= 2) addPhrase(phrase.join(" "));
 
   return [...found.values()].slice(0, 8);
 }

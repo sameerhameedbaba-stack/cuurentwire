@@ -16,6 +16,14 @@ export interface SourceDefinition {
   name: string;
   /** Primary domain (no protocol, no www). */
   domain: string;
+  /**
+   * Additional domains this publisher serves articles or feeds from
+   * (legacy domains, feed CDNs, country variants). Every alt domain
+   * resolves to the same canonical name and tier as the primary — this is
+   * what keeps RSS channel titles ("ABC News: Top Stories") from leaking
+   * into the UI when a live feed links a domain variant.
+   */
+  altDomains?: string[];
   tier: SourceTier;
   /** Home country of the publication (weak geography signal only). */
   country?: "US" | "CA" | "INTL";
@@ -35,7 +43,8 @@ export const SOURCES: SourceDefinition[] = [
   { name: "Associated Press", domain: "apnews.com", tier: "A", country: "US" },
   { name: "CBC News", domain: "cbc.ca", tier: "A", country: "CA" },
   { name: "NPR", domain: "npr.org", tier: "A", country: "US" },
-  { name: "BBC News", domain: "bbc.com", tier: "A", country: "INTL" },
+  // Live feed is feeds.bbci.co.uk; item links use bbc.com and bbc.co.uk.
+  { name: "BBC News", domain: "bbc.com", altDomains: ["bbc.co.uk", "bbci.co.uk"], tier: "A", country: "INTL" },
   { name: "The New York Times", domain: "nytimes.com", tier: "A", country: "US" },
   { name: "The Washington Post", domain: "washingtonpost.com", tier: "A", country: "US" },
   { name: "The Wall Street Journal", domain: "wsj.com", tier: "A", country: "US" },
@@ -51,7 +60,8 @@ export const SOURCES: SourceDefinition[] = [
   { name: "Axios", domain: "axios.com", tier: "B", country: "US" },
   { name: "CNBC", domain: "cnbc.com", tier: "B", country: "US" },
   { name: "CNN", domain: "cnn.com", tier: "B", country: "US" },
-  { name: "ABC News", domain: "abcnews.go.com", tier: "B", country: "US" },
+  // ABC migrated abcnews.go.com → abcnews.com; live feed items link both.
+  { name: "ABC News", domain: "abcnews.go.com", altDomains: ["abcnews.com"], tier: "B", country: "US" },
   { name: "CBS News", domain: "cbsnews.com", tier: "B", country: "US" },
   { name: "NBC News", domain: "nbcnews.com", tier: "B", country: "US" },
   { name: "Global News", domain: "globalnews.ca", tier: "B", country: "CA" },
@@ -93,14 +103,28 @@ export const SOURCES: SourceDefinition[] = [
 ];
 
 const byDomain = new Map<string, SourceDefinition>(
-  SOURCES.map((s) => [s.domain, s]),
+  SOURCES.flatMap((s) => [
+    [s.domain, s] as const,
+    ...(s.altDomains ?? []).map((d) => [d, s] as const),
+  ]),
 );
 const byName = new Map<string, SourceDefinition>(
   SOURCES.map((s) => [s.name.toLowerCase(), s]),
 );
 
+/**
+ * Resolve a hostname to its configured source. Matches the exact host first,
+ * then progressively strips leading subdomain labels (feeds.npr.org →
+ * npr.org, www.bbc.co.uk → bbc.co.uk, edition.cnn.com → cnn.com) so feed
+ * CDNs and country editions resolve to the same canonical publisher.
+ */
 export function lookupSourceByDomain(domain: string): SourceDefinition | undefined {
-  return byDomain.get(domain.replace(/^www\./, "").toLowerCase());
+  const labels = domain.trim().toLowerCase().split(".");
+  for (let start = 0; start <= labels.length - 2; start++) {
+    const candidate = byDomain.get(labels.slice(start).join("."));
+    if (candidate) return candidate;
+  }
+  return undefined;
 }
 
 export function lookupSourceByName(name: string): SourceDefinition | undefined {

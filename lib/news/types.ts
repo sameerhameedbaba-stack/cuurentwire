@@ -4,6 +4,21 @@ import type { SourceTier } from "@/config/sources";
 /** Geographic relevance classification. */
 export type Country = "US" | "CA" | "US_CA" | "GLOBAL_NA" | "GLOBAL";
 
+/**
+ * Editorial content type, detected deterministically at normalization
+ * (lib/news/classification/content-type.ts). Conservative: anything not
+ * clearly opinion/analysis/press-release/live-blog stays "news".
+ */
+export type ContentType = "news" | "opinion" | "analysis" | "press_release" | "live";
+
+export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
+  news: "News",
+  opinion: "Opinion",
+  analysis: "Analysis",
+  press_release: "Press release",
+  live: "Live",
+};
+
 export const COUNTRY_LABELS: Record<Country, string> = {
   US: "United States",
   CA: "Canada",
@@ -55,6 +70,8 @@ export interface Article {
   country: Country;
   category: CategoryId;
   categories: CategoryId[];
+  /** Editorial content type (news unless clearly something else). */
+  contentType?: ContentType;
   entities: string[];
   provider: string;
   clusterId?: string;
@@ -88,6 +105,12 @@ export interface StoryCluster {
   summary?: string;
   category: CategoryId;
   country: Country;
+  /**
+   * Cluster-level content type: press_release only when EVERY member is a
+   * press release (one real news report means genuine coverage); otherwise
+   * the lead article's content type.
+   */
+  contentType?: ContentType;
   imageUrl?: string;
   /** Members, best source tier first, then newest. */
   articles: Article[];
@@ -136,6 +159,15 @@ export interface IngestionStats {
   breakingCount: number;
   /** Clusters with rankingScore >= 75 — near or at breaking intensity. */
   nearBreakingCount: number;
+  /**
+   * Suspicious classification patterns spotted after classification
+   * (espn.com in politics/world, technology with zero content signals,
+   * low-confidence specific categories). Diagnostics only — ingestion is
+   * never blocked.
+   */
+  classificationWarnings: number;
+  /** First 10 warning descriptions, for the admin status page. */
+  classificationWarningSamples: string[];
 }
 
 export interface ProviderRunStat {

@@ -42,6 +42,12 @@ export interface CategoryResult {
 }
 
 const TITLE_KEYWORD_WEIGHT = 3;
+/**
+ * Multi-word phrases are rarer and more precise than single words, so a
+ * phrase hit in the title outweighs a single-word hit — "premier league"
+ * (sports) must beat the "premier" (politics) it contains.
+ */
+const PHRASE_TITLE_BONUS = 1;
 const DESCRIPTION_KEYWORD_WEIGHT = 1;
 /** Entity signal — comparable to a title keyword hit. */
 const ENTITY_WEIGHT = 3;
@@ -50,6 +56,12 @@ const PROVIDER_ALIAS_WEIGHT = 4;
 const PRIOR_WEIGHT = 2;
 /** Negative keyword hit — cancels a title keyword hit. */
 const NEGATIVE_WEIGHT = 3;
+/**
+ * Minimum top score required to assign a specific category. A single
+ * description keyword hit (weight 1) is noise, not evidence — anything
+ * below a feed-section prior (2) falls back to the neutral world bucket.
+ */
+const MIN_PRIMARY_SCORE = 2;
 
 /** Word-boundary matcher so "nfl" never fires inside "inflation". */
 const boundaryRegexCache = new Map<string, RegExp>();
@@ -59,6 +71,23 @@ function boundaryRegex(needle: string): RegExp {
     const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     regex = new RegExp(`(?<![a-z0-9])${escaped}(?![a-z0-9])`);
     boundaryRegexCache.set(needle, regex);
+  }
+  return regex;
+}
+
+/**
+ * Keyword matcher: word-boundary with an optional plural "s".
+ * "app" must never fire inside "kidnapped"/"disappearing"/"happier"
+ * (substring matching was the root cause of systematic technology
+ * misclassification), while "market" still matches "markets".
+ */
+const keywordRegexCache = new Map<string, RegExp>();
+function keywordRegex(keyword: string): RegExp {
+  let regex = keywordRegexCache.get(keyword);
+  if (!regex) {
+    const escaped = keyword.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    regex = new RegExp(`(?<![a-z0-9])${escaped}s?(?![a-z0-9])`);
+    keywordRegexCache.set(keyword, regex);
   }
   return regex;
 }
@@ -76,10 +105,12 @@ export function classifyCategory(input: CategoryInput): CategoryResult {
     const def = CATEGORIES[id];
     let score = 0;
     for (const keyword of def.keywords) {
-      if (title.includes(keyword)) {
+      const regex = keywordRegex(keyword);
+      if (regex.test(title)) {
         score += TITLE_KEYWORD_WEIGHT;
+        if (keyword.trim().includes(" ")) score += PHRASE_TITLE_BONUS;
         matchedSignals.push(`${id}:title:${keyword.trim()}`);
-      } else if (description.includes(keyword)) {
+      } else if (regex.test(description)) {
         score += DESCRIPTION_KEYWORD_WEIGHT;
         matchedSignals.push(`${id}:desc:${keyword.trim()}`);
       }
@@ -113,7 +144,7 @@ export function classifyCategory(input: CategoryInput): CategoryResult {
     if (current === undefined) continue;
     let score = current;
     for (const keyword of negatives) {
-      if (combined.includes(keyword)) {
+      if (keywordRegex(keyword).test(combined)) {
         score -= NEGATIVE_WEIGHT;
         matchedSignals.push(`${id}:negative:${keyword}`);
       }
@@ -134,15 +165,37 @@ export function classifyCategory(input: CategoryInput): CategoryResult {
   }
 
   const sorted = [...scores.entries()].sort((a, b) => b[1] - a[1]);
+  const topScore = sorted[0][1];
+  const tiedTop = sorted.filter(([, s]) => s === topScore).map(([id]) => id);
+
+  // Ambiguity guards. A specific category needs a minimum score, and an
+  // exact tie between different categories must never be decided by map
+  // insertion order — ambiguous stories go to the neutral world bucket.
+  if (topScore < MIN_PRIMARY_SCORE || tiedTop.length > 1) {
+    const all: CategoryId[] = ["world"];
+    if (tiedTop.length > 1) {
+      for (const id of tiedTop) {
+        if (id !== "world") all.push(id);
+      }
+    }
+    return {
+      primary: "world",
+      all: all.slice(0, 3),
+      confidence: 0,
+      scores: Object.fromEntries(sorted) as Partial<Record<CategoryId, number>>,
+      matchedSignals,
+    };
+  }
+
   const primary = sorted[0][0];
-  const threshold = Math.max(3, sorted[0][1] * 0.4);
+  const threshold = Math.max(3, topScore * 0.4);
   const all = sorted.filter(([, s]) => s >= threshold).map(([id]) => id);
   if (!all.includes(primary)) all.unshift(primary);
 
   const confidence =
     sorted.length === 1
       ? 1
-      : Math.min(1, Math.max(0, (sorted[0][1] - sorted[1][1]) / sorted[0][1]));
+      : Math.min(1, Math.max(0, (topScore - sorted[1][1]) / topScore));
 
   return {
     primary,

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { forceRefresh } from "@/lib/cache/store";
+import { archiveDataset } from "@/lib/database/archive";
 import { isDatabaseConfigured } from "@/lib/database/client";
 import { persistDataset } from "@/lib/database/persist";
 import { env } from "@/lib/env";
@@ -61,8 +62,12 @@ export async function GET(request: NextRequest) {
   try {
     const dataset = await forceRefresh();
     let persisted = false;
+    let archivedStories = 0;
     if (isDatabaseConfigured()) {
       persisted = await persistDataset(dataset);
+      // Permanent story archive: best-effort (archiveDataset catches its own
+      // failures), so a broken archive write never breaks the cron response.
+      archivedStories = await archiveDataset(dataset);
     }
     return NextResponse.json({
       ok: true,
@@ -77,6 +82,7 @@ export async function GET(request: NextRequest) {
         articles: p.articleCount,
       })),
       persistedToDatabase: persisted,
+      archivedStories,
     });
   } catch (error) {
     logger.error("cron.refresh_failed", {

@@ -148,6 +148,21 @@ describe("renderNewsSitemap", () => {
     expect(xml.match(/same-slug-c6/g)?.length).toBe(1);
   });
 
+  it("prefers archive first_seen_at as publication_date, falling back to firstPublishedAt", () => {
+    const firstCoverage = hoursAgo(10);
+    const firstSeen = hoursAgo(9);
+    const xml = renderNewsSitemap(
+      [
+        makeCluster({ id: "c1", slug: "archived-c1", firstPublishedAt: firstCoverage }),
+        makeCluster({ id: "c2", slug: "unarchived-c2", firstPublishedAt: firstCoverage }),
+      ],
+      NOW,
+      new Map([["c1", firstSeen]]),
+    );
+    expect(xml).toContain(`<news:publication_date>${firstSeen}</news:publication_date>`);
+    expect(xml).toContain(`<news:publication_date>${firstCoverage}</news:publication_date>`);
+  });
+
   it("skips clusters with invalid dates instead of crashing", () => {
     const xml = renderNewsSitemap(
       [makeCluster({ slug: "bad-date-c8", lastPublishedAt: "not-a-date" })],

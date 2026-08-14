@@ -22,7 +22,11 @@ export interface CategoryDefinition {
   label: string;
   path: string;
   description: string;
-  /** Lower-cased keywords/phrases scored against title + description. */
+  /**
+   * Lower-cased keywords/phrases scored against title + description.
+   * Matched on word boundaries with an optional plural "s" — "app" never
+   * fires inside "kidnapped", while "market" still matches "markets".
+   */
   keywords: string[];
   /** Provider category strings that map straight to this category. */
   providerAliases: string[];
@@ -41,11 +45,12 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "governor", "premier", "supreme court", "campaign", "vote", "ballot",
       "policy", "lawmakers", "cabinet", "minister", "senator", "impeachment",
       "federal government", "state legislature", "house speaker", "attorney general",
-      "regulation", "executive order", "byelection", "riding", "mp ", "mpp",
+      "regulation", "executive order", "byelection", "riding", "mp", "mpp",
       "democrat", "republican", "liberal party", "conservative party", "ndp",
       "bloc québécois", "governor general",
     ],
-    providerAliases: ["politics", "nation", "general"],
+    // "general" (the GNews catch-all topic) must never imply politics.
+    providerAliases: ["politics", "nation"],
   },
   business: {
     id: "business",
@@ -54,7 +59,9 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     description:
       "Markets, companies, employment, trade and the North American economy.",
     keywords: [
-      "market", "stocks", "shares", "earnings", "inflation", "interest rate",
+      // No "shares": as a verb ("shares details", "shares photos") it fires
+      // on celebrity/lifestyle coverage far more often than on markets.
+      "market", "stocks", "earnings", "inflation", "interest rate",
       "federal reserve", "bank of canada", "economy", "economic", "gdp", "jobs report",
       "unemployment", "employment", "merger", "acquisition", "ipo", "startup funding",
       "revenue", "profit", "quarterly", "trade deal", "tariff", "exports", "imports",
@@ -72,7 +79,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     description:
       "Artificial intelligence, Big Tech, cybersecurity, and technology policy.",
     keywords: [
-      "artificial intelligence", "ai model", "ai ", "machine learning", "chatbot",
+      "artificial intelligence", "ai model", "ai", "machine learning", "chatbot",
       "software", "hardware", "semiconductor", "chip", "cybersecurity", "hack",
       "data breach", "ransomware", "privacy", "social media", "app", "smartphone",
       "cloud computing", "data center", "datacentre", "robotics", "autonomous",
@@ -95,6 +102,8 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "international", "global", "overseas", "foreign policy", "state visit",
       "world leaders", "geneva", "brussels", "beijing", "moscow", "london",
       "tokyo", "paris", "berlin", "kyiv", "middle east", "asia-pacific",
+      "kidnapped", "kidnapping", "hostage", "coup", "airstrike", "militant",
+      "humanitarian", "war crimes", "insurgent",
     ],
     providerAliases: ["world", "international", "global"],
   },
@@ -136,7 +145,9 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     path: "/science",
     description: "Research, space exploration and scientific discovery.",
     keywords: [
-      "nasa", "space", "spacecraft", "satellite", "launch", "astronaut", "mars",
+      // No bare "launch": product/album/campaign launches are not science.
+      "nasa", "space", "spacecraft", "satellite", "rocket launch", "space launch",
+      "space station", "astronaut", "mars",
       "moon mission", "telescope", "research", "researchers", "study finds",
       "scientists", "scientific", "physics", "biology", "chemistry", "genome",
       "fossil", "archaeology", "asteroid", "canadian space agency", "csa",
@@ -151,10 +162,12 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     description: "Film, television, music, books, media and society.",
     keywords: [
       "film", "movie", "box office", "television", "tv series", "streaming series",
-      "music", "album", "concert tour", "book", "novel", "author", "publishing",
-      "museum", "art exhibit", "festival", "award", "oscars", "grammys", "emmys",
-      "documentary", "broadway", "theatre", "theater", "celebrity", "media industry",
-      "journalism", "newspaper industry", "podcast", "culture",
+      "music", "album", "concert", "concert tour", "book", "novel", "author",
+      "publishing", "museum", "art exhibit", "festival", "award", "oscars",
+      "grammys", "emmys", "documentary", "broadway", "theatre", "theater",
+      "celebrity", "media industry", "journalism", "newspaper industry",
+      "podcast", "culture", "singer", "songwriter", "pop star", "rapper",
+      "actor", "actress", "red carpet", "wedding",
     ],
     providerAliases: ["entertainment", "culture", "arts", "lifestyle"],
   },
@@ -169,6 +182,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "tennis", "golf", "pga", "soccer", "world cup", "hockey", "basketball",
       "baseball", "football", "quarterback", "coach", "roster", "trade deadline",
       "grey cup", "raptors", "blue jays", "maple leafs", "canucks", "oilers",
+      "premier league", "champions league", "transfer window", "tight end",
     ],
     providerAliases: ["sports", "sport"],
   },
@@ -184,16 +198,18 @@ export const ENTITY_CATEGORY_SIGNALS: Record<string, CategoryId> = {
   "nfl": "sports", "nba": "sports", "mlb": "sports", "nhl": "sports",
   "mls": "sports", "cfl": "sports", "fifa": "sports", "uefa": "sports",
   "wnba": "sports", "ncaa": "sports", "pga tour": "sports",
-  // Markets and economic institutions
+  // Markets and economic institutions. "earnings"/"ipo" are keywords, not
+  // entities — keeping them here double-counted the same signal.
   "federal reserve": "business", "s&p 500": "business", "dow jones": "business",
   "nasdaq": "business", "bank of canada": "business", "wall street": "business",
-  "earnings": "business", "ipo": "business", "opec": "business", "imf": "business",
+  "opec": "business", "imf": "business",
   // Space and research
   "spacex": "science", "nasa": "science", "james webb": "science",
   "canadian space agency": "science",
-  // Big Tech
+  // Big Tech. No "intel": it collides with the intelligence shorthand
+  // ("US intel officials") that is common in politics/world coverage.
   "openai": "technology", "microsoft": "technology", "google": "technology",
-  "nvidia": "technology", "intel": "technology",
+  "nvidia": "technology",
   // Health agencies and pharma
   "cdc": "health", "fda": "health", "health canada": "health",
   "pfizer": "health", "moderna": "health",
@@ -214,8 +230,14 @@ export const ENTITY_CATEGORY_SIGNALS: Record<string, CategoryId> = {
  */
 export const NEGATIVE_KEYWORDS: Partial<Record<CategoryId, string[]>> = {
   sports: ["tariff", "trade deal", "trade war", "interest rate"],
-  business: ["box office", "trade deadline", "touchdown", "home run"],
+  business: [
+    "box office", "trade deadline", "touchdown", "home run",
+    // "bank"/"union"/"labour" keyword collisions outside finance.
+    "west bank", "food bank", "labour party", "labor party", "european union",
+  ],
   politics: ["quarterback", "playoff"],
+  // "outbreak" is a health keyword; a tornado outbreak is weather.
+  health: ["tornado outbreak"],
 };
 
 /**

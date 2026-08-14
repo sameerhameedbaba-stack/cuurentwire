@@ -109,6 +109,32 @@ test.describe("mobile navigation", () => {
   });
 });
 
+test.describe("news desk", () => {
+  test("news desk page responds 200 and explains the automated byline", async ({ page }) => {
+    const response = await page.goto("/news-desk");
+    expect(response?.status()).toBe(200);
+    await expect(
+      page.getByRole("heading", { name: "The CurrentWire News Desk", level: 1 }),
+    ).toBeVisible();
+    // The core disclosures: automated compilation, no human journalists,
+    // no AI-generated reporting.
+    await expect(page.getByText("No human journalists:")).toBeVisible();
+    await expect(page.getByText("No AI-generated reporting:")).toBeVisible();
+    // Links out to methodology and corrections.
+    await expect(page.locator('main a[href="/methodology"]').first()).toBeVisible();
+    await expect(page.locator('main a[href="/corrections"]').first()).toBeVisible();
+  });
+
+  test("story page byline links to /news-desk", async ({ page }) => {
+    await page.goto("/top-100");
+    await page.locator("main ol article h3 a").first().click();
+    await expect(page).toHaveURL(/\/story\//, { timeout: 15_000 });
+    const bylineLink = page.getByRole("link", { name: "CurrentWire News Desk" });
+    await expect(bylineLink).toBeVisible();
+    await expect(bylineLink).toHaveAttribute("href", "/news-desk");
+  });
+});
+
 test.describe("rss and seo endpoints", () => {
   test("rss feed serves xml", async ({ request }) => {
     const response = await request.get("/rss");

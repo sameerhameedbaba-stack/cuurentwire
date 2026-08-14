@@ -1,7 +1,7 @@
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
-import { mastheadDate } from "@/lib/utils/time";
+import { MastheadDate } from "./MastheadDate";
 import { MobileMenu } from "./MobileMenu";
 import { NavBar } from "./NavBar";
 import { ThemeToggle } from "./ThemeToggle";
@@ -14,9 +14,9 @@ export function Header() {
       {/* Utility bar */}
       <div className="border-b border-rule bg-surface">
         <div className="mx-auto flex max-w-[1360px] items-center justify-between px-4 py-1.5 sm:px-6">
-          <p className="text-xs text-muted" suppressHydrationWarning>
-            {mastheadDate()}
-          </p>
+          {/* Client Component so statically prerendered pages show the
+              viewer's current date, not the build day. */}
+          <MastheadDate />
           <div className="flex items-center gap-1">
             <Link
               href="/latest"

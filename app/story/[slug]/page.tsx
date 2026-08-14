@@ -3,16 +3,22 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { CATEGORIES } from "@/config/categories";
-import { CategoryLabel, CountryBadge, SourceLine, StatusBadge, BreakingLabel } from "@/components/news/atoms";
+import { CategoryLabel, ContentTypeBadge, CountryBadge, SourceLine, StatusBadge, BreakingLabel } from "@/components/news/atoms";
 import { CoverageSources, CoverageTimeline } from "@/components/news/CoverageSources";
 import { StoryImage } from "@/components/news/StoryImage";
 import { HeadlineStory } from "@/components/news/cards";
 import { SectionHeader } from "@/components/news/SectionHeader";
 import { ShareActions } from "@/components/ui/ShareActions";
 import { siteConfig } from "@/config/site";
+import {
+  archivedStoryToCluster,
+  findArchivedStory,
+  getArchiveFirstSeen,
+} from "@/lib/database/archive";
 import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
 import { getClusterBySlug, getRelatedClusters } from "@/lib/news/queries";
-import { COUNTRY_LABELS } from "@/lib/news/types";
+import { resolveStoryRequest, type StoryResolution } from "@/lib/news/story-resolution";
+import { COUNTRY_LABELS, type StoryCluster } from "@/lib/news/types";
 import { entitySlug } from "@/lib/news/classification/entities";
 import { truncate } from "@/lib/utils/text";
 import { fullTimestamp } from "@/lib/utils/time";
@@ -20,15 +26,56 @@ import { BreadcrumbJsonLd, StoryJsonLd } from "@/lib/seo/structured-data";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Resolution order: live dataset first (current behavior), then the
+ * permanent story archive when a database is configured — published /story/
+ * URLs keep resolving after they rotate out of the 72h dataset. 404 only
+ * when neither knows the URL.
+ */
+function resolveStory(slug: string): Promise<StoryResolution> {
+  return resolveStoryRequest(slug, {
+    getLive: getClusterBySlug,
+    getArchived: findArchivedStory,
+  });
+}
+
+interface StoryView {
+  cluster: StoryCluster;
+  isArchived: boolean;
+  /** first_seen_at from the archive — our real publication time, if known. */
+  publishedByUsAt?: string;
+}
+
+async function buildStoryView(resolution: StoryResolution): Promise<StoryView | null> {
+  if (resolution.kind === "live") {
+    const cluster = resolution.cluster;
+    const publishedByUsAt = (await getArchiveFirstSeen([cluster.id])).get(cluster.id);
+    return { cluster, isArchived: false, publishedByUsAt };
+  }
+  if (resolution.kind === "archived") {
+    return {
+      cluster: archivedStoryToCluster(resolution.story),
+      isArchived: true,
+      publishedByUsAt: resolution.story.firstSeenAt,
+    };
+  }
+  return null;
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const cluster = await getClusterBySlug(slug);
+  const resolution = await resolveStory(slug);
   // Real 404 status requires notFound() before the response starts streaming.
-  if (!cluster) notFound();
+  if (resolution.kind === "not-found") notFound();
+  // The page itself 307s; this metadata is never rendered.
+  if (resolution.kind === "redirect") return { title: siteConfig.name };
+  const view = await buildStoryView(resolution);
+  if (!view) notFound();
+  const { cluster, publishedByUsAt } = view;
   const description = cluster.summary
     ? truncate(cluster.summary, 160)
     : `Coverage of "${cluster.title}" from ${cluster.sourceNames.slice(0, 3).join(", ")}.`;
@@ -43,7 +90,7 @@ export async function generateMetadata({
       url: canonical,
       siteName: siteConfig.name,
       type: "article",
-      publishedTime: cluster.firstPublishedAt,
+      publishedTime: publishedByUsAt ?? cluster.firstPublishedAt,
       modifiedTime: cluster.lastPublishedAt,
     },
     twitter: { card: "summary_large_image", title: cluster.title, description },
@@ -56,13 +103,14 @@ export default async function StoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const cluster = await getClusterBySlug(slug);
-  if (!cluster) notFound();
-  // Old or shortened links resolve by stable id — send them to the canonical
-  // URL. Temporary (307): cluster URLs are ephemeral, a 308 would strand
-  // crawlers on retired aliases.
-  if (slug !== cluster.slug) redirect(`/story/${cluster.slug}`);
+  const resolution = await resolveStory(slug);
+  if (resolution.kind === "not-found") notFound();
+  if (resolution.kind === "redirect") redirect(`/story/${resolution.slug}`);
+  const view = await buildStoryView(resolution);
+  if (!view) notFound();
+  const { cluster, isArchived, publishedByUsAt } = view;
 
+  // Archived stories can still surface related live coverage via entities.
   const related = await getRelatedClusters(cluster);
   const lead = cluster.lead;
   const categoryDef = CATEGORIES[cluster.category];
@@ -74,7 +122,7 @@ export default async function StoryPage({
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6">
-      <StoryJsonLd cluster={cluster} />
+      <StoryJsonLd cluster={cluster} datePublished={publishedByUsAt} />
       <BreadcrumbJsonLd
         items={[
           { name: "Home", path: "/" },
@@ -119,11 +167,19 @@ export default async function StoryPage({
 
       <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-12">
         <article className="lg:col-span-8">
+          {isArchived ? (
+            <p className="mb-4 border-l-2 border-rule-strong bg-surface px-3 py-2 text-xs leading-relaxed text-muted">
+              This story is from the CurrentWire archive. Coverage details
+              reflect the last time it was updated.
+            </p>
+          ) : null}
+
           <div className="flex flex-wrap items-center gap-3">
             {cluster.isBreaking ? <BreakingLabel /> : null}
             <CategoryLabel category={cluster.category} />
             <CountryBadge country={cluster.country} />
             <StatusBadge status={cluster.status} />
+            <ContentTypeBadge contentType={cluster.contentType} />
           </div>
 
           <h1 className="headline mt-3 text-[1.75rem] leading-[1.12] sm:text-4xl lg:text-[2.75rem]">
@@ -143,9 +199,21 @@ export default async function StoryPage({
               isMock={cluster.isMock}
               sourceCount={cluster.sourceCount}
             />
-            {/* SOURCE coverage times, labeled truthfully — these back the
-                JSON-LD datePublished/dateModified, never our render time. */}
+            {/* Truthfully labeled timestamps: "Published by CurrentWire" is
+                our own archive first-seen time; "First/Latest coverage" are
+                SOURCE times. These back the JSON-LD datePublished (archive
+                first — falling back to first coverage) and dateModified —
+                never our render time. */}
             <p className="mt-1.5 text-xs text-muted">
+              {publishedByUsAt ? (
+                <>
+                  Published by CurrentWire{" "}
+                  <time dateTime={publishedByUsAt}>
+                    {fullTimestamp(publishedByUsAt)}
+                  </time>
+                  {" · "}
+                </>
+              ) : null}
               First coverage{" "}
               <time dateTime={cluster.firstPublishedAt}>
                 {fullTimestamp(cluster.firstPublishedAt)}
@@ -163,7 +231,7 @@ export default async function StoryPage({
             <p className="mt-1.5 text-xs text-muted">
               Compiled by{" "}
               <Link
-                href="/methodology"
+                href="/news-desk"
                 className="font-semibold underline hover:text-brand-ink"
               >
                 CurrentWire News Desk

@@ -54,6 +54,7 @@ test.describe("story page seo", () => {
     const h1Text = (await page.locator("h1").textContent())?.trim();
     expect(newsArticle.headline).toBe(h1Text);
     expect(newsArticle.author?.name).toBe("CurrentWire News Desk");
+    expect(newsArticle.author?.url).toContain("/news-desk");
 
     // Visible truthful byline and labeled coverage times.
     await expect(page.getByText("Compiled by CurrentWire News Desk")).toBeVisible();
