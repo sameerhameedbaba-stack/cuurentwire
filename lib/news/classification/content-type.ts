@@ -83,7 +83,11 @@ const PR_HEADLINE_VERBS = [
   // law-firm boilerplate phrasings — plain "class action" or "urges
   // investors" also appear in real journalism and must NOT fire.
   /\b(?:shareholder|investor)s?\s+(?:alert|notice|reminder)\b/i,
-  /\b(?:encourages?|reminds?)\s+(?:investors|shareholders|stockholders)\b/i,
+  // Verb alternates carry both sentence- and title-case; the optional
+  // middle segment must LEAD with a capital (a company name — "Urges
+  // Rackspace Technology, Inc. (NASDAQ: RXT) Investors"), so journalism
+  // like "regulator urges cautious investors" does not fire.
+  /\b(?:[Ee]ncourages?|[Rr]eminds?|[Uu]rges?|[Aa]dvises?|[Aa]lerts?|[Nn]otifies)\s+(?:[A-Z][\w.,&()' -]{0,60}\s)?(?:[Ii]nvestors|[Ss]hareholders|[Ss]tockholders)\b/,
   /\blead\s+plaintiff\s+deadline\b/i,
 ];
 

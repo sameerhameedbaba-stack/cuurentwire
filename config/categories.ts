@@ -60,6 +60,11 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "regulation", "executive order", "byelection", "riding", "mp", "mpp",
       "democrat", "republican", "liberal party", "conservative party", "ndp",
       "bloc québécois", "governor general",
+      // Real-headline benchmark round: political-discourse and justice-
+      // system vocabulary that dominates real US political coverage.
+      "appeals court", "federal judge", "special election", "midterms",
+      "socialist", "socialism", "progressives", "maga", "press secretary",
+      "deportation",
     ],
     // "general" (the GNews catch-all topic) must never imply politics.
     providerAliases: ["politics", "nation"],
@@ -81,6 +86,9 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "wall street", "bay street", "tsx", "nasdaq", "dow jones", "s&p 500",
       "oil prices", "energy prices", "retail sales", "consumer spending", "layoffs",
       "labor", "labour", "union", "strike", "supply chain", "manufacturing",
+      // Real-headline benchmark round.
+      "treasury yield", "funding round", "valuation", "minority stake",
+      "plant closure", "assembly plant", "automaker", "chairman", "rent",
     ],
     providerAliases: ["business", "economy", "finance", "money", "markets"],
   },
@@ -98,6 +106,10 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "tech company", "silicon valley", "startup", "algorithm", "encryption",
       "quantum computing", "broadband", "5g", "streaming platform", "gaming",
       "electric vehicle", "self-driving", "tech regulation", "antitrust",
+      // Real-headline benchmark round: consumer-device and security terms.
+      "vulnerability", "exploit", "malware", "earbuds", "headphones", "laptop",
+      "smartwatch", "foldable", "handheld", "robotaxi", "surveillance",
+      "app store", "cloud storage",
     ],
     providerAliases: ["technology", "tech", "sci-tech"],
   },
@@ -163,6 +175,10 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "physician", "nurses", "patients", "clinical trial", "treatment",
       "medical", "medicine", "surgery", "epidemic", "pandemic preparedness",
       "health care", "healthcare", "insurance coverage",
+      // Real-headline benchmark round: pathogen and drug-class names carry
+      // most real outbreak/recall coverage.
+      "salmonella", "listeria", "covid", "covid-19", "overdose",
+      "weight-loss drug", "cyclosporiasis",
     ],
     providerAliases: ["health", "medical"],
   },
@@ -179,6 +195,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "scientists", "scientific", "physics", "biology", "chemistry", "genome",
       "fossil", "archaeology", "asteroid", "canadian space agency", "csa",
       "discovery", "laboratory", "experiment", "peer-reviewed", "quantum",
+      "eclipse", "exoplanet", "comet", "spaceship",
     ],
     providerAliases: ["science", "space"],
   },
@@ -210,6 +227,12 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "baseball", "football", "quarterback", "coach", "roster", "trade deadline",
       "grey cup", "raptors", "blue jays", "maple leafs", "canucks", "oilers",
       "premier league", "champions league", "transfer window", "tight end",
+      // Real-headline benchmark round: sports coverage speaks in season/
+      // roster vocabulary at least as often as in league names.
+      "preseason", "offseason", "training camp", "free agent", "free agency",
+      "power rankings", "fantasy football", "rookie", "draft pick", "matchday",
+      "striker", "goalkeeper", "midfielder", "hat trick", "medley", "sprint",
+      "grandmaster", "marathon", "national title",
     ],
     providerAliases: ["sports", "sport"],
   },
@@ -236,7 +259,21 @@ export const ENTITY_CATEGORY_SIGNALS: Record<string, CategoryId> = {
   // Sports leagues and governing bodies
   "nfl": "sports", "nba": "sports", "mlb": "sports", "nhl": "sports",
   "mls": "sports", "cfl": "sports", "fifa": "sports", "uefa": "sports",
-  "wnba": "sports", "ncaa": "sports", "pga tour": "sports",
+  "wnba": "sports", "ncaa": "sports", "pga tour": "sports", "ufc": "sports",
+  "laliga": "sports", "la liga": "sports", "bundesliga": "sports",
+  "serie a": "sports", "big ten": "sports", "fbs": "sports",
+  "little league": "sports", "pan pacs": "sports", "wrestlemania": "sports",
+  // Team names carry most real sports headlines. Only unambiguous ones —
+  // no Warriors (generic), no Jets/Giants (multi-league + common noun).
+  "argonauts": "sports", "elks": "sports", "roughriders": "sports",
+  "alouettes": "sports", "stampeders": "sports", "redblacks": "sports",
+  "tiger-cats": "sports", "blue bombers": "sports",
+  "lakers": "sports", "grizzlies": "sports", "pelicans": "sports",
+  "celtics": "sports", "knicks": "sports", "mavericks": "sports",
+  "steelers": "sports", "raiders": "sports", "patriots": "sports",
+  "cowboys": "sports", "packers": "sports", "49ers": "sports",
+  "yankees": "sports", "dodgers": "sports", "red sox": "sports",
+  "harbaugh": "sports", "westbrook": "sports",
   // Markets and economic institutions. "earnings"/"ipo" are keywords, not
   // entities — keeping them here double-counted the same signal.
   "federal reserve": "business", "s&p 500": "business", "dow jones": "business",
@@ -244,16 +281,22 @@ export const ENTITY_CATEGORY_SIGNALS: Record<string, CategoryId> = {
   "opec": "business", "imf": "business",
   // Space and research
   "spacex": "science", "nasa": "science", "james webb": "science",
-  "canadian space agency": "science",
+  "canadian space agency": "science", "virgin galactic": "science",
+  "blue origin": "science", "rocket lab": "science",
   // Big Tech. No "intel": it collides with the intelligence shorthand
   // ("US intel officials") that is common in politics/world coverage.
   "openai": "technology", "microsoft": "technology", "google": "technology",
-  "nvidia": "technology",
+  "nvidia": "technology", "samsung": "technology", "zuckerberg": "technology",
+  "nintendo": "technology", "xbox": "technology", "playstation": "technology",
+  "iphone": "technology", "android": "technology",
   // Health agencies and pharma
   "cdc": "health", "fda": "health", "health canada": "health",
   "pfizer": "health", "moderna": "health",
-  // Government institutions
+  // Government institutions and agencies
   "white house": "politics", "congress": "politics", "supreme court": "politics",
+  "doj": "politics", "dhs": "politics", "dnc": "politics", "rnc": "politics",
+  "eeoc": "politics", "fincen": "politics", "gao": "politics",
+  "justice department": "politics", "homeland security": "politics",
   // International bodies
   "united nations": "world", "nato": "world", "european union": "world",
   // Environment

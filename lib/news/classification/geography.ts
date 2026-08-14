@@ -18,6 +18,16 @@ const US_TERMS = [
   "biden", "trump", "governor", "state department", "irs", "nasa", "capitol hill",
   "democrats", "republicans", "gop", "midterm", "district of columbia",
   "national guard", "veterans affairs", "homeland security",
+  // Real-headline benchmark round: the remaining states (Mississippi ICE
+  // coverage classified GLOBAL). "washington" above covers the state.
+  "alabama", "alaska", "arkansas", "connecticut", "delaware", "hawaii",
+  "idaho", "indiana", "iowa", "kansas", "kentucky", "louisiana", "maine",
+  "maryland", "massachusetts", "minnesota", "mississippi", "missouri",
+  "montana", "nebraska", "nevada", "new hampshire", "new jersey",
+  "new mexico", "north carolina", "north dakota", "oklahoma", "oregon",
+  "rhode island", "south carolina", "south dakota", "tennessee", "utah",
+  "vermont", "west virginia", "wisconsin", "wyoming",
+  "justice department", "air force one",
 ] as const;
 
 /**
@@ -39,6 +49,11 @@ const CA_TERMS = [
   "loonie", "hydro-québec", "via rail", "canada post",
   // Canadian sports institutions — a Leafs or Jays story is Canadian news.
   "maple leafs", "blue jays", "raptors", "canucks", "canadiens",
+  // Real-headline benchmark round: GTA/prairie cities and flag-carrier
+  // companies that anchor domestic Canadian coverage. No "hamilton" (the
+  // musical), no "windsor" (the castle), no bare "peel" (the verb).
+  "brampton", "mississauga", "laval", "regina", "red deer",
+  "westjet", "air canada", "unifor",
 ] as const;
 
 const GLOBAL_NA_TERMS = [
