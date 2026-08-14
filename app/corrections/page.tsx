@@ -44,7 +44,17 @@ export default function CorrectionsPage() {
       <p>
         We review reports promptly. Material inaccuracies are corrected as soon
         as they are verified; classification and clustering fixes also feed
-        improvements to the automated systems that caused them.
+        improvements to the automated systems that caused them. Our
+        summarization and attribution rules are published in the{" "}
+        <Link href="/editorial-standards">editorial standards</Link>.
+      </p>
+
+      <h2>Corrections log</h2>
+      <p>
+        Corrections that materially change what a story page says will be
+        listed here with the date and what changed. Routine classification and
+        grouping fixes are applied continuously by the automated systems and
+        are not individually logged.
       </p>
 
       <p>

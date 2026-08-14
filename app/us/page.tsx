@@ -9,6 +9,7 @@ export const metadata: Metadata = pageMetadata({
   description:
     "Politics, business, technology, society and the stories shaping America.",
   path: "/us",
+  rssPath: "/rss/us",
 });
 
 export default function UnitedStatesPage() {

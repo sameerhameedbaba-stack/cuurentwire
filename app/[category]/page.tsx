@@ -29,6 +29,8 @@ export async function generateMetadata({
     title: def.label,
     description: def.description,
     path: def.path,
+    // Every public category has a matching feed (app/rss/[feed]).
+    rssPath: `/rss/${category}`,
   });
 }
 
@@ -59,7 +61,7 @@ export default async function CategoryPage({
         items={[{ name: "Home", path: "/" }, { name: def.label, path: def.path }]}
       />
       <ItemListJsonLd
-        clusters={[data.hero, ...data.secondary]}
+        clusters={[data.hero, ...data.secondary, ...data.more]}
         path={def.path}
         name={`Top ${def.label} stories`}
       />

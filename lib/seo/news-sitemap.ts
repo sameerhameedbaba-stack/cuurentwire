@@ -68,7 +68,7 @@ export function renderNewsSitemap(
   ].join("\n");
 }
 
-function escapeXml(value: string): string {
+export function escapeXml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

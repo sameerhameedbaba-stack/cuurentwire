@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Archivo, Inter } from "next/font/google";
 import { siteConfig } from "@/config/site";
 import { Footer } from "@/components/layout/Footer";
@@ -40,6 +40,30 @@ export const metadata: Metadata = {
   alternates: {
     types: { "application/rss+xml": [{ url: "/rss", title: siteConfig.name }] },
   },
+  // Sitewide default: indexable with large image previews (Discover/Top
+  // Stories eligibility). Pages built with pageMetadata({noIndex}) replace
+  // this wholesale with their own robots value.
+  robots: {
+    index: true,
+    follow: true,
+    "max-image-preview": "large",
+    "max-snippet": -1,
+    "max-video-preview": -1,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F7F7F5" },
+    { media: "(prefers-color-scheme: dark)", color: "#090909" },
+  ],
 };
 
 /** Applies the saved/system theme before first paint to avoid a flash. */

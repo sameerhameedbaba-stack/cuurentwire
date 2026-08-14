@@ -1,17 +1,21 @@
 import { notFound } from "next/navigation";
+import { CATEGORIES, PUBLIC_CATEGORY_IDS } from "@/config/categories";
 import { siteConfig } from "@/config/site";
 import { getTop100, type Top100Filters } from "@/lib/news/queries";
 import { renderRss } from "@/lib/seo/rss";
 
 export const dynamic = "force-dynamic";
 
+// Every public category gets a feed, plus the two country feeds.
 const FEEDS: Record<string, { title: string; filters: Top100Filters }> = {
   us: { title: "United States", filters: { country: "us" } },
   canada: { title: "Canada", filters: { country: "canada" } },
-  business: { title: "Business", filters: { category: "business" } },
-  technology: { title: "Technology", filters: { category: "technology" } },
-  politics: { title: "Politics", filters: { category: "politics" } },
-  world: { title: "World", filters: { category: "world" } },
+  ...Object.fromEntries(
+    PUBLIC_CATEGORY_IDS.map((id) => [
+      id,
+      { title: CATEGORIES[id].label, filters: { category: id } },
+    ]),
+  ),
 };
 
 export async function GET(

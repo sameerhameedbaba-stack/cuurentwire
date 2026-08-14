@@ -18,12 +18,27 @@ import { ItemListJsonLd } from "@/lib/seo/structured-data";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Top 100 Right Now",
-  description:
-    "The 100 most important current stories across the United States and Canada — ranked by freshness, coverage breadth, source authority and momentum.",
-  path: "/top-100",
-});
+const DESCRIPTION =
+  "The 100 most important current stories across the United States and Canada — ranked by freshness, coverage breadth, source authority and momentum.";
+
+// Pages 2-4 carry ranks 26-100: each needs its own canonical and title so
+// Google doesn't treat them as duplicates of page 1 (same pattern as /latest).
+// Filtered variants still canonicalize to the plain page.
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const raw = Array.isArray(params.page) ? params.page[0] : params.page;
+  const page = Math.max(1, Number.parseInt(raw ?? "1", 10) || 1);
+  return pageMetadata({
+    title: page > 1 ? `Top 100 Right Now — Page ${page}` : "Top 100 Right Now",
+    description: DESCRIPTION,
+    path: page > 1 ? `/top-100?page=${page}` : "/top-100",
+    rssPath: "/rss",
+  });
+}
 
 const PAGE_SIZE = 25;
 
@@ -100,7 +115,12 @@ export default async function Top100Page({
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6">
-      <ItemListJsonLd clusters={visible} path="/top-100" name="Top 100 Right Now" />
+      <ItemListJsonLd
+        clusters={visible}
+        path="/top-100"
+        name="Top 100 Right Now"
+        startPosition={(currentPage - 1) * PAGE_SIZE + 1}
+      />
 
       <header className="border-b-2 border-ink pb-5 dark:border-rule-strong">
         <h1 className="headline text-3xl sm:text-4xl">Top 100 Right Now</h1>

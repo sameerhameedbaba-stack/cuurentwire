@@ -1,0 +1,25 @@
+name: SEO health check
+
+# Daily deterministic SEO regression check against production. Fails loudly
+# (GitHub emails the repo owner) on any regression: broken sitemaps, stale
+# news-sitemap, missing feeds/llms.txt/IndexNow key, invalid story JSON-LD,
+# soft-404s, lost redirects. $0 — no keys, no external services.
+
+on:
+  schedule:
+    - cron: "47 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run SEO health check
+        run: node scripts/seo-health.mjs

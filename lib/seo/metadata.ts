@@ -7,17 +7,31 @@ export function pageMetadata({
   description,
   path,
   noIndex = false,
+  rssPath,
 }: {
   title: string;
   description: string;
   path: string;
   noIndex?: boolean;
+  /** Feed for this page, advertised via <link rel="alternate"> for auto-discovery. */
+  rssPath?: string;
 }): Metadata {
   const canonical = new URL(path, siteConfig.url).toString();
   return {
     title,
     description,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      ...(rssPath
+        ? {
+            types: {
+              "application/rss+xml": [
+                { url: rssPath, title: `${siteConfig.name} — ${title}` },
+              ],
+            },
+          }
+        : {}),
+    },
     robots: noIndex ? { index: false, follow: false } : undefined,
     openGraph: {
       title,

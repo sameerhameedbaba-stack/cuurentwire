@@ -22,7 +22,11 @@ import { COUNTRY_LABELS, type StoryCluster } from "@/lib/news/types";
 import { entitySlug } from "@/lib/news/classification/entities";
 import { truncate } from "@/lib/utils/text";
 import { fullTimestamp } from "@/lib/utils/time";
-import { BreadcrumbJsonLd, StoryJsonLd } from "@/lib/seo/structured-data";
+import {
+  BreadcrumbJsonLd,
+  StoryJsonLd,
+  clampDateModified,
+} from "@/lib/seo/structured-data";
 
 export const dynamic = "force-dynamic";
 
@@ -93,7 +97,10 @@ export async function generateMetadata({
       siteName: siteConfig.name,
       type: "article",
       publishedTime: publishedByUsAt ?? cluster.firstPublishedAt,
-      modifiedTime: cluster.lastPublishedAt,
+      modifiedTime: clampDateModified(
+        publishedByUsAt ?? cluster.firstPublishedAt,
+        cluster.lastPublishedAt,
+      ),
     },
     twitter: { card: "summary_large_image", title: cluster.title, description },
   };

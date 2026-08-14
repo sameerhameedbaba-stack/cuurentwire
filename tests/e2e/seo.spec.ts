@@ -21,6 +21,43 @@ test.describe("sitemap", () => {
   });
 });
 
+test.describe("archive sitemap", () => {
+  test("serves a valid urlset (empty allowed when no database)", async ({ request }) => {
+    const response = await request.get("/archive-sitemap.xml");
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("application/xml");
+    const body = await response.text();
+    expect(body).toContain(`xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"`);
+    expect(body).toContain("</urlset>");
+  });
+});
+
+test.describe("ai search and indexnow surfaces", () => {
+  test("llms.txt is served", async ({ request }) => {
+    const response = await request.get("/llms.txt");
+    expect(response.status()).toBe(200);
+    expect(await response.text()).toContain("# CurrentWire");
+  });
+
+  test("the IndexNow key file is served at the site root", async ({ request }) => {
+    const key = "d67fe7ac1896e8fd9e691a2d2abeca89";
+    const response = await request.get(`/${key}.txt`);
+    expect(response.status()).toBe(200);
+    expect((await response.text()).trim()).toBe(key);
+  });
+});
+
+test.describe("discover directives", () => {
+  test("home page allows large image previews", async ({ page }) => {
+    await page.goto("/");
+    const robots = await page
+      .locator('meta[name="robots"]')
+      .first()
+      .getAttribute("content");
+    expect(robots).toContain("max-image-preview:large");
+  });
+});
+
 test.describe("story page seo", () => {
   test("has one h1, self canonical, NewsArticle JSON-LD and the byline", async ({ page }) => {
     // Full page load (not a client-side transition) so <head> metadata is

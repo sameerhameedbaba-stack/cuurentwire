@@ -46,6 +46,16 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 86400,
   },
   headers: async () => [{ source: "/(.*)", headers: securityHeaders }],
+  // www serves the whole site as a duplicate host without this — one
+  // canonical host (the apex) for every URL.
+  redirects: async () => [
+    {
+      source: "/:path*",
+      has: [{ type: "host", value: "www.currentwire.us" }],
+      destination: "https://currentwire.us/:path*",
+      permanent: true,
+    },
+  ],
   poweredByHeader: false,
 };
 

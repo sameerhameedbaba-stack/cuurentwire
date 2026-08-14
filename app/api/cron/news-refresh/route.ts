@@ -1,9 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { siteConfig } from "@/config/site";
 import { forceRefresh } from "@/lib/cache/store";
-import { archiveDataset } from "@/lib/database/archive";
+import { archiveDataset, findNewClusterIds } from "@/lib/database/archive";
 import { isDatabaseConfigured } from "@/lib/database/client";
 import { persistDataset } from "@/lib/database/persist";
 import { env } from "@/lib/env";
+import { pingIndexNow } from "@/lib/seo/indexnow";
 import { logger } from "@/lib/utils/logger";
 import { secureCompare } from "@/lib/utils/secure-compare";
 
@@ -63,11 +65,29 @@ export async function GET(request: NextRequest) {
     const dataset = await forceRefresh();
     let persisted = false;
     let archivedStories = 0;
+    let indexNowSubmitted = 0;
     if (isDatabaseConfigured()) {
       persisted = await persistDataset(dataset);
+      // Which stories are brand new? Must be answered before the archive
+      // upsert makes everything look old.
+      const liveClusters = dataset.clusters.filter((c) => !c.isMock);
+      const newIds =
+        dataset.dataMode === "mock"
+          ? []
+          : await findNewClusterIds(liveClusters.map((c) => c.id));
       // Permanent story archive: best-effort (archiveDataset catches its own
       // failures), so a broken archive write never breaks the cron response.
       archivedStories = await archiveDataset(dataset);
+      // Tell IndexNow about genuinely new story URLs — production only, so
+      // localhost URLs are never submitted. Best-effort: never throws.
+      if (env.isProduction && archivedStories > 0 && newIds.length > 0) {
+        const byId = new Map(liveClusters.map((c) => [c.id, c]));
+        const urls = newIds
+          .map((id) => byId.get(id))
+          .filter((c): c is NonNullable<typeof c> => Boolean(c))
+          .map((c) => `${siteConfig.url}/story/${c.slug}`);
+        if (await pingIndexNow(urls)) indexNowSubmitted = urls.length;
+      }
     }
     return NextResponse.json({
       ok: true,
@@ -84,6 +104,7 @@ export async function GET(request: NextRequest) {
       })),
       persistedToDatabase: persisted,
       archivedStories,
+      indexNowSubmitted,
     });
   } catch (error) {
     logger.error("cron.refresh_failed", {

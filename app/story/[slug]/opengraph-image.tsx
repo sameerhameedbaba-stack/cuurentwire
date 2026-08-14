@@ -1,6 +1,10 @@
 import { ImageResponse } from "next/og";
 import { CATEGORIES } from "@/config/categories";
 import { siteConfig } from "@/config/site";
+import {
+  archivedStoryToCluster,
+  findArchivedStory,
+} from "@/lib/database/archive";
 import { getClusterBySlug } from "@/lib/news/queries";
 import { truncate } from "@/lib/utils/text";
 
@@ -21,9 +25,18 @@ export default async function OpenGraphImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const cluster = await getClusterBySlug(slug).catch(() => null);
+  // Same resolution order as the page: live dataset, then the permanent
+  // archive — a story that rotated out of the 72h window keeps its headline
+  // card instead of degrading to the generic one.
+  let cluster = await getClusterBySlug(slug).catch(() => null);
+  if (!cluster) {
+    const archived = await findArchivedStory(slug).catch(() => null);
+    if (archived && !archived.mergedIntoClusterId) {
+      cluster = archivedStoryToCluster(archived);
+    }
+  }
 
-  // Generic branded fallback when the story is unknown or expired.
+  // Generic branded fallback when the story is unknown or merged away.
   const headline = cluster ? truncate(cluster.title, 140) : siteConfig.tagline;
   const kicker = cluster ? CATEGORIES[cluster.category].label : "News discovery";
   const coverage = cluster

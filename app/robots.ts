@@ -13,6 +13,7 @@ export default function robots(): MetadataRoute.Robots {
     sitemap: [
       `${siteConfig.url}/sitemap.xml`,
       `${siteConfig.url}/news-sitemap.xml`,
+      `${siteConfig.url}/archive-sitemap.xml`,
     ],
   };
 }

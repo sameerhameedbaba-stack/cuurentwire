@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
 import { isCategoryId } from "@/config/categories";
 import type { SourceTier } from "@/config/sources";
 import type {
@@ -173,6 +173,64 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
       error: error instanceof Error ? error.message : "unknown",
     });
     return 0;
+  }
+}
+
+/**
+ * All live (non-merged) archived stories for the archive sitemap, newest
+ * first. Best-effort: no DB or a failed query yields an empty list, so the
+ * sitemap route still serves a valid empty urlset.
+ */
+export async function listArchivedStoriesForSitemap(
+  limit = 50_000,
+): Promise<{ slug: string; lastModifiedAt: string }[]> {
+  const db = getDb();
+  if (!db) return [];
+  try {
+    const rows = await db
+      .select({
+        slug: storyArchive.slug,
+        lastModifiedAt: storyArchive.lastModifiedAt,
+      })
+      .from(storyArchive)
+      .where(isNull(storyArchive.mergedIntoClusterId))
+      .orderBy(desc(storyArchive.firstSeenAt))
+      .limit(limit);
+    return rows.map((row) => ({
+      slug: row.slug,
+      lastModifiedAt:
+        row.lastModifiedAt instanceof Date
+          ? row.lastModifiedAt.toISOString()
+          : String(row.lastModifiedAt),
+    }));
+  } catch (error) {
+    logger.warn("database.archive_sitemap_query_failed", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    return [];
+  }
+}
+
+/**
+ * Which of these cluster ids have never been archived before? Used to ping
+ * IndexNow for genuinely new story URLs (call BEFORE archiveDataset writes
+ * them). Best-effort: any failure reports nothing new rather than throwing.
+ */
+export async function findNewClusterIds(clusterIds: string[]): Promise<string[]> {
+  const db = getDb();
+  if (!db || clusterIds.length === 0) return [];
+  try {
+    const rows = await db
+      .select({ clusterId: storyArchive.clusterId })
+      .from(storyArchive)
+      .where(inArray(storyArchive.clusterId, clusterIds));
+    const existing = new Set(rows.map((r) => r.clusterId));
+    return clusterIds.filter((id) => !existing.has(id));
+  } catch (error) {
+    logger.warn("database.find_new_clusters_failed", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    return [];
   }
 }
 

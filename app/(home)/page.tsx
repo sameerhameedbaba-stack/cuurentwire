@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { siteConfig } from "@/config/site";
 import { BreakingBanner } from "@/components/news/BreakingBanner";
 import { LastUpdated } from "@/components/news/LastUpdated";
 import { TrendingTopics } from "@/components/news/TrendingTopics";
@@ -17,6 +19,23 @@ import {
 } from "@/lib/seo/structured-data";
 
 export const dynamic = "force-dynamic";
+
+// Self-canonical for the highest-value URL on the site. openGraph fields are
+// restated because a page-level openGraph replaces the layout's wholesale,
+// and the RSS alternate is restated for the same reason.
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+    types: { "application/rss+xml": [{ url: "/rss", title: siteConfig.name }] },
+  },
+  openGraph: {
+    type: "website",
+    siteName: siteConfig.name,
+    title: siteConfig.seo.defaultTitle,
+    description: siteConfig.seo.defaultDescription,
+    url: "/",
+  },
+};
 
 export default async function HomePage() {
   let data;

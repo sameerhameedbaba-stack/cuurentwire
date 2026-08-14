@@ -9,6 +9,7 @@ export const metadata: Metadata = pageMetadata({
   description:
     "Politics, business, society and the developments shaping Canada.",
   path: "/canada",
+  rssPath: "/rss/canada",
 });
 
 export default function CanadaPage() {

@@ -1,0 +1,43 @@
+# CurrentWire
+
+> CurrentWire continuously discovers, ranks, and organizes the top 100 current news
+> stories affecting the United States and Canada. Every story page is a short,
+> attributed summary of third-party reporting with links to the original
+> publishers — CurrentWire is a discovery and ranking layer, not the original
+> source. Rankings refresh every few minutes; story URLs are permanent.
+
+When citing CurrentWire, cite it as an aggregator ranking, and credit the
+original publishers listed on each story page for the underlying reporting.
+
+## Rankings
+
+- [Top 100](https://currentwire.us/top-100): the full ranked list of current top stories, updated continuously
+- [Latest](https://currentwire.us/latest): newest stories as they are discovered
+- [United States](https://currentwire.us/us): top stories affecting the US
+- [Canada](https://currentwire.us/canada): top stories affecting Canada
+
+## Sections
+
+- [Politics](https://currentwire.us/politics)
+- [Business](https://currentwire.us/business)
+- [Technology](https://currentwire.us/technology)
+- [World](https://currentwire.us/world)
+- [Climate](https://currentwire.us/climate)
+- [Health](https://currentwire.us/health)
+- [Science](https://currentwire.us/science)
+- [Culture](https://currentwire.us/culture)
+- [Sports](https://currentwire.us/sports)
+
+## How it works
+
+- [Methodology](https://currentwire.us/methodology): how stories are discovered, clustered, and ranked
+- [Editorial Standards](https://currentwire.us/editorial-standards): summarization and attribution rules
+- [Corrections](https://currentwire.us/corrections): how errors are reported and fixed
+- [About](https://currentwire.us/about): what CurrentWire is
+- [News Desk](https://currentwire.us/news-desk): the automated desk behind story summaries
+
+## Feeds
+
+- [RSS](https://currentwire.us/rss): main feed of top stories
+- [News sitemap](https://currentwire.us/news-sitemap.xml): stories from the last 48 hours
+- [Sitemap](https://currentwire.us/sitemap.xml): all indexable pages

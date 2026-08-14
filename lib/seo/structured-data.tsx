@@ -18,15 +18,27 @@ function JsonLd({ data }: { data: object }) {
 }
 
 export function OrganizationJsonLd() {
+  // NewsMediaOrganization (an Organization subtype) so the editorial policy
+  // pages are machine-readable E-E-A-T signals. No sameAs: social profiles
+  // are not published on the site, and schema must never claim what we
+  // cannot verify.
   return (
     <JsonLd
       data={{
         "@context": "https://schema.org",
-        "@type": "Organization",
+        "@type": "NewsMediaOrganization",
         name: siteConfig.name,
         url: siteConfig.url,
         description: siteConfig.description,
         email: siteConfig.contactEmail,
+        logo: {
+          "@type": "ImageObject",
+          url: `${siteConfig.url}/logo.svg`,
+        },
+        publishingPrinciples: `${siteConfig.url}/editorial-standards`,
+        correctionsPolicy: `${siteConfig.url}/corrections`,
+        masthead: `${siteConfig.url}/news-desk`,
+        actionableFeedbackPolicy: `${siteConfig.url}/contact`,
       }}
     />
   );
@@ -62,6 +74,18 @@ export function WebSiteJsonLd() {
  * "Published by CurrentWire" / "First coverage" / "Latest coverage" labels.
  * Authorship is the algorithmic news desk, never a fabricated human byline.
  */
+/**
+ * dateModified must never precede datePublished: our publication time
+ * (archive first_seen_at) is usually AFTER the sources' latest coverage
+ * time, so the raw pair can be logically inverted. Clamp to published.
+ */
+export function clampDateModified(published: string, modified: string): string {
+  const p = new Date(published).getTime();
+  const m = new Date(modified).getTime();
+  if (!Number.isFinite(p) || !Number.isFinite(m)) return modified;
+  return m >= p ? modified : published;
+}
+
 export function StoryJsonLd({
   cluster,
   datePublished,
@@ -72,10 +96,11 @@ export function StoryJsonLd({
 }) {
   const storyUrl = `${siteConfig.url}/story/${cluster.slug}`;
   const image = [
-    // Only https publisher images; the OG card is always available.
-    ...(cluster.imageUrl?.startsWith("https://") ? [cluster.imageUrl] : []),
+    // Self-hosted card first: always available, rights always clear.
     `${storyUrl}/opengraph-image`,
+    ...(cluster.imageUrl?.startsWith("https://") ? [cluster.imageUrl] : []),
   ];
+  const published = datePublished ?? cluster.firstPublishedAt;
   return (
     <JsonLd
       data={{
@@ -90,8 +115,8 @@ export function StoryJsonLd({
         ...(cluster.contentType && cluster.contentType !== "news"
           ? { genre: CONTENT_TYPE_LABELS[cluster.contentType] }
           : {}),
-        datePublished: datePublished ?? cluster.firstPublishedAt,
-        dateModified: cluster.lastPublishedAt,
+        datePublished: published,
+        dateModified: clampDateModified(published, cluster.lastPublishedAt),
         url: storyUrl,
         mainEntityOfPage: storyUrl,
         image,
@@ -100,6 +125,8 @@ export function StoryJsonLd({
           name: "CurrentWire News Desk",
           url: `${siteConfig.url}/news-desk`,
         },
+        publishingPrinciples: `${siteConfig.url}/editorial-standards`,
+        correctionsPolicy: `${siteConfig.url}/corrections`,
         isBasedOn: cluster.articles.map((a) => a.url),
         publisher: {
           "@type": "Organization",
@@ -121,10 +148,13 @@ export function ItemListJsonLd({
   clusters,
   path,
   name,
+  startPosition = 1,
 }: {
   clusters: StoryCluster[];
   path: string;
   name: string;
+  /** Rank of the first item — paginated lists continue the ranking. */
+  startPosition?: number;
 }) {
   return (
     <JsonLd
@@ -136,7 +166,7 @@ export function ItemListJsonLd({
         numberOfItems: clusters.length,
         itemListElement: clusters.slice(0, 30).map((cluster, index) => ({
           "@type": "ListItem",
-          position: index + 1,
+          position: startPosition + index,
           name: cluster.title,
           url: `${siteConfig.url}/story/${cluster.slug}`,
         })),
