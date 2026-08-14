@@ -11,6 +11,7 @@ import {
   setPreviousDataset,
 } from "@/lib/news/previous";
 import type { Article, NewsDataset, RawArticle } from "@/lib/news/types";
+import { stableId } from "@/lib/utils/text";
 import { MISSIONARY_QUAD } from "../fixtures/cluster-pairs";
 
 const NOW = new Date("2026-08-13T12:00:00Z");
@@ -301,6 +302,51 @@ describe("clusterArticles previous-run id continuity", () => {
     const second = buildRun();
     expect(first[0].id).toBe(second[0].id);
     expect(first[0].id).toMatch(/^c[0-9a-f]{12}$/);
+  });
+
+  it("never mints duplicate ids when a story splits (2026-08-14 live incident)", () => {
+    // Run 1: one cluster of A (earliest — its canonical URL mints the id)
+    // and B. Run 2: the same two articles no longer merge (B was re-titled),
+    // and B's fragment wins the greedy claim on the previous id. A's
+    // fragment must NOT re-derive that exact id from A's URL — that
+    // duplicate id broke every story_clusters upsert for a day.
+    const articleA = makeArticle(
+      "Federal Reserve holds benchmark interest rate steady after policy meeting",
+      "outlet-a.com",
+      90,
+    );
+    const articleB = makeArticle(
+      "Federal Reserve keeps benchmark interest rate unchanged at policy meeting",
+      "outlet-b.com",
+      25,
+    );
+    const firstRun = clusterArticles([articleA, articleB], NOW);
+    expect(firstRun).toHaveLength(1);
+    const mintedFromA = `c${stableId(`cluster:${articleA.canonicalUrl}`)}`;
+    expect(firstRun[0].id).toBe(mintedFromA);
+    setPreviousDataset({
+      articles: firstRun[0].articles,
+      clusters: firstRun,
+    } as unknown as NewsDataset);
+
+    // B re-titled to an unrelated story (same URL), listed FIRST so its
+    // singleton group wins the overlap tie and takes the previous id.
+    const retitledB = makeArticle(
+      "Wildfire crews respond to active fires across the provincial interior",
+      "outlet-b.com",
+      25,
+    );
+    const splitRun = clusterArticles([retitledB, articleA], NOW);
+    expect(splitRun).toHaveLength(2);
+
+    const ids = splitRun.map((c) => c.id);
+    expect(new Set(ids).size).toBe(ids.length);
+
+    const winner = splitRun.find((c) => c.lead.canonicalUrl === retitledB.canonicalUrl);
+    const loser = splitRun.find((c) => c.lead.canonicalUrl === articleA.canonicalUrl);
+    expect(winner?.id).toBe(mintedFromA);
+    expect(loser?.id).toBe(`c${stableId(`cluster:${articleA.canonicalUrl}#2`)}`);
+    expect(loser?.slug.endsWith(loser!.id)).toBe(true);
   });
 });
 

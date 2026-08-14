@@ -17,6 +17,7 @@ import {
 import { slugify } from "@/lib/utils/text";
 import { logger } from "@/lib/utils/logger";
 import { getDb } from "./client";
+import { describeDbError } from "./errors";
 import { storyArchive, type ArchivedSourceRef } from "./schema";
 
 /**
@@ -355,7 +356,7 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
     return clusters.length;
   } catch (error) {
     logger.error("database.archive_failed", {
-      error: error instanceof Error ? error.message : "unknown",
+      error: describeDbError(error),
     });
     return 0;
   }
@@ -390,7 +391,7 @@ export async function listArchivedStoriesForSitemap(
     }));
   } catch (error) {
     logger.warn("database.archive_sitemap_query_failed", {
-      error: error instanceof Error ? error.message : "unknown",
+      error: describeDbError(error),
     });
     return [];
   }
@@ -413,7 +414,7 @@ export async function findNewClusterIds(clusterIds: string[]): Promise<string[]>
     return clusterIds.filter((id) => !existing.has(id));
   } catch (error) {
     logger.warn("database.find_new_clusters_failed", {
-      error: error instanceof Error ? error.message : "unknown",
+      error: describeDbError(error),
     });
     return [];
   }
@@ -553,7 +554,7 @@ export async function findArchivedStory(slug: string): Promise<ArchivedStory | n
     return rowToArchivedStory(exact ?? rows[0]);
   } catch (error) {
     logger.error("database.archive_lookup_failed", {
-      error: error instanceof Error ? error.message : "unknown",
+      error: describeDbError(error),
     });
     return null;
   }
@@ -673,7 +674,7 @@ export async function getArchiveFirstSeen(
     return map;
   } catch (error) {
     logger.error("database.archive_first_seen_failed", {
-      error: error instanceof Error ? error.message : "unknown",
+      error: describeDbError(error),
     });
     return map;
   }
@@ -701,7 +702,7 @@ export async function getArchiveStats(): Promise<{
     return { archived: Number(row.archived), merged: Number(row.merged) };
   } catch (error) {
     logger.error("database.archive_stats_failed", {
-      error: error instanceof Error ? error.message : "unknown",
+      error: describeDbError(error),
     });
     return null;
   }

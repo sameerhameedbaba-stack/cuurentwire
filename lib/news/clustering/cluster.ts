@@ -323,12 +323,18 @@ export function clusterArticles(articles: Article[], now: Date = new Date()): St
   const previousById = new Map(
     (getPreviousDataset()?.clusters ?? []).map((c) => [c.id, c] as const),
   );
+  // Every id handed out this run, previous ids up front: when a story splits,
+  // the fragment holding the original anchor article re-derives EXACTLY the
+  // id the other fragment just inherited, and a duplicate id breaks the
+  // single-statement story_clusters upsert (and story URL uniqueness).
+  const takenIds = new Set(previousIds.values());
   return validated.map((group, index) => {
     const prevId = previousIds.get(index);
     return buildCluster(
       group.map((i) => articles[i]),
       now,
       prevId === undefined ? undefined : previousById.get(prevId),
+      takenIds,
     );
   });
 }
@@ -604,6 +610,7 @@ function buildCluster(
   members: Article[],
   now: Date,
   previous?: StoryCluster,
+  takenIds?: Set<string>,
 ): StoryCluster {
   const sorted = [...members].sort(
     (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
@@ -613,8 +620,16 @@ function buildCluster(
   const lead = pickLead(members);
 
   // Stable cluster identity: the previous run's id when the story already
-  // existed, else anchored on the earliest article's canonical URL.
-  const id = previous?.id ?? `c${stableId(`cluster:${earliest.canonicalUrl}`)}`;
+  // existed, else anchored on the earliest article's canonical URL. The
+  // derived id is bumped deterministically while it collides with an id
+  // already taken this run — without this, the losing fragment of a split
+  // story re-mints the exact id its old cluster kept (its anchor article IS
+  // the URL the original id was hashed from).
+  let id = previous?.id ?? `c${stableId(`cluster:${earliest.canonicalUrl}`)}`;
+  for (let bump = 2; previous === undefined && takenIds?.has(id); bump++) {
+    id = `c${stableId(`cluster:${earliest.canonicalUrl}#${bump}`)}`;
+  }
+  takenIds?.add(id);
   const sourceNames = [...new Set(members.map((m) => m.source))];
 
   const entityCounts = new Map<string, { display: string; count: number }>();
