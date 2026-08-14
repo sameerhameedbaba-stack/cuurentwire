@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { classifyCategory } from "@/lib/news/classification/category";
-import { classifyGeography } from "@/lib/news/classification/geography";
+import {
+  classifyGeography,
+  classifyGeographyDetailed,
+} from "@/lib/news/classification/geography";
 import { extractEntities } from "@/lib/news/classification/entities";
 
 describe("classifyGeography", () => {
@@ -45,6 +48,45 @@ describe("classifyGeography", () => {
         title: "NATO members plan joint exercise amid supply chain concerns",
       }),
     ).toBe("GLOBAL_NA");
+  });
+
+  it("audit regression: Congressional Black Caucus story is US, never Canada", () => {
+    // Live failure: "the CBC" (= the Caucus) was the ONLY term hit on either
+    // side, so a US politics story classified CA at confidence 1.0 and
+    // appeared on the homepage Canada rail and /canada.
+    expect(
+      classifyGeography({
+        title: "Congressional Black Caucus urges DOJ to review Nolan Wells case",
+        description:
+          "Supporters of Nolan Wells' family announced that the CBC sent a request on Wednesday to the DOJ to launch a federal review into the death of the 18-year-old.",
+      }),
+    ).toBe("US");
+  });
+
+  it("still recognizes the Canadian broadcaster CBC alongside strong evidence", () => {
+    const result = classifyGeographyDetailed({
+      title: "CBC News: Ottawa unveils federal budget",
+    });
+    expect(result.country).toBe("CA");
+    // Both "cbc" and "ottawa" must land: the black-caucus guard only
+    // suppresses the acronym when the caucus is named in the text.
+    expect(result.scores.ca).toBeGreaterThanOrEqual(2);
+  });
+
+  it("weak-only acronym evidence never claims a country on its own", () => {
+    expect(classifyGeography({ title: "TSX edges higher at open" })).toBe("GLOBAL");
+    expect(
+      classifyGeography({ title: "NDP support grows in latest poll" }),
+    ).toBe("GLOBAL");
+  });
+
+  it("lets weak terms support and tiebreak a side that has strong evidence", () => {
+    // "premier" (weak) alongside "ontario" (strong) still counts toward CA.
+    const result = classifyGeographyDetailed({
+      title: "Ontario premier announces new highway funding",
+    });
+    expect(result.country).toBe("CA");
+    expect(result.scores.ca).toBeGreaterThanOrEqual(2);
   });
 });
 

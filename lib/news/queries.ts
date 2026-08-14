@@ -238,16 +238,29 @@ export function parsePageParam(value: string | undefined): number {
 }
 
 export async function getClusterBySlug(slug: string): Promise<StoryCluster | null> {
+  return (await getClusterBySlugWithVersion(slug)).cluster;
+}
+
+/**
+ * Story lookup plus the version stamp of the snapshot it came from, so the
+ * story page can render <meta name="cw-dataset-version"> from the SAME
+ * dataset object that produced the cluster — never a second fetch that
+ * could race a refresh and report a different snapshot than the body.
+ */
+export async function getClusterBySlugWithVersion(slug: string): Promise<{
+  cluster: StoryCluster | null;
+  datasetVersion: string;
+}> {
   const dataset = await getDataset();
   // Stable-id fallback: bare cluster ids and re-titled old links resolve,
   // but only when the token after the LAST hyphen IS the id exactly — no
   // open-ended alias URLs.
   const idToken = slug.slice(slug.lastIndexOf("-") + 1);
-  return (
+  const cluster =
     dataset.clusters.find((c) => c.slug === slug) ??
     dataset.clusters.find((c) => c.id === slug || c.id === idToken) ??
-    null
-  );
+    null;
+  return { cluster, datasetVersion: dataset.datasetVersion };
 }
 
 export async function getRelatedClusters(

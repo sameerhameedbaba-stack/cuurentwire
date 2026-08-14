@@ -51,22 +51,51 @@ const BOILERPLATE_SENTENCE = new RegExp(
 const TRAILING_FRAGMENT = /(?:continue reading|read more|click here)[\s.…]*$/i;
 
 /**
- * Split into sentences on terminal punctuation. Deliberately simple and
- * deterministic — abbreviation edge cases only risk over-splitting, and a
- * split fragment is dropped only if it independently matches a boilerplate
- * opener.
+ * Publisher-specific chrome that can arrive WITHOUT block markup (flat text
+ * in plain feeds and pre-fix archived summaries), where no boundary exists
+ * for the sentence-anchored rules to anchor on. Guardian only — the breadth
+ * scan found zero live hits for other publishers; no speculative patterns.
+ */
+const DOMAIN_BOILERPLATE: ReadonlyArray<{ domain: RegExp; pattern: RegExp }> = [
+  {
+    domain: /(?:^|\.)theguardian\.com$/,
+    pattern: /sign up for (?:the )?[^.!?\n]{0,60}?(?:email|newsletter)\b[.!]?/gi,
+  },
+];
+
+/**
+ * Split into sentences on terminal punctuation and on newlines — stripHtml
+ * preserves HTML block boundaries as newlines, and a block boundary IS a
+ * sentence boundary even without punctuation (live-blog standfirsts and
+ * <li> chrome rarely carry any). Deliberately simple and deterministic —
+ * abbreviation edge cases only risk over-splitting, and a split fragment is
+ * dropped only if it independently matches a boilerplate opener.
  */
 function splitSentences(text: string): string[] {
-  return text.split(/(?<=[.!?…])\s+/).filter((s) => s.trim().length > 0);
+  return text
+    .split(/(?<=[.!?…])\s+|\s*\n\s*/)
+    .filter((s) => s.trim().length > 0);
 }
 
 /**
  * Strip leading/trailing boilerplate sentences from a description. Interior
  * sentences are also dropped when they match — CMS chrome can be injected
  * mid-description by some feeds. Returns "" when everything was boilerplate.
+ * When the article's sourceDomain is known, that publisher's DOMAIN_BOILERPLATE
+ * patterns are additionally stripped anywhere in the text (chrome without
+ * block markup). Idempotent: safe to re-apply to already-clean text.
  */
-export function cleanDescription(description: string): string {
-  const withoutFragment = description.replace(TRAILING_FRAGMENT, "").trim();
+export function cleanDescription(description: string, sourceDomain?: string): string {
+  let text = description;
+  const domain = sourceDomain?.toLowerCase().replace(/^www\./, "");
+  if (domain) {
+    for (const rule of DOMAIN_BOILERPLATE) {
+      if (rule.domain.test(domain)) {
+        text = text.replace(rule.pattern, " ").replace(/[ \t]{2,}/g, " ");
+      }
+    }
+  }
+  const withoutFragment = text.replace(TRAILING_FRAGMENT, "").trim();
   const kept = splitSentences(withoutFragment).filter(
     (sentence) => !BOILERPLATE_SENTENCE.test(sentence.trim()),
   );

@@ -65,6 +65,10 @@ export const env = {
     const minutes = Number(raw ?? "30");
     return Number.isFinite(minutes) && minutes > 0 ? minutes : 30;
   },
+  /** Newsletter signup module: hidden unless explicitly enabled. */
+  get newsletterEnabled(): boolean {
+    return process.env.NEWSLETTER_SIGNUP === "on";
+  },
   get isProduction(): boolean {
     return process.env.NODE_ENV === "production";
   },

@@ -1,4 +1,5 @@
 import type { ArchivedStory } from "@/lib/database/archive";
+import { cleanDescription } from "@/lib/news/normalization/boilerplate";
 import type { StoryCluster } from "@/lib/news/types";
 
 /**
@@ -16,6 +17,28 @@ import type { StoryCluster } from "@/lib/news/types";
  * Pure orchestration over injected lookups so the fallback logic is
  * unit-testable without a database.
  */
+
+/**
+ * Display-time guard: summaries archived before a boilerplate-cleaner fix
+ * keep their dirty text forever (the archive upsert only self-heals stories
+ * still in feeds). cleanDescription is idempotent, so re-applying on the way
+ * out is safe. The archive does not record WHICH member wrote the summary,
+ * so every member domain's publisher rules are applied. Never throws —
+ * worst case the stored summary renders as-is.
+ */
+function withCleanSummary(story: ArchivedStory): ArchivedStory {
+  if (!story.summary) return story;
+  try {
+    let cleaned = cleanDescription(story.summary);
+    for (const source of story.sources) {
+      cleaned = cleanDescription(cleaned, source.domain);
+    }
+    if (cleaned === story.summary) return story;
+    return { ...story, summary: cleaned || null };
+  } catch {
+    return story;
+  }
+}
 
 export type StoryResolution =
   | { kind: "live"; cluster: StoryCluster }
@@ -66,5 +89,5 @@ export async function resolveStoryRequest(
   }
 
   if (archived.slug !== slug) return { kind: "redirect", slug: archived.slug };
-  return { kind: "archived", story: archived };
+  return { kind: "archived", story: withCleanSummary(archived) };
 }

@@ -108,12 +108,27 @@ function runPipelineCoalesced(): Promise<NewsDataset> {
   return inFlightDirect;
 }
 
+/** The dataset with the newer generatedAt stamp; either side may be null. */
+function newerDataset(
+  a: NewsDataset | null,
+  b: NewsDataset | null,
+): NewsDataset | null {
+  if (!a) return b;
+  if (!b) return a;
+  return new Date(b.generatedAt).getTime() > new Date(a.generatedAt).getTime()
+    ? b
+    : a;
+}
+
 /**
- * Get the current dataset: shared cache first, then in-process last-good,
- * then the last complete DB snapshot, then a direct pipeline run as the
- * final fallback (reachable only without a usable snapshot). Public routes
- * therefore never invent a fresh partial dataset while a complete shared
- * one exists.
+ * Get the current dataset: shared cache first, then the NEWER of the
+ * in-process last-good dataset and the last complete DB snapshot, then a
+ * direct pipeline run as the final fallback (reachable only without a
+ * usable snapshot). The in-process copy is never trusted on age alone —
+ * comparing generatedAt against the shared snapshot stops a long-warm
+ * instance from serving an older generation than the rest of the fleet.
+ * Public routes therefore never invent a fresh partial dataset while a
+ * complete shared one exists.
  */
 export async function getDataset(): Promise<NewsDataset> {
   const cache = state();
@@ -132,18 +147,19 @@ export async function getDataset(): Promise<NewsDataset> {
     });
   }
 
-  if (cache.dataset && cache.dataset.articles.length > 0) {
-    return cache.dataset;
-  }
-
-  // Serve the last COMPLETE valid snapshot rather than creating a new
-  // partial reality from this route's request.
-  const snapshot = await loadDatasetSnapshot();
-  if (snapshot) {
-    cache.dataset = snapshot;
-    cache.refreshedAt = Date.now();
-    setPreviousDataset(snapshot);
-    return snapshot;
+  // Bounded fallback: serve the newer of the instance-local last-good
+  // dataset and the fleet-wide COMPLETE snapshot — never an unbounded-age
+  // local copy, and never a new partial reality from this route's request.
+  const local =
+    cache.dataset && cache.dataset.articles.length > 0 ? cache.dataset : null;
+  const best = newerDataset(local, await loadDatasetSnapshot());
+  if (best) {
+    if (best !== local) {
+      cache.dataset = best;
+      cache.refreshedAt = Date.now();
+      setPreviousDataset(best);
+    }
+    return best;
   }
 
   // Last resort (no database / nothing persisted yet): run the pipeline
@@ -178,15 +194,19 @@ export async function forceRefresh(): Promise<NewsDataset> {
     logger.error("cache.force_refresh_failed", {
       error: error instanceof Error ? error.message : "unknown",
     });
-    if (cache.dataset) return cache.dataset;
-    // Same fallback discipline as getDataset(): last complete snapshot
-    // before any per-request pipeline reality.
-    const snapshot = await loadDatasetSnapshot();
-    if (snapshot) {
-      cache.dataset = snapshot;
-      cache.refreshedAt = Date.now();
-      setPreviousDataset(snapshot);
-      return snapshot;
+    // Same fallback discipline as getDataset(): the newer of local
+    // last-good and the last complete snapshot, before any per-request
+    // pipeline reality.
+    const local =
+      cache.dataset && cache.dataset.articles.length > 0 ? cache.dataset : null;
+    const best = newerDataset(local, await loadDatasetSnapshot());
+    if (best) {
+      if (best !== local) {
+        cache.dataset = best;
+        cache.refreshedAt = Date.now();
+        setPreviousDataset(best);
+      }
+      return best;
     }
     return runPipelineCoalesced();
   }

@@ -111,6 +111,14 @@ export interface StoryCluster {
    * the lead article's content type.
    */
   contentType?: ContentType;
+  /**
+   * Category-hysteresis state (internal, see cluster.ts): a fresh majority
+   * vote that disagreed with the carried-over category while membership was
+   * unchanged, and how many consecutive generations it has persisted. Flows
+   * through the DB snapshot jsonb so the streak survives cold starts on any
+   * instance. Absent whenever vote and category agree.
+   */
+  categoryStreak?: { candidate: CategoryId; count: number };
   imageUrl?: string;
   /** Members, best source tier first, then newest. */
   articles: Article[];

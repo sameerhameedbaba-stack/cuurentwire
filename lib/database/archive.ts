@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import { isCategoryId } from "@/config/categories";
 import type { SourceTier } from "@/config/sources";
 import type {
@@ -9,6 +9,11 @@ import type {
   StoryCluster,
 } from "@/lib/news/types";
 import { COUNTRY_LABELS } from "@/lib/news/types";
+import {
+  appendStoryHistory,
+  diffStoryForHistory,
+  type StoryUpdateEvent,
+} from "@/lib/news/story-updates";
 import { slugify } from "@/lib/utils/text";
 import { logger } from "@/lib/utils/logger";
 import { getDb } from "./client";
@@ -23,6 +28,63 @@ import { storyArchive, type ArchivedSourceRef } from "./schema";
  * live dataset no longer knows a URL. Everything in this module is a no-op
  * when DATABASE_URL is unset — the app behaves exactly as before.
  */
+
+type Db = NonNullable<ReturnType<typeof getDb>>;
+
+/**
+ * Runtime schema guard for columns/indexes added after the table shipped.
+ * Neon is reachable only through DATABASE_URL in the deployment — there is
+ * no manual migration path — so the app applies additive DDL itself:
+ * idempotent, memoized per db instance (one attempt per process) and
+ * best-effort. When it fails, the history feature is disabled for the
+ * process but plain archiving keeps working: every read/write of the new
+ * column is guarded behind this result.
+ */
+const archiveSchemaEnsured = new WeakMap<object, Promise<boolean>>();
+
+async function runArchiveSchemaMigration(db: Db): Promise<boolean> {
+  // Cheap existence checks first so the steady state never issues DDL
+  // (ALTER TABLE takes an exclusive lock even when it is a no-op).
+  const column = await db.execute(sql`
+    select 1 from information_schema.columns
+    where table_name = 'story_archive' and column_name = 'history'
+  `);
+  if (column.rows.length === 0) {
+    await db.execute(
+      sql`alter table story_archive add column if not exists history jsonb not null default '[]'::jsonb`,
+    );
+  }
+  const gin = await db.execute(sql`
+    select 1 from pg_indexes
+    where tablename = 'story_archive' and indexname = 'story_archive_entities_gin'
+  `);
+  if (gin.rows.length === 0) {
+    await db.execute(
+      sql`create index if not exists story_archive_entities_gin on story_archive using gin (entities)`,
+    );
+  }
+  return true;
+}
+
+/**
+ * True when the runtime-migrated parts of story_archive (history column,
+ * entities gin index) are known to exist. False without a DB or after a
+ * failed migration attempt — the failure is logged once per process.
+ */
+export function ensureArchiveSchema(): Promise<boolean> {
+  const db = getDb();
+  if (!db) return Promise.resolve(false);
+  const cached = archiveSchemaEnsured.get(db);
+  if (cached) return cached;
+  const attempt = runArchiveSchemaMigration(db).catch((error) => {
+    logger.warn("database.archive_schema_ensure_failed", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    return false;
+  });
+  archiveSchemaEnsured.set(db, attempt);
+  return attempt;
+}
 
 /** Archived story as read back from the database (all dates ISO strings). */
 export interface ArchivedStory {
@@ -84,10 +146,36 @@ export function clusterToArchiveRow(cluster: StoryCluster, now: Date = new Date(
   };
 }
 
+/**
+ * Full-row shape for archived-story reads, MINUS runtime-migrated columns
+ * (history): selecting these explicitly keeps reads working on a database
+ * ensureArchiveSchema() has not migrated yet.
+ */
+export type ArchivedStoryRow = Omit<typeof storyArchive.$inferSelect, "history">;
+
+const archivedStoryColumns = {
+  clusterId: storyArchive.clusterId,
+  slug: storyArchive.slug,
+  title: storyArchive.title,
+  summary: storyArchive.summary,
+  category: storyArchive.category,
+  geography: storyArchive.geography,
+  contentType: storyArchive.contentType,
+  imageUrl: storyArchive.imageUrl,
+  firstPublishedAt: storyArchive.firstPublishedAt,
+  lastPublishedAt: storyArchive.lastPublishedAt,
+  firstSeenAt: storyArchive.firstSeenAt,
+  lastModifiedAt: storyArchive.lastModifiedAt,
+  rankingScore: storyArchive.rankingScore,
+  sourceCount: storyArchive.sourceCount,
+  sources: storyArchive.sources,
+  entities: storyArchive.entities,
+  mergedIntoClusterId: storyArchive.mergedIntoClusterId,
+  updatedAt: storyArchive.updatedAt,
+};
+
 /** Map a database row (Date-typed timestamps) to an ArchivedStory. */
-export function rowToArchivedStory(
-  row: typeof storyArchive.$inferSelect,
-): ArchivedStory {
+export function rowToArchivedStory(row: ArchivedStoryRow): ArchivedStory {
   return {
     clusterId: row.clusterId,
     slug: row.slug,
@@ -110,6 +198,82 @@ export function rowToArchivedStory(
 }
 
 const UPSERT_CHUNK = 100;
+const HISTORY_SELECT_CHUNK = 200;
+
+/**
+ * New history value for EVERY incoming cluster id: the previously stored
+ * events plus whatever this refresh changed (capped, oldest dropped). The
+ * previous source names are derived from the row's sources jsonb — no extra
+ * column needed. Returns null on any failure so the upsert omits the
+ * history column entirely instead of overwriting stored events.
+ */
+async function computeArchiveHistories(
+  db: Db,
+  clusters: StoryCluster[],
+  dataset: NewsDataset,
+): Promise<Map<string, StoryUpdateEvent[]> | null> {
+  try {
+    const ids = clusters.map((c) => c.id);
+    const prevById = new Map<
+      string,
+      {
+        title: string;
+        sourceCount: number;
+        category: string;
+        sources: ArchivedSourceRef[] | null;
+        history: StoryUpdateEvent[] | null;
+      }
+    >();
+    for (let i = 0; i < ids.length; i += HISTORY_SELECT_CHUNK) {
+      const rows = await db
+        .select({
+          clusterId: storyArchive.clusterId,
+          title: storyArchive.title,
+          sourceCount: storyArchive.sourceCount,
+          category: storyArchive.category,
+          sources: storyArchive.sources,
+          history: storyArchive.history,
+        })
+        .from(storyArchive)
+        .where(inArray(storyArchive.clusterId, ids.slice(i, i + HISTORY_SELECT_CHUNK)));
+      for (const row of rows) prevById.set(row.clusterId, row);
+    }
+    const histories = new Map<string, StoryUpdateEvent[]>();
+    for (const cluster of clusters) {
+      const prev = prevById.get(cluster.id);
+      if (!prev) {
+        // Never archived before: new stories start with an empty history.
+        histories.set(cluster.id, []);
+        continue;
+      }
+      const prevSources = Array.isArray(prev.sources) ? prev.sources : [];
+      const events = diffStoryForHistory(
+        {
+          title: prev.title,
+          sourceCount: prev.sourceCount,
+          category: prev.category,
+          sourceNames: [...new Set(prevSources.map((s) => s.name))],
+        },
+        {
+          title: cluster.title,
+          sourceCount: cluster.sourceCount,
+          category: cluster.category,
+          sourceNames: cluster.sourceNames,
+        },
+        dataset.datasetVersion,
+        dataset.generatedAt,
+      );
+      const prevHistory = Array.isArray(prev.history) ? prev.history : [];
+      histories.set(cluster.id, appendStoryHistory(prevHistory, events));
+    }
+    return histories;
+  } catch (error) {
+    logger.warn("database.archive_history_failed", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    return null;
+  }
+}
 
 /**
  * Upsert every real cluster of the dataset into story_archive.
@@ -124,12 +288,32 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
   const clusters = dataset.clusters.filter((c) => !c.isMock);
   if (clusters.length === 0) return 0;
 
+  const schemaReady = await ensureArchiveSchema();
+
   try {
     const now = new Date();
+    // null disables the history feature for this write (schema not
+    // migrated, or the diff itself failed): rows then omit the column so
+    // stored jsonb values are left untouched.
+    const histories = schemaReady
+      ? await computeArchiveHistories(db, clusters, dataset)
+      : null;
+    // Touch rows whose story content OR labels actually changed (or that
+    // carry a stale merge pointer needing to be cleared) — a category- or
+    // geography-only change must still refresh the archived copy.
+    const changePredicate = sql`${storyArchive.lastPublishedAt} is distinct from excluded.last_published_at
+      or ${storyArchive.title} is distinct from excluded.title
+      or ${storyArchive.summary} is distinct from excluded.summary
+      or ${storyArchive.sourceCount} is distinct from excluded.source_count
+      or ${storyArchive.category} is distinct from excluded.category
+      or ${storyArchive.geography} is distinct from excluded.geography
+      or ${storyArchive.contentType} is distinct from excluded.content_type
+      or ${storyArchive.mergedIntoClusterId} is not null`;
     for (let i = 0; i < clusters.length; i += UPSERT_CHUNK) {
-      const rows = clusters
-        .slice(i, i + UPSERT_CHUNK)
-        .map((c) => clusterToArchiveRow(c, now));
+      const rows = clusters.slice(i, i + UPSERT_CHUNK).map((c) => {
+        const row = clusterToArchiveRow(c, now);
+        return histories ? { ...row, history: histories.get(c.id) ?? [] } : row;
+      });
       await db
         .insert(storyArchive)
         .values(rows)
@@ -154,19 +338,20 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
             // A cluster id present in the CURRENT dataset is live again —
             // any old merge pointer is stale and must not redirect it.
             mergedIntoClusterId: sql`null`,
+            ...(histories ? { history: sql`excluded.history` } : {}),
             // first_seen_at is deliberately NOT in this set — written once.
           },
-          // Only touch rows whose story content actually changed (or that
-          // carry a stale merge pointer needing to be cleared).
-          setWhere: sql`${storyArchive.lastPublishedAt} is distinct from excluded.last_published_at
-            or ${storyArchive.title} is distinct from excluded.title
-            or ${storyArchive.summary} is distinct from excluded.summary
-            or ${storyArchive.sourceCount} is distinct from excluded.source_count
-            or ${storyArchive.mergedIntoClusterId} is not null`,
+          setWhere: histories
+            ? sql`${changePredicate} or ${storyArchive.history} is distinct from excluded.history`
+            : changePredicate,
         });
     }
     const merges = await recordClusterMerges(dataset, now);
-    logger.info("database.archived", { clusters: clusters.length, merges });
+    logger.info("database.archived", {
+      clusters: clusters.length,
+      merges,
+      history: histories !== null,
+    });
     return clusters.length;
   } catch (error) {
     logger.error("database.archive_failed", {
@@ -352,7 +537,7 @@ export async function findArchivedStory(slug: string): Promise<ArchivedStory | n
   try {
     const idToken = idTokenFromSlug(slug);
     const rows = await db
-      .select()
+      .select(archivedStoryColumns)
       .from(storyArchive)
       .where(
         or(
@@ -371,6 +556,98 @@ export async function findArchivedStory(slug: string): Promise<ArchivedStory | n
       error: error instanceof Error ? error.message : "unknown",
     });
     return null;
+  }
+}
+
+/**
+ * Update timeline of an archived story, oldest-to-newest, exactly as
+ * stored. Empty on ANY failure — no DB, schema not migrated, unknown id,
+ * query error — never throws to callers.
+ */
+export async function getStoryHistory(clusterId: string): Promise<StoryUpdateEvent[]> {
+  const db = getDb();
+  if (!db || !clusterId) return [];
+  try {
+    if (!(await ensureArchiveSchema())) return [];
+    const rows = await db
+      .select({ history: storyArchive.history })
+      .from(storyArchive)
+      .where(eq(storyArchive.clusterId, clusterId))
+      .limit(1);
+    const history = rows[0]?.history;
+    return Array.isArray(history) ? history : [];
+  } catch (error) {
+    logger.warn("database.story_history_failed", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    return [];
+  }
+}
+
+/** One archived story surfaced as earlier coverage of an overlapping topic. */
+export type EarlierCoverageItem = {
+  clusterId: string;
+  slug: string;
+  title: string;
+  lastPublishedAt: string;
+  sourceCount: number;
+};
+
+/**
+ * Archived stories whose entities overlap the given list — earlier coverage
+ * of the same topic. Excludes merge redirects and the given cluster,
+ * newest first. Empty on ANY failure (no DB, bad query) — never throws.
+ */
+export async function findEarlierCoverage(
+  entities: string[],
+  excludeClusterId: string,
+  limit = 5,
+): Promise<EarlierCoverageItem[]> {
+  const db = getDb();
+  const wanted = entities.filter((e) => e.length > 0);
+  if (!db || wanted.length === 0 || limit <= 0) return [];
+  try {
+    // Opportunistic: makes sure the entities gin index exists. The query
+    // itself only touches columns present since the table shipped, so a
+    // failed migration merely means an unindexed scan.
+    await ensureArchiveSchema();
+    const rows = await db
+      .select({
+        clusterId: storyArchive.clusterId,
+        slug: storyArchive.slug,
+        title: storyArchive.title,
+        lastPublishedAt: storyArchive.lastPublishedAt,
+        sourceCount: storyArchive.sourceCount,
+      })
+      .from(storyArchive)
+      .where(
+        and(
+          isNull(storyArchive.mergedIntoClusterId),
+          ne(storyArchive.clusterId, excludeClusterId),
+          // jsonb ?| text[]: any of the entities appears in the row.
+          sql`${storyArchive.entities} ?| array[${sql.join(
+            wanted.map((e) => sql`${e}`),
+            sql`, `,
+          )}]::text[]`,
+        ),
+      )
+      .orderBy(desc(storyArchive.lastPublishedAt))
+      .limit(limit);
+    return rows.map((row) => ({
+      clusterId: row.clusterId,
+      slug: row.slug,
+      title: row.title,
+      lastPublishedAt:
+        row.lastPublishedAt instanceof Date
+          ? row.lastPublishedAt.toISOString()
+          : String(row.lastPublishedAt),
+      sourceCount: row.sourceCount,
+    }));
+  } catch (error) {
+    logger.warn("database.earlier_coverage_failed", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    return [];
   }
 }
 

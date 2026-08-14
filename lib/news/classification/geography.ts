@@ -5,9 +5,17 @@ import type { Country } from "@/lib/news/types";
  * Content signals (entities, places, institutions) dominate; the source's home
  * country is only a weak tiebreaker — a Reuters story about the Canadian
  * government must classify as Canada.
+ *
+ * Term lists are split into evidence tiers. STRONG terms are unambiguous on
+ * their own (country names/adjectives, states/provinces, cities, national
+ * institutions, named leaders). WEAK terms are collision-prone short forms
+ * and acronyms — "CBC" is also the Congressional Black Caucus, "premier" a
+ * foreign head of government. Weak hits add to a side's score but can never
+ * establish a country without strong evidence on that same side: a live US
+ * politics story landed in the Canada hub on a single unopposed "cbc" hit.
  */
 
-const US_TERMS = [
+const US_STRONG_TERMS = [
   "united states", "u.s.", "america", "american", "washington",
   "white house", "congress", "senate", "house of representatives", "pentagon",
   "federal reserve", "supreme court", "fbi", "cia", "epa", "fda", "cdc",
@@ -16,7 +24,7 @@ const US_TERMS = [
   "illinois", "virginia", "colorado", "seattle", "chicago", "los angeles",
   "boston", "houston", "atlanta", "detroit", "san francisco", "philadelphia",
   "biden", "trump", "governor", "state department", "irs", "nasa", "capitol hill",
-  "democrats", "republicans", "gop", "midterm", "district of columbia",
+  "democrats", "republicans", "midterm", "district of columbia",
   "national guard", "veterans affairs", "homeland security",
   // Real-headline benchmark round: the remaining states (Mississippi ICE
   // coverage classified GLOBAL). "washington" above covers the state.
@@ -30,21 +38,25 @@ const US_TERMS = [
   "justice department", "air force one",
 ] as const;
 
+// Audit round: "DOJ" was missing entirely, so a Congressional Black Caucus
+// story had zero US evidence to oppose the false "cbc" hit.
+const US_WEAK_TERMS = ["gop", "doj"] as const;
+
 /**
  * No "prime minister" / "house of commons": both are just as common in UK
  * (and other Commonwealth) coverage and made every foreign-PM story claim
  * Canada. No bare "indigenous" (generic worldwide) and no "gta" (collides
  * with the video game); Canadian stories carry stronger terms anyway.
  */
-const CA_TERMS = [
+const CA_STRONG_TERMS = [
   "canada", "canadian", "canadians", "ottawa", "toronto", "vancouver",
   "montreal", "montréal", "calgary", "edmonton", "winnipeg", "quebec",
   "québec", "ontario", "alberta", "british columbia", "manitoba",
   "saskatchewan", "nova scotia", "new brunswick", "newfoundland",
   "prince edward island", "yukon", "nunavut", "northwest territories",
-  "parliament hill", "premier", "governor general",
-  "bank of canada", "cbc", "rcmp", "trudeau", "carney", "bloc québécois", "ndp",
-  "first nations", "métis", "inuit", "grey cup", "tsx",
+  "parliament hill", "governor general",
+  "bank of canada", "rcmp", "trudeau", "carney", "bloc québécois",
+  "first nations", "métis", "inuit", "grey cup",
   "health canada", "statistics canada", "bay street", "oil sands",
   "loonie", "hydro-québec", "via rail", "canada post",
   // Canadian sports institutions — a Leafs or Jays story is Canadian news.
@@ -55,6 +67,11 @@ const CA_TERMS = [
   "brampton", "mississauga", "laval", "regina", "red deer",
   "westjet", "air canada", "unifor",
 ] as const;
+
+// "cbc" is the Congressional Black Caucus in US politics coverage, "tsx"
+// appears in any cross-listed ticker line, "ndp" and "premier" show up in
+// foreign-politics wire copy.
+const CA_WEAK_TERMS = ["premier", "cbc", "ndp", "tsx"] as const;
 
 const GLOBAL_NA_TERMS = [
   "nato", "g7", "g20", "north america", "usmca", "nafta", "trade war",
@@ -70,6 +87,11 @@ const regexCache = new Map<string, RegExp>();
  *   soccer coverage (which put European transfer stories in CA).
  * - "america(n)" refers to the US except in continental phrases.
  * - "governor" is a US state governor, not Canada's governor general.
+ * - "congress" must cover "Congressional" (negotiators, Black Caucus).
+ * - "cbc" is guarded across the WHOLE text: "the CBC sent a request" in a
+ *   Congressional Black Caucus story is not the Canadian broadcaster, even
+ *   when the acronym appears sentences away from its expansion (this put a
+ *   live US politics story in the Canada hub).
  */
 const TERM_REGEX_OVERRIDES: Record<string, RegExp> = {
   premier:
@@ -77,6 +99,8 @@ const TERM_REGEX_OVERRIDES: Record<string, RegExp> = {
   america: /(?<!south )(?<!latin )(?<!central )(?<!north )(?<![a-z0-9])america(?![a-z0-9])/i,
   american: /(?<!south )(?<!latin )(?<!central )(?<!north )(?<![a-z0-9])american(?![a-z0-9])/i,
   governor: /(?<![a-z0-9])governor(?![a-z0-9])(?!\s+general)/i,
+  congress: /(?<![a-z0-9])congress(?:ional|es)?(?![a-z0-9])/i,
+  cbc: /^(?![\s\S]*black caucus)[\s\S]*(?<![a-z0-9])cbc(?![a-z0-9])/i,
 };
 
 /**
@@ -132,15 +156,20 @@ export function classifyGeography(input: GeographyInput): Country {
 export function classifyGeographyDetailed(input: GeographyInput): GeographyResult {
   const text = ` ${input.title} ${input.description ?? ""} `.toLowerCase();
 
-  let usScore = countMatches(text, US_TERMS);
-  let caScore = countMatches(text, CA_TERMS);
+  const usStrongHits = countMatches(text, US_STRONG_TERMS);
+  const caStrongHits = countMatches(text, CA_STRONG_TERMS);
+  let usScore = usStrongHits + countMatches(text, US_WEAK_TERMS);
+  let caScore = caStrongHits + countMatches(text, CA_WEAK_TERMS);
   const naScore = countMatches(text, GLOBAL_NA_TERMS);
 
   // Case-sensitive check for the bare abbreviation: "US and Canada resume
-  // talks" — the lowercase pronoun "us" must never count.
+  // talks" — the lowercase pronoun "us" must never count. An explicit
+  // country abbreviation is strong evidence.
   const originalText = `${input.title} ${input.description ?? ""}`;
+  let usHasStrong = usStrongHits > 0;
   if (/(?<![A-Za-z0-9])(US|USA|U\.S\.A?\.?)(?![A-Za-z0-9])/.test(originalText)) {
     usScore += 1;
+    usHasStrong = true;
   }
 
   // Provider-declared country is a weak signal: GNews serves the same
@@ -158,23 +187,32 @@ export function classifyGeographyDetailed(input: GeographyInput): GeographyResul
   }
 
   const scores = { us: usScore, ca: caScore, northAmerica: naScore };
-  const top = Math.max(usScore, caScore);
-  const margin = top > 0 ? Math.abs(usScore - caScore) / top : 0;
 
-  if (usScore >= 1 && caScore >= 1 && Math.abs(usScore - caScore) <= 1) {
+  // Evidence-tier gate: weak-term, provider and source signals may support
+  // or tiebreak a side that already has strong evidence, but can never
+  // establish a country alone — a side with zero strong hits is out of
+  // contention entirely (its raw score stays in `scores` for diagnostics).
+  const usEffective = usHasStrong ? usScore : 0;
+  const caEffective = caStrongHits > 0 ? caScore : 0;
+
+  const top = Math.max(usEffective, caEffective);
+  const margin = top > 0 ? Math.abs(usEffective - caEffective) / top : 0;
+
+  if (usEffective >= 1 && caEffective >= 1 && Math.abs(usEffective - caEffective) <= 1) {
     // Both sides matched with near-balance — the balance IS the confidence.
     return { country: "US_CA", confidence: 1 - margin, scores };
   }
-  if (caScore > usScore && caScore >= 1) {
+  if (caEffective > usEffective && caEffective >= 1) {
     return { country: "CA", confidence: Math.min(1, margin), scores };
   }
-  if (usScore > caScore && usScore >= 1) {
+  if (usEffective > caEffective && usEffective >= 1) {
     return { country: "US", confidence: Math.min(1, margin), scores };
   }
   if (naScore >= 1) {
     return { country: "GLOBAL_NA", confidence: Math.min(1, naScore / 2), scores };
   }
-  // Nothing matched anywhere: confidently NOT US/Canada coverage.
+  // No strong national evidence anywhere: NOT US/Canada coverage. Weak-only
+  // hits lower confidence but still keep the story out of both country hubs.
   return { country: "GLOBAL", confidence: usScore + caScore === 0 ? 1 : 0.5, scores };
 }
 

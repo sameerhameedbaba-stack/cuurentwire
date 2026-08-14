@@ -57,6 +57,7 @@ export default async function CategoryPage({
 
   return (
     <div className="mx-auto max-w-[1360px] px-4 py-8 sm:px-6">
+      <meta name="cw-dataset-version" content={data.dataset.datasetVersion} />
       <BreadcrumbJsonLd
         items={[{ name: "Home", path: "/" }, { name: def.label, path: def.path }]}
       />

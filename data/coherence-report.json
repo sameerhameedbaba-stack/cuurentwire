@@ -1,0 +1,107 @@
+{
+  "ranAt": "2026-08-14T22:09:42.579Z",
+  "base": "https://currentwire.us",
+  "listPages": [
+    "/",
+    "/top-100",
+    "/us",
+    "/canada",
+    "/latest",
+    "/politics",
+    "/business"
+  ],
+  "stats": {
+    "pagesFetched": 14,
+    "pageErrors": [],
+    "cards": 520,
+    "cardsWithId": 520,
+    "cardsWithCategory": 440,
+    "cardsWithCountry": 204,
+    "cardsWithSources": 52,
+    "storyPagesFetched": 198,
+    "storyErrors": [],
+    "uniqueClusters": 99
+  },
+  "coverage": {
+    "clusterId": 1,
+    "category": 0.846,
+    "country": 0.392,
+    "sources": 0.1
+  },
+  "versionsSeen": [
+    "unknown"
+  ],
+  "violations": [
+    {
+      "type": "same-version-mismatch",
+      "clusterId": "c29c980e4829c",
+      "version": "unknown",
+      "field": "category",
+      "confidence": "reduced",
+      "values": [
+        {
+          "value": "business",
+          "surfaces": [
+            "/ (r1)",
+            "/ (r1)",
+            "/top-100 (r1)",
+            "/business (r1)",
+            "/story/watch-what-happens-if-luigi-mangione-pleads-guilty-today-c29c980e4829c (r1)",
+            "/ (r2)",
+            "/ (r2)",
+            "/top-100 (r2)",
+            "/business (r2)",
+            "/story/watch-what-happens-if-luigi-mangione-pleads-guilty-today-c29c980e4829c (r2)"
+          ]
+        },
+        {
+          "value": "general",
+          "surfaces": [
+            "/latest (r1)",
+            "/latest (r2)"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "same-version-mismatch",
+      "clusterId": "cecef2d86fff4",
+      "version": "unknown",
+      "field": "category",
+      "confidence": "reduced",
+      "values": [
+        {
+          "value": "politics",
+          "surfaces": [
+            "/ (r1)",
+            "/ (r1)",
+            "/top-100 (r1)",
+            "/us (r1)",
+            "/us (r1)",
+            "/politics (r1)",
+            "/story/trump-threatens-to-declare-strait-of-hormuz-territory-of-the-united-states-cecef2d86fff4 (r1)",
+            "/ (r2)",
+            "/ (r2)",
+            "/top-100 (r2)",
+            "/us (r2)",
+            "/us (r2)",
+            "/politics (r2)",
+            "/story/trump-threatens-to-declare-strait-of-hormuz-territory-of-the-united-states-cecef2d86fff4 (r2)"
+          ]
+        },
+        {
+          "value": "general",
+          "surfaces": [
+            "/us (r1)",
+            "/latest (r1)",
+            "/us (r2)",
+            "/latest (r2)"
+          ]
+        }
+      ]
+    }
+  ],
+  "warningsTotal": 0,
+  "warnings": [],
+  "result": "FAIL"
+}

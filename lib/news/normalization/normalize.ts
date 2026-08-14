@@ -45,7 +45,9 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
 
   // Content type runs on the RAW title/description BEFORE display cleaning:
   // the "| Author" byline pipe that cleaning strips IS an opinion signal.
-  const rawTitle = stripHtml(title);
+  // Titles are single-line display text — the block-boundary newlines
+  // stripHtml preserves only matter for description cleaning.
+  const rawTitle = stripHtml(title).replace(/\n+/g, " ");
   const rawDescription = raw.description?.trim()
     ? stripHtml(raw.description.trim())
     : undefined;
@@ -58,7 +60,7 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
   // Boilerplate is stripped BEFORE truncation so a trailing "Sign up for…"
   // sentence can never survive by being inside the length budget.
   const cleanedDescription = rawDescription
-    ? cleanDescription(rawDescription)
+    ? cleanDescription(rawDescription, sourceDomain)
     : "";
   const description = cleanedDescription
     ? truncate(cleanedDescription, MAX_DESCRIPTION_LENGTH)
@@ -150,6 +152,11 @@ export function dedupeExact(articles: Article[]): { unique: Article[]; removed: 
 
 function stripHtml(input: string): string {
   return input
+    // Block-level boundaries ARE sentence boundaries: Guardian live-blog
+    // descriptions pack standfirst + <li> chrome + body into one blob, and
+    // flattening blocks to spaces would hide the chrome from the sentence-
+    // anchored boilerplate rules. Preserve them as newlines instead.
+    .replace(/<\/(?:p|li|ul|ol|div|h[1-6]|blockquote|td|tr)>|<br\s*\/?>/gi, "\n")
     .replace(/<[^>]*>/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
@@ -157,6 +164,7 @@ function stripHtml(input: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#0?39;/g, "'")
     .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\s*\n\s*/g, "\n")
     .trim();
 }

@@ -115,6 +115,7 @@ export default async function Top100Page({
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6">
+      <meta name="cw-dataset-version" content={dataset.datasetVersion} />
       <ItemListJsonLd
         clusters={visible}
         path="/top-100"

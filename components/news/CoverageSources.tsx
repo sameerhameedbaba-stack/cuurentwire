@@ -1,6 +1,8 @@
 import { ExternalLink } from "lucide-react";
-import type { StoryCluster } from "@/lib/news/types";
+import { describeUpdateEvent } from "@/lib/news/coverage-analysis";
 import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
+import type { StoryUpdateEvent } from "@/lib/news/story-updates";
+import type { Article, StoryCluster } from "@/lib/news/types";
 import { Timestamp } from "./atoms";
 
 /**
@@ -16,10 +18,15 @@ export function CoverageSources({ cluster }: { cluster: StoryCluster }) {
       >
         Coverage
       </h2>
+      {/* Count coherence: the list below renders one entry per REPORT, so
+          when reports outnumber distinct sources the header states both —
+          the visible list length always matches a stated number. */}
       <p className="text-sm text-muted">
-        {cluster.sourceCount === 1
-          ? "1 publication is covering this story."
-          : `${cluster.sourceCount} publications are covering this story.`}
+        {cluster.articles.length !== cluster.sourceCount
+          ? `${cluster.articles.length} reports from ${cluster.sourceCount} source${cluster.sourceCount === 1 ? "" : "s"}.`
+          : cluster.sourceCount === 1
+            ? "1 publication is covering this story."
+            : `${cluster.sourceCount} publications are covering this story.`}
       </p>
       <ul className="mt-4 divide-y divide-rule">
         {cluster.articles.map((article) => (
@@ -55,15 +62,37 @@ export function CoverageSources({ cluster }: { cluster: StoryCluster }) {
   );
 }
 
+type TimelineEntry =
+  | { type: "report"; at: string; article: Article }
+  | { type: "update"; at: string; event: StoryUpdateEvent };
+
 /**
- * Timeline of coverage built strictly from clustered article timestamps —
- * only rendered when at least three distinct reports exist. No invented events.
+ * Timeline of coverage built strictly from clustered article timestamps and
+ * recorded story-update events, interleaved chronologically — rendered when
+ * at least two distinct reports exist. No invented events: publish entries
+ * come from member articles, update entries from the persisted update log.
  */
-export function CoverageTimeline({ cluster }: { cluster: StoryCluster }) {
-  if (cluster.articles.length < 3) return null;
-  const ordered = [...cluster.articles].sort(
-    (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
-  );
+export function CoverageTimeline({
+  cluster,
+  history = [],
+}: {
+  cluster: StoryCluster;
+  history?: StoryUpdateEvent[];
+}) {
+  if (cluster.articles.length < 2) return null;
+  const entries: TimelineEntry[] = [
+    ...cluster.articles.map((article) => ({
+      type: "report" as const,
+      at: article.publishedAt,
+      article,
+    })),
+    ...history.map((event) => ({
+      type: "update" as const,
+      at: event.at,
+      event,
+    })),
+  ].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+  const firstReportIndex = entries.findIndex((e) => e.type === "report");
   return (
     <section aria-labelledby="timeline-heading" className="mt-8">
       <h2
@@ -73,22 +102,38 @@ export function CoverageTimeline({ cluster }: { cluster: StoryCluster }) {
         How coverage developed
       </h2>
       <ol className="relative ml-2 border-l border-rule pl-5">
-        {ordered.map((article, index) => (
-          <li key={article.id} className="relative pb-4 last:pb-0">
+        {entries.map((entry, index) => (
+          <li
+            key={entry.type === "report" ? entry.article.id : `update-${entry.at}-${index}`}
+            className="relative pb-4 last:pb-0"
+          >
             <span
               aria-hidden
               className={`absolute -left-[1.4rem] top-1.5 h-2 w-2 rounded-full ${
-                index === 0 ? "bg-brand" : "bg-rule-strong"
+                entry.type === "update"
+                  ? "border border-rule-strong bg-transparent"
+                  : index === firstReportIndex
+                    ? "bg-brand"
+                    : "bg-rule-strong"
               }`}
             />
             <Timestamp
-              iso={article.publishedAt}
+              iso={entry.at}
               className="text-xs font-bold uppercase tracking-wide text-muted"
             />
-            <p className="mt-0.5 text-sm leading-snug">
-              {index === 0 ? "First report from " : "Reported by "}
-              <span className="font-semibold">{article.source}</span>
-            </p>
+            {entry.type === "report" ? (
+              <p className="mt-0.5 text-sm leading-snug">
+                {index === firstReportIndex ? "First report from " : "Reported by "}
+                <span className="font-semibold">{entry.article.source}</span>
+              </p>
+            ) : (
+              <p className="mt-0.5 text-sm leading-snug">
+                <span className="mr-1.5 rounded-news border border-rule px-1 py-px text-[0.625rem] font-bold uppercase tracking-wider text-faint">
+                  Story update
+                </span>
+                {describeUpdateEvent(entry.event)}
+              </p>
+            )}
           </li>
         ))}
       </ol>

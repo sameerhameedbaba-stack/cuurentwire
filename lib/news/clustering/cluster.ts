@@ -320,9 +320,17 @@ export function clusterArticles(articles: Article[], now: Date = new Date()): St
   if (merged !== validated) validated = validateGroups(ctx, merged);
 
   const previousIds = assignPreviousIds(validated, articles);
-  return validated.map((group, index) =>
-    buildCluster(group.map((i) => articles[i]), now, previousIds.get(index)),
+  const previousById = new Map(
+    (getPreviousDataset()?.clusters ?? []).map((c) => [c.id, c] as const),
   );
+  return validated.map((group, index) => {
+    const prevId = previousIds.get(index);
+    return buildCluster(
+      group.map((i) => articles[i]),
+      now,
+      prevId === undefined ? undefined : previousById.get(prevId),
+    );
+  });
 }
 
 function collectGroups(uf: UnionFind, n: number): number[][] {
@@ -595,7 +603,7 @@ export function pickLead(members: Article[]): Article {
 function buildCluster(
   members: Article[],
   now: Date,
-  previousId?: string,
+  previous?: StoryCluster,
 ): StoryCluster {
   const sorted = [...members].sort(
     (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
@@ -606,7 +614,7 @@ function buildCluster(
 
   // Stable cluster identity: the previous run's id when the story already
   // existed, else anchored on the earliest article's canonical URL.
-  const id = previousId ?? `c${stableId(`cluster:${earliest.canonicalUrl}`)}`;
+  const id = previous?.id ?? `c${stableId(`cluster:${earliest.canonicalUrl}`)}`;
   const sourceNames = [...new Set(members.map((m) => m.source))];
 
   const entityCounts = new Map<string, { display: string; count: number }>();
@@ -648,12 +656,19 @@ function buildCluster(
     ? ("press_release" as const)
     : (lead.contentType ?? ("news" as const));
 
+  const { category, categoryStreak } = applyCategoryHysteresis(
+    pickCategory(members, lead),
+    members,
+    previous,
+  );
+
   return {
     id,
     slug: `${slugify(lead.title)}-${id}`,
     title: lead.title,
     summary: lead.description,
-    category: pickCategory(members, lead),
+    category,
+    categoryStreak,
     contentType,
     country: pickCountry(members),
     imageUrl: membersByTier.find((m) => m.imageUrl)?.imageUrl,
@@ -702,15 +717,60 @@ export function pickCategory(members: Article[], lead: Article): Article["catego
   return sorted[0][0];
 }
 
-/** Majority geography across members; ties involving US and CA become US_CA. */
-function pickCountry(members: Article[]): StoryCluster["country"] {
+/**
+ * Category hysteresis for carried-over stories: the fresh majority vote is
+ * adopted immediately when it agrees with the previous generation's category
+ * or when membership genuinely changed (symmetric difference of member URLs
+ * greater than 1 — the vote moved because the story moved). With unchanged
+ * membership a disagreeing vote must repeat for 2 consecutive generations
+ * before it wins, so a single borderline re-vote can never flip a story's
+ * category between two adjacent page loads, and A→B→A flapping is
+ * impossible. The streak lives on the cluster itself and round-trips
+ * through the DB snapshot, giving cross-instance continuity.
+ */
+function applyCategoryHysteresis(
+  fresh: Article["category"],
+  members: Article[],
+  previous: StoryCluster | undefined,
+): { category: Article["category"]; categoryStreak?: StoryCluster["categoryStreak"] } {
+  if (!previous || fresh === previous.category) return { category: fresh };
+
+  const current = new Set(members.map((m) => m.canonicalUrl));
+  const before = new Set(previous.articles.map((m) => m.canonicalUrl));
+  let symmetricDiff = 0;
+  for (const url of current) if (!before.has(url)) symmetricDiff++;
+  for (const url of before) if (!current.has(url)) symmetricDiff++;
+  if (symmetricDiff > 1) return { category: fresh };
+
+  const count =
+    previous.categoryStreak?.candidate === fresh
+      ? previous.categoryStreak.count + 1
+      : 1;
+  if (count >= 2) return { category: fresh };
+  return {
+    category: previous.category,
+    categoryStreak: { candidate: fresh, count },
+  };
+}
+
+/**
+ * Majority geography across members. US_CA only when the minority side is a
+ * REAL fraction of the cluster — at least 2 members or at least a third of
+ * the US+CA votes — so one misclassified member can never drag a whole US
+ * story onto the Canada surface (or vice versa). Otherwise the majority
+ * country wins outright.
+ */
+export function pickCountry(members: Article[]): StoryCluster["country"] {
   const counts = new Map<string, number>();
   for (const member of members) {
     counts.set(member.country, (counts.get(member.country) ?? 0) + 1);
   }
   const us = (counts.get("US") ?? 0) + (counts.get("US_CA") ?? 0);
   const ca = (counts.get("CA") ?? 0) + (counts.get("US_CA") ?? 0);
-  if (us > 0 && ca > 0) return "US_CA";
+  const minority = Math.min(us, ca);
+  if (minority >= 2 || (minority > 0 && minority / (us + ca) >= 1 / 3)) {
+    return "US_CA";
+  }
   const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
   return sorted[0][0] as StoryCluster["country"];
 }

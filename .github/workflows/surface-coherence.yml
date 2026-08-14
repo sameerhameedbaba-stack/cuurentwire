@@ -1,0 +1,37 @@
+name: Surface coherence probe
+
+# Audit invariant (round 7, P0 #1): every public surface rendering the
+# same story under the same dataset version must agree on category,
+# country and source count. Daily: probe the list surfaces and every
+# collected story page twice ~30s apart, fail on any same-version
+# disagreement, archive-vs-live split, category flap or extraction
+# blindness, and commit the report.
+
+on:
+  schedule:
+    - cron: "47 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run coherence probe
+        run: npm run coherence:check
+        env:
+          BASE_URL: https://currentwire.us
+      - name: Commit updated report
+        if: always()
+        run: |
+          git config user.name "surface-coherence-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/coherence-report.json
+          git diff --cached --quiet || git commit -m "chore: surface coherence report $(date -u +%F)"
+          git push

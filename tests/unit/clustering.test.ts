@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { clusterArticles, pickCategory, pickLead } from "@/lib/news/clustering/cluster";
+import {
+  clusterArticles,
+  pickCategory,
+  pickCountry,
+  pickLead,
+} from "@/lib/news/clustering/cluster";
 import { normalizeArticle } from "@/lib/news/normalization/normalize";
 import {
   clearPreviousDataset,
@@ -106,6 +111,29 @@ describe("clusterArticles", () => {
     // Tie with a general lead: alphabetical, deterministic.
     const g2 = general("g4");
     expect(pickCategory([politics("p2"), world("w5"), g2], g2)).toBe("politics");
+  });
+
+  it("pickCountry: majority wins unless the minority is a real fraction", () => {
+    const withCountry = (country: Article["country"], id: string) => ({
+      ...makeArticle("Border officials outline new crossing procedures today", `${id}.example`, 30),
+      country,
+    });
+    const us = (id: string) => withCountry("US", id);
+    const ca = (id: string) => withCountry("CA", id);
+
+    // One dissenting member out of five is noise, not a cross-border story.
+    expect(pickCountry([us("u1"), us("u2"), us("u3"), us("u4"), ca("c1")])).toBe("US");
+    expect(pickCountry([ca("c2"), ca("c3"), ca("c4"), ca("c5"), us("u5")])).toBe("CA");
+    // Two members on the minority side is real cross-border coverage.
+    expect(pickCountry([us("u6"), us("u7"), ca("c6"), ca("c7")])).toBe("US_CA");
+    // A 1/2 minority share qualifies even with a single member.
+    expect(pickCountry([us("u8"), ca("c8")])).toBe("US_CA");
+    // A 1/3 share qualifies too.
+    expect(pickCountry([us("u9"), us("u10"), ca("c9")])).toBe("US_CA");
+    // Non-US/CA majorities pass through untouched.
+    expect(pickCountry([withCountry("GLOBAL", "g1"), withCountry("GLOBAL", "g2")])).toBe("GLOBAL");
+    // A single US_CA member votes on both sides.
+    expect(pickCountry([withCountry("US_CA", "b1")])).toBe("US_CA");
   });
 
   it("keeps unrelated stories separate", () => {

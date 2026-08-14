@@ -10,6 +10,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import type { StoryUpdateEvent } from "@/lib/news/story-updates";
 
 /**
  * PostgreSQL schema (Drizzle ORM).
@@ -158,6 +159,14 @@ export const storyArchive = pgTable(
     sources: jsonb("sources").$type<ArchivedSourceRef[]>().notNull().default([]),
     entities: jsonb("entities").$type<string[]>().notNull().default([]),
     /**
+     * Update timeline, oldest-to-newest, capped at STORY_HISTORY_LIMIT:
+     * what changed between refreshes (headline, coverage, category, newly
+     * added sources). Added after the table shipped — ensureArchiveSchema()
+     * applies the column at runtime, so every read/write of it must be
+     * guarded behind that result.
+     */
+    history: jsonb("history").$type<StoryUpdateEvent[]>().notNull().default([]),
+    /**
      * Set when this story's cluster merged into another cluster: requests
      * for this URL 308-redirect to the survivor. Always flattened to the
      * FINAL destination (never a chain), and cleared again if the id
@@ -170,6 +179,8 @@ export const storyArchive = pgTable(
     index("story_archive_slug_idx").on(table.slug),
     index("story_archive_last_published_idx").on(table.lastPublishedAt),
     index("story_archive_merged_into_idx").on(table.mergedIntoClusterId),
+    // Supports the entity-overlap (?|) query behind findEarlierCoverage.
+    index("story_archive_entities_gin").using("gin", table.entities),
   ],
 );
 

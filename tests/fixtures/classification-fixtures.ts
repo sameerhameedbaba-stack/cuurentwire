@@ -427,7 +427,9 @@ const GEO_US: GeographyFixture[] = [
   c2("IRS backlog delays refunds for millions", "US"),
   c2("NASA awards lunar lander contract", "US"),
   c2("Capitol Hill braces for shutdown fight", "US"),
-  c2("GOP unveils border security bill", "US"),
+  // Evidence tiering: "GOP" alone is a weak acronym and cannot claim US;
+  // "border" keeps the story in the North-America bucket instead.
+  c2("GOP unveils border security bill", "GLOBAL_NA"),
   c2("Democrats and Republicans clash over debt limit", "US"),
   c2("National Guard deployed after levee breach", "US"),
   c2("Veterans Affairs expands mental health coverage", "US"),
@@ -506,14 +508,18 @@ const GEO_CA: GeographyFixture[] = [
   c2("Trudeau-era policies face review", "CA"),
   c2("Carney government unveils first budget", "CA"),
   c2("RCMP probes money laundering network", "CA"),
-  c2("CBC faces funding shakeup", "CA"),
-  c2("NDP pushes pharmacare in confidence talks", "CA"),
+  // Evidence tiering: "CBC"/"NDP" alone are collision-prone acronyms ("the
+  // CBC" is also the Congressional Black Caucus) — weak-only stories stay
+  // out of both country hubs rather than risk cross-country leaks.
+  c2("CBC faces funding shakeup", "GLOBAL"),
+  c2("NDP pushes pharmacare in confidence talks", "GLOBAL"),
   c2("Bloc Québécois gains in new poll", "CA"),
   c2("First Nations leaders meet on child welfare reform", "CA"),
   c2("Métis nation signs self-government accord", "CA"),
   c2("Inuit communities push for housing funds", "CA"),
   c2("Grey Cup festivities take over host city", "CA"),
-  c2("TSX rallies on energy strength", "CA"),
+  // Evidence tiering: a bare ticker-exchange acronym is weak-only evidence.
+  c2("TSX rallies on energy strength", "GLOBAL"),
   c2("Health Canada approves new RSV vaccine", "CA"),
   c2("Statistics Canada reports flat retail sales", "CA"),
   c2("Bay Street eyes rate decision", "CA"),
@@ -547,13 +553,16 @@ const GEO_CA: GeographyFixture[] = [
   c2("Health Canada reviews food labelling rules", "CA"),
   c2("Statistics Canada says population tops 42 million", "CA"),
   c2("Grey Cup halftime act announced", "CA"),
-  c2("TSX tech listings hit new high", "CA"),
+  // Evidence tiering: weak-only acronym, see above.
+  c2("TSX tech listings hit new high", "GLOBAL"),
   c2("Loonie rallies on jobs data", "CA"),
   c2("Via Rail strike averted at last minute", "CA"),
   c2("Canada Post backlog clears after holiday crush", "CA"),
   c2("First Nations water advisories decline", "CA"),
   c2("Inuit art exhibit tours the country", "CA"),
-  c2("Premier calls snap provincial election", "CA"),
+  // Evidence tiering: bare "premier" (no province/city named) is weak-only —
+  // it is also a foreign head-of-government title.
+  c2("Premier calls snap provincial election", "GLOBAL"),
   c2("Housing starts slump in Toronto suburbs", "CA", true, {
     providerCountry: "ca",
   }),

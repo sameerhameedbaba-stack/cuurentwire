@@ -19,6 +19,15 @@ test.describe("homepage", () => {
     await page.goto("/");
     await expect(page.locator("#main-content")).toHaveCount(1);
   });
+
+  test("brand is a single token and the newsletter module stays hidden", async ({ page }) => {
+    await page.goto("/");
+    // Extraction tools must never read the two-tone wordmark as "Current Wire".
+    const bodyText = await page.locator("body").innerText();
+    expect(bodyText).not.toMatch(/Current\s+Wire/);
+    // NEWSLETTER_SIGNUP is unset here: the disabled Brief module must not render.
+    await expect(page.getByRole("button", { name: "Get the Brief" })).toHaveCount(0);
+  });
 });
 
 test.describe("top 100", () => {

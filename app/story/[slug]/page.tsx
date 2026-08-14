@@ -4,6 +4,7 @@ import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { CATEGORIES } from "@/config/categories";
 import { CategoryLabel, ContentTypeBadge, CountryBadge, SourceLine, StatusBadge, BreakingLabel } from "@/components/news/atoms";
+import { CoverageIntelligence } from "@/components/news/CoverageIntelligence";
 import { CoverageSources, CoverageTimeline } from "@/components/news/CoverageSources";
 import { StoryImage } from "@/components/news/StoryImage";
 import { HeadlineStory } from "@/components/news/cards";
@@ -13,10 +14,12 @@ import { siteConfig } from "@/config/site";
 import {
   archivedStoryToCluster,
   findArchivedStory,
+  findEarlierCoverage,
   getArchiveFirstSeen,
+  getStoryHistory,
 } from "@/lib/database/archive";
 import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
-import { getClusterBySlug, getRelatedClusters } from "@/lib/news/queries";
+import { getClusterBySlugWithVersion, getRelatedClusters } from "@/lib/news/queries";
 import { resolveStoryRequest, type StoryResolution } from "@/lib/news/story-resolution";
 import { COUNTRY_LABELS, type StoryCluster } from "@/lib/news/types";
 import { entitySlug } from "@/lib/news/classification/entities";
@@ -30,17 +33,31 @@ import {
 
 export const dynamic = "force-dynamic";
 
+interface StoryRequest {
+  resolution: StoryResolution;
+  /** Version of the live snapshot the cluster was read from (live hits only). */
+  liveDatasetVersion: string | null;
+}
+
 /**
  * Resolution order: live dataset first (current behavior), then the
  * permanent story archive when a database is configured — published /story/
  * URLs keep resolving after they rotate out of the 72h dataset. 404 only
- * when neither knows the URL.
+ * when neither knows the URL. The live lookup also captures the snapshot's
+ * datasetVersion so the page can stamp cw-dataset-version from the exact
+ * data it renders.
  */
-function resolveStory(slug: string): Promise<StoryResolution> {
-  return resolveStoryRequest(slug, {
-    getLive: getClusterBySlug,
+async function resolveStory(slug: string): Promise<StoryRequest> {
+  let liveDatasetVersion: string | null = null;
+  const resolution = await resolveStoryRequest(slug, {
+    getLive: async (slugOrId) => {
+      const { cluster, datasetVersion } = await getClusterBySlugWithVersion(slugOrId);
+      liveDatasetVersion = datasetVersion;
+      return cluster;
+    },
     getArchived: findArchivedStory,
   });
+  return { resolution, liveDatasetVersion };
 }
 
 interface StoryView {
@@ -48,19 +65,32 @@ interface StoryView {
   isArchived: boolean;
   /** first_seen_at from the archive — our real publication time, if known. */
   publishedByUsAt?: string;
+  /**
+   * cw-dataset-version meta value, derived from the same data the body
+   * renders: the live snapshot's version stamp, or "archive:" plus the
+   * archived record's last-modified timestamp.
+   */
+  datasetVersion: string;
 }
 
-async function buildStoryView(resolution: StoryResolution): Promise<StoryView | null> {
+async function buildStoryView(request: StoryRequest): Promise<StoryView | null> {
+  const { resolution } = request;
   if (resolution.kind === "live") {
     const cluster = resolution.cluster;
     const publishedByUsAt = (await getArchiveFirstSeen([cluster.id])).get(cluster.id);
-    return { cluster, isArchived: false, publishedByUsAt };
+    return {
+      cluster,
+      isArchived: false,
+      publishedByUsAt,
+      datasetVersion: request.liveDatasetVersion ?? "unknown",
+    };
   }
   if (resolution.kind === "archived") {
     return {
       cluster: archivedStoryToCluster(resolution.story),
       isArchived: true,
       publishedByUsAt: resolution.story.firstSeenAt,
+      datasetVersion: `archive:${resolution.story.lastModifiedAt}`,
     };
   }
   return null;
@@ -72,14 +102,15 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const resolution = await resolveStory(slug);
+  const request = await resolveStory(slug);
+  const { resolution } = request;
   // Real 404 status requires notFound() before the response starts streaming.
   if (resolution.kind === "not-found") notFound();
   // The page itself 307s (alias) or 308s (merge); never rendered.
   if (resolution.kind === "redirect" || resolution.kind === "merged") {
     return { title: siteConfig.name };
   }
-  const view = await buildStoryView(resolution);
+  const view = await buildStoryView(request);
   if (!view) notFound();
   const { cluster, publishedByUsAt } = view;
   const description = cluster.summary
@@ -112,18 +143,24 @@ export default async function StoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const resolution = await resolveStory(slug);
+  const request = await resolveStory(slug);
+  const { resolution } = request;
   if (resolution.kind === "not-found") notFound();
   if (resolution.kind === "redirect") redirect(`/story/${resolution.slug}`);
   // Cluster merge: permanent — crawlers transfer the old URL's standing to
   // the surviving canonical story (audit: merge → redirect, never deletion).
   if (resolution.kind === "merged") permanentRedirect(`/story/${resolution.slug}`);
-  const view = await buildStoryView(resolution);
+  const view = await buildStoryView(request);
   if (!view) notFound();
   const { cluster, isArchived, publishedByUsAt } = view;
 
-  // Archived stories can still surface related live coverage via entities.
-  const related = await getRelatedClusters(cluster);
+  // Archived stories can still surface related live coverage via entities;
+  // history and earlier coverage are best-effort ([] without a database).
+  const [related, history, earlierCoverage] = await Promise.all([
+    getRelatedClusters(cluster),
+    getStoryHistory(cluster.id),
+    findEarlierCoverage(cluster.entities, cluster.id),
+  ]);
   const lead = cluster.lead;
   const categoryDef = CATEGORIES[cluster.category];
   const storyUrl = new URL(`/story/${cluster.slug}`, siteConfig.url).toString();
@@ -134,6 +171,9 @@ export default async function StoryPage({
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6">
+      {/* Snapshot stamp for cache-coherence probes — derived from the same
+          data this page renders (React hoists it into <head>). */}
+      <meta name="cw-dataset-version" content={view.datasetVersion} />
       <StoryJsonLd cluster={cluster} datePublished={publishedByUsAt} />
       <BreadcrumbJsonLd
         items={[
@@ -310,9 +350,15 @@ export default async function StoryPage({
             </div>
           ) : null}
 
+          <CoverageIntelligence
+            cluster={cluster}
+            history={history}
+            earlierCoverage={earlierCoverage}
+          />
+
           <div className="mt-10">
             <CoverageSources cluster={cluster} />
-            <CoverageTimeline cluster={cluster} />
+            <CoverageTimeline cluster={cluster} history={history} />
           </div>
 
           <p className="mt-10 border-t border-rule pt-4 text-xs leading-relaxed text-faint">

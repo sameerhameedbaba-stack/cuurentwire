@@ -110,6 +110,18 @@ export async function runPipeline(now: Date = new Date()): Promise<NewsDataset> 
   const clusters = rankClusters(clusterArticles(unique, now), now);
   const trending = deriveTrending(clusters);
 
+  // Public label coherence: once a story's cluster has settled on a category
+  // and country, every member article carries the same labels. Article-level
+  // feeds (/latest, source pages, category rows) can therefore never disagree
+  // with the story page or homepage cards about the same cluster. Members and
+  // `unique` share object references, so this covers dataset.articles too.
+  for (const cluster of clusters) {
+    for (const member of cluster.articles) {
+      member.category = cluster.category;
+      member.country = cluster.country;
+    }
+  }
+
   // Coverage age at ingest: how old accepted articles already are when we
   // pick them up (run time minus publishedAt).
   const ages = unique

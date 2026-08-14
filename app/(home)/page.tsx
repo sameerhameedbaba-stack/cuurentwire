@@ -11,6 +11,7 @@ import { TopStoriesSection } from "@/components/sections/TopStoriesSection";
 import { AdSlot } from "@/components/ui/AdSlot";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NewsletterSignup } from "@/components/ui/NewsletterSignup";
+import { env } from "@/lib/env";
 import { getHomepageData } from "@/lib/news/queries";
 import {
   ItemListJsonLd,
@@ -72,6 +73,9 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* Cross-surface coherence probe: every list surface stamps the exact
+          snapshot version it rendered from (React hoists this into <head>). */}
+      <meta name="cw-dataset-version" content={data.dataset.datasetVersion} />
       <OrganizationJsonLd />
       <WebSiteJsonLd />
       <ItemListJsonLd
@@ -140,7 +144,7 @@ export default async function HomePage() {
         />
         <CategoryBand category="culture" clusters={data.sections.culture ?? []} />
         <CategoryBand category="sports" clusters={data.sections.sports ?? []} />
-        <NewsletterSignup />
+        {env.newsletterEnabled ? <NewsletterSignup /> : null}
         <Top100Preview clusters={data.top100Preview} />
       </div>
     </>
