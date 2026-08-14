@@ -4,7 +4,7 @@ import {
   classifyGeography,
   classifyGeographyDetailed,
 } from "@/lib/news/classification/geography";
-import { extractEntities } from "@/lib/news/classification/entities";
+import { extractEntities, isGenericEntity } from "@/lib/news/classification/entities";
 
 describe("classifyGeography", () => {
   it("classifies Canadian-subject stories as Canada even from international wires", () => {
@@ -193,5 +193,38 @@ describe("extractEntities", () => {
       "Crews respond to fires across British Columbia this week",
     );
     expect(entities).toContain("British Columbia");
+  });
+
+  it("does not fuse capitalized words across sentence punctuation", () => {
+    // Live regression: the comma ended the clause, so "Niger" and
+    // "Christian" are two different things, not one entity.
+    const entities = extractEntities(
+      "US missionary released following kidnap in Niger, Christian group says",
+    );
+    expect(entities).not.toContain("Niger Christian");
+    const dashed = extractEntities("Talks resume in Geneva: Swiss officials confirm");
+    expect(dashed).not.toContain("Geneva Swiss");
+  });
+
+  it("breaks title-case phrases on headline verbs and connectives", () => {
+    // Live regression: press-release headlines are title-cased, so the phrase
+    // pass used to fuse issuer + verb + object into "Metals Announces Closing".
+    const entities = extractEntities(
+      "Brixton Metals Announces Closing of First Tranche of Private Placement",
+    );
+    expect(entities).not.toContain("Metals Announces Closing");
+    // The real name still survives when it is not the skipped leading word.
+    expect(
+      extractEntities("Miner Brixton Metals Announces Closing of Private Placement"),
+    ).toContain("Brixton Metals");
+  });
+
+  it("treats corporate-filing phrases as generic, never relatedness evidence", () => {
+    // Two unrelated issuers share this template language; it must never make
+    // their stories look like coverage of the same event.
+    expect(isGenericEntity("Private Placement")).toBe(true);
+    expect(isGenericEntity("First Tranche")).toBe(true);
+    expect(isGenericEntity("Second Quarter")).toBe(true);
+    expect(isGenericEntity("Luigi Mangione")).toBe(false);
   });
 });

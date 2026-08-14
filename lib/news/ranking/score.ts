@@ -202,6 +202,16 @@ export function isTop100Eligible(
   );
 }
 
+/**
+ * The same rule under the name curated modules use it by: EVERY editorially
+ * curated "Top" module (homepage hero/sections/most covered, Top 100, country
+ * and category top sections, trending) admits a press release only when the
+ * story has independent editorial coverage. Chronological and lookup surfaces
+ * (/latest, source pages, search, topic pages) stay ungated — a press release
+ * remains reachable and labeled there.
+ */
+export const isCuratedEligible = isTop100Eligible;
+
 /** Score every cluster, flag breaking, and sort by importance. */
 export function rankClusters(clusters: StoryCluster[], now: Date = new Date()): StoryCluster[] {
   for (const cluster of clusters) {

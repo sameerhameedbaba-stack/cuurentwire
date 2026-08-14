@@ -116,11 +116,59 @@ export function canonicalizeEntity(entity: string): string {
   return ENTITY_ALIASES[entity.trim().toLowerCase()] ?? entity.trim();
 }
 
+/**
+ * Every entity the dictionary/alias scan can produce, lowercased: countries,
+ * provinces, cities, institutions, agencies, leagues, broad topics and
+ * national leaders. Derived from the actual tables above so it cannot drift
+ * from them. These are GENERIC — they say what a story merely touches, not
+ * what it is about, so sharing one is never evidence that two stories cover
+ * the same event. Only pass-2 phrase discoveries are specific.
+ */
+export const GENERIC_ENTITIES: ReadonlySet<string> = new Set([
+  ...KNOWN_ENTITIES.map((e) => e.toLowerCase()),
+  ...Object.values(ENTITY_ALIASES).map((e) => e.toLowerCase()),
+  // Corporate-filing phrases the title-case phrase pass picks up. Two
+  // unrelated issuers both saying "Private Placement" is a shared template,
+  // not a shared story — they must never be relatedness evidence.
+  "private placement", "first tranche", "second tranche", "final tranche",
+  "financial results", "quarterly results", "annual results", "fiscal year",
+  "first quarter", "second quarter", "third quarter", "fourth quarter",
+  "board of directors", "chief executive officer", "chief financial officer",
+  "annual general meeting", "conference call", "earnings call",
+  "shelf prospectus", "management discussion", "letter of intent",
+  "definitive agreement", "special meeting", "record date",
+]);
+
+/** True for entities the dictionary/alias scan can produce (see GENERIC_ENTITIES). */
+export function isGenericEntity(entity: string): boolean {
+  return GENERIC_ENTITIES.has(entity.trim().toLowerCase());
+}
+
 /** Words that start sentences but are never entities on their own. */
 const NOISE_WORDS = new Set([
   "the", "a", "an", "in", "on", "at", "as", "after", "before", "why", "how",
   "what", "when", "who", "new", "breaking", "live", "updated", "exclusive",
   "analysis", "opinion", "watch", "demo", "sample",
+]);
+
+/**
+ * Headline verbs and connectives. Capitalized — in a press-release headline
+ * or a Title Case one — they read like part of a name, so the phrase pass
+ * must break on them rather than fuse an issuer, its verb and its object
+ * into one invented entity ("Brixton Metals Announces Closing").
+ */
+const PHRASE_BREAK_WORDS = new Set([
+  "announces", "announced", "reports", "reported", "says", "said", "plans",
+  "wins", "won", "files", "filed", "closes", "closed", "closing", "unveils",
+  "unveiled", "launches", "launched", "names", "sets", "adds", "cuts",
+  "raises", "raised", "backs", "urges", "urged", "faces", "seeks", "opens",
+  "opened", "ends", "ended", "hits", "tops", "joins", "joined", "leads",
+  "holds", "held", "calls", "called", "warns", "warned", "expects",
+  "completes", "completed", "provides", "receives", "appoints", "appointed",
+  "releases", "released", "posts", "confirms", "confirmed", "denies",
+  "approves", "approved", "rejects", "rejected", "signs", "signed", "begins",
+  "returns", "returned", "is", "are", "was", "were", "to", "of", "for", "and",
+  "with", "from", "by", "over", "into", "amid", "following",
 ]);
 
 /**
@@ -178,9 +226,19 @@ export function extractEntities(title: string, description?: string): string[] {
   for (let i = 0; i < words.length; i++) {
     const word = words[i].replace(/[^A-Za-z0-9''-]/g, "");
     const isCapitalized = /^[A-Z][a-zA-Z''-]+$/.test(word);
-    const isNoise = NOISE_WORDS.has(word.toLowerCase());
+    const isNoise =
+      NOISE_WORDS.has(word.toLowerCase()) || PHRASE_BREAK_WORDS.has(word.toLowerCase());
+    // Sentence punctuation on the RAW token ("Niger,") ends the phrase
+    // AFTER this word — "…Niger, Christian group…" must not fuse into a
+    // fake entity "Niger Christian". Tested before stripping, which erases
+    // the punctuation.
+    const breaksAfter = /[,.:;!?]$/.test(words[i]);
     if (isCapitalized && !isNoise && i > 0) {
       phrase.push(word);
+      if (breaksAfter) {
+        if (phrase.length >= 2) addPhrase(phrase.join(" "));
+        phrase = [];
+      }
     } else {
       if (phrase.length >= 2) addPhrase(phrase.join(" "));
       phrase = [];

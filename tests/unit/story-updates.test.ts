@@ -21,8 +21,10 @@ import {
   archiveDataset,
   ensureArchiveSchema,
   findEarlierCoverage,
+  getStoryArchiveExtras,
   getStoryHistory,
 } from "@/lib/database/archive";
+import type { ArchivedSourceRef } from "@/lib/database/schema";
 import type { Article, NewsDataset, StoryCluster } from "@/lib/news/types";
 
 const NOW = new Date("2026-08-15T12:00:00.000Z");
@@ -282,6 +284,45 @@ describe("getStoryHistory", () => {
     });
     await expect(getStoryHistory("cl4b2n8x1")).resolves.toEqual([]);
   });
+
+  it("reads the history and the all-time source union in ONE query", async () => {
+    const stored: StoryUpdateEvent[] = [
+      { kind: "source_added", at: AT, version: VERSION, source: "Northern Post" },
+    ];
+    const sources: ArchivedSourceRef[] = [
+      {
+        name: "Example Wire",
+        domain: "example-wire.com",
+        tier: "A",
+        url: "https://example-wire.com/rail-safety",
+        publishedAt: "2026-08-15T08:00:00.000Z",
+        title: "Senate passes bipartisan rail safety bill",
+        firstSeenAt: AT,
+        lastSeenAt: AT,
+      },
+    ];
+    const db = historyReadDb([{ history: stored, sources }]);
+    getDbMock.mockReturnValue(db);
+    await expect(getStoryArchiveExtras("cl4b2n8x1")).resolves.toEqual({
+      history: stored,
+      sources,
+    });
+    // Neon free tier: the page must not pay a second round-trip for this.
+    expect(db.select).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns empty history and sources for unknown ids or malformed jsonb", async () => {
+    getDbMock.mockReturnValue(historyReadDb([]));
+    await expect(getStoryArchiveExtras("clunknown0")).resolves.toEqual({
+      history: [],
+      sources: [],
+    });
+    getDbMock.mockReturnValue(historyReadDb([{ history: "corrupt", sources: "corrupt" }]));
+    await expect(getStoryArchiveExtras("cl4b2n8x1")).resolves.toEqual({
+      history: [],
+      sources: [],
+    });
+  });
 });
 
 describe("findEarlierCoverage", () => {
@@ -289,50 +330,125 @@ describe("findEarlierCoverage", () => {
     getDbMock.mockReturnValue(null);
   });
 
+  const dialect = new PgDialect();
+
+  const story = {
+    id: "cl4b2n8x1",
+    title: "Senate passes bipartisan rail safety bill",
+    entities: ["United States", "Rail Safety"],
+    firstPublishedAt: "2026-08-15T08:00:00.000Z",
+  };
+
   const dbRow = {
     clusterId: "clearlier01",
     slug: "earlier-take-clearlier01",
-    title: "Earlier take on the rail bill",
+    title: "Rail safety bill clears committee",
     lastPublishedAt: new Date("2026-08-10T09:00:00.000Z"),
     sourceCount: 3,
+    entities: ["United States", "Rail Safety"],
   };
 
-  function coverageDb(rows: unknown[]) {
+  /** The live regression: overlap on "United States" and nothing else. */
+  const junkRow = {
+    clusterId: "cljunk0001",
+    slug: "brixton-metals-cljunk0001",
+    title: "Brixton Metals Announces Closing of First Tranche of Private Placement",
+    lastPublishedAt: new Date("2026-08-14T23:00:00.000Z"),
+    sourceCount: 1,
+    entities: ["United States", "Private Placement"],
+  };
+
+  function coverageDb(rows: unknown[], captured: { where?: SQL } = {}) {
     return {
       execute: vi.fn(async () => ({ rows: [{ ok: 1 }] })),
       select: vi.fn(() => ({
         from: () => ({
-          where: () => ({
-            orderBy: () => ({ limit: async (n: number) => rows.slice(0, n) }),
-          }),
+          where: (condition: SQL) => {
+            captured.where = condition;
+            return {
+              orderBy: () => ({ limit: async (n: number) => rows.slice(0, n) }),
+            };
+          },
         }),
       })),
     };
   }
 
   it("returns [] without a database", async () => {
-    await expect(findEarlierCoverage(["Senate"], "cl4b2n8x1")).resolves.toEqual([]);
+    await expect(findEarlierCoverage(story)).resolves.toEqual([]);
   });
 
-  it("returns [] without querying when no usable entities are given", async () => {
+  it("returns [] without querying when the story has no specific entities", async () => {
     const db = coverageDb([dbRow]);
     getDbMock.mockReturnValue(db);
-    await expect(findEarlierCoverage([], "cl4b2n8x1")).resolves.toEqual([]);
-    await expect(findEarlierCoverage(["", ""], "cl4b2n8x1")).resolves.toEqual([]);
+    // The live missionary story: one generic country plus nothing usable.
+    await expect(
+      findEarlierCoverage({ ...story, entities: ["United States"] }),
+    ).resolves.toEqual([]);
+    await expect(findEarlierCoverage({ ...story, entities: [] })).resolves.toEqual([]);
+    await expect(findEarlierCoverage({ ...story, entities: ["", " "] })).resolves.toEqual([]);
     expect(db.select).not.toHaveBeenCalled();
   });
 
-  it("maps rows to items with ISO timestamps", async () => {
+  it("prefilters on specific entities only, and on strictly earlier stories", async () => {
+    const captured: { where?: SQL } = {};
+    getDbMock.mockReturnValue(coverageDb([dbRow], captured));
+    await findEarlierCoverage(story);
+    const query = dialect.sqlToQuery(captured.where as SQL);
+    expect(query.params).toContain("Rail Safety");
+    // "United States" would match ~13% of the archive — never in the filter.
+    expect(query.params).not.toContain("United States");
+    // Earlier means earlier: bounded by this story's first coverage.
+    expect(query.params).toContain(story.firstPublishedAt);
+    expect(query.sql).toContain("last_published_at");
+  });
+
+  it("maps surviving rows to items with ISO timestamps", async () => {
     getDbMock.mockReturnValue(coverageDb([dbRow]));
-    await expect(findEarlierCoverage(["Senate"], "cl4b2n8x1")).resolves.toEqual([
+    await expect(findEarlierCoverage(story)).resolves.toEqual([
       {
         clusterId: "clearlier01",
         slug: "earlier-take-clearlier01",
-        title: "Earlier take on the rail bill",
+        title: "Rail safety bill clears committee",
         lastPublishedAt: "2026-08-10T09:00:00.000Z",
         sourceCount: 3,
       },
     ]);
+  });
+
+  it("drops candidates that share only a generic entity", async () => {
+    // The junk row is the NEWEST candidate: pure recency would rank it first.
+    getDbMock.mockReturnValue(coverageDb([junkRow, dbRow]));
+    await expect(findEarlierCoverage(story)).resolves.toEqual([
+      expect.objectContaining({ clusterId: "clearlier01" }),
+    ]);
+  });
+
+  it("returns [] when every candidate fails the relevance gate", async () => {
+    getDbMock.mockReturnValue(coverageDb([junkRow]));
+    await expect(findEarlierCoverage(story)).resolves.toEqual([]);
+  });
+
+  it("ranks by relatedness first and recency second", async () => {
+    const weaker = {
+      ...dbRow,
+      clusterId: "clweaker01",
+      slug: "weaker-clweaker01",
+      // One shared specific entity plus a thinner headline overlap.
+      title: "Rail safety review ordered by regulator",
+      lastPublishedAt: new Date("2026-08-14T09:00:00.000Z"),
+    };
+    const stronger = {
+      ...dbRow,
+      clusterId: "clstrong01",
+      slug: "stronger-clstrong01",
+      entities: ["Rail Safety", "Senate"],
+      title: "Senate advances bipartisan rail safety bill",
+      lastPublishedAt: new Date("2026-08-09T09:00:00.000Z"),
+    };
+    getDbMock.mockReturnValue(coverageDb([weaker, stronger]));
+    const items = await findEarlierCoverage({ ...story, entities: ["Rail Safety", "Senate"] });
+    expect(items.map((i) => i.clusterId)).toEqual(["clstrong01", "clweaker01"]);
   });
 
   it("defaults to at most 5 items", async () => {
@@ -342,14 +458,14 @@ describe("findEarlierCoverage", () => {
       slug: `earlier-${i}-clearlier0${i}`,
     }));
     getDbMock.mockReturnValue(coverageDb(rows));
-    await expect(findEarlierCoverage(["Senate"], "cl4b2n8x1")).resolves.toHaveLength(5);
+    await expect(findEarlierCoverage(story)).resolves.toHaveLength(5);
   });
 
   it("still queries when the schema migration failed (entities predate it)", async () => {
     const db = coverageDb([dbRow]);
     db.execute.mockRejectedValue(new Error("permission denied"));
     getDbMock.mockReturnValue(db);
-    await expect(findEarlierCoverage(["Senate"], "cl4b2n8x1")).resolves.toHaveLength(1);
+    await expect(findEarlierCoverage(story)).resolves.toHaveLength(1);
   });
 
   it("swallows query failures", async () => {
@@ -363,7 +479,7 @@ describe("findEarlierCoverage", () => {
         }),
       }),
     });
-    await expect(findEarlierCoverage(["Senate"], "cl4b2n8x1")).resolves.toEqual([]);
+    await expect(findEarlierCoverage(story)).resolves.toEqual([]);
   });
 });
 
@@ -608,5 +724,133 @@ describe("archiveDataset story history (mocked db)", () => {
     expect(upserts).toHaveLength(1);
     expect("history" in upserts[0].rows[0]).toBe(false);
     expect(Object.keys(upserts[0].config.set)).not.toContain("history");
+  });
+
+  // -------------------------------------------------------------------------
+  // Permanent source union: feed rotation drops sources from the ACTIVE list
+  // within hours (live: 4 sources → 2 in 2.5h), but the archived record of
+  // who covered the story must only ever grow.
+  // -------------------------------------------------------------------------
+
+  const cbsRef: ArchivedSourceRef = {
+    name: "CBS News",
+    domain: "cbsnews.example",
+    tier: "A",
+    url: "https://cbsnews.example/rail-bill",
+    publishedAt: "2026-08-14T07:00:00.000Z",
+    title: "Rail safety bill advances",
+    firstSeenAt: "2026-08-14T07:30:00.000Z",
+    lastSeenAt: "2026-08-14T10:00:00.000Z",
+  };
+
+  it("unions rotated-out sources with the active ones and stamps first/last seen", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+    try {
+      getDbMock.mockReturnValue(
+        fakeDb({
+          selectResults: [
+            async () => [{ ...previousRow, sources: [...previousRow.sources, cbsRef] }],
+          ],
+        }),
+      );
+      await archiveDataset(makeDataset([makeCluster()]));
+      expect(upserts[0].rows[0].sources).toEqual([
+        {
+          name: "Example Wire",
+          domain: "example-wire.com",
+          tier: "A",
+          url: "https://example-wire.com/rail-safety",
+          publishedAt: "2026-08-15T08:00:00.000Z",
+          title: "Senate passes bipartisan rail safety bill",
+          // No stored stamp (row predates the union) → stamped now.
+          firstSeenAt: AT,
+          lastSeenAt: AT,
+        },
+        {
+          name: "Northern Post",
+          domain: "northernpost.example",
+          tier: "B",
+          url: "https://northernpost.example/rail-bill",
+          publishedAt: "2026-08-15T09:30:00.000Z",
+          title: "Rail safety bill clears the Senate",
+          firstSeenAt: AT,
+          lastSeenAt: AT,
+        },
+        // Rotated out of the feeds: kept verbatim, stamps untouched.
+        cbsRef,
+      ]);
+      expect(Object.keys(upserts[0].config.set)).toContain("sources");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps a stored firstSeenAt when the source is active again", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+    try {
+      const stamped = {
+        ...previousRow,
+        sources: [{ ...previousRow.sources[0], firstSeenAt: "2026-08-01T00:00:00.000Z" }],
+      };
+      getDbMock.mockReturnValue(fakeDb({ selectResults: [async () => [stamped]] }));
+      await archiveDataset(makeDataset([makeCluster()]));
+      const written = upserts[0].rows[0].sources as ArchivedSourceRef[];
+      expect(written[0].firstSeenAt).toBe("2026-08-01T00:00:00.000Z");
+      expect(written[0].lastSeenAt).toBe(AT);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("never re-emits source_added for a source that rotated out and returned", async () => {
+    // Stored: both sources in the union, but only one was active last time.
+    const rotated = {
+      clusterId: "cl4b2n8x1",
+      title: "Senate passes bipartisan rail safety bill",
+      sourceCount: 1,
+      category: "politics",
+      sources: [
+        previousRow.sources[0],
+        {
+          name: "Northern Post",
+          domain: "northernpost.example",
+          tier: "B",
+          url: "https://northernpost.example/rail-bill",
+          publishedAt: "2026-08-15T09:30:00.000Z",
+          title: "Rail safety bill clears the Senate",
+        },
+      ],
+      history: [],
+    };
+    getDbMock.mockReturnValue(fakeDb({ selectResults: [async () => [rotated]] }));
+    await archiveDataset(makeDataset([makeCluster()]));
+    // Union-derived source names suppress the duplicate join event, while
+    // coverage_change still compares the ACTIVE counts.
+    expect(upserts[0].rows[0].history).toEqual([
+      { kind: "coverage_change", at: AT, version: VERSION, from: 1, to: 2 },
+    ]);
+  });
+
+  it("writes the union when it grew even if nothing else about the story moved", async () => {
+    getDbMock.mockReturnValue(
+      fakeDb({ selectResults: [async () => [previousRow]] }),
+    );
+    await archiveDataset(makeDataset([makeCluster()]));
+    // Length, not equality: lastSeenAt is re-stamped every refresh and must
+    // not make every row dirty on every run.
+    expect(renderedSetWhere(upserts[0])).toContain("jsonb_array_length");
+  });
+
+  it("omits the sources column when the previous rows could not be read", async () => {
+    getDbMock.mockReturnValue(
+      fakeDb({ selectResults: [() => Promise.reject(new Error("timeout"))] }),
+    );
+    await archiveDataset(makeDataset([makeCluster()]));
+    // Fail-safe: a stored union must never be overwritten by the (possibly
+    // shrunken) active list.
+    expect(Object.keys(upserts[0].config.set)).not.toContain("sources");
+    expect(renderedSetWhere(upserts[0])).not.toContain("jsonb_array_length");
   });
 });

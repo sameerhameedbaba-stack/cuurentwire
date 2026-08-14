@@ -103,6 +103,99 @@ describe("cleanDescription", () => {
   });
 });
 
+describe("cleanDescription strips newsletter-digest chrome (The Hill)", () => {
+  // Real thehill.com/homenews/feed/ CDATA after entity decoding — the RSS
+  // provider decodes &#8202; to a U+200A hair space and &#038; to "&"
+  // before normalization, so the fixtures carry the real code points.
+  const DEFENSE_DIGEST =
+    "Welcome to The Hill's Defense & NatSec newsletter {beacon} " +
+    "Defense &National Security Defense &National Security   " +
+    "The Big Story  Amid reports of low morale, USS Abraham Lincoln " +
+    "returning home, Navy says Acting Navy Secretary Hung Cao announced " +
+    "on Friday that the USS Abraham Lincoln is returning to the U.S. " +
+    "as the aircraft carrier's long deployment...";
+
+  const HEALTHCARE_DIGEST =
+    "Click in for more news from The Hill {beacon} Healthcare   " +
+    "The Big Story  Trump admin escalates fight against transgender " +
+    "care ...   © Photo credit The moves this week add to...";
+
+  it("cleans the defense digest down to the real story", () => {
+    const cleaned = cleanDescription(DEFENSE_DIGEST, "thehill.com");
+    expect(cleaned.startsWith("Amid reports of low morale")).toBe(true);
+    for (const chrome of ["Welcome to", "{beacon}", "The Big Story"]) {
+      expect(cleaned).not.toContain(chrome);
+    }
+    expect(cleaned).toContain(
+      "returning to the U.S. as the aircraft carrier's long deployment",
+    );
+  });
+
+  it("cleans the healthcare digest including header echoes and photo credit", () => {
+    const cleaned = cleanDescription(HEALTHCARE_DIGEST, "thehill.com");
+    expect(cleaned.startsWith("Trump admin escalates")).toBe(true);
+    for (const chrome of [
+      "Click in",
+      "{beacon}",
+      "Healthcare",
+      "The Big Story",
+      "Photo credit",
+    ]) {
+      expect(cleaned).not.toContain(chrome);
+    }
+  });
+
+  it("cleans digests generically, without a domain rule", () => {
+    // The chrome detection is structural (tokens, typographic spaces,
+    // greeting openers) — it must not depend on knowing the publisher.
+    expect(cleanDescription(DEFENSE_DIGEST)).toBe(
+      cleanDescription(DEFENSE_DIGEST, "thehill.com"),
+    );
+  });
+
+  it("is idempotent on digest fixtures", () => {
+    for (const fixture of [DEFENSE_DIGEST, HEALTHCARE_DIGEST]) {
+      const once = cleanDescription(fixture, "thehill.com");
+      expect(cleanDescription(once, "thehill.com")).toBe(once);
+    }
+  });
+
+  it("keeps a real news sentence about a newsletter launch", () => {
+    const text = "The Atlantic launched a daily newsletter on Monday.";
+    expect(cleanDescription(text, "thehill.com")).toBe(text);
+  });
+
+  it("keeps a 'Welcome to' lead without a newsletter keyword", () => {
+    const text =
+      "Welcome to the new era of flight. Boarding will never look the same.";
+    expect(cleanDescription(text)).toBe(text);
+  });
+
+  it("preserves a lone non-breaking space inside a sentence", () => {
+    const text =
+      "Organizers said the relief fund reached 10 000 kronor overnight.";
+    expect(cleanDescription(text)).toBe(text);
+  });
+
+  it("normalizeArticle serves the cleaned digest description end to end", () => {
+    const NOW = new Date("2026-08-14T12:00:00Z");
+    const raw: RawArticle = {
+      title: "Defense & NatSec — USS Abraham Lincoln returning home",
+      description: DEFENSE_DIGEST,
+      url: "https://thehill.com/newsletters/defense-natsec/1234567-uss-abraham-lincoln/",
+      source: "The Hill",
+      publishedAt: new Date(NOW.getTime() - 3_600_000).toISOString(),
+      provider: "rss",
+    };
+    const article = normalizeArticle(raw, NOW)!;
+    expect(article.description!.startsWith("Amid reports of low morale")).toBe(
+      true,
+    );
+    expect(article.description).not.toContain("Welcome to");
+    expect(article.description).not.toContain("The Big Story");
+  });
+});
+
 describe("cleanDisplayTitle", () => {
   it("strips a byline-pipe author suffix", () => {
     expect(

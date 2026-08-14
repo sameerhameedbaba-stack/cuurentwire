@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { EarlierCoverageItem } from "@/lib/database/archive";
+import type { ArchivedSourceRef } from "@/lib/database/schema";
 import {
   corroboratedDetails,
   describeUpdateEvent,
@@ -11,25 +12,44 @@ import { Timestamp } from "./atoms";
 
 /**
  * "Automated coverage analysis" — deterministic signals derived from the
- * coverage listed on the page (source mix, recorded update log, details
- * corroborated by independent sources, earlier archive coverage). Every
- * block is omitted entirely when its input is empty; the whole section
- * disappears when nothing remains. No generated claims anywhere.
+ * coverage listed on the page (source mix, recorded update log, all-time
+ * coverage, details corroborated by independent sources, earlier archive
+ * coverage). Every block is omitted entirely when its input is empty; the
+ * whole section disappears when nothing remains. No generated claims.
  */
 export function CoverageIntelligence({
   cluster,
   history,
   earlierCoverage,
+  allTimeSources = [],
 }: {
   cluster: StoryCluster;
   history: StoryUpdateEvent[];
   earlierCoverage: EarlierCoverageItem[];
+  /** Permanent source union from the archive — every source ever seen. */
+  allTimeSources?: ArchivedSourceRef[];
 }) {
   const mix = sourceMix(cluster);
   const details = corroboratedDetails(cluster);
   const events = [...history].sort(
     (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime(),
   );
+
+  // Publisher feeds rotate a story out of their windows while it is still
+  // the same story, so the coverage list above can be SHORTER than the
+  // permanent record. Only worth a block when it actually is. Currently
+  // active names are folded in as well, so the all-time list can never omit
+  // a publication the page already lists (the stored union is one refresh
+  // behind the live cluster).
+  const activeNames = new Set(cluster.sourceNames);
+  const allTimeNames: string[] = [];
+  for (const source of allTimeSources) {
+    if (source?.name && !allTimeNames.includes(source.name)) allTimeNames.push(source.name);
+  }
+  for (const name of activeNames) {
+    if (!allTimeNames.includes(name)) allTimeNames.push(name);
+  }
+  const showAllTime = allTimeNames.length > activeNames.size;
 
   const mixParts: string[] = [];
   if (mix.independentDomains > 0) {
@@ -52,7 +72,8 @@ export function CoverageIntelligence({
     mixParts.length === 0 &&
     events.length === 0 &&
     details.length === 0 &&
-    earlierCoverage.length === 0
+    earlierCoverage.length === 0 &&
+    !showAllTime
   ) {
     return null;
   }
@@ -76,6 +97,20 @@ export function CoverageIntelligence({
             Source mix
           </h3>
           <p className="mt-1 text-sm">{mixParts.join(" · ")}</p>
+        </div>
+      ) : null}
+
+      {showAllTime ? (
+        <div className="mt-5">
+          <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
+            All-time coverage
+          </h3>
+          {/* "publications", deliberately not the byline's "N sources"
+              string, which an external probe parses on this page. */}
+          <p className="mt-1 text-sm leading-snug">
+            {allTimeNames.length} publications have covered this story since
+            CurrentWire first saw it: {allTimeNames.join(", ")}.
+          </p>
         </div>
       ) : null}
 

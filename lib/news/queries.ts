@@ -2,7 +2,7 @@ import { isCategoryId, type CategoryId } from "@/config/categories";
 import { SOURCES, type SourceDefinition } from "@/config/sources";
 import { getDataset } from "@/lib/cache/store";
 import { matchesCountryFilter } from "@/lib/news/classification/geography";
-import { isTop100Eligible } from "@/lib/news/ranking/score";
+import { isCuratedEligible, isTop100Eligible } from "@/lib/news/ranking/score";
 import type {
   Article,
   NewsDataset,
@@ -128,7 +128,7 @@ export async function getHomepageData(): Promise<HomepageData> {
   // clusters without independent editorial coverage are excluded from every
   // curated slot (hero, sections, most covered), exactly like the Top 100.
   // They remain reachable via /latest, search and source pages, labeled.
-  const clusters = dataset.clusters.filter(isTop100Eligible);
+  const clusters = dataset.clusters.filter(isCuratedEligible);
   const used = new Set<string>();
 
   const take = (pool: StoryCluster[], count: number): StoryCluster[] => {
@@ -428,8 +428,13 @@ export async function getCategoryData(category: CategoryId): Promise<{
   dataset: NewsDataset;
 }> {
   const dataset = await getDataset();
-  const clusters = dataset.clusters.filter((c) => c.category === category);
-  const related = dataset.clusters
+  // Curated gate applied ONCE, before any slicing: hero, secondary, more and
+  // related are all editorial "Top" modules, so a press release without
+  // independent coverage never reaches them. The latest rows below stay
+  // ungated — that feed is chronological, and the release is labeled there.
+  const curated = dataset.clusters.filter(isCuratedEligible);
+  const clusters = curated.filter((c) => c.category === category);
+  const related = curated
     .filter(
       (c) => c.category !== category && c.lead.categories.includes(category),
     )
@@ -460,9 +465,14 @@ export async function getCountryData(country: "us" | "canada"): Promise<{
   dataset: NewsDataset;
 }> {
   const dataset = await getDataset();
-  const clusters = dataset.clusters.filter((c) =>
-    matchesCountryFilter(c.country, country),
-  );
+  // One gate covers every curated module on the page — hero, secondary,
+  // byCategory and topList all slice this list, and the ItemList JSON-LD is
+  // emitted from topList, so search engines are never told a single-source
+  // press release is a top country story. The latest rail below is
+  // chronological and stays ungated.
+  const clusters = dataset.clusters
+    .filter(isCuratedEligible)
+    .filter((c) => matchesCountryFilter(c.country, country));
   const used = new Set<string>();
   const hero = clusters[0] ?? null;
   if (hero) used.add(hero.id);

@@ -122,6 +122,10 @@ export const articleClusterMembers = pgTable(
 /**
  * One row in the `sources` jsonb array of story_archive: enough to rebuild
  * the coverage list of an archived story without the articles table.
+ *
+ * The array is the story's PERMANENT coverage record — the union of every
+ * source ever seen on it, not just the currently active feed results (feeds
+ * rotate stories out of their windows long before the story ends).
  */
 export interface ArchivedSourceRef {
   name: string;
@@ -130,6 +134,14 @@ export interface ArchivedSourceRef {
   url: string;
   publishedAt: string;
   title: string;
+  /**
+   * When CurrentWire first saw this source on the story, and when it last
+   * appeared in an active refresh. jsonb-only (no DDL) and OPTIONAL: rows
+   * written before the union shipped carry neither, and entries that were
+   * never active again keep their last stamp.
+   */
+  firstSeenAt?: string;
+  lastSeenAt?: string;
 }
 
 /**

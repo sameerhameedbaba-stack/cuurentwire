@@ -1,6 +1,8 @@
-import { and, desc, eq, gte, inArray, isNull, ne, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lt, ne, or, sql } from "drizzle-orm";
 import { isCategoryId } from "@/config/categories";
 import type { SourceTier } from "@/config/sources";
+import { isGenericEntity } from "@/lib/news/classification/entities";
+import { scoreArchiveRelatedness } from "@/lib/news/coverage-analysis";
 import type {
   Article,
   ContentType,
@@ -114,6 +116,58 @@ export interface ArchivedStory {
   mergedIntoClusterId: string | null;
 }
 
+/** Coverage refs of a cluster in member order — index 0 is the lead source. */
+function clusterSourceRefs(cluster: StoryCluster): ArchivedSourceRef[] {
+  return cluster.articles.map(
+    (a): ArchivedSourceRef => ({
+      name: a.source,
+      domain: a.sourceDomain,
+      tier: a.sourceTier,
+      url: a.url,
+      publishedAt: a.publishedAt,
+      title: a.title,
+    }),
+  );
+}
+
+/**
+ * Permanent coverage record of a story: the union of the stored refs and the
+ * currently active ones, keyed by url. Publisher feeds rotate a story out of
+ * their windows within hours, so the active list SHRINKS while the story is
+ * still the same story — the union is what makes "CBS covered this" durable.
+ *
+ * Order is current-active-first (in current order, so refs[0] stays the
+ * lead), then history-only entries in stored order. firstSeenAt is stamped
+ * once and never rewritten; lastSeenAt is bumped only for entries that are
+ * active now. Entries from before this shipped carry no stamps and are
+ * passed through unchanged rather than given invented ones.
+ */
+export function mergeSourceRefs(
+  previous: ArchivedSourceRef[] | null | undefined,
+  current: ArchivedSourceRef[],
+  nowIso: string,
+): ArchivedSourceRef[] {
+  const stored = new Map<string, ArchivedSourceRef>();
+  for (const ref of Array.isArray(previous) ? previous : []) {
+    if (ref && typeof ref.url === "string" && !stored.has(ref.url)) stored.set(ref.url, ref);
+  }
+  const merged: ArchivedSourceRef[] = [];
+  const active = new Set<string>();
+  for (const ref of Array.isArray(current) ? current : []) {
+    if (!ref || typeof ref.url !== "string" || active.has(ref.url)) continue;
+    active.add(ref.url);
+    merged.push({
+      ...ref,
+      firstSeenAt: stored.get(ref.url)?.firstSeenAt ?? nowIso,
+      lastSeenAt: nowIso,
+    });
+  }
+  for (const [url, ref] of stored) {
+    if (!active.has(url)) merged.push({ ...ref });
+  }
+  return merged;
+}
+
 /** Insert-shaped row for the story_archive table. Pure, unit-testable. */
 export function clusterToArchiveRow(cluster: StoryCluster, now: Date = new Date()) {
   return {
@@ -131,17 +185,10 @@ export function clusterToArchiveRow(cluster: StoryCluster, now: Date = new Date(
     // first insert and the upsert never touches it afterwards.
     lastModifiedAt: now,
     rankingScore: cluster.rankingScore,
+    // ACTIVE count — the number every live surface shows. The sources array
+    // below is the permanent union; the two are deliberately different.
     sourceCount: cluster.sourceCount,
-    sources: cluster.articles.map(
-      (a): ArchivedSourceRef => ({
-        name: a.source,
-        domain: a.sourceDomain,
-        tier: a.sourceTier,
-        url: a.url,
-        publishedAt: a.publishedAt,
-        title: a.title,
-      }),
-    ),
+    sources: clusterSourceRefs(cluster),
     entities: [...cluster.entities],
     updatedAt: now,
   };
@@ -202,17 +249,30 @@ const UPSERT_CHUNK = 100;
 const HISTORY_SELECT_CHUNK = 200;
 
 /**
- * New history value for EVERY incoming cluster id: the previously stored
- * events plus whatever this refresh changed (capped, oldest dropped). The
- * previous source names are derived from the row's sources jsonb — no extra
- * column needed. Returns null on any failure so the upsert omits the
- * history column entirely instead of overwriting stored events.
+ * Everything the upsert needs from the PREVIOUS archived rows, keyed by
+ * cluster id: the new history value and the merged source union.
  */
-async function computeArchiveHistories(
+interface ArchiveUpdates {
+  histories: Map<string, StoryUpdateEvent[]>;
+  sources: Map<string, ArchivedSourceRef[]>;
+}
+
+/**
+ * For EVERY incoming cluster id: the previously stored events plus whatever
+ * this refresh changed (capped, oldest dropped), and the union of stored and
+ * active sources. Both come from ONE read of the previous rows — the source
+ * union costs no extra query. The previous source names are derived from the
+ * row's sources jsonb, no extra column needed.
+ *
+ * Returns null on any failure so the upsert omits BOTH columns entirely
+ * instead of overwriting stored events or shrinking the stored union.
+ */
+async function computeArchiveUpdates(
   db: Db,
   clusters: StoryCluster[],
   dataset: NewsDataset,
-): Promise<Map<string, StoryUpdateEvent[]> | null> {
+  now: Date,
+): Promise<ArchiveUpdates | null> {
   try {
     const ids = clusters.map((c) => c.id);
     const prevById = new Map<
@@ -240,14 +300,20 @@ async function computeArchiveHistories(
       for (const row of rows) prevById.set(row.clusterId, row);
     }
     const histories = new Map<string, StoryUpdateEvent[]>();
+    const sources = new Map<string, ArchivedSourceRef[]>();
+    const nowIso = now.toISOString();
     for (const cluster of clusters) {
       const prev = prevById.get(cluster.id);
+      const prevSources = prev && Array.isArray(prev.sources) ? prev.sources : [];
+      sources.set(
+        cluster.id,
+        mergeSourceRefs(prevSources, clusterSourceRefs(cluster), nowIso),
+      );
       if (!prev) {
         // Never archived before: new stories start with an empty history.
         histories.set(cluster.id, []);
         continue;
       }
-      const prevSources = Array.isArray(prev.sources) ? prev.sources : [];
       const events = diffStoryForHistory(
         {
           title: prev.title,
@@ -267,7 +333,7 @@ async function computeArchiveHistories(
       const prevHistory = Array.isArray(prev.history) ? prev.history : [];
       histories.set(cluster.id, appendStoryHistory(prevHistory, events));
     }
-    return histories;
+    return { histories, sources };
   } catch (error) {
     logger.warn("database.archive_history_failed", {
       error: error instanceof Error ? error.message : "unknown",
@@ -293,11 +359,12 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
 
   try {
     const now = new Date();
-    // null disables the history feature for this write (schema not
-    // migrated, or the diff itself failed): rows then omit the column so
-    // stored jsonb values are left untouched.
-    const histories = schemaReady
-      ? await computeArchiveHistories(db, clusters, dataset)
+    // null means the previous rows could not be read (schema not migrated,
+    // or the read itself failed): the upsert then omits BOTH the history and
+    // the sources column, so stored events and the stored source union are
+    // left untouched rather than overwritten with a shrunken active list.
+    const updates = schemaReady
+      ? await computeArchiveUpdates(db, clusters, dataset, now)
       : null;
     // Touch rows whose story content OR labels actually changed (or that
     // carry a stale merge pointer needing to be cleared) — a category- or
@@ -313,7 +380,12 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
     for (let i = 0; i < clusters.length; i += UPSERT_CHUNK) {
       const rows = clusters.slice(i, i + UPSERT_CHUNK).map((c) => {
         const row = clusterToArchiveRow(c, now);
-        return histories ? { ...row, history: histories.get(c.id) ?? [] } : row;
+        if (!updates) return row;
+        return {
+          ...row,
+          history: updates.histories.get(c.id) ?? [],
+          sources: updates.sources.get(c.id) ?? row.sources,
+        };
       });
       await db
         .insert(storyArchive)
@@ -333,17 +405,26 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
             lastModifiedAt: sql`excluded.last_modified_at`,
             rankingScore: sql`excluded.ranking_score`,
             sourceCount: sql`excluded.source_count`,
-            sources: sql`excluded.sources`,
             entities: sql`excluded.entities`,
             updatedAt: sql`excluded.updated_at`,
             // A cluster id present in the CURRENT dataset is live again —
             // any old merge pointer is stale and must not redirect it.
             mergedIntoClusterId: sql`null`,
-            ...(histories ? { history: sql`excluded.history` } : {}),
+            // Both jsonb columns are written ONLY when the previous rows were
+            // read: excluded.sources is the union in that case, and the bare
+            // active list otherwise — which must never replace the union.
+            ...(updates
+              ? { history: sql`excluded.history`, sources: sql`excluded.sources` }
+              : {}),
             // first_seen_at is deliberately NOT in this set — written once.
           },
-          setWhere: histories
-            ? sql`${changePredicate} or ${storyArchive.history} is distinct from excluded.history`
+          // A grown union must be written even when nothing else moved.
+          // Length, not equality: lastSeenAt is re-stamped every refresh, so
+          // comparing the whole jsonb would touch every row every time.
+          setWhere: updates
+            ? sql`${changePredicate}
+              or ${storyArchive.history} is distinct from excluded.history
+              or jsonb_array_length(${storyArchive.sources}) is distinct from jsonb_array_length(excluded.sources)`
             : changePredicate,
         });
     }
@@ -351,7 +432,7 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
     logger.info("database.archived", {
       clusters: clusters.length,
       merges,
-      history: histories !== null,
+      history: updates !== null,
     });
     return clusters.length;
   } catch (error) {
@@ -561,28 +642,40 @@ export async function findArchivedStory(slug: string): Promise<ArchivedStory | n
 }
 
 /**
- * Update timeline of an archived story, oldest-to-newest, exactly as
- * stored. Empty on ANY failure — no DB, schema not migrated, unknown id,
- * query error — never throws to callers.
+ * Everything the story page needs from the archived row beyond the story
+ * itself, in ONE query: the update timeline (oldest-to-newest, exactly as
+ * stored) and the all-time source union. Empty on ANY failure — no DB,
+ * schema not migrated, unknown id, query error — never throws to callers.
  */
-export async function getStoryHistory(clusterId: string): Promise<StoryUpdateEvent[]> {
+export async function getStoryArchiveExtras(clusterId: string): Promise<{
+  history: StoryUpdateEvent[];
+  sources: ArchivedSourceRef[];
+}> {
   const db = getDb();
-  if (!db || !clusterId) return [];
+  if (!db || !clusterId) return { history: [], sources: [] };
   try {
-    if (!(await ensureArchiveSchema())) return [];
+    if (!(await ensureArchiveSchema())) return { history: [], sources: [] };
     const rows = await db
-      .select({ history: storyArchive.history })
+      .select({ history: storyArchive.history, sources: storyArchive.sources })
       .from(storyArchive)
       .where(eq(storyArchive.clusterId, clusterId))
       .limit(1);
-    const history = rows[0]?.history;
-    return Array.isArray(history) ? history : [];
+    const row = rows[0];
+    return {
+      history: Array.isArray(row?.history) ? row.history : [],
+      sources: Array.isArray(row?.sources) ? row.sources : [],
+    };
   } catch (error) {
     logger.warn("database.story_history_failed", {
       error: error instanceof Error ? error.message : "unknown",
     });
-    return [];
+    return { history: [], sources: [] };
   }
+}
+
+/** Update timeline only — same query and failure semantics as above. */
+export async function getStoryHistory(clusterId: string): Promise<StoryUpdateEvent[]> {
+  return (await getStoryArchiveExtras(clusterId)).history;
 }
 
 /** One archived story surfaced as earlier coverage of an overlapping topic. */
@@ -594,19 +687,31 @@ export type EarlierCoverageItem = {
   sourceCount: number;
 };
 
+/** Rows scored by the relevance gate before the best `limit` are kept. */
+const EARLIER_COVERAGE_POOL = 25;
+
 /**
- * Archived stories whose entities overlap the given list — earlier coverage
- * of the same topic. Excludes merge redirects and the given cluster,
- * newest first. Empty on ANY failure (no DB, bad query) — never throws.
+ * Earlier archived coverage genuinely related to this story.
+ *
+ * Three gates, in order: only SPECIFIC entities may match at all (a story
+ * whose entities are all generic recommends nothing — "United States" alone
+ * would otherwise pull in the five most recent archived stories that mention
+ * the US); only stories published BEFORE this one count as earlier; and each
+ * candidate must clear scoreArchiveRelatedness. Best first, ties by recency.
+ * Empty on ANY failure (no DB, bad query) — never throws.
  */
 export async function findEarlierCoverage(
-  entities: string[],
-  excludeClusterId: string,
+  story: { id: string; title: string; entities: string[]; firstPublishedAt: string },
   limit = 5,
 ): Promise<EarlierCoverageItem[]> {
   const db = getDb();
-  const wanted = entities.filter((e) => e.length > 0);
-  if (!db || wanted.length === 0 || limit <= 0) return [];
+  const specific = story.entities
+    .map((entity) => entity.trim())
+    .filter((entity) => entity.length > 0 && !isGenericEntity(entity));
+  const before = new Date(story.firstPublishedAt);
+  if (!db || specific.length === 0 || limit <= 0 || Number.isNaN(before.getTime())) {
+    return [];
+  }
   try {
     // Opportunistic: makes sure the entities gin index exists. The query
     // itself only touches columns present since the table shipped, so a
@@ -619,31 +724,48 @@ export async function findEarlierCoverage(
         title: storyArchive.title,
         lastPublishedAt: storyArchive.lastPublishedAt,
         sourceCount: storyArchive.sourceCount,
+        entities: storyArchive.entities,
       })
       .from(storyArchive)
       .where(
         and(
           isNull(storyArchive.mergedIntoClusterId),
-          ne(storyArchive.clusterId, excludeClusterId),
-          // jsonb ?| text[]: any of the entities appears in the row.
+          ne(storyArchive.clusterId, story.id),
+          lt(storyArchive.lastPublishedAt, before),
+          // jsonb ?| text[]: any of the specific entities appears in the row.
           sql`${storyArchive.entities} ?| array[${sql.join(
-            wanted.map((e) => sql`${e}`),
+            specific.map((entity) => sql`${entity}`),
             sql`, `,
           )}]::text[]`,
         ),
       )
       .orderBy(desc(storyArchive.lastPublishedAt))
-      .limit(limit);
-    return rows.map((row) => ({
-      clusterId: row.clusterId,
-      slug: row.slug,
-      title: row.title,
-      lastPublishedAt:
-        row.lastPublishedAt instanceof Date
-          ? row.lastPublishedAt.toISOString()
-          : String(row.lastPublishedAt),
-      sourceCount: row.sourceCount,
-    }));
+      .limit(EARLIER_COVERAGE_POOL);
+    return rows
+      .map((row) => ({
+        item: {
+          clusterId: row.clusterId,
+          slug: row.slug,
+          title: row.title,
+          lastPublishedAt:
+            row.lastPublishedAt instanceof Date
+              ? row.lastPublishedAt.toISOString()
+              : String(row.lastPublishedAt),
+          sourceCount: row.sourceCount,
+        },
+        relatedness: scoreArchiveRelatedness(story, {
+          title: row.title,
+          entities: Array.isArray(row.entities) ? row.entities : [],
+        }),
+      }))
+      .filter((candidate) => candidate.relatedness.passes)
+      .sort(
+        (a, b) =>
+          b.relatedness.score - a.relatedness.score ||
+          Date.parse(b.item.lastPublishedAt) - Date.parse(a.item.lastPublishedAt),
+      )
+      .slice(0, limit)
+      .map((candidate) => candidate.item);
   } catch (error) {
     logger.warn("database.earlier_coverage_failed", {
       error: error instanceof Error ? error.message : "unknown",
@@ -715,6 +837,12 @@ const CONTENT_TYPES: ContentType[] = ["news", "opinion", "analysis", "press_rele
  * reuses the exact same layout and components. Fields the archive does not
  * keep (ranking breakdown, status flags) get neutral values; stored enum
  * values that no longer exist fall back to safe defaults.
+ *
+ * The coverage list is the stored source UNION — the permanent record of
+ * every publication that covered the story, which is exactly what an
+ * archived page should show. sourceCount stays the stored ACTIVE count: it
+ * is what the live surfaces published for this story and the byline must
+ * keep matching them.
  */
 export function archivedStoryToCluster(story: ArchivedStory): StoryCluster {
   const category = isCategoryId(story.category) ? story.category : "general";

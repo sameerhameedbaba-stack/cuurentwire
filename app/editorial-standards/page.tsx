@@ -78,9 +78,19 @@ export default function EditorialStandardsPage() {
       <p>
         Corporate press releases and wire-distributed announcements are
         detected and labeled &ldquo;Press release&rdquo;. They are excluded
-        from the Top 100 and from BREAKING unless the story has independent
-        editorial coverage, and syndicated copies of one release are never
-        counted as independent sources.
+        from every curated selection — the homepage lead, section bands and
+        Most Covered, the Top 100, the top sections of country and category
+        pages, trending topics, and the BREAKING label — unless the story has
+        independent editorial coverage, and syndicated copies of one release
+        are never counted as independent sources.
+      </p>
+      <p>
+        A release that real newsrooms have picked up is a story, so it remains
+        eligible everywhere. A release nobody covered stays reachable and
+        labeled in <Link href="/latest">Latest</Link>, on the publisher&rsquo;s
+        source page and in search — it is simply never presented as a top
+        story. Curated sections show fewer items rather than filling the gap
+        with unreported announcements.
       </p>
     </ProsePage>
   );

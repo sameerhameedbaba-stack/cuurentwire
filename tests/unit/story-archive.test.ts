@@ -17,9 +17,11 @@ import {
   findArchivedStory,
   getArchiveFirstSeen,
   idTokenFromSlug,
+  mergeSourceRefs,
   rowToArchivedStory,
   type ArchivedStory,
 } from "@/lib/database/archive";
+import type { ArchivedSourceRef } from "@/lib/database/schema";
 import {
   resolveStoryRequest,
   type StoryLookups,
@@ -233,6 +235,33 @@ describe("archivedStoryToCluster", () => {
     expect(cluster.status).toBeNull();
   });
 
+  it("renders the permanent source union while keeping the stored active count", () => {
+    const cluster = archivedStoryToCluster(
+      makeArchivedStory({
+        // Feed rotation: only Example Wire was still active at the last
+        // refresh, but the archive remembers everyone who covered it.
+        sourceCount: 1,
+        sources: [
+          {
+            ...makeArchivedStory().sources[0],
+            firstSeenAt: "2026-08-14T08:05:00.000Z",
+            lastSeenAt: "2026-08-14T12:00:00.000Z",
+          },
+          {
+            ...makeArchivedStory().sources[1],
+            firstSeenAt: "2026-08-14T09:35:00.000Z",
+            lastSeenAt: "2026-08-14T09:35:00.000Z",
+          },
+        ],
+      }),
+    );
+    expect(cluster.sourceNames).toEqual(["Example Wire", "Northern Post"]);
+    // sourceCount stays the ACTIVE count the live surfaces published — the
+    // byline must keep matching them; the list below it is the full record.
+    expect(cluster.sourceCount).toBe(1);
+    expect(cluster.lead.source).toBe("Example Wire");
+  });
+
   it("falls back safely when stored enum values are no longer valid", () => {
     const cluster = archivedStoryToCluster(
       makeArchivedStory({
@@ -255,6 +284,73 @@ describe("archivedStoryToCluster", () => {
     expect(cluster.country).toBe("GLOBAL");
     expect(cluster.contentType).toBeUndefined();
     expect(cluster.lead.sourceTier).toBe("C");
+  });
+});
+
+describe("mergeSourceRefs", () => {
+  const NOW_ISO = NOW.toISOString();
+
+  function ref(name: string, url: string, extra: Partial<ArchivedSourceRef> = {}): ArchivedSourceRef {
+    return {
+      name,
+      domain: `${name.toLowerCase().replace(/\s+/g, "")}.example`,
+      tier: "A",
+      url,
+      publishedAt: "2026-08-14T08:00:00.000Z",
+      title: `${name} on the rail bill`,
+      ...extra,
+    };
+  }
+
+  it("stamps a first-ever coverage list with firstSeenAt and lastSeenAt", () => {
+    expect(mergeSourceRefs(null, [ref("NPR", "https://npr.example/a")], NOW_ISO)).toEqual([
+      { ...ref("NPR", "https://npr.example/a"), firstSeenAt: NOW_ISO, lastSeenAt: NOW_ISO },
+    ]);
+  });
+
+  it("keeps sources that rotated out of the feeds, after the active ones", () => {
+    const previous = [
+      ref("NPR", "https://npr.example/a", { firstSeenAt: "2026-08-14T09:00:00.000Z", lastSeenAt: "2026-08-14T09:00:00.000Z" }),
+      ref("CBS News", "https://cbs.example/a", { firstSeenAt: "2026-08-14T09:00:00.000Z", lastSeenAt: "2026-08-14T09:00:00.000Z" }),
+      ref("ABC News", "https://abc.example/a", { firstSeenAt: "2026-08-14T09:00:00.000Z", lastSeenAt: "2026-08-14T09:00:00.000Z" }),
+    ];
+    const current = [ref("NPR", "https://npr.example/a"), ref("BBC", "https://bbc.example/a")];
+    const merged = mergeSourceRefs(previous, current, NOW_ISO);
+    // Active first, in current order — archivedStoryToCluster leads with [0].
+    expect(merged.map((s) => s.name)).toEqual(["NPR", "BBC", "CBS News", "ABC News"]);
+    // Active entries: original firstSeenAt kept, lastSeenAt bumped.
+    expect(merged[0].firstSeenAt).toBe("2026-08-14T09:00:00.000Z");
+    expect(merged[0].lastSeenAt).toBe(NOW_ISO);
+    expect(merged[1].firstSeenAt).toBe(NOW_ISO);
+    // Rotated-out entries keep the stamp of the last refresh that saw them.
+    expect(merged[2].lastSeenAt).toBe("2026-08-14T09:00:00.000Z");
+  });
+
+  it("passes stamp-less legacy entries through instead of inventing stamps", () => {
+    const merged = mergeSourceRefs(
+      [ref("CBS News", "https://cbs.example/a")],
+      [ref("NPR", "https://npr.example/a")],
+      NOW_ISO,
+    );
+    expect(merged[1]).toEqual(ref("CBS News", "https://cbs.example/a"));
+  });
+
+  it("refreshes the stored copy of a source that is still active", () => {
+    const merged = mergeSourceRefs(
+      [ref("NPR", "https://npr.example/a", { title: "Old NPR headline" })],
+      [ref("NPR", "https://npr.example/a", { title: "Updated NPR headline" })],
+      NOW_ISO,
+    );
+    expect(merged).toHaveLength(1);
+    expect(merged[0].title).toBe("Updated NPR headline");
+  });
+
+  it("dedupes by url and guards malformed jsonb", () => {
+    expect(
+      mergeSourceRefs(undefined, [ref("NPR", "https://npr.example/a"), ref("NPR mirror", "https://npr.example/a")], NOW_ISO),
+    ).toHaveLength(1);
+    expect(mergeSourceRefs("corrupt" as never, [], NOW_ISO)).toEqual([]);
+    expect(mergeSourceRefs([], "corrupt" as never, NOW_ISO)).toEqual([]);
   });
 });
 
@@ -445,6 +541,9 @@ describe("archiveDataset upsert (mocked db)", () => {
 
   function fakeDb() {
     return {
+      // Answers the schema existence checks: production HAS the migrated
+      // columns, so the upsert path under test is the migrated one.
+      execute: async () => ({ rows: [{ ok: 1 }] }),
       insert: () => ({
         values: (rows: Record<string, unknown>[]) => ({
           onConflictDoUpdate: (config: UpsertCall["config"]) => {
@@ -453,7 +552,7 @@ describe("archiveDataset upsert (mocked db)", () => {
           },
         }),
       }),
-      // Merge scan after the upserts: no candidate rows in these tests.
+      // Previous-row read, then the merge scan: no rows in these tests.
       select: () => ({
         from: () => ({ where: () => Promise.resolve([]) }),
       }),

@@ -16,7 +16,7 @@ import {
   findArchivedStory,
   findEarlierCoverage,
   getArchiveFirstSeen,
-  getStoryHistory,
+  getStoryArchiveExtras,
 } from "@/lib/database/archive";
 import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
 import { getClusterBySlugWithVersion, getRelatedClusters } from "@/lib/news/queries";
@@ -155,12 +155,21 @@ export default async function StoryPage({
   const { cluster, isArchived, publishedByUsAt } = view;
 
   // Archived stories can still surface related live coverage via entities;
-  // history and earlier coverage are best-effort ([] without a database).
-  const [related, history, earlierCoverage] = await Promise.all([
+  // the archive extras (update log + all-time source union) and earlier
+  // coverage are best-effort (empty without a database).
+  const [related, archiveExtras, earlierCoverage] = await Promise.all([
     getRelatedClusters(cluster),
-    getStoryHistory(cluster.id),
-    findEarlierCoverage(cluster.entities, cluster.id),
+    getStoryArchiveExtras(cluster.id),
+    findEarlierCoverage({
+      id: cluster.id,
+      title: cluster.title,
+      entities: cluster.entities,
+      // Earliest coverage of THIS story — the bar an archived story has to
+      // be older than to count as earlier coverage.
+      firstPublishedAt: cluster.firstPublishedAt,
+    }),
   ]);
+  const history = archiveExtras.history;
   const lead = cluster.lead;
   const categoryDef = CATEGORIES[cluster.category];
   const storyUrl = new URL(`/story/${cluster.slug}`, siteConfig.url).toString();
@@ -354,6 +363,7 @@ export default async function StoryPage({
             cluster={cluster}
             history={history}
             earlierCoverage={earlierCoverage}
+            allTimeSources={archiveExtras.sources}
           />
 
           <div className="mt-10">

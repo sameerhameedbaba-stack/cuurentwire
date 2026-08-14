@@ -1,4 +1,5 @@
 import { isDistributorDomain } from "@/lib/news/classification/content-type";
+import { isGenericEntity } from "@/lib/news/classification/entities";
 import { independentSourceCount } from "@/lib/news/ranking/score";
 import type { StoryUpdateEvent } from "@/lib/news/story-updates";
 import type { Article, StoryCluster } from "@/lib/news/types";
@@ -167,6 +168,118 @@ export function corroboratedDetails(
     details.push({ phrase, sources });
   }
   return details;
+}
+
+/**
+ * Headline words that carry no topical signal: articles, prepositions,
+ * auxiliaries and attribution filler ("says", "after"). Removing them keeps
+ * the similarity measure about WHAT happened, not how it was phrased.
+ */
+const TITLE_STOPWORDS = new Set([
+  "the", "and", "but", "for", "from", "with", "into", "over", "under",
+  "about", "after", "before", "during", "amid", "among", "between",
+  "against", "than", "then", "that", "this", "these", "those", "there",
+  "here", "his", "her", "its", "their", "them", "they", "our", "your",
+  "was", "were", "are", "has", "have", "had", "been", "being", "will",
+  "would", "could", "should", "may", "might", "can", "not", "you", "who",
+  "what", "when", "where", "why", "how", "new", "says", "said", "say",
+  "told", "more", "most", "some", "any", "all", "one", "two",
+  "following", "according",
+]);
+
+/**
+ * Light suffix stripping so "kidnap", "kidnapped" and "kidnapping" collapse
+ * to one token. The doubled final consonant left behind by -ed/-ing is
+ * undone ("kidnapp" → "kidnap"); nothing else is rewritten.
+ */
+function undouble(stem: string): string {
+  return /([bdglmnprt])\1$/.test(stem) ? stem.slice(0, -1) : stem;
+}
+
+function stemToken(token: string): string {
+  if (token.length > 5 && token.endsWith("ing")) return undouble(token.slice(0, -3));
+  if (token.length > 4 && token.endsWith("ed")) return undouble(token.slice(0, -2));
+  if (token.length > 3 && token.endsWith("s") && !token.endsWith("ss")) {
+    return token.slice(0, -1);
+  }
+  return token;
+}
+
+/** Lowercased, punctuation-stripped, stopword-filtered, stemmed title words. */
+function titleTokens(title: string): Set<string> {
+  const tokens = new Set<string>();
+  for (const raw of title.toLowerCase().split(/[^a-z0-9']+/)) {
+    const token = raw.replace(/'/g, "");
+    // Two-letter tokens ("us", "eu") are too ambiguous to count as overlap.
+    if (token.length < 3 || TITLE_STOPWORDS.has(token)) continue;
+    tokens.add(stemToken(token));
+  }
+  return tokens;
+}
+
+/** Jaccard overlap of two headlines' meaningful words, 0–1. */
+export function titleSimilarity(a: string, b: string): number {
+  const left = titleTokens(a);
+  const right = titleTokens(b);
+  if (left.size === 0 || right.size === 0) return 0;
+  let shared = 0;
+  for (const token of left) if (right.has(token)) shared++;
+  return shared / (left.size + right.size - shared);
+}
+
+/** How related an archived story is to the story being read. */
+export interface ArchiveRelatedness {
+  /** True when the pair clears the bar to be recommended at all. */
+  passes: boolean;
+  /** sharedSpecific count + titleSimilarity — for ordering only. */
+  score: number;
+  /** Shared entities that identify the event (people, phrases, orgs). */
+  sharedSpecific: string[];
+  /** Shared entities that merely locate it ("United States") — no weight. */
+  sharedGeneric: string[];
+  titleSimilarity: number;
+}
+
+/** A single specific entity only recommends when the headlines agree too. */
+const RELATEDNESS_MIN_TITLE_SIMILARITY = 0.2;
+
+/**
+ * Relevance gate for "From the CurrentWire archive" recommendations.
+ *
+ * Generic entities say what a story TOUCHES, not what it is about: ~13% of
+ * the archive carries "United States", so overlapping on one is no evidence
+ * of a relationship and contributes nothing here. A recommendation needs
+ * either two shared specific entities, or one plus headlines that visibly
+ * describe the same event. Pure and case-insensitive.
+ */
+export function scoreArchiveRelatedness(
+  story: { title: string; entities: string[] },
+  candidate: { title: string; entities: string[] },
+  isGeneric: (entity: string) => boolean = isGenericEntity,
+): ArchiveRelatedness {
+  const candidateKeys = new Set(
+    candidate.entities.map((entity) => entity.trim().toLowerCase()).filter(Boolean),
+  );
+  const sharedSpecific: string[] = [];
+  const sharedGeneric: string[] = [];
+  const seen = new Set<string>();
+  for (const entity of story.entities) {
+    const name = entity.trim();
+    const key = name.toLowerCase();
+    if (!key || seen.has(key) || !candidateKeys.has(key)) continue;
+    seen.add(key);
+    (isGeneric(name) ? sharedGeneric : sharedSpecific).push(name);
+  }
+  const similarity = titleSimilarity(story.title, candidate.title);
+  return {
+    passes:
+      sharedSpecific.length >= 2 ||
+      (sharedSpecific.length >= 1 && similarity >= RELATEDNESS_MIN_TITLE_SIMILARITY),
+    score: sharedSpecific.length + similarity,
+    sharedSpecific,
+    sharedGeneric,
+    titleSimilarity: similarity,
+  };
 }
 
 /**

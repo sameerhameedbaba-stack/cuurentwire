@@ -4,7 +4,7 @@ import { clusterArticles } from "@/lib/news/clustering/cluster";
 import { dedupeExact, normalizeArticle } from "@/lib/news/normalization/normalize";
 import { activeProviders } from "@/lib/news/providers";
 import { getLastFeedHealth } from "@/lib/news/providers/rss";
-import { rankClusters } from "@/lib/news/ranking/score";
+import { isCuratedEligible, rankClusters } from "@/lib/news/ranking/score";
 import { deriveTrending } from "@/lib/news/trending";
 import type {
   Article,
@@ -108,7 +108,9 @@ export async function runPipeline(now: Date = new Date()): Promise<NewsDataset> 
   const { unique, removed } = dedupeExact(normalized);
   const classificationWarnings = collectClassificationWarnings(unique, rawByArticleId);
   const clusters = rankClusters(clusterArticles(unique, now), now);
-  const trending = deriveTrending(clusters);
+  // Trending is a curated module: a syndicated press release must not push
+  // its issuer's boilerplate into the topic rail on distribution volume alone.
+  const trending = deriveTrending(clusters.filter(isCuratedEligible));
 
   // Public label coherence: once a story's cluster has settled on a category
   // and country, every member article carries the same labels. Article-level

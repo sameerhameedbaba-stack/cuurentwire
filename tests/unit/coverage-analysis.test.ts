@@ -4,7 +4,9 @@ import {
   describeUpdateEvent,
   extractNumericPhrases,
   isPressReleaseMember,
+  scoreArchiveRelatedness,
   sourceMix,
+  titleSimilarity,
 } from "@/lib/news/coverage-analysis";
 import type { Article, StoryCluster } from "@/lib/news/types";
 
@@ -262,6 +264,151 @@ describe("corroboratedDetails", () => {
     const details = corroboratedDetails(cluster);
     expect(details).toHaveLength(6);
     expect(details.map((d) => d.phrase)).toEqual(entities.slice(0, 6));
+  });
+});
+
+describe("titleSimilarity", () => {
+  it("is 1 for the same headline and 0 for unrelated ones", () => {
+    const title = "Senate passes bipartisan rail safety bill";
+    expect(titleSimilarity(title, title)).toBe(1);
+    expect(titleSimilarity(title, "Storm warnings issued along the Gulf coast")).toBe(0);
+  });
+
+  it("matches across -ed/-ing/-s inflections", () => {
+    expect(
+      titleSimilarity("Missionary kidnap suspect charged", "Missionary kidnapped, suspect charged"),
+    ).toBe(1);
+    expect(
+      titleSimilarity("Crews report wildfire", "Crews reporting wildfires"),
+    ).toBe(1);
+  });
+
+  it("stems only s/ed/ing — an -e base form is left alone", () => {
+    // Deliberate: "battle"/"battling" stay distinct rather than risk
+    // over-stemming unrelated words together.
+    expect(titleSimilarity("Crews battle blaze", "Crews battling blaze")).toBeLessThan(1);
+  });
+
+  it("ignores stopwords and short tokens", () => {
+    // Only "rail"/"bill" carry signal; the filler must not dilute the score.
+    expect(
+      titleSimilarity("The rail bill", "A rail bill, in the US"),
+    ).toBe(1);
+  });
+
+  it("is 0 when a headline has no scoreable words", () => {
+    expect(titleSimilarity("It is what it is", "Senate passes rail bill")).toBe(0);
+  });
+});
+
+describe("scoreArchiveRelatedness", () => {
+  // The live regression: story cf2ba91727374, whose only entities are one
+  // generic country and one specific phrase, was recommended five archived
+  // stories that shared nothing but "United States".
+  const missionary = {
+    title: "US missionary released following kidnap in Niger, Christian group says",
+    entities: ["United States", "Niger Christian"],
+  };
+
+  const junkCandidates = [
+    {
+      title: "Navy names replacement for USS Abraham Lincoln in the Pacific",
+      entities: ["United States", "USS Abraham Lincoln"],
+    },
+    {
+      title: "Army grounds its Apache helicopter fleet after a crash",
+      entities: ["United States", "Apache Helicopter"],
+    },
+    {
+      title: "Luigi Mangione trial date set in health executive killing",
+      entities: ["United States", "Luigi Mangione"],
+    },
+    {
+      title: "Brixton Metals Announces Closing of First Tranche of Private Placement",
+      entities: ["United States", "Private Placement"],
+    },
+    {
+      title: "USS Abraham Lincoln returns home after a nine-month deployment",
+      entities: ["United States", "USS Abraham Lincoln"],
+    },
+  ];
+
+  it("rejects every candidate that shares only a generic entity", () => {
+    for (const candidate of junkCandidates) {
+      const result = scoreArchiveRelatedness(missionary, candidate);
+      expect(result.passes).toBe(false);
+      expect(result.sharedSpecific).toEqual([]);
+      expect(result.sharedGeneric).toEqual(["United States"]);
+      // Generic overlap contributes nothing to the score.
+      expect(result.score).toBe(result.titleSimilarity);
+    }
+  });
+
+  it("passes a pair sharing two specific entities even with unlike headlines", () => {
+    const result = scoreArchiveRelatedness(
+      {
+        title: "Luigi Mangione pleads not guilty in Brian Thompson killing",
+        entities: ["Luigi Mangione", "Brian Thompson", "New York"],
+      },
+      {
+        title: "Suspect charged over UnitedHealth executive shooting",
+        entities: ["Luigi Mangione", "Brian Thompson"],
+      },
+    );
+    expect(result.sharedSpecific).toEqual(["Luigi Mangione", "Brian Thompson"]);
+    // The entity evidence alone carries it — the headlines barely overlap.
+    expect(result.titleSimilarity).toBeLessThan(0.2);
+    expect(result.passes).toBe(true);
+    expect(result.score).toBeGreaterThanOrEqual(2);
+  });
+
+  it("passes one specific entity when the headlines describe the same event", () => {
+    const result = scoreArchiveRelatedness(missionary, {
+      title: "American missionary kidnapped in Niger is released, group says",
+      entities: ["United States", "Niger Christian"],
+    });
+    expect(result.sharedSpecific).toEqual(["Niger Christian"]);
+    expect(result.titleSimilarity).toBeGreaterThanOrEqual(0.2);
+    expect(result.passes).toBe(true);
+  });
+
+  it("rejects one specific entity when the headlines have nothing in common", () => {
+    const result = scoreArchiveRelatedness(missionary, {
+      title: "Aid budget debate reopens in parliament",
+      entities: ["Niger Christian"],
+    });
+    expect(result.sharedSpecific).toEqual(["Niger Christian"]);
+    expect(result.titleSimilarity).toBeLessThan(0.2);
+    expect(result.passes).toBe(false);
+  });
+
+  it("compares entities case-insensitively and dedupes repeats", () => {
+    const result = scoreArchiveRelatedness(
+      { title: "A", entities: ["Luigi Mangione", "luigi mangione", "Brian Thompson"] },
+      { title: "B", entities: ["LUIGI MANGIONE", "brian thompson"] },
+    );
+    expect(result.sharedSpecific).toEqual(["Luigi Mangione", "Brian Thompson"]);
+    expect(result.passes).toBe(true);
+  });
+
+  it("takes an injected generic test so callers can override the dictionary", () => {
+    const result = scoreArchiveRelatedness(
+      { title: "A", entities: ["Rail Safety", "Senate"] },
+      { title: "B", entities: ["Rail Safety", "Senate"] },
+      (entity) => entity === "Rail Safety",
+    );
+    expect(result.sharedGeneric).toEqual(["Rail Safety"]);
+    expect(result.sharedSpecific).toEqual(["Senate"]);
+  });
+
+  it("passes nothing when either side has no entities", () => {
+    expect(scoreArchiveRelatedness(missionary, { title: "x", entities: [] }).passes).toBe(
+      false,
+    );
+    expect(
+      scoreArchiveRelatedness({ title: missionary.title, entities: [] }, junkCandidates[0])
+        .passes,
+    ).toBe(false);
   });
 });
 

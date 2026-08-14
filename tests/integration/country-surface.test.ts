@@ -1,7 +1,18 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
+import { matchesCountryFilter } from "@/lib/news/classification/geography";
 import { runPipeline } from "@/lib/news/pipeline";
-import { getCountryData, getHomepageData } from "@/lib/news/queries";
+import {
+  getCategoryData,
+  getCountryData,
+  getHomepageData,
+  getLatest,
+  getSourceStories,
+  searchStories,
+} from "@/lib/news/queries";
+import { isCuratedEligible } from "@/lib/news/ranking/score";
+import { deriveTrending } from "@/lib/news/trending";
 import type { Article, NewsDataset, RawArticle, StoryCluster } from "@/lib/news/types";
+import { slugify } from "@/lib/utils/text";
 
 /**
  * Country-surface integrity: known-US and known-CA fixtures run through the
@@ -45,6 +56,8 @@ interface FixtureSeed {
   providerCountry?: "us" | "ca";
   /** Number of demo outlets covering the story (default 1). */
   outlets?: number;
+  /** Explicit publishers, overriding the default editorial rotation. */
+  sources?: [name: string, domain: string][];
 }
 
 const OUTLETS: [name: string, domain: string][] = [
@@ -52,6 +65,17 @@ const OUTLETS: [name: string, domain: string][] = [
   ["Sample Sentinel", "samplesentinel.demo"],
   ["Demo Dispatch", "demodispatch.demo"],
 ];
+
+/** Distribution platforms — they carry issuer releases, not reporting. */
+const WIRE_OUTLETS: [name: string, domain: string][] = [
+  ["Fixture Newswire", "fixturenewswire.demo"],
+  ["Demo Release Wire", "demoreleasewire.demo"],
+  ["Sample Wire Service", "samplewireservice.demo"],
+];
+
+const PR_TITLE = "Fixture Mining Corp. Announces Q2 2026 Financial Results";
+const PICKED_UP_PR_TITLE =
+  "Harbour Ridge Copper Confirms Record Quarterly Output at Sudbury Smelter";
 
 const US_SEEDS: FixtureSeed[] = [
   // The audit's exact live leak, with multi-outlet coverage so it ranks
@@ -79,6 +103,43 @@ const US_SEEDS: FixtureSeed[] = [
 ];
 
 const CA_SEEDS: FixtureSeed[] = [
+  // Single-source quarterly-results release, syndicated to three wire
+  // domains — the live /canada defect (two such releases ranked 5 and 6 in
+  // "Top Canada stories"). Three copies give it enough velocity and coverage
+  // to outrank most real Canadian stories in this fixture set, which is
+  // exactly how it reached the curated modules in production.
+  {
+    key: "fixture-mining-q2",
+    title: PR_TITLE,
+    description:
+      "The company said second-quarter revenue rose at its Saskatchewan operations.",
+    category: "business",
+    providerCountry: "ca",
+    sources: WIRE_OUTLETS,
+  },
+  // The exception: one release that real newsrooms picked up. The cluster is
+  // still LED by the release (labeled "Press release"), but it carries
+  // independent editorial coverage on a different domain, so it stays
+  // curated-eligible.
+  {
+    key: "harbour-ridge-release",
+    title: PICKED_UP_PR_TITLE,
+    description:
+      "FOR IMMEDIATE RELEASE — Harbour Ridge Copper today confirmed record smelter output at its Sudbury operations in Ontario.",
+    category: "business",
+    providerCountry: "ca",
+    sources: [WIRE_OUTLETS[0]],
+  },
+  {
+    key: "harbour-ridge-pickup",
+    title:
+      "Harbour Ridge Copper confirms record quarterly output at Sudbury smelter, shares climb",
+    description:
+      "Analysts said the Sudbury smelter run rate was the strongest since the plant reopened in Ontario.",
+    category: "business",
+    providerCountry: "ca",
+    sources: [OUTLETS[0]],
+  },
   {
     key: "boc-rate-path",
     title: "Bank of Canada signals cautious approach ahead of rate decision",
@@ -128,9 +189,10 @@ function fixtureArticles(now: Date): RawArticle[] {
   const seeds = [...US_SEEDS, ...CA_SEEDS, ...OTHER_SEEDS];
   const articles: RawArticle[] = [];
   seeds.forEach((seed, seedIndex) => {
-    const outletCount = seed.outlets ?? 1;
+    const outlets = seed.sources ?? OUTLETS;
+    const outletCount = seed.sources?.length ?? seed.outlets ?? 1;
     for (let i = 0; i < outletCount; i++) {
-      const [outlet, domain] = OUTLETS[i % OUTLETS.length];
+      const [outlet, domain] = outlets[i % outlets.length];
       articles.push({
         title: seed.title,
         description: seed.description,
@@ -290,5 +352,143 @@ describe("country surfaces (fixture pipeline)", () => {
     // US_CA is admitted by both filters — the exclusivity assertions above
     // only ban single-country stories from the opposite surface.
     expect(canada.topList.concat(us.topList).some((c) => c.id === softwood.id)).toBe(true);
+  });
+});
+
+/**
+ * Curated modules are a NEWS ranking, not a wire distribution channel: a
+ * press release with no independent editorial coverage never occupies a
+ * "Top" slot. Regression for the live /canada defect — two quarterly-results
+ * releases sat at ranks 5 and 6 of "Top Canada stories" and were advertised
+ * to search engines in that list's ItemList JSON-LD.
+ */
+describe("press releases in curated modules (fixture pipeline)", () => {
+  const release = (): StoryCluster => findCluster("Fixture Mining Corp");
+
+  it("classifies the wire release as a single-source press release", () => {
+    const pr = release();
+    expect(pr.contentType).toBe("press_release");
+    for (const article of pr.articles) {
+      expect(article.contentType).toBe("press_release");
+    }
+    // Three wire domains carrying ONE issuer release: distribution breadth,
+    // never independent reporting.
+    expect(pr.sourceCount).toBe(3);
+    expect(pr.country).toBe("CA");
+    expect(pr.category).toBe("business");
+    expect(isCuratedEligible(pr)).toBe(false);
+  });
+
+  it("would reach the curated modules without the gate", () => {
+    // Non-vacuity guard: pre-gate the release ranks inside the ten clusters
+    // /canada lists, and multi-source clusters are what "Most covered" draws
+    // from — the assertions below are removing something that was there.
+    const pr = release();
+    const canadaByRank = dataset.clusters.filter((c) =>
+      matchesCountryFilter(c.country, "canada"),
+    );
+    expect(canadaByRank.slice(0, 10).some((c) => c.id === pr.id)).toBe(true);
+    expect(
+      dataset.clusters.filter((c) => c.sourceCount >= 2).some((c) => c.id === pr.id),
+    ).toBe(true);
+  });
+
+  it("keeps it out of every /canada curated list", async () => {
+    const pr = release();
+    const canada = await getCountryData("canada");
+
+    expect(canada.hero).not.toBeNull();
+    expect(canada.hero!.id).not.toBe(pr.id);
+    expect(canada.secondary.some((c) => c.id === pr.id)).toBe(false);
+    for (const [category, clusters] of Object.entries(canada.byCategory)) {
+      expect(
+        (clusters ?? []).some((c) => c.id === pr.id),
+        `canada.byCategory.${category} must not carry an uncovered release`,
+      ).toBe(false);
+    }
+    // topList also feeds the page's ItemList JSON-LD.
+    expect(canada.topList.some((c) => c.id === pr.id)).toBe(false);
+    for (const cluster of canada.topList) {
+      expect(
+        isCuratedEligible(cluster),
+        `canada.topList "${cluster.title}" must be curated-eligible`,
+      ).toBe(true);
+    }
+  });
+
+  it("keeps it out of every curated homepage module", async () => {
+    const pr = release();
+    const home = await getHomepageData();
+
+    expect(home.hero!.id).not.toBe(pr.id);
+    expect(home.topSecondary.some((c) => c.id === pr.id)).toBe(false);
+    expect(home.canada.some((c) => c.id === pr.id)).toBe(false);
+    expect(home.us.some((c) => c.id === pr.id)).toBe(false);
+    expect(home.top100Preview.some((c) => c.id === pr.id)).toBe(false);
+    // Most covered ranks by source count, which is exactly what syndication
+    // inflates — it must still return real stories, just not this one.
+    expect(home.mostCovered.length).toBeGreaterThan(0);
+    expect(home.mostCovered.some((c) => c.id === pr.id)).toBe(false);
+    for (const [id, clusters] of Object.entries(home.sections)) {
+      expect(
+        (clusters ?? []).some((c) => c.id === pr.id),
+        `homepage section ${id} must not carry an uncovered release`,
+      ).toBe(false);
+    }
+  });
+
+  it("keeps it out of the /business curated lists", async () => {
+    const pr = release();
+    const business = await getCategoryData("business");
+
+    expect(business.hero).not.toBeNull();
+    expect(business.hero!.id).not.toBe(pr.id);
+    expect(business.secondary.some((c) => c.id === pr.id)).toBe(false);
+    expect(business.more.some((c) => c.id === pr.id)).toBe(false);
+  });
+
+  it("keeps its boilerplate out of trending topics", () => {
+    const pr = release();
+    const slugs = new Set(pr.entities.map((e) => slugify(e, 60)));
+    expect(slugs.size).toBeGreaterThan(0);
+    // Ungated, the release's entities clear the trending article-count floor
+    // on three syndicated copies alone; the curated gate is what drops them.
+    expect(
+      deriveTrending(dataset.clusters, 100).some((t) => slugs.has(t.slug)),
+    ).toBe(true);
+    expect(dataset.trending.some((t) => slugs.has(t.slug))).toBe(false);
+  });
+
+  it("stays reachable and labeled on ungated surfaces", async () => {
+    const pr = release();
+    const articleIds = new Set(pr.articles.map((a: Article) => a.id));
+
+    const latest = await getLatest("canada");
+    expect(latest.articles.some((a) => articleIds.has(a.id))).toBe(true);
+
+    const wire = await getSourceStories(slugify("Fixture Newswire", 60));
+    expect(wire.articles.some((a) => articleIds.has(a.id))).toBe(true);
+
+    const search = await searchStories("Fixture Mining");
+    expect(search.results.some((c) => c.id === pr.id)).toBe(true);
+  });
+
+  it("keeps a release with independent pickup curated-eligible", async () => {
+    const picked = findCluster("Harbour Ridge Copper");
+    // One issuer release plus one newsroom's own report on a different
+    // domain: the cluster is still LED (and labeled) by the release.
+    expect(picked.articles.length).toBe(2);
+    expect(picked.contentType).toBe("press_release");
+    expect(
+      picked.articles.some((a: Article) => a.contentType !== "press_release"),
+    ).toBe(true);
+    expect(isCuratedEligible(picked)).toBe(true);
+
+    const canada = await getCountryData("canada");
+    expect(
+      [canada.hero!, ...canada.secondary, ...canada.topList].some(
+        (c) => c.id === picked.id,
+      ),
+    ).toBe(true);
   });
 });
