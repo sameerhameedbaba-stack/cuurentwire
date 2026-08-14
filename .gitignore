@@ -46,6 +46,4 @@ next-env.d.ts
 # Local audit notes - shared privately with reviewers, never published
 PROJECT_AUDIT.md
 IMPLEMENTATION_REPORT.md
-AUDIT_RESPONSE_2.md
-AUDIT_RESPONSE_3.md
-AUDIT_RESPONSE_4.md
+AUDIT_RESPONSE_*.md
