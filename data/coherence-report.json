@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-08-14T22:09:42.579Z",
+  "ranAt": "2026-08-14T22:25:00.411Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -13,95 +13,27 @@
   "stats": {
     "pagesFetched": 14,
     "pageErrors": [],
-    "cards": 520,
-    "cardsWithId": 520,
-    "cardsWithCategory": 440,
-    "cardsWithCountry": 204,
-    "cardsWithSources": 52,
-    "storyPagesFetched": 198,
+    "cards": 512,
+    "cardsWithId": 512,
+    "cardsWithCategory": 436,
+    "cardsWithCountry": 202,
+    "cardsWithSources": 54,
+    "storyPagesFetched": 186,
     "storyErrors": [],
-    "uniqueClusters": 99
+    "uniqueClusters": 93
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.846,
-    "country": 0.392,
-    "sources": 0.1
+    "category": 0.852,
+    "country": 0.395,
+    "sources": 0.105
   },
   "versionsSeen": [
-    "unknown"
+    "20260814T222409Z-9f262a",
+    "20260814T222504Z-6f6cf1"
   ],
-  "violations": [
-    {
-      "type": "same-version-mismatch",
-      "clusterId": "c29c980e4829c",
-      "version": "unknown",
-      "field": "category",
-      "confidence": "reduced",
-      "values": [
-        {
-          "value": "business",
-          "surfaces": [
-            "/ (r1)",
-            "/ (r1)",
-            "/top-100 (r1)",
-            "/business (r1)",
-            "/story/watch-what-happens-if-luigi-mangione-pleads-guilty-today-c29c980e4829c (r1)",
-            "/ (r2)",
-            "/ (r2)",
-            "/top-100 (r2)",
-            "/business (r2)",
-            "/story/watch-what-happens-if-luigi-mangione-pleads-guilty-today-c29c980e4829c (r2)"
-          ]
-        },
-        {
-          "value": "general",
-          "surfaces": [
-            "/latest (r1)",
-            "/latest (r2)"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "same-version-mismatch",
-      "clusterId": "cecef2d86fff4",
-      "version": "unknown",
-      "field": "category",
-      "confidence": "reduced",
-      "values": [
-        {
-          "value": "politics",
-          "surfaces": [
-            "/ (r1)",
-            "/ (r1)",
-            "/top-100 (r1)",
-            "/us (r1)",
-            "/us (r1)",
-            "/politics (r1)",
-            "/story/trump-threatens-to-declare-strait-of-hormuz-territory-of-the-united-states-cecef2d86fff4 (r1)",
-            "/ (r2)",
-            "/ (r2)",
-            "/top-100 (r2)",
-            "/us (r2)",
-            "/us (r2)",
-            "/politics (r2)",
-            "/story/trump-threatens-to-declare-strait-of-hormuz-territory-of-the-united-states-cecef2d86fff4 (r2)"
-          ]
-        },
-        {
-          "value": "general",
-          "surfaces": [
-            "/us (r1)",
-            "/latest (r1)",
-            "/us (r2)",
-            "/latest (r2)"
-          ]
-        }
-      ]
-    }
-  ],
+  "violations": [],
   "warningsTotal": 0,
   "warnings": [],
-  "result": "FAIL"
+  "result": "PASS"
 }
