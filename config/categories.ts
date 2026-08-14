@@ -13,9 +13,21 @@ export const CATEGORY_IDS = [
   "science",
   "culture",
   "sports",
+  "general",
 ] as const;
 
 export type CategoryId = (typeof CATEGORY_IDS)[number];
+
+/**
+ * Categories exposed in navigation, filter chips and sitemaps. "general" is
+ * the internal low-confidence bucket — its stories surface in /latest,
+ * search and source pages, and /general renders if visited directly, but it
+ * is never promoted as a main section. This keeps "World" meaning WORLD
+ * (genuine international affairs) instead of "classifier wasn't sure".
+ */
+export const PUBLIC_CATEGORY_IDS = CATEGORY_IDS.filter(
+  (id) => id !== "general",
+);
 
 export interface CategoryDefinition {
   id: CategoryId;
@@ -185,6 +197,18 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "premier league", "champions league", "transfer window", "tight end",
     ],
     providerAliases: ["sports", "sport"],
+  },
+  general: {
+    id: "general",
+    label: "General",
+    path: "/general",
+    description:
+      "Stories that do not clearly belong to a single section yet.",
+    // Deliberately empty: general is assigned only as the classifier's
+    // low-confidence fallback, never by keyword evidence. The GNews
+    // "general" topic is a catch-all and must not nudge anything either.
+    keywords: [],
+    providerAliases: [],
   },
 };
 

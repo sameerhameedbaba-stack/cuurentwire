@@ -1,7 +1,8 @@
 import { revalidateTag, unstable_cache } from "next/cache";
-import { env } from "@/lib/env";
+import { loadDatasetSnapshot, saveDatasetSnapshot } from "@/lib/database/snapshot";
+import { env, getDataMode } from "@/lib/env";
 import { runPipeline } from "@/lib/news/pipeline";
-import { setPreviousDataset } from "@/lib/news/previous";
+import { getPreviousDataset, setPreviousDataset } from "@/lib/news/previous";
 import type { NewsDataset } from "@/lib/news/types";
 import { logger } from "@/lib/utils/logger";
 
@@ -13,7 +14,17 @@ import { logger } from "@/lib/utils/logger";
  *    per refresh interval globally, not once per instance. An empty pipeline
  *    result throws inside the cached function so an outage is NEVER cached.
  * 2. In-process last-good dataset — instant serving within a warm instance
- *    and the fallback when the shared layer has nothing.
+ *    and the first fallback when the shared layer has nothing.
+ * 3. Last COMPLETE snapshot from Postgres — the coherence guarantee: an
+ *    instance with nothing serves the same snapshot every other instance
+ *    saw, never a freshly generated partial reality of its own.
+ * 4. Direct pipeline run — reachable only with no database configured
+ *    (local dev) or an empty/stale snapshot table.
+ *
+ * Cluster-id continuity: before ANY pipeline run, the previous-run registry
+ * is seeded from the DB snapshot when this instance has none in memory —
+ * cold instances reuse the fleet's existing cluster ids instead of
+ * re-deriving story URLs from scratch.
  *
  * The homepage is never replaced by an error because one provider broke:
  * worst case an empty dataset is returned and the UI shows a friendly
@@ -34,13 +45,28 @@ function state(): CacheState {
   return globalCache.__newsCache;
 }
 
+/**
+ * Seed the previous-run registry from the persisted snapshot so clustering
+ * keeps existing cluster ids even on a cold instance. No-op when memory
+ * already has a previous dataset, in mock mode, or without a database.
+ */
+async function seedPreviousFromSnapshot(): Promise<void> {
+  if (getPreviousDataset() || getDataMode() === "mock") return;
+  const snapshot = await loadDatasetSnapshot();
+  if (snapshot) setPreviousDataset(snapshot);
+}
+
 /** Shared-cache producer. Throws on empty results so they are not cached. */
 const fetchDatasetShared = unstable_cache(
   async (): Promise<NewsDataset> => {
+    await seedPreviousFromSnapshot();
     const dataset = await runPipeline();
     if (dataset.articles.length === 0) {
       throw new Error("Pipeline produced an empty dataset");
     }
+    // Persist the new complete snapshot (best-effort) so every instance —
+    // and the next cold pipeline run — sees this exact reality.
+    await saveDatasetSnapshot(dataset);
     return dataset;
   },
   ["news-dataset-v1"],
@@ -66,7 +92,10 @@ function fetchDatasetSharedCoalesced(): Promise<NewsDataset> {
 }
 
 function runPipelineCoalesced(): Promise<NewsDataset> {
-  inFlightDirect ??= runPipeline().finally(() => {
+  inFlightDirect ??= (async () => {
+    await seedPreviousFromSnapshot();
+    return runPipeline();
+  })().finally(() => {
     inFlightDirect = null;
   });
   return inFlightDirect;
@@ -74,7 +103,10 @@ function runPipelineCoalesced(): Promise<NewsDataset> {
 
 /**
  * Get the current dataset: shared cache first, then in-process last-good,
- * then a direct pipeline run as the final fallback.
+ * then the last complete DB snapshot, then a direct pipeline run as the
+ * final fallback (reachable only without a usable snapshot). Public routes
+ * therefore never invent a fresh partial dataset while a complete shared
+ * one exists.
  */
 export async function getDataset(): Promise<NewsDataset> {
   const cache = state();
@@ -97,8 +129,19 @@ export async function getDataset(): Promise<NewsDataset> {
     return cache.dataset;
   }
 
-  // Last resort: run the pipeline directly (never throws; providers are
-  // isolated). May legitimately be empty — the UI handles that state.
+  // Serve the last COMPLETE valid snapshot rather than creating a new
+  // partial reality from this route's request.
+  const snapshot = await loadDatasetSnapshot();
+  if (snapshot) {
+    cache.dataset = snapshot;
+    cache.refreshedAt = Date.now();
+    setPreviousDataset(snapshot);
+    return snapshot;
+  }
+
+  // Last resort (no database / nothing persisted yet): run the pipeline
+  // directly (never throws; providers are isolated). May legitimately be
+  // empty — the UI handles that state.
   const direct = await runPipelineCoalesced();
   if (direct.articles.length > 0 || cache.dataset === null) {
     cache.dataset = direct;
@@ -129,6 +172,15 @@ export async function forceRefresh(): Promise<NewsDataset> {
       error: error instanceof Error ? error.message : "unknown",
     });
     if (cache.dataset) return cache.dataset;
+    // Same fallback discipline as getDataset(): last complete snapshot
+    // before any per-request pipeline reality.
+    const snapshot = await loadDatasetSnapshot();
+    if (snapshot) {
+      cache.dataset = snapshot;
+      cache.refreshedAt = Date.now();
+      setPreviousDataset(snapshot);
+      return snapshot;
+    }
     return runPipelineCoalesced();
   }
 }

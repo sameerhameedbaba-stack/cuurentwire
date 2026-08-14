@@ -32,7 +32,7 @@ export interface CategoryResult {
   /**
    * 0..1, deterministic — normalized margin between the top-2 category
    * scores ((top1 - top2) / top1). 1 when only one category scored,
-   * 0 for the neutral world fallback.
+   * 0 for the neutral general fallback.
    */
   confidence: number;
   /** Per-category totals for every category that scored above zero. */
@@ -59,7 +59,9 @@ const NEGATIVE_WEIGHT = 3;
 /**
  * Minimum top score required to assign a specific category. A single
  * description keyword hit (weight 1) is noise, not evidence — anything
- * below a feed-section prior (2) falls back to the neutral world bucket.
+ * below a feed-section prior (2) falls back to the internal general
+ * bucket. World is NEVER a fallback: it must be earned by signals like
+ * any other category.
  */
 const MIN_PRIMARY_SCORE = 2;
 
@@ -154,10 +156,10 @@ export function classifyCategory(input: CategoryInput): CategoryResult {
   }
 
   if (scores.size === 0) {
-    // Nothing matched — world as the neutral bucket.
+    // Nothing matched — the internal general bucket, never world.
     return {
-      primary: "world",
-      all: ["world"],
+      primary: "general",
+      all: ["general"],
       confidence: 0,
       scores: {},
       matchedSignals,
@@ -170,16 +172,16 @@ export function classifyCategory(input: CategoryInput): CategoryResult {
 
   // Ambiguity guards. A specific category needs a minimum score, and an
   // exact tie between different categories must never be decided by map
-  // insertion order — ambiguous stories go to the neutral world bucket.
+  // insertion order — ambiguous stories go to the internal general bucket.
   if (topScore < MIN_PRIMARY_SCORE || tiedTop.length > 1) {
-    const all: CategoryId[] = ["world"];
+    const all: CategoryId[] = ["general"];
     if (tiedTop.length > 1) {
       for (const id of tiedTop) {
-        if (id !== "world") all.push(id);
+        if (id !== "general") all.push(id);
       }
     }
     return {
-      primary: "world",
+      primary: "general",
       all: all.slice(0, 3),
       confidence: 0,
       scores: Object.fromEntries(sorted) as Partial<Record<CategoryId, number>>,

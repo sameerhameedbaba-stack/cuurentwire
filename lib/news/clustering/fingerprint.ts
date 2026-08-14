@@ -293,6 +293,44 @@ export function fingerprintSimilarity(
   return union === 0 ? 0 : shared / union;
 }
 
+/**
+ * IDF-weighted overlap coefficient over canonical tokens in [0, 1]:
+ * shared weight normalized by the SMALLER side. Where Jaccard punishes a
+ * headline for being richer ("Kevin Rideout, American missionary held in
+ * Niger, released after months in captivity" vs "U.S. missionary kidnapped
+ * in Niger is released" — the added name and duration dilute the union),
+ * containment asks whether the shorter headline's event is CONTAINED in the
+ * longer one. Runs hot by construction, so callers must pair it with
+ * stricter evidence (strong fingerprint + shared action group).
+ */
+export function fingerprintContainment(
+  a: EventFingerprint,
+  b: EventFingerprint,
+  stats: CorpusStats,
+): number {
+  let shared = 0;
+  let weightA = 0;
+  let weightB = 0;
+  for (const token of a.canonical) {
+    const w = idfWeight(stats, token);
+    weightA += w;
+    if (b.canonical.has(token)) shared += w;
+  }
+  for (const token of b.canonical) weightB += idfWeight(stats, token);
+  const smaller = Math.min(weightA, weightB);
+  return smaller === 0 ? 0 : shared / smaller;
+}
+
+/**
+ * True when both headlines carry a marker from the SAME action group — the
+ * same act, not merely the absence of conflict. The confirmation the hot
+ * containment path requires.
+ */
+export function hasSharedAction(a: EventFingerprint, b: EventFingerprint): boolean {
+  for (const marker of a.actions) if (b.actions.has(marker)) return true;
+  return false;
+}
+
 /** Shared non-action stems that are rare within the current corpus. */
 export function sharedRareStems(
   a: EventFingerprint,

@@ -3,10 +3,15 @@ import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { ADMIN_COOKIE } from "@/lib/admin/auth";
 import { cacheInfo, datasetAgeMs, getDataset } from "@/lib/cache/store";
+import { getArchiveStats } from "@/lib/database/archive";
 import { isDatabaseConfigured } from "@/lib/database/client";
 import { env, getDataMode } from "@/lib/env";
 import { classifyCategory } from "@/lib/news/classification/category";
 import { LIVE_PROVIDERS } from "@/lib/news/providers";
+import {
+  detectPossibleFalseSplits,
+  summarizeClassificationQuality,
+} from "@/lib/news/quality";
 import { secureCompare, sha256Hex } from "@/lib/utils/secure-compare";
 import { relativeTime } from "@/lib/utils/time";
 
@@ -48,12 +53,16 @@ export default async function AdminStatusPage({
   const dataset = await getDataset();
   const cache = cacheInfo();
   const stats = dataset.ingestion;
+  const archiveStats = await getArchiveStats();
+  const quality = summarizeClassificationQuality(dataset.articles);
+  const falseSplits = detectPossibleFalseSplits(dataset.clusters);
 
   const rssFeedHealth =
     stats.providers.find((p) => p.provider === "rss")?.feeds ?? [];
 
   const rows: [string, string | number][] = [
     ["Data mode", getDataMode()],
+    ["Dataset version", dataset.datasetVersion],
     ["Generated", `${relativeTime(dataset.generatedAt)} (${dataset.generatedAt})`],
     ["Dataset age", `${Math.round(datasetAgeMs(dataset) / 1000)} s`],
     ["Cache holds data", String(cache.hasData)],
@@ -80,6 +89,14 @@ export default async function AdminStatusPage({
     ["Breaking clusters", stats.breakingCount],
     ["Near-breaking clusters (score ≥ 75)", stats.nearBreakingCount],
     ["Classification warnings", stats.classificationWarnings],
+    ["General (low-confidence) articles", quality.generalCount],
+    ["Low-confidence specific categories", quality.lowConfidenceCount],
+    ...(archiveStats
+      ? ([
+          ["Archived stories (permanent URLs)", archiveStats.archived],
+          ["Merge redirects recorded", archiveStats.merged],
+        ] as [string, number][])
+      : []),
   ];
 
   return (
@@ -188,6 +205,52 @@ export default async function AdminStatusPage({
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      <section aria-label="Category distribution" className="mt-8">
+        <h2 className="headline text-xl">Category distribution</h2>
+        <dl className="mt-3 divide-y divide-rule border-y border-rule text-sm">
+          {quality.distribution.map((entry) => (
+            <div key={entry.category} className="flex justify-between gap-4 py-2">
+              <dt className="font-semibold">{entry.category}</dt>
+              <dd className="text-right tabular-nums text-muted">{entry.count}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      {falseSplits.length > 0 && (
+        <section aria-label="Possible false splits" className="mt-8">
+          <h2 className="headline text-xl">
+            Possible false splits ({falseSplits.length})
+          </h2>
+          <p className="mt-1 text-xs text-muted">
+            Different clusters sharing a rare multi-word entity within a few
+            hours — flagged for inspection only, never auto-merged.
+          </p>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full border-y border-rule text-left text-sm">
+              <thead>
+                <tr className="border-b border-rule text-xs uppercase tracking-wider text-muted">
+                  <th className="py-2 pr-4">Entity</th>
+                  <th className="py-2 pr-4">Cluster A</th>
+                  <th className="py-2 pr-4">Cluster B</th>
+                  <th className="py-2">Gap</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-rule">
+                {falseSplits.map((split) => (
+                  <tr key={`${split.aId}-${split.bId}-${split.entity}`}>
+                    <td className="py-2 pr-4 font-semibold">{split.entity}</td>
+                    <td className="max-w-60 truncate py-2 pr-4">{split.aTitle}</td>
+                    <td className="max-w-60 truncate py-2 pr-4">{split.bTitle}</td>
+                    <td className="py-2 tabular-nums">{split.gapHours} h</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
 

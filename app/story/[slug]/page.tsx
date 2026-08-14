@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { CATEGORIES } from "@/config/categories";
 import { CategoryLabel, ContentTypeBadge, CountryBadge, SourceLine, StatusBadge, BreakingLabel } from "@/components/news/atoms";
@@ -71,8 +71,10 @@ export async function generateMetadata({
   const resolution = await resolveStory(slug);
   // Real 404 status requires notFound() before the response starts streaming.
   if (resolution.kind === "not-found") notFound();
-  // The page itself 307s; this metadata is never rendered.
-  if (resolution.kind === "redirect") return { title: siteConfig.name };
+  // The page itself 307s (alias) or 308s (merge); never rendered.
+  if (resolution.kind === "redirect" || resolution.kind === "merged") {
+    return { title: siteConfig.name };
+  }
   const view = await buildStoryView(resolution);
   if (!view) notFound();
   const { cluster, publishedByUsAt } = view;
@@ -106,6 +108,9 @@ export default async function StoryPage({
   const resolution = await resolveStory(slug);
   if (resolution.kind === "not-found") notFound();
   if (resolution.kind === "redirect") redirect(`/story/${resolution.slug}`);
+  // Cluster merge: permanent — crawlers transfer the old URL's standing to
+  // the surviving canonical story (audit: merge → redirect, never deletion).
+  if (resolution.kind === "merged") permanentRedirect(`/story/${resolution.slug}`);
   const view = await buildStoryView(resolution);
   if (!view) notFound();
   const { cluster, isArchived, publishedByUsAt } = view;

@@ -47,6 +47,7 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
   const contentType = classifyContentType({
     title: rawTitle,
     description: rawDescription,
+    sourceDomain,
   });
 
   // Boilerplate is stripped BEFORE truncation so a trailing "Sign up for…"

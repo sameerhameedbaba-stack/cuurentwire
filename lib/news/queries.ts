@@ -59,9 +59,10 @@ export function filterClusters(
   }
   const category = filters.category ?? "all";
   if (category !== "all") {
-    result = result.filter(
-      (c) => c.category === category || c.lead.categories.includes(category),
-    );
+    // HARD category invariant: a category filter returns only stories whose
+    // PRIMARY category matches. Secondary-category matches belong in
+    // explicitly labeled related sections, never silently in the main feed.
+    result = result.filter((c) => c.category === category);
   }
   const hours = TIME_FILTER_HOURS[filters.time ?? "latest"];
   if (hours !== null) {
@@ -123,7 +124,11 @@ export interface HomepageData {
 
 export async function getHomepageData(): Promise<HomepageData> {
   const dataset = await getDataset();
-  const clusters = dataset.clusters;
+  // The homepage is a news ranking surface end to end: press-release
+  // clusters without independent editorial coverage are excluded from every
+  // curated slot (hero, sections, most covered), exactly like the Top 100.
+  // They remain reachable via /latest, search and source pages, labeled.
+  const clusters = dataset.clusters.filter(isTop100Eligible);
   const used = new Set<string>();
 
   const take = (pool: StoryCluster[], count: number): StoryCluster[] => {
@@ -167,10 +172,9 @@ export async function getHomepageData(): Promise<HomepageData> {
     "science", "culture", "sports",
   ];
   for (const id of sectionIds) {
-    sections[id] = take(
-      clusters.filter((c) => c.category === id || c.lead.categories.includes(id)),
-      5,
-    );
+    // Primary category only — a section band must never show a story whose
+    // visible label is a different category.
+    sections[id] = take(clusters.filter((c) => c.category === id), 5);
   }
 
   return {
@@ -395,20 +399,30 @@ export async function listActiveSources(): Promise<{
   return { sources, dataset };
 }
 
-/** Category page data: hero, secondary, and a latest feed for the category. */
+/**
+ * Category page data: hero, secondary, and a latest feed for the category.
+ * HARD invariant: every story in the primary feed (hero/secondary/more/
+ * latest) satisfies `story.category === category`. Stories that merely list
+ * the category as a SECONDARY signal go into `related`, rendered under an
+ * explicit "Related coverage" heading — never mixed into the main feed.
+ */
 export async function getCategoryData(category: CategoryId): Promise<{
   hero: StoryCluster | null;
   secondary: StoryCluster[];
   more: StoryCluster[];
+  related: StoryCluster[];
   latest: Article[];
   dataset: NewsDataset;
 }> {
   const dataset = await getDataset();
-  const clusters = dataset.clusters.filter(
-    (c) => c.category === category || c.lead.categories.includes(category),
-  );
+  const clusters = dataset.clusters.filter((c) => c.category === category);
+  const related = dataset.clusters
+    .filter(
+      (c) => c.category !== category && c.lead.categories.includes(category),
+    )
+    .slice(0, 6);
   const latest = dataset.articles
-    .filter((a) => a.category === category || a.categories.includes(category))
+    .filter((a) => a.category === category)
     .sort(
       (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
     )
@@ -417,6 +431,7 @@ export async function getCategoryData(category: CategoryId): Promise<{
     hero: clusters[0] ?? null,
     secondary: clusters.slice(1, 5),
     more: clusters.slice(5, 13),
+    related,
     latest,
     dataset,
   };
@@ -446,7 +461,7 @@ export async function getCountryData(country: "us" | "canada"): Promise<{
   for (const id of categoryIds) {
     const items = clusters
       .filter((c) => !used.has(c.id))
-      .filter((c) => c.category === id || c.lead.categories.includes(id))
+      .filter((c) => c.category === id)
       .slice(0, 3);
     for (const item of items) used.add(item.id);
     if (items.length > 0) byCategory[id] = items;

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Search } from "lucide-react";
-import { CATEGORY_IDS, CATEGORIES } from "@/config/categories";
+import { CATEGORIES, PUBLIC_CATEGORY_IDS } from "@/config/categories";
 import { RankedStory } from "@/components/news/cards";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
@@ -85,7 +85,7 @@ export default async function SearchPage({
               Category
               <select name="category" defaultValue={category} className={selectClass}>
                 <option value="all">All</option>
-                {CATEGORY_IDS.map((id) => (
+                {PUBLIC_CATEGORY_IDS.map((id) => (
                   <option key={id} value={id}>
                     {CATEGORIES[id].label}
                   </option>

@@ -11,7 +11,9 @@ vi.mock("@/lib/database/client", () => ({
 import {
   archiveDataset,
   archivedStoryToCluster,
+  buildUrlToClusterId,
   clusterToArchiveRow,
+  computeClusterMerges,
   findArchivedStory,
   getArchiveFirstSeen,
   idTokenFromSlug,
@@ -124,6 +126,7 @@ function makeArchivedStory(overrides: Partial<ArchivedStory> = {}): ArchivedStor
       },
     ],
     entities: ["Senate", "Rail Safety"],
+    mergedIntoClusterId: null,
     ...overrides,
   };
 }
@@ -201,12 +204,14 @@ describe("rowToArchivedStory", () => {
       sourceCount: 1,
       sources: null as never,
       entities: null as never,
+      mergedIntoClusterId: null,
       updatedAt: new Date("2026-08-14T09:35:00.000Z"),
     });
     expect(story.firstSeenAt).toBe("2026-08-14T08:05:00.000Z");
     expect(story.firstPublishedAt).toBe("2026-08-14T08:00:00.000Z");
     expect(story.sources).toEqual([]);
     expect(story.entities).toEqual([]);
+    expect(story.mergedIntoClusterId).toBeNull();
   });
 });
 
@@ -246,7 +251,7 @@ describe("archivedStoryToCluster", () => {
         ],
       }),
     );
-    expect(cluster.category).toBe("world");
+    expect(cluster.category).toBe("general");
     expect(cluster.country).toBe("GLOBAL");
     expect(cluster.contentType).toBeUndefined();
     expect(cluster.lead.sourceTier).toBe("C");
@@ -309,12 +314,104 @@ describe("resolveStoryRequest", () => {
   });
 });
 
+describe("merge lifecycle (URL permanence invariants)", () => {
+  const survivor = makeCluster({
+    id: "clsurvivor1",
+    slug: "rail-safety-bill-clears-congress-clsurvivor1",
+  });
+  const mergedAway = makeArchivedStory({
+    clusterId: "cl4b2n8x1",
+    mergedIntoClusterId: "clsurvivor1",
+  });
+
+  /** Map-backed lookups: live by slug or id; archive by slug or id. */
+  function mapLookups(
+    live: StoryCluster[],
+    archived: ArchivedStory[],
+  ): StoryLookups {
+    return {
+      getLive: async (slugOrId) =>
+        live.find(
+          (c) =>
+            c.slug === slugOrId ||
+            c.id === slugOrId ||
+            c.id === slugOrId.slice(slugOrId.lastIndexOf("-") + 1),
+        ) ?? null,
+      getArchived: async (slugOrId) =>
+        archived.find(
+          (s) =>
+            s.slug === slugOrId ||
+            s.clusterId === slugOrId ||
+            s.clusterId === slugOrId.slice(slugOrId.lastIndexOf("-") + 1),
+        ) ?? null,
+    };
+  }
+
+  it("A merged into live B: A's URL 308s to B, B serves 200", async () => {
+    const deps = mapLookups([survivor], [mergedAway]);
+    await expect(
+      resolveStoryRequest(mergedAway.slug, deps),
+    ).resolves.toEqual({ kind: "merged", slug: survivor.slug });
+    await expect(resolveStoryRequest(survivor.slug, deps)).resolves.toEqual({
+      kind: "live",
+      cluster: survivor,
+    });
+  });
+
+  it("merge redirect persists after the survivor itself is archived", async () => {
+    const survivorArchived = makeArchivedStory({
+      clusterId: "clsurvivor1",
+      slug: survivor.slug,
+      mergedIntoClusterId: null,
+    });
+    const deps = mapLookups([], [mergedAway, survivorArchived]);
+    await expect(
+      resolveStoryRequest(mergedAway.slug, deps),
+    ).resolves.toEqual({ kind: "merged", slug: survivor.slug });
+    // The survivor's own URL renders from the archive.
+    await expect(resolveStoryRequest(survivor.slug, deps)).resolves.toEqual({
+      kind: "archived",
+      story: survivorArchived,
+    });
+  });
+
+  it("never 404s and never loops on a broken/unflattened pointer", async () => {
+    // Pointer to an unknown id: render the archived copy (200), not 404.
+    const broken = makeArchivedStory({ mergedIntoClusterId: "clgone00000" });
+    await expect(
+      resolveStoryRequest(broken.slug, mapLookups([], [broken])),
+    ).resolves.toEqual({ kind: "archived", story: broken });
+
+    // Pointer to a target that itself has a pointer (an unflattened chain):
+    // refuse the redirect and render the archived copy instead of chaining.
+    const chainTail = makeArchivedStory({
+      clusterId: "cltail00001",
+      slug: "tail-story-cltail00001",
+      mergedIntoClusterId: "clelse99999",
+    });
+    const chainHead = makeArchivedStory({ mergedIntoClusterId: "cltail00001" });
+    await expect(
+      resolveStoryRequest(chainHead.slug, mapLookups([], [chainHead, chainTail])),
+    ).resolves.toEqual({ kind: "archived", story: chainHead });
+  });
+
+  it("a cluster id that returned to the live dataset always wins over a stale pointer", async () => {
+    // Same id both live and archived-with-pointer: live resolution first.
+    const liveAgain = makeCluster();
+    const staleArchive = makeArchivedStory({ mergedIntoClusterId: "clsurvivor1" });
+    await expect(
+      resolveStoryRequest(liveAgain.slug, mapLookups([liveAgain], [staleArchive])),
+    ).resolves.toEqual({ kind: "live", cluster: liveAgain });
+  });
+});
+
 function makeDataset(clusters: StoryCluster[], dataMode: "mock" | "live"): NewsDataset {
   return {
     articles: [],
     clusters,
     trending: [],
     generatedAt: NOW.toISOString(),
+    datasetVersion: "20260814T120000Z-test01",
     dataMode,
     ingestion: {} as NewsDataset["ingestion"],
   };
@@ -355,6 +452,10 @@ describe("archiveDataset upsert (mocked db)", () => {
             return Promise.resolve();
           },
         }),
+      }),
+      // Merge scan after the upserts: no candidate rows in these tests.
+      select: () => ({
+        from: () => ({ where: () => Promise.resolve([]) }),
       }),
     };
   }
@@ -398,6 +499,88 @@ describe("archiveDataset upsert (mocked db)", () => {
       }),
     });
     await expect(archiveDataset(makeDataset([makeCluster()], "live"))).resolves.toBe(0);
+  });
+});
+
+describe("computeClusterMerges (pure merge detection)", () => {
+  const sources = makeArchivedStory().sources;
+
+  it("detects a merge when the vanished cluster's articles live in another cluster", () => {
+    const dataset = makeDataset([makeCluster({ id: "clsurvivor1" })], "live");
+    const map = buildUrlToClusterId(dataset);
+    const merges = computeClusterMerges(
+      [{ clusterId: "clvanished0", sources }],
+      map,
+    );
+    expect(merges).toEqual([{ from: "clvanished0", to: "clsurvivor1" }]);
+  });
+
+  it("records nothing for clusters whose articles simply aged out", () => {
+    // Current dataset has entirely different articles — zero votes.
+    const other = makeCluster({
+      id: "clother0001",
+      articles: [
+        makeArticle({
+          id: "zz",
+          url: "https://elsewhere.example/other",
+          canonicalUrl: "https://elsewhere.example/other",
+        }),
+      ],
+    });
+    const merges = computeClusterMerges(
+      [{ clusterId: "clvanished0", sources }],
+      buildUrlToClusterId(makeDataset([other], "live")),
+    );
+    expect(merges).toEqual([]);
+  });
+
+  it("majority of article votes picks the survivor deterministically", () => {
+    const a = makeCluster({
+      id: "cla00000001",
+      articles: [makeArticle()],
+    });
+    const b = makeCluster({
+      id: "clb00000001",
+      articles: [
+        makeArticle({
+          id: "a2",
+          url: "https://northernpost.example/rail-bill",
+          canonicalUrl: "https://northernpost.example/rail-bill",
+        }),
+        makeArticle({
+          id: "a3",
+          url: "https://third.example/rail",
+          canonicalUrl: "https://third.example/rail",
+        }),
+      ],
+    });
+    const threeSources = [
+      ...sources,
+      {
+        name: "Third",
+        domain: "third.example",
+        tier: "B",
+        url: "https://third.example/rail",
+        publishedAt: "2026-08-14T10:00:00.000Z",
+        title: "Rail bill",
+      },
+    ];
+    const merges = computeClusterMerges(
+      [{ clusterId: "clvanished0", sources: threeSources }],
+      buildUrlToClusterId(makeDataset([a, b], "live")),
+    );
+    // b holds 2 of the 3 articles, a holds 1 → b wins.
+    expect(merges).toEqual([{ from: "clvanished0", to: "clb00000001" }]);
+  });
+
+  it("guards malformed jsonb and self-pointers", () => {
+    const dataset = makeDataset([makeCluster({ id: "clself99999" })], "live");
+    const map = buildUrlToClusterId(dataset);
+    expect(computeClusterMerges([{ clusterId: "clx", sources: null }], map)).toEqual([]);
+    // A row whose articles map to itself is not a merge.
+    expect(
+      computeClusterMerges([{ clusterId: "clself99999", sources }], map),
+    ).toEqual([]);
   });
 });
 

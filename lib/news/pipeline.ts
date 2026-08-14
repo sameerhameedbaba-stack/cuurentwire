@@ -12,8 +12,10 @@ import type {
   NewsDataset,
   ProviderRunStat,
   RawArticle,
+  StoryCluster,
 } from "@/lib/news/types";
 import { logger } from "@/lib/utils/logger";
+import { stableId } from "@/lib/utils/text";
 
 const MAX_ARTICLE_AGE_HOURS = 72;
 
@@ -155,9 +157,24 @@ export async function runPipeline(now: Date = new Date()): Promise<NewsDataset> 
     clusters,
     trending,
     generatedAt: finishedAt.toISOString(),
+    datasetVersion: buildDatasetVersion(finishedAt, clusters),
     dataMode: getDataMode(),
     ingestion,
   };
+}
+
+/**
+ * Deterministic snapshot version: compact UTC generation time plus a short
+ * content hash over the ranked cluster ids. Two identical pipeline results
+ * generated at the same second get the same version; any change to cluster
+ * membership or order changes the hash half.
+ */
+function buildDatasetVersion(generatedAt: Date, clusters: StoryCluster[]): string {
+  const stamp = generatedAt
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}/, "");
+  return `${stamp}-${stableId(clusters.map((c) => c.id).join("|")).slice(0, 6)}`;
 }
 
 /**
@@ -166,7 +183,7 @@ export async function runPipeline(now: Date = new Date()): Promise<NewsDataset> 
  * - an espn.com article classified politics or world;
  * - a technology article whose title + description contain zero technology
  *   signals (the category came only from a provider hint, or from nothing);
- * - a specific category assigned with confidence < 0.2 (the world fallback
+ * - a specific category assigned with confidence < 0.2 (the general fallback
  *   is excluded — its confidence is 0 by design).
  */
 function collectClassificationWarnings(
@@ -201,7 +218,7 @@ function collectClassificationWarnings(
     ) {
       warnings.push(`technology article with zero technology signals: ${label}`);
     }
-    if (article.category !== "world" && result.confidence < 0.2) {
+    if (article.category !== "general" && result.confidence < 0.2) {
       warnings.push(
         `${article.category} assigned with low confidence ${result.confidence.toFixed(2)}: ${label}`,
       );

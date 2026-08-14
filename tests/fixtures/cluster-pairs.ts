@@ -62,6 +62,49 @@ export const CLUSTER_PAIRS: ClusterPair[] = [
     label: "SAME_EVENT",
     mustMerge: true,
   },
+  // Third-audit variant: ABC-style coverage NAMES the missionary while the
+  // others don't — the named variant must still join the same event.
+  {
+    a: MISSIONARY_TRIO[0],
+    b: "Kevin Rideout, American missionary held in Niger, released after months in captivity",
+    label: "SAME_EVENT",
+    mustMerge: true,
+  },
+  {
+    a: MISSIONARY_TRIO[2],
+    b: "Kevin Rideout, American missionary held in Niger, released after months in captivity",
+    label: "SAME_EVENT",
+    mustMerge: true,
+  },
+  // Named-person rewording pairs (the audit's failure class): rare full
+  // names anchor the fingerprint even when the rest is fully reworded.
+  {
+    a: "Astronaut Lena Marquette returns to Earth after record station stay",
+    b: "Record-setting spaceflight ends as Lena Marquette lands safely",
+    label: "SAME_EVENT",
+  },
+  {
+    a: "Filmmaker Aldous Renkin wins top prize at Averston festival",
+    b: "Averston festival jury hands top honor to Aldous Renkin",
+    label: "SAME_EVENT",
+  },
+  {
+    a: "Missing hiker Tomas Grealish found alive after six days in Kestrel Range",
+    b: "Tomas Grealish rescued alive following six-day search in Kestrel Range",
+    label: "SAME_EVENT",
+  },
+  // …and the dangerous named-person near-misses: same rare person,
+  // DIFFERENT events — the name alone must never force a merge.
+  {
+    a: "Astronaut Lena Marquette returns to Earth after record station stay",
+    b: "Lena Marquette announces retirement from astronaut corps",
+    label: "RELATED_EVENT",
+  },
+  {
+    a: "Filmmaker Aldous Renkin wins top prize at Averston festival",
+    b: "Aldous Renkin begins shooting new drama in Delverton",
+    label: "RELATED_EVENT",
+  },
   {
     a: "Federal Reserve holds benchmark interest rate steady after policy meeting",
     b: "Federal Reserve keeps benchmark interest rate unchanged after policy meeting",

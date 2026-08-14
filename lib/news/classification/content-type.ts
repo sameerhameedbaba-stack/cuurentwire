@@ -14,6 +14,36 @@ import type { ContentType } from "@/lib/news/types";
 export interface ContentTypeInput {
   title: string;
   description?: string;
+  /** Publisher domain — wire-distributor domains are a feed-origin signal. */
+  sourceDomain?: string;
+}
+
+/**
+ * Press-release distribution platforms: everything published ON these
+ * domains is issuer communication by definition — a feed-origin signal that
+ * needs no headline evidence at all.
+ */
+const DISTRIBUTOR_DOMAINS = new Set([
+  "globenewswire.com",
+  "prnewswire.com",
+  "businesswire.com",
+  "newsfilecorp.com",
+  "accesswire.com",
+  "newswire.ca",
+  "einpresswire.com",
+  "openpr.com",
+  "prweb.com",
+]);
+
+/** True when a domain (or its subdomain) is a press-release distributor. */
+export function isDistributorDomain(domain: string | undefined): boolean {
+  if (!domain) return false;
+  const clean = domain.toLowerCase().replace(/^www\./, "");
+  if (DISTRIBUTOR_DOMAINS.has(clean)) return true;
+  for (const d of DISTRIBUTOR_DOMAINS) {
+    if (clean.endsWith(`.${d}`)) return true;
+  }
+  return false;
 }
 
 /**
@@ -48,6 +78,13 @@ const PR_HEADLINE_VERBS = [
   /\bcloses?\s+(?:private\s+placement|offering|bought[\s-]deal)/i,
   /\bdeclares?\s+(?:quarterly\s+|monthly\s+|annual\s+)?(?:cash\s+)?di(?:vidend|stribution)\b/i,
   /\bannounces?\s+(?:pricing|closing|upsizing)\s+of\b/i,
+  // Securities-lawsuit spam: "XYZ Shareholder Alert", "Investor Notice",
+  // "law firm reminds investors of the lead plaintiff deadline". Kept to
+  // law-firm boilerplate phrasings — plain "class action" or "urges
+  // investors" also appear in real journalism and must NOT fire.
+  /\b(?:shareholder|investor)s?\s+(?:alert|notice|reminder)\b/i,
+  /\b(?:encourages?|reminds?)\s+(?:investors|shareholders|stockholders)\b/i,
+  /\blead\s+plaintiff\s+deadline\b/i,
 ];
 
 /**
@@ -99,6 +136,10 @@ export function hasBylinePipe(title: string): boolean {
 export function classifyContentType(input: ContentTypeInput): ContentType {
   const title = input.title.trim();
   const text = `${title} ${input.description ?? ""}`;
+
+  // Feed origin beats all headline analysis: content ON a distribution
+  // platform is a release by definition.
+  if (isDistributorDomain(input.sourceDomain)) return "press_release";
 
   const hasWireMarker = WIRE_MARKERS.some((p) => p.test(text));
   const hasTicker = TICKER_PATTERN.test(text);

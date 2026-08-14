@@ -370,6 +370,18 @@ const SPORTS: CategoryFixture[] = [
   c("League and players union near new labor deal", "sports", false),
 ];
 
+// The internal low-confidence bucket: headlines with no usable section
+// signal must land in "general" — NEVER in world (world is earned by
+// international-affairs evidence like any other category).
+const GENERAL: CategoryFixture[] = [
+  c("Five things to know before the weekend", "general"),
+  c("What we learned this week", "general"),
+  c("Photos of the day", "general"),
+  c("Morning briefing: your Tuesday roundup", "general"),
+  c("The week in review", "general"),
+  c("Quiz: how closely did you follow the headlines?", "general"),
+];
+
 export const categoryFixtures: CategoryFixture[] = [
   ...POLITICS,
   ...BUSINESS,
@@ -380,6 +392,7 @@ export const categoryFixtures: CategoryFixture[] = [
   ...SCIENCE,
   ...CULTURE,
   ...SPORTS,
+  ...GENERAL,
 ];
 
 // ───────────────────────────── Geography ─────────────────────────────
@@ -748,6 +761,10 @@ export const contentTypeFixtures: ContentTypeFixture[] = [
   ct("Summitpeak Gold Announces Pricing of Public Offering", "press_release"),
   ct("Quarrystone Resources Reports Q1 2026 Earnings", "press_release"),
   ct("Westerly Pipelines Declares Monthly Distribution", "press_release"),
+  // ── press_release: securities-lawsuit spam boilerplate ──────────────
+  ct("SHAREHOLDER ALERT: Kessler Topaz Reminds Investors of Deadline in Nortech Case", "press_release"),
+  ct("Investor Notice: Rosen Law Encourages Vantage Metals Holders to Secure Counsel", "press_release"),
+  ct("Pomerantz Law Reminds Shareholders of Lead Plaintiff Deadline in Clearway Suit", "press_release"),
   // ── press_release: ticker + weak verb ───────────────────────────────
   ct("Glacier Peak Mining (TSX: FAKE) Announces Drill Results", "press_release"),
   ct("Redwood Robotics (NASDAQ: DEMO) Appoints New Chief Financial Officer", "press_release"),

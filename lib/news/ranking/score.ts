@@ -54,6 +54,26 @@ export function coverageFactor(sourceCount: number): number {
   return Math.min(1, 0.2 + (Math.log2(sourceCount) / Math.log2(12)) * 0.8);
 }
 
+/**
+ * Independent editorial sources in a cluster: distinct domains of members
+ * that are NOT press releases. Syndicated copies of one release
+ * (GlobeNewswire → Financial Post → Yahoo Finance) are one distribution
+ * chain, not three independent reports — an all-press-release cluster
+ * counts as exactly 1 (the issuer), no matter how many domains carry it.
+ * Coverage scoring and breaking eligibility reward independent REPORTING,
+ * never distribution breadth.
+ */
+export function independentSourceCount(
+  cluster: Pick<StoryCluster, "articles">,
+): number {
+  const editorial = new Set(
+    cluster.articles
+      .filter((a) => a.contentType !== "press_release")
+      .map((a) => a.sourceDomain),
+  );
+  return Math.max(1, editorial.size);
+}
+
 export function geographyFactor(country: StoryCluster["country"]): number {
   switch (country) {
     case "US":
@@ -108,7 +128,10 @@ export function scoreCluster(cluster: StoryCluster, now: Date = new Date()): Ran
 
   const freshness = freshnessFactor(hoursOld) * RANKING_WEIGHTS.freshness;
   const authority = authorityFactor(cluster) * RANKING_WEIGHTS.authority;
-  const coverage = coverageFactor(cluster.sourceCount) * RANKING_WEIGHTS.coverage;
+  // Coverage counts INDEPENDENT editorial sources (input adjustment, not a
+  // weight change): syndicated press-release copies never widen coverage.
+  const coverage =
+    coverageFactor(independentSourceCount(cluster)) * RANKING_WEIGHTS.coverage;
   const geography = geographyFactor(cluster.country) * RANKING_WEIGHTS.geography;
   const prominence = prominenceFactor(cluster) * RANKING_WEIGHTS.prominence;
   const velocity = velocityFactor(cluster, now) * RANKING_WEIGHTS.velocity;
@@ -146,10 +169,13 @@ export function qualifiesAsBreaking(
   }
   const ageMinutes = minutesSince(cluster.lastPublishedAt, now);
   const hasTierA = cluster.articles.some((a) => a.sourceTier === "A");
+  // Independent editorial sources only — a story padded by syndicated
+  // press-release copies cannot fake the breadth BREAKING requires.
+  const independent = independentSourceCount(cluster);
   return (
     cluster.rankingScore >= 85 &&
     ageMinutes <= 90 &&
-    (cluster.sourceCount >= 4 || (hasTierA && cluster.sourceCount >= 3))
+    (independent >= 4 || (hasTierA && independent >= 3))
   );
 }
 

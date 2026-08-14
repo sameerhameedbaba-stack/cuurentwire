@@ -72,6 +72,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       dataMode: dataset.dataMode,
+      datasetVersion: dataset.datasetVersion,
       generatedAt: dataset.generatedAt,
       articles: dataset.articles.length,
       clusters: dataset.clusters.length,

@@ -1,4 +1,4 @@
-import { eq, inArray, or, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
 import { isCategoryId } from "@/config/categories";
 import type { SourceTier } from "@/config/sources";
 import type {
@@ -43,6 +43,12 @@ export interface ArchivedStory {
   sourceCount: number;
   sources: ArchivedSourceRef[];
   entities: string[];
+  /**
+   * When set, this story's cluster merged into another: its URL must
+   * 308-redirect to the survivor instead of rendering a stale copy.
+   * Always flattened to the final destination.
+   */
+  mergedIntoClusterId: string | null;
 }
 
 /** Insert-shaped row for the story_archive table. Pure, unit-testable. */
@@ -99,6 +105,7 @@ export function rowToArchivedStory(
     sourceCount: row.sourceCount,
     sources: Array.isArray(row.sources) ? row.sources : [],
     entities: Array.isArray(row.entities) ? row.entities : [],
+    mergedIntoClusterId: row.mergedIntoClusterId ?? null,
   };
 }
 
@@ -144,16 +151,22 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
             sources: sql`excluded.sources`,
             entities: sql`excluded.entities`,
             updatedAt: sql`excluded.updated_at`,
+            // A cluster id present in the CURRENT dataset is live again —
+            // any old merge pointer is stale and must not redirect it.
+            mergedIntoClusterId: sql`null`,
             // first_seen_at is deliberately NOT in this set — written once.
           },
-          // Only touch rows whose story content actually changed.
+          // Only touch rows whose story content actually changed (or that
+          // carry a stale merge pointer needing to be cleared).
           setWhere: sql`${storyArchive.lastPublishedAt} is distinct from excluded.last_published_at
             or ${storyArchive.title} is distinct from excluded.title
             or ${storyArchive.summary} is distinct from excluded.summary
-            or ${storyArchive.sourceCount} is distinct from excluded.source_count`,
+            or ${storyArchive.sourceCount} is distinct from excluded.source_count
+            or ${storyArchive.mergedIntoClusterId} is not null`,
         });
     }
-    logger.info("database.archived", { clusters: clusters.length });
+    const merges = await recordClusterMerges(dataset, now);
+    logger.info("database.archived", { clusters: clusters.length, merges });
     return clusters.length;
   } catch (error) {
     logger.error("database.archive_failed", {
@@ -161,6 +174,108 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
     });
     return 0;
   }
+}
+
+/**
+ * Pure merge detection: for each archived story whose cluster id vanished
+ * from the current dataset, find where its member articles live now. If any
+ * of its source URLs belong to a current cluster, the story merged there —
+ * majority of URL votes wins, ties broken lexicographically for
+ * determinism. Rows whose articles simply aged out produce no votes and are
+ * left untouched (archived, not merged).
+ */
+export function computeClusterMerges(
+  vanishedRows: { clusterId: string; sources: ArchivedSourceRef[] | null }[],
+  urlToClusterId: Map<string, string>,
+): { from: string; to: string }[] {
+  const merges: { from: string; to: string }[] = [];
+  for (const row of vanishedRows) {
+    const votes = new Map<string, number>();
+    for (const source of Array.isArray(row.sources) ? row.sources : []) {
+      const target = urlToClusterId.get(source.url);
+      if (target && target !== row.clusterId) {
+        votes.set(target, (votes.get(target) ?? 0) + 1);
+      }
+    }
+    if (votes.size === 0) continue;
+    const survivor = [...votes.entries()].sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    )[0][0];
+    merges.push({ from: row.clusterId, to: survivor });
+  }
+  return merges;
+}
+
+/** Map every member article URL (raw and canonical) to its cluster id. */
+export function buildUrlToClusterId(dataset: NewsDataset): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const cluster of dataset.clusters) {
+    for (const article of cluster.articles) {
+      map.set(article.url, cluster.id);
+      map.set(article.canonicalUrl, cluster.id);
+    }
+  }
+  return map;
+}
+
+const MERGE_SCAN_WINDOW_HOURS = 72;
+const MERGE_SCAN_CHUNK = 200;
+
+/**
+ * Record cluster merges as permanent redirects (audit invariant: merge →
+ * redirect, never deletion). Chains are flattened at write time: recording
+ * A → B also repoints every row that previously pointed at A, so a URL is
+ * always one hop from its final destination. Only rows with coverage inside
+ * the live 72h window are scanned — older rows cannot share articles with
+ * the current dataset. Returns the number of merges recorded.
+ */
+async function recordClusterMerges(
+  dataset: NewsDataset,
+  now: Date,
+): Promise<number> {
+  const db = getDb();
+  if (!db) return 0;
+  const currentIds = new Set(dataset.clusters.map((c) => c.id));
+  const cutoff = new Date(now.getTime() - MERGE_SCAN_WINDOW_HOURS * 3_600_000);
+
+  // Cheap id-only pass first; sources jsonb is fetched only for the few
+  // rows whose cluster id actually vanished from the current dataset.
+  const idRows = await db
+    .select({ clusterId: storyArchive.clusterId })
+    .from(storyArchive)
+    .where(
+      and(
+        isNull(storyArchive.mergedIntoClusterId),
+        gte(storyArchive.lastPublishedAt, cutoff),
+      ),
+    );
+  const vanished = idRows
+    .map((r) => r.clusterId)
+    .filter((id) => !currentIds.has(id));
+  if (vanished.length === 0) return 0;
+
+  const urlToClusterId = buildUrlToClusterId(dataset);
+  let recorded = 0;
+  for (let i = 0; i < vanished.length; i += MERGE_SCAN_CHUNK) {
+    const rows = await db
+      .select({ clusterId: storyArchive.clusterId, sources: storyArchive.sources })
+      .from(storyArchive)
+      .where(inArray(storyArchive.clusterId, vanished.slice(i, i + MERGE_SCAN_CHUNK)));
+    for (const merge of computeClusterMerges(rows, urlToClusterId)) {
+      await db
+        .update(storyArchive)
+        .set({ mergedIntoClusterId: merge.to, updatedAt: now })
+        .where(eq(storyArchive.clusterId, merge.from));
+      // Flatten: everything that pointed at the vanished id now points
+      // straight at the survivor — never a redirect chain.
+      await db
+        .update(storyArchive)
+        .set({ mergedIntoClusterId: merge.to, updatedAt: now })
+        .where(eq(storyArchive.mergedIntoClusterId, merge.from));
+      recorded++;
+    }
+  }
+  return recorded;
 }
 
 /** The token after the last hyphen — the stable id suffix of story slugs. */
@@ -229,6 +344,34 @@ export async function getArchiveFirstSeen(
   }
 }
 
+/**
+ * URL-health counters for the admin dashboard: how many stories the
+ * permanent archive knows, and how many of them are merge redirects.
+ * Null when no database is configured or the query fails.
+ */
+export async function getArchiveStats(): Promise<{
+  archived: number;
+  merged: number;
+} | null> {
+  const db = getDb();
+  if (!db) return null;
+  try {
+    const [row] = await db
+      .select({
+        archived: sql<string>`count(*)`,
+        merged: sql<string>`count(*) filter (where ${storyArchive.mergedIntoClusterId} is not null)`,
+      })
+      .from(storyArchive);
+    if (!row) return null;
+    return { archived: Number(row.archived), merged: Number(row.merged) };
+  } catch (error) {
+    logger.error("database.archive_stats_failed", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    return null;
+  }
+}
+
 const CONTENT_TYPES: ContentType[] = ["news", "opinion", "analysis", "press_release", "live"];
 
 /**
@@ -238,7 +381,7 @@ const CONTENT_TYPES: ContentType[] = ["news", "opinion", "analysis", "press_rele
  * values that no longer exist fall back to safe defaults.
  */
 export function archivedStoryToCluster(story: ArchivedStory): StoryCluster {
-  const category = isCategoryId(story.category) ? story.category : "world";
+  const category = isCategoryId(story.category) ? story.category : "general";
   const country: Country =
     story.geography in COUNTRY_LABELS ? (story.geography as Country) : "GLOBAL";
   const contentType = CONTENT_TYPES.includes(story.contentType as ContentType)

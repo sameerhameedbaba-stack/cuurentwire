@@ -157,13 +157,41 @@ export const storyArchive = pgTable(
     sourceCount: integer("source_count").notNull(),
     sources: jsonb("sources").$type<ArchivedSourceRef[]>().notNull().default([]),
     entities: jsonb("entities").$type<string[]>().notNull().default([]),
+    /**
+     * Set when this story's cluster merged into another cluster: requests
+     * for this URL 308-redirect to the survivor. Always flattened to the
+     * FINAL destination (never a chain), and cleared again if the id
+     * returns to the live dataset.
+     */
+    mergedIntoClusterId: varchar("merged_into_cluster_id", { length: 20 }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     index("story_archive_slug_idx").on(table.slug),
     index("story_archive_last_published_idx").on(table.lastPublishedAt),
+    index("story_archive_merged_into_idx").on(table.mergedIntoClusterId),
   ],
 );
+
+/**
+ * Last complete valid dataset snapshot — a single row (id = 1) holding the
+ * full processed NewsDataset as JSON. Two jobs:
+ *  1. Coherence fallback: when the shared cache misses and an instance has
+ *     no in-process copy, routes serve THIS snapshot instead of running a
+ *     fresh pipeline per request (which would create a divergent reality).
+ *  2. Cluster-id continuity across instances: the pipeline seeds its
+ *     previous-run registry from here, so cold serverless instances keep
+ *     story URLs stable instead of re-deriving cluster ids from scratch.
+ */
+export const datasetSnapshots = pgTable("dataset_snapshots", {
+  id: integer("id").primaryKey(),
+  datasetVersion: varchar("dataset_version", { length: 64 }).notNull(),
+  generatedAt: timestamp("generated_at", { withTimezone: true }).notNull(),
+  articleCount: integer("article_count").notNull(),
+  clusterCount: integer("cluster_count").notNull(),
+  data: jsonb("data").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 export const ingestionRuns = pgTable(
   "ingestion_runs",

@@ -66,9 +66,21 @@ export default function EditorialStandardsPage() {
 
       <h2>Separation of reporting and opinion</h2>
       <p>
-        CurrentWire currently indexes news reporting. If opinion content is ever
-        supported, it will be clearly labeled as opinion, and source-applied
-        opinion designations will be retained.
+        CurrentWire indexes opinion and analysis pieces where publisher feeds
+        carry them, and labels them visibly (&ldquo;Opinion&rdquo;,
+        &ldquo;Analysis&rdquo;) so they are never mistaken for straight news.
+        Source-applied opinion designations are retained. Opinion pieces are
+        never eligible for the BREAKING label, which is reserved for reported
+        news events.
+      </p>
+
+      <h2>Press releases</h2>
+      <p>
+        Corporate press releases and wire-distributed announcements are
+        detected and labeled &ldquo;Press release&rdquo;. They are excluded
+        from the Top 100 and from BREAKING unless the story has independent
+        editorial coverage, and syndicated copies of one release are never
+        counted as independent sources.
       </p>
     </ProsePage>
   );

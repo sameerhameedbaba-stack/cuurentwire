@@ -71,9 +71,9 @@ describe("classifyCategory", () => {
     expect(result.primary).toBe("technology");
   });
 
-  it("falls back to world when nothing matches", () => {
+  it("falls back to the internal general bucket (never world) when nothing matches", () => {
     const result = classifyCategory({ title: "Completely generic headline" });
-    expect(result.primary).toBe("world");
+    expect(result.primary).toBe("general");
     expect(result.confidence).toBe(0);
     expect(result.scores).toEqual({});
   });

@@ -2,8 +2,10 @@ import { TIER_WEIGHT } from "@/config/sources";
 import {
   buildCorpusStats,
   buildFingerprint,
+  fingerprintContainment,
   fingerprintSimilarity,
   hasConflictingAction,
+  hasSharedAction,
   idfWeight,
   isStrongFingerprint,
   MIN_SHARED_RARE_STEMS,
@@ -67,6 +69,19 @@ export const FINGERPRINT_SIMILARITY_THRESHOLD = 0.42;
  * surface overlap.
  */
 const FINGERPRINT_MIN_HEADLINE_SIMILARITY = 0.1;
+/**
+ * Containment path (asymmetric rewordings): when one outlet's headline adds
+ * detail the other omits (a person's full name, a duration), IDF Jaccard
+ * dilutes below FINGERPRINT_SIMILARITY_THRESHOLD even though the shorter
+ * headline is essentially contained in the longer one. Such pairs merge when
+ * the fingerprint is STRONG, both headlines carry the SAME action group
+ * (released~freed on both sides — not merely no conflict), and the
+ * IDF-weighted overlap coefficient over the smaller side reaches this bar.
+ * Calibrated on the labeled pairs: the named-variant missionary headlines
+ * measure ~0.7 while same-team/same-person different-event pairs either
+ * fail the shared-action gate or stay below it.
+ */
+export const FINGERPRINT_CONTAINMENT_THRESHOLD = 0.62;
 /**
  * Conflicting-action veto: when BOTH headlines carry action words from the
  * synonym table and share no group ("erupts" vs "clears", "wins" vs
@@ -167,6 +182,13 @@ export function decidePair(ctx: ClusterContext, i: number, j: number): PairDecis
     headlineSim >= SIMILARITY_THRESHOLD + categoryMargin + conflictMargin ||
     (strong &&
       fpSim >= FINGERPRINT_SIMILARITY_THRESHOLD &&
+      headlineSim >= FINGERPRINT_MIN_HEADLINE_SIMILARITY) ||
+    // Asymmetric rewording: same act on both sides + the shorter headline
+    // contained in the longer one (see FINGERPRINT_CONTAINMENT_THRESHOLD).
+    (strong &&
+      hasSharedAction(ctx.prints[i], ctx.prints[j]) &&
+      fingerprintContainment(ctx.prints[i], ctx.prints[j], ctx.stats) >=
+        FINGERPRINT_CONTAINMENT_THRESHOLD &&
       headlineSim >= FINGERPRINT_MIN_HEADLINE_SIMILARITY);
   return {
     merge,
@@ -331,10 +353,17 @@ function memberSupportsLead(ctx: ClusterContext, i: number, leadIndex: number): 
   if (articleSimilarity(ctx.feats[i], ctx.feats[leadIndex]) >= MIN_LEAD_SIMILARITY) {
     return true;
   }
+  if (!isStrongFingerprint(ctx.prints[i], ctx.prints[leadIndex], ctx.stats)) {
+    return false;
+  }
+  // Mirror the two relaxed merge paths so a member admitted via containment
+  // is not immediately evicted by validation.
   return (
-    isStrongFingerprint(ctx.prints[i], ctx.prints[leadIndex], ctx.stats) &&
     fingerprintSimilarity(ctx.prints[i], ctx.prints[leadIndex], ctx.stats) >=
-      FINGERPRINT_SIMILARITY_THRESHOLD
+      FINGERPRINT_SIMILARITY_THRESHOLD ||
+    (hasSharedAction(ctx.prints[i], ctx.prints[leadIndex]) &&
+      fingerprintContainment(ctx.prints[i], ctx.prints[leadIndex], ctx.stats) >=
+        FINGERPRINT_CONTAINMENT_THRESHOLD)
   );
 }
 

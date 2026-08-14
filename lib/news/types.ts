@@ -199,6 +199,13 @@ export interface NewsDataset {
   clusters: StoryCluster[];
   trending: TrendingTopic[];
   generatedAt: string;
+  /**
+   * Version stamp of this snapshot, e.g. "20260815T101512Z-ab39f2"
+   * (generation time + content hash of the cluster ids). Every public route
+   * rendering from one snapshot reports the same version — the primary
+   * debugging handle for cache-coherence questions.
+   */
+  datasetVersion: string;
   dataMode: DataMode;
   ingestion: IngestionStats;
 }

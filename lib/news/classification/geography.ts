@@ -97,7 +97,24 @@ export interface GeographyInput {
   providerCountry?: string;
 }
 
+export interface GeographyResult {
+  country: Country;
+  /**
+   * 0..1, deterministic. For US/CA: normalized margin between the two
+   * country scores. For US_CA: how balanced the two sides are. For
+   * GLOBAL_NA/GLOBAL: fixed evidence-based levels (matched North-America
+   * terms vs. nothing matched at all).
+   */
+  confidence: number;
+  /** Raw term-match scores per bucket, for diagnostics. */
+  scores: { us: number; ca: number; northAmerica: number };
+}
+
 export function classifyGeography(input: GeographyInput): Country {
+  return classifyGeographyDetailed(input).country;
+}
+
+export function classifyGeographyDetailed(input: GeographyInput): GeographyResult {
   const text = ` ${input.title} ${input.description ?? ""} `.toLowerCase();
 
   let usScore = countMatches(text, US_TERMS);
@@ -125,13 +142,25 @@ export function classifyGeography(input: GeographyInput): Country {
     if (input.sourceCountry === "CA") caScore += 0.5;
   }
 
+  const scores = { us: usScore, ca: caScore, northAmerica: naScore };
+  const top = Math.max(usScore, caScore);
+  const margin = top > 0 ? Math.abs(usScore - caScore) / top : 0;
+
   if (usScore >= 1 && caScore >= 1 && Math.abs(usScore - caScore) <= 1) {
-    return "US_CA";
+    // Both sides matched with near-balance — the balance IS the confidence.
+    return { country: "US_CA", confidence: 1 - margin, scores };
   }
-  if (caScore > usScore && caScore >= 1) return "CA";
-  if (usScore > caScore && usScore >= 1) return "US";
-  if (naScore >= 1) return "GLOBAL_NA";
-  return "GLOBAL";
+  if (caScore > usScore && caScore >= 1) {
+    return { country: "CA", confidence: Math.min(1, margin), scores };
+  }
+  if (usScore > caScore && usScore >= 1) {
+    return { country: "US", confidence: Math.min(1, margin), scores };
+  }
+  if (naScore >= 1) {
+    return { country: "GLOBAL_NA", confidence: Math.min(1, naScore / 2), scores };
+  }
+  // Nothing matched anywhere: confidently NOT US/Canada coverage.
+  return { country: "GLOBAL", confidence: usScore + caScore === 0 ? 1 : 0.5, scores };
 }
 
 /** Whether a story is relevant to a country page filter. */

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { CATEGORY_IDS, CATEGORIES } from "@/config/categories";
+import { CATEGORIES, PUBLIC_CATEGORY_IDS } from "@/config/categories";
 import { siteConfig } from "@/config/site";
 import { getDataset } from "@/lib/cache/store";
 
@@ -21,7 +21,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: path === "" ? 1 : path === "/top-100" ? 0.9 : 0.6,
   }));
 
-  for (const id of CATEGORY_IDS) {
+  // Internal buckets (general) are excluded — only browsable sections.
+  for (const id of PUBLIC_CATEGORY_IDS) {
     entries.push({
       url: `${base}${CATEGORIES[id].path}`,
       changeFrequency: "hourly",

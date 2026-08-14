@@ -116,6 +116,21 @@ export default async function CategoryPage({
               </div>
             </section>
           ) : null}
+          {/* Stories whose PRIMARY category is different but that also touch
+              this section — explicitly labeled, never mixed into the main
+              feed above (category-page hard invariant). */}
+          {data.related.length > 0 ? (
+            <section aria-label="Related coverage" className="mt-12">
+              <SectionHeader title="Related coverage from other sections" />
+              <div className="grid grid-cols-1 gap-x-10 sm:grid-cols-2">
+                {data.related.map((cluster) => (
+                  <div key={cluster.id} className="border-b border-rule py-2.5">
+                    <HeadlineStory cluster={cluster} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
 
         <aside className="lg:col-span-4 lg:border-l lg:border-rule lg:pl-8">

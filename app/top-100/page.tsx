@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CATEGORY_IDS, CATEGORIES } from "@/config/categories";
+import { CATEGORIES, PUBLIC_CATEGORY_IDS } from "@/config/categories";
 import { LastUpdated } from "@/components/news/LastUpdated";
 import { RankedStory } from "@/components/news/cards";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -137,7 +137,7 @@ export default async function Top100Page({
           >
             All topics
           </Link>
-          {CATEGORY_IDS.map((id) => (
+          {PUBLIC_CATEGORY_IDS.map((id) => (
             <Link
               key={id}
               href={filterHref({ ...current, category: id })}
