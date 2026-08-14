@@ -39,6 +39,41 @@ describe("normalizeArticle", () => {
     expect(normalizeArticle(raw({ publishedAt: future }), NOW)).toBeNull();
   });
 
+  it("demotes weak-World DOMESTIC crime stories, keeps genuinely international ones", () => {
+    // Domestic Canadian crime: "kidnapped" is world vocabulary, but the
+    // story is Toronto + no international marker — never World.
+    const domestic = normalizeArticle(
+      raw({
+        title: "Man kidnapped at gunpoint in Toronto parking garage, police say",
+        description: "Investigators are asking witnesses to come forward.",
+      }),
+      NOW,
+    );
+    expect(domestic!.country).toBe("CA");
+    expect(domestic!.category).not.toBe("world");
+
+    // International abduction: the foreign place carries world evidence, so
+    // the US-relevance of the victim never demotes it.
+    const international = normalizeArticle(
+      raw({
+        title: "American missionary kidnapped in Niger is released, his group says",
+        description: "The aid group confirmed the release after months of captivity.",
+      }),
+      NOW,
+    );
+    expect(international!.category).toBe("world");
+
+    // Strong domestic-relevant world evidence (multiple signals) stays world.
+    const strong = normalizeArticle(
+      raw({
+        title: "Canada imposes sanctions after airstrike, recalls its embassy staff",
+        description: "Ottawa announced coordinated diplomatic measures.",
+      }),
+      NOW,
+    );
+    expect(strong!.category).toBe("world");
+  });
+
   it("strips HTML from titles and descriptions", () => {
     const article = normalizeArticle(
       raw({

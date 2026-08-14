@@ -9,6 +9,7 @@ import {
   idfWeight,
   isStrongFingerprint,
   MIN_SHARED_RARE_STEMS,
+  sharedRareStems,
   type CorpusStats,
   type EventFingerprint,
 } from "@/lib/news/clustering/fingerprint";
@@ -74,14 +75,29 @@ const FINGERPRINT_MIN_HEADLINE_SIMILARITY = 0.1;
  * detail the other omits (a person's full name, a duration), IDF Jaccard
  * dilutes below FINGERPRINT_SIMILARITY_THRESHOLD even though the shorter
  * headline is essentially contained in the longer one. Such pairs merge when
- * the fingerprint is STRONG, both headlines carry the SAME action group
- * (released~freed on both sides — not merely no conflict), and the
- * IDF-weighted overlap coefficient over the smaller side reaches this bar.
- * Calibrated on the labeled pairs: the named-variant missionary headlines
- * measure ~0.7 while same-team/same-person different-event pairs either
- * fail the shared-action gate or stay below it.
+ * the fingerprint is STRONG (which already excludes conflicting actions)
+ * and the IDF-weighted overlap coefficient over the smaller side reaches a
+ * bar that depends on the action evidence:
+ *  - both headlines carry the SAME action group (released~freed): the act
+ *    is confirmed, the moderate bar applies;
+ *  - one-sided or absent actions (rewordings routinely nominalize or drop
+ *    the verb): the strict bar applies — near-total containment only.
+ * Calibrated on the 500+ labeled pairs: same-subject different-object
+ * follow-ups ("Hale vetoes school bill" / "Hale vetoes housing bill") stay
+ * under 0.65, while genuine rewordings of one event measure 0.7–1.0.
  */
-export const FINGERPRINT_CONTAINMENT_THRESHOLD = 0.62;
+export const FINGERPRINT_CONTAINMENT_SHARED_ACTION = 0.65;
+export const FINGERPRINT_CONTAINMENT_NO_ACTION = 0.72;
+/**
+ * Deep-rewording tier: with a WIDE anchor (at least 3 shared rare stems,
+ * proper-noun anchored — place + subject + object, not just a name) AND the
+ * same action group on both sides, the event identity is established by the
+ * anchors themselves and containment only needs to clear this floor.
+ * Same-team different-match pairs share only ~2 rare stems (team name; the
+ * opponents differ) and never qualify.
+ */
+export const FINGERPRINT_CONTAINMENT_WIDE_ANCHOR = 0.62;
+export const WIDE_ANCHOR_MIN_RARE_STEMS = 3;
 /**
  * Conflicting-action veto: when BOTH headlines carry action words from the
  * synonym table and share no group ("erupts" vs "clears", "wins" vs
@@ -178,17 +194,17 @@ export function decidePair(ctx: ClusterContext, i: number, j: number): PairDecis
   const headlineSim = articleSimilarity(ctx.feats[i], ctx.feats[j]);
   const fpSim = fingerprintSimilarity(ctx.prints[i], ctx.prints[j], ctx.stats);
   const strong = isStrongFingerprint(ctx.prints[i], ctx.prints[j], ctx.stats);
+  const containmentBar = containmentBarFor(ctx, i, j);
   const merge =
     headlineSim >= SIMILARITY_THRESHOLD + categoryMargin + conflictMargin ||
     (strong &&
       fpSim >= FINGERPRINT_SIMILARITY_THRESHOLD &&
       headlineSim >= FINGERPRINT_MIN_HEADLINE_SIMILARITY) ||
-    // Asymmetric rewording: same act on both sides + the shorter headline
-    // contained in the longer one (see FINGERPRINT_CONTAINMENT_THRESHOLD).
+    // Asymmetric rewording: the shorter headline contained in the longer
+    // one, bar depending on action evidence (see the threshold docs).
     (strong &&
-      hasSharedAction(ctx.prints[i], ctx.prints[j]) &&
       fingerprintContainment(ctx.prints[i], ctx.prints[j], ctx.stats) >=
-        FINGERPRINT_CONTAINMENT_THRESHOLD &&
+        containmentBar &&
       headlineSim >= FINGERPRINT_MIN_HEADLINE_SIMILARITY);
   return {
     merge,
@@ -322,9 +338,12 @@ function collectGroups(uf: UnionFind, n: number): number[][] {
 
 /**
  * Validation pass (anti-chaining): every member of a multi-article cluster
- * must either sit within MIN_LEAD_SIMILARITY of the cluster lead or carry
- * strong fingerprint evidence against the lead — otherwise it becomes a
- * singleton again.
+ * must either support the cluster LEAD or support a MAJORITY of the other
+ * members — otherwise it becomes a singleton again. A genuinely chained
+ * outlier (A–B–C where C only resembles B) supports exactly one neighbor
+ * and is still evicted; a heavily reworded variant that matches most of the
+ * group but happens to sit far from the one article chosen as lead (the
+ * live BBC Niger case) is kept.
  */
 function validateGroups(ctx: ClusterContext, groups: number[][]): number[][] {
   const validated: number[][] = [];
@@ -337,7 +356,11 @@ function validateGroups(ctx: ClusterContext, groups: number[][]): number[][] {
     const leadIndex = group[members.indexOf(pickLead(members))];
     const kept: number[] = [];
     for (const i of group) {
-      if (i === leadIndex || memberSupportsLead(ctx, i, leadIndex)) {
+      if (
+        i === leadIndex ||
+        memberSupportsMember(ctx, i, leadIndex) ||
+        supportsMajority(ctx, i, group, leadIndex)
+      ) {
         kept.push(i);
       } else {
         validated.push([i]);
@@ -348,22 +371,49 @@ function validateGroups(ctx: ClusterContext, groups: number[][]): number[][] {
   return validated;
 }
 
-/** A member may stay near its lead via headline OR fingerprint evidence. */
-function memberSupportsLead(ctx: ClusterContext, i: number, leadIndex: number): boolean {
-  if (articleSimilarity(ctx.feats[i], ctx.feats[leadIndex]) >= MIN_LEAD_SIMILARITY) {
+/** Member i supports more than half of the OTHER members of its group. */
+function supportsMajority(
+  ctx: ClusterContext,
+  i: number,
+  group: number[],
+  leadIndex: number,
+): boolean {
+  let supported = 0;
+  let others = 0;
+  for (const j of group) {
+    if (j === i) continue;
+    others++;
+    if (j !== leadIndex && memberSupportsMember(ctx, i, j)) supported++;
+  }
+  return others > 0 && supported * 2 > others;
+}
+
+/** The containment bar a pair must clear, by strength of action evidence. */
+function containmentBarFor(ctx: ClusterContext, i: number, j: number): number {
+  if (!hasSharedAction(ctx.prints[i], ctx.prints[j])) {
+    return FINGERPRINT_CONTAINMENT_NO_ACTION;
+  }
+  const rare = sharedRareStems(ctx.prints[i], ctx.prints[j], ctx.stats);
+  return rare.length >= WIDE_ANCHOR_MIN_RARE_STEMS
+    ? FINGERPRINT_CONTAINMENT_WIDE_ANCHOR
+    : FINGERPRINT_CONTAINMENT_SHARED_ACTION;
+}
+
+/** A member may stay near another member via headline OR fingerprint evidence. */
+function memberSupportsMember(ctx: ClusterContext, i: number, j: number): boolean {
+  if (articleSimilarity(ctx.feats[i], ctx.feats[j]) >= MIN_LEAD_SIMILARITY) {
     return true;
   }
-  if (!isStrongFingerprint(ctx.prints[i], ctx.prints[leadIndex], ctx.stats)) {
+  if (!isStrongFingerprint(ctx.prints[i], ctx.prints[j], ctx.stats)) {
     return false;
   }
-  // Mirror the two relaxed merge paths so a member admitted via containment
+  // Mirror the relaxed merge paths so a member admitted via containment
   // is not immediately evicted by validation.
   return (
-    fingerprintSimilarity(ctx.prints[i], ctx.prints[leadIndex], ctx.stats) >=
+    fingerprintSimilarity(ctx.prints[i], ctx.prints[j], ctx.stats) >=
       FINGERPRINT_SIMILARITY_THRESHOLD ||
-    (hasSharedAction(ctx.prints[i], ctx.prints[leadIndex]) &&
-      fingerprintContainment(ctx.prints[i], ctx.prints[leadIndex], ctx.stats) >=
-        FINGERPRINT_CONTAINMENT_THRESHOLD)
+    fingerprintContainment(ctx.prints[i], ctx.prints[j], ctx.stats) >=
+      containmentBarFor(ctx, i, j)
   );
 }
 
@@ -603,7 +653,7 @@ function buildCluster(
     slug: `${slugify(lead.title)}-${id}`,
     title: lead.title,
     summary: lead.description,
-    category: lead.category,
+    category: pickCategory(members, lead),
     contentType,
     country: pickCountry(members),
     imageUrl: membersByTier.find((m) => m.imageUrl)?.imageUrl,
@@ -623,6 +673,33 @@ function buildCluster(
     isBreaking: false,
     isMock: members.some((m) => m.isMock),
   };
+}
+
+/**
+ * Cluster category by member MAJORITY, not by whichever member happens to
+ * be lead. The lead changes as coverage and images arrive, and one member
+ * with a keyword-free headline classifying "general" must not relabel a
+ * story that three other outlets classify "world" (the live World→General
+ * flapping case). Rules, all deterministic:
+ *  - general votes are ignored unless EVERY member is general — the
+ *    low-confidence bucket never outvotes actual evidence;
+ *  - highest vote count wins; when the lead's category ties the top count,
+ *    the lead's category is preferred (label matches the displayed lead);
+ *  - remaining ties break alphabetically.
+ */
+export function pickCategory(members: Article[], lead: Article): Article["category"] {
+  const counts = new Map<Article["category"], number>();
+  for (const member of members) {
+    if (member.category === "general") continue;
+    counts.set(member.category, (counts.get(member.category) ?? 0) + 1);
+  }
+  if (counts.size === 0) return "general";
+  const sorted = [...counts.entries()].sort(
+    (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+  );
+  const topCount = sorted[0][1];
+  if (counts.get(lead.category) === topCount) return lead.category;
+  return sorted[0][0];
 }
 
 /** Majority geography across members; ties involving US and CA become US_CA. */

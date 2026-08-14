@@ -1,4 +1,5 @@
 import { revalidateTag, unstable_cache } from "next/cache";
+import { archiveDataset } from "@/lib/database/archive";
 import { loadDatasetSnapshot, saveDatasetSnapshot } from "@/lib/database/snapshot";
 import { env, getDataMode } from "@/lib/env";
 import { runPipeline } from "@/lib/news/pipeline";
@@ -67,6 +68,12 @@ const fetchDatasetShared = unstable_cache(
     // Persist the new complete snapshot (best-effort) so every instance —
     // and the next cold pipeline run — sees this exact reality.
     await saveDatasetSnapshot(dataset);
+    // Archive EVERY generation that becomes public, not just cron-time
+    // ones: a cluster id born in a mid-window regeneration is advertised
+    // in sitemaps immediately, so it must enter the permanent archive
+    // immediately — otherwise a later membership change would 404 it (the
+    // URL-survival probe caught exactly this).
+    await archiveDataset(dataset);
     return dataset;
   },
   ["news-dataset-v1"],

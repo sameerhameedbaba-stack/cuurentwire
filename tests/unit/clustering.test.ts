@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { clusterArticles, pickLead } from "@/lib/news/clustering/cluster";
+import { clusterArticles, pickCategory, pickLead } from "@/lib/news/clustering/cluster";
 import { normalizeArticle } from "@/lib/news/normalization/normalize";
 import {
   clearPreviousDataset,
   setPreviousDataset,
 } from "@/lib/news/previous";
 import type { Article, NewsDataset, RawArticle } from "@/lib/news/types";
+import { MISSIONARY_QUAD } from "../fixtures/cluster-pairs";
 
 const NOW = new Date("2026-08-13T12:00:00Z");
 
@@ -58,6 +59,53 @@ describe("clusterArticles", () => {
     expect(clusters).toHaveLength(1);
     expect(clusters[0].sourceCount).toBe(3);
     expect(clusters[0].articles.every((a) => a.clusterId === clusters[0].id)).toBe(true);
+  });
+
+  it("clusters all four live missionary variants as one event (validation must not evict any)", () => {
+    const domains = ["abc.example", "npr.example", "bbc.example", "cbs.example"];
+    const articles = MISSIONARY_QUAD.map((title, i) =>
+      makeArticle(title, domains[i], 30 + i * 15, { providerCategory: undefined }),
+    );
+    const clusters = clusterArticles(articles, NOW);
+    expect(clusters).toHaveLength(1);
+    expect(clusters[0].sourceCount).toBe(4);
+  });
+
+  it("cluster category is stable across lead changes (no World→General flapping)", () => {
+    const domains = ["abc.example", "npr.example", "bbc.example", "cbs.example"];
+    for (const rotation of [0, 1, 2, 3]) {
+      const articles = MISSIONARY_QUAD.map((title, i) =>
+        makeArticle(title, domains[i], 30 + ((i + rotation) % 4) * 15, {
+          providerCategory: undefined,
+          // Vary completeness so different rotations pick different leads.
+          imageUrl: i === rotation ? "https://img.example/a.jpg" : undefined,
+        }),
+      );
+      const clusters = clusterArticles(articles, NOW);
+      expect(clusters).toHaveLength(1);
+      expect(clusters[0].category).toBe("world");
+    }
+  });
+
+  it("pickCategory: majority vote, general never outvotes evidence, deterministic ties", () => {
+    const world = (id: string) =>
+      ({ ...makeArticle("Sanctions imposed after diplomatic summit collapses", `${id}.example`, 30), category: "world" as const });
+    const general = (id: string) =>
+      ({ ...makeArticle("Five things to know before the weekend arrives", `${id}.example`, 30), category: "general" as const });
+    const politics = (id: string) =>
+      ({ ...makeArticle("Senate passes sweeping bill after marathon session", `${id}.example`, 30), category: "politics" as const });
+
+    // 3 world + 1 general, general lead: world wins.
+    const g = general("g1");
+    expect(pickCategory([world("w1"), world("w2"), world("w3"), g], g)).toBe("world");
+    // All general: general.
+    expect(pickCategory([general("g2"), general("g3")], general("g2"))).toBe("general");
+    // Tie politics/world with a politics lead: lead's category wins the tie.
+    const p = politics("p1");
+    expect(pickCategory([p, world("w4")], p)).toBe("politics");
+    // Tie with a general lead: alphabetical, deterministic.
+    const g2 = general("g4");
+    expect(pickCategory([politics("p2"), world("w5"), g2], g2)).toBe("politics");
   });
 
   it("keeps unrelated stories separate", () => {

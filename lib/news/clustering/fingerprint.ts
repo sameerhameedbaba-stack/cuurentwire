@@ -62,6 +62,10 @@ export function stemToken(token: string): string {
   else if (t.endsWith("ied") && t.length >= 5) t = `${t.slice(0, -3)}y`;
   else if (t.endsWith("ed") && t.length >= 5) t = undouble(t.slice(0, -2));
 
+  // Adverbs: "narrowly" must meet "narrow". Length guards keep "early"
+  // (would become "ear") and other short false stems intact.
+  if (t.endsWith("ly") && t.length >= 6 && t.length - 2 >= 4) t = t.slice(0, -2);
+
   // Final e, so "release"/"released" agree after the -ed strip.
   if (t.length >= 4 && t.endsWith("e")) t = t.slice(0, -1);
   return t;
@@ -135,11 +139,40 @@ const ACTION_GROUPS: string[][] = [
   ["seized", "seizes", "captured", "captures", "recaptured"],
   ["missing", "disappeared", "disappears", "vanished", "vanishes"],
   ["discovered", "discovers", "finds", "found", "uncovered", "uncovers"],
-  ["appointed", "appoints", "hired", "hires"],
+  // "names/named" carries real polysemy (named storms, named in suits) but
+  // sits behind the rare-stem and containment gates like every marker.
+  ["appointed", "appoints", "hired", "hires", "names", "named", "promoted", "promotes"],
   ["shooting", "shot", "shoots", "gunfire", "shootout"],
   ["wildfire", "wildfires", "blaze", "blazes", "fire", "fires"],
   ["agreement", "pact", "accord", "treaty"],
   ["strike", "strikes", "walkout"],
+  // Round-4 recall groups — generic news verb families the benchmark showed
+  // the table was missing. Multi-group membership handles polysemy as usual
+  // ("pulled" from shelves vs "pulled" from the water, "halted" as frozen
+  // vs "halted" as blocked).
+  ["fines", "fined", "fine", "penalized", "penalizes", "penalty", "sanctioned"],
+  ["signs", "signed", "joins", "joined", "signing"],
+  ["begins", "began", "begin", "opens", "opened", "starts", "started", "commences"],
+  ["breaks", "broke", "shatters", "shattered", "smashes", "smashed", "sets", "set", "falls", "fell"],
+  ["rejects", "rejected", "defeated", "defeats", "turned", "halts", "halted"],
+  ["approves", "backs", "backed"],
+  ["raises", "raised", "lands", "landed", "secures", "secured", "nets", "netted", "fetches", "fetched"],
+  ["restored", "restores", "resumes", "resumed", "reopens", "reopened", "reopen", "returns", "returned", "rebounds"],
+  ["ends", "ended", "concludes", "concluded", "finishes", "finished", "closes", "closed", "shuts", "shut"],
+  ["recalls", "recalled", "recall", "pulled", "pulls", "withdrawn", "withdraws"],
+  ["rescued", "rescues", "rescue", "pulled", "pulls", "refloated", "refloats"],
+  ["suspended", "suspends", "banned", "bans", "stripped", "strips", "disqualified"],
+  ["freezes", "frozen", "freeze", "halts", "halted", "pauses", "paused", "delays", "delayed", "postponed", "postpones"],
+  ["destroyed", "destroys", "destroying", "destruction", "devastates", "devastated", "devastation", "levels", "leveled", "razed", "guts", "gutted", "flattens", "flattened"],
+  ["repairs", "repaired", "repair", "fixes", "fixed", "fix"],
+  ["earns", "earned", "becomes", "became"],
+  ["capsizes", "capsized", "overturns", "overturned"],
+  // Day-2 verbs: their own groups so follow-up coverage CONFLICTS with the
+  // original event's verb instead of slipping through one-sided ("trial
+  // begins" vs "witness testifies", "unveils product" vs "pilots product").
+  ["testifies", "testified", "testimony"],
+  ["pilots", "piloting"],
+  ["connects", "connected", "connecting"],
 ];
 
 /**
@@ -158,7 +191,12 @@ const WEAK_TOKENS = new Set(
     "january", "february", "march", "april", "may", "june", "july", "august",
     "september", "october", "november", "december", "monday", "tuesday",
     "wednesday", "thursday", "friday", "saturday", "sunday", "today",
-    "yesterday", "tonight", "overnight",
+    "yesterday", "tonight", "overnight", "ago",
+    // Sequence connectives ("released FOLLOWING kidnap", "closed AMID
+    // protests") — they relate events, they never identify one. The live
+    // BBC Niger headline was evicted because "following" inflated its
+    // fingerprint weight.
+    "following", "amid", "amidst",
     // Demonyms (adjectival nationalities).
     "american", "americans", "canadian", "canadians", "british", "french",
     "german", "russian", "chinese", "indian", "mexican", "italian", "spanish",

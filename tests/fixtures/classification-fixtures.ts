@@ -187,7 +187,6 @@ const WORLD: CategoryFixture[] = [
   c("Berlin hosts emergency summit on migration", "world"),
   // audit-flavor: the Nigerian vultures story must never be technology.
   c("Nigeria's disappearing vultures alarm communities across West Africa", "world"),
-  c("Completely generic headline about nothing in particular", "world"),
 ];
 
 const CLIMATE: CategoryFixture[] = [
@@ -374,6 +373,8 @@ const SPORTS: CategoryFixture[] = [
 // signal must land in "general" — NEVER in world (world is earned by
 // international-affairs evidence like any other category).
 const GENERAL: CategoryFixture[] = [
+  // Pre-general era this expected "world" as the fallback bucket.
+  c("Completely generic headline about nothing in particular", "general"),
   c("Five things to know before the weekend", "general"),
   c("What we learned this week", "general"),
   c("Photos of the day", "general"),

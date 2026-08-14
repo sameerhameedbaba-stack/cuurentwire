@@ -11,6 +11,11 @@ import { slugify, stableId, truncate } from "@/lib/utils/text";
 
 const MAX_TITLE_LENGTH = 300;
 const MAX_DESCRIPTION_LENGTH = 500;
+/**
+ * A world score at or below this (one title keyword hit) is too weak to
+ * label a DOMESTIC US/CA story as international affairs.
+ */
+const MAX_DOMESTIC_WORLD_SCORE = 3;
 
 /**
  * Normalize a raw provider article into a validated, classified Article.
@@ -60,7 +65,7 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
     : undefined;
 
   const cleanTitle = truncate(cleanDisplayTitle(rawTitle), MAX_TITLE_LENGTH);
-  const category = classifyCategory({
+  const categoryResult = classifyCategory({
     title: cleanTitle,
     description,
     providerCategory: raw.providerCategory,
@@ -72,6 +77,24 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
     sourceCountry: sourceDef?.country,
     providerCountry: raw.providerCountry,
   });
+
+  // World means WORLD: crime vocabulary ("kidnapped", "hostage") fires on
+  // domestic coverage too. A story whose geography is confidently DOMESTIC
+  // (US or CA) and whose only world evidence is a single weak signal is not
+  // international affairs — demote to the next specific category, else the
+  // internal general bucket. Multiple world signals always keep world
+  // (a genuinely international story about a US/Canadian subject).
+  let category = categoryResult.primary;
+  let categories = categoryResult.all;
+  if (
+    category === "world" &&
+    (country === "US" || country === "CA") &&
+    (categoryResult.scores.world ?? 0) <= MAX_DOMESTIC_WORLD_SCORE
+  ) {
+    const specific = categories.filter((c) => c !== "world");
+    category = specific[0] ?? "general";
+    categories = specific.length > 0 ? specific : ["general"];
+  }
 
   const id = stableId(canonicalUrl);
   // Root-relative paths are local assets (demo art); remote URLs must be
@@ -100,8 +123,8 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
     imageUrl,
     author: raw.author?.trim() || undefined,
     country,
-    category: category.primary,
-    categories: category.all,
+    category,
+    categories,
     contentType,
     entities: extractEntities(cleanTitle, description),
     provider: raw.provider,

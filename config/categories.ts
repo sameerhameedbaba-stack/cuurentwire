@@ -111,11 +111,26 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "united nations", "nato", "european union", "g7", "g20", "summit",
       "foreign minister", "diplomacy", "diplomatic", "embassy", "sanctions",
       "ceasefire", "peace talks", "treaty", "border dispute", "refugee",
-      "international", "global", "overseas", "foreign policy", "state visit",
+      "international", "international observers", "global", "overseas",
+      "foreign policy", "state visit",
       "world leaders", "geneva", "brussels", "beijing", "moscow", "london",
       "tokyo", "paris", "berlin", "kyiv", "middle east", "asia-pacific",
-      "kidnapped", "kidnapping", "hostage", "coup", "airstrike", "militant",
-      "humanitarian", "war crimes", "insurgent",
+      "kidnapped", "kidnapping", "kidnap", "hostage", "coup", "airstrike",
+      "militant", "humanitarian", "war crimes", "insurgent",
+      // Compact foreign-place gazetteer: a story ABOUT one of these is
+      // international affairs by definition, so crime vocabulary alone never
+      // has to carry the world label (and domestic "kidnapped in Toronto"
+      // coverage without any of these gets demoted, see normalize.ts).
+      // Deliberately excluded for collisions: georgia (US state), jordan &
+      // chad (person names), turkey (the bird).
+      "niger", "nigeria", "mexico", "china", "india", "iran", "iraq",
+      "israel", "gaza", "ukraine", "russia", "syria", "afghanistan",
+      "pakistan", "brazil", "venezuela", "cuba", "haiti", "france",
+      "germany", "italy", "spain", "japan", "taiwan", "north korea",
+      "south korea", "egypt", "saudi arabia", "yemen", "lebanon", "sudan",
+      "somalia", "ethiopia", "kenya", "south africa", "colombia",
+      "argentina", "philippines", "indonesia", "vietnam", "thailand",
+      "myanmar", "bangladesh", "sri lanka", "poland", "hungary", "belarus",
     ],
     providerAliases: ["world", "international", "global"],
   },
