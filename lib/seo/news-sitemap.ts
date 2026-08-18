@@ -6,7 +6,11 @@ import type { StoryCluster } from "@/lib/news/types";
  *
  * Rules:
  * - real clusters only — mock/demo data is never submitted to Google News;
- * - only stories with source coverage inside the last 48 hours;
+ * - only stories whose source coverage AND emitted publication_date both fall
+ *   inside the last 48 hours. Both must be checked: coverage can refresh on a
+ *   story we published days ago, and Google rejects a news sitemap entry whose
+ *   publication_date is outside the window. Dropped stories stay reachable via
+ *   sitemap.xml / archive-sitemap.xml — only the News fast lane is time-boxed;
  * - newest coverage first, capped at 1000 entries;
  * - publication_date prefers the archive's first_seen_at (when CurrentWire
  *   actually published the story page, passed in via firstSeenById) and
@@ -30,18 +34,29 @@ export function renderNewsSitemap(
 
   const fresh = clusters
     .filter((cluster) => !cluster.isMock)
-    .filter((cluster) => {
+    .map((cluster) => ({
+      cluster,
+      publicationDate: firstSeenById?.get(cluster.id) ?? cluster.firstPublishedAt,
+    }))
+    .filter(({ cluster, publicationDate }) => {
       const last = new Date(cluster.lastPublishedAt).getTime();
-      return Number.isFinite(last) && last >= cutoff;
+      const published = new Date(publicationDate).getTime();
+      return (
+        Number.isFinite(last) &&
+        last >= cutoff &&
+        Number.isFinite(published) &&
+        published >= cutoff
+      );
     })
     .sort(
       (a, b) =>
-        new Date(b.lastPublishedAt).getTime() - new Date(a.lastPublishedAt).getTime(),
+        new Date(b.cluster.lastPublishedAt).getTime() -
+        new Date(a.cluster.lastPublishedAt).getTime(),
     );
 
   const seen = new Set<string>();
   const urls: string[] = [];
-  for (const cluster of fresh) {
+  for (const { cluster, publicationDate } of fresh) {
     if (urls.length >= NEWS_SITEMAP_MAX_ENTRIES) break;
     const loc = `${base}/story/${cluster.slug}`;
     if (seen.has(loc)) continue;
@@ -53,7 +68,7 @@ export function renderNewsSitemap(
         <news:name>${escapeXml(siteConfig.name)}</news:name>
         <news:language>en</news:language>
       </news:publication>
-      <news:publication_date>${escapeXml(firstSeenById?.get(cluster.id) ?? cluster.firstPublishedAt)}</news:publication_date>
+      <news:publication_date>${escapeXml(publicationDate)}</news:publication_date>
       <news:title>${escapeXml(cluster.title)}</news:title>
     </news:news>
     <lastmod>${escapeXml(cluster.lastPublishedAt)}</lastmod>

@@ -171,4 +171,70 @@ describe("renderNewsSitemap", () => {
     expect(xml).not.toContain("bad-date-c8");
     expect(xml).toContain("</urlset>");
   });
+
+  it(`excludes clusters whose publication_date is older than ${NEWS_SITEMAP_WINDOW_HOURS} hours even when coverage is fresh`, () => {
+    // A story we published 3 days ago that picked up new source coverage today:
+    // Google rejects the entry because publication_date is outside the window.
+    const xml = renderNewsSitemap(
+      [
+        makeCluster({
+          slug: "old-publication-c10",
+          firstPublishedAt: hoursAgo(72),
+          lastPublishedAt: hoursAgo(1),
+        }),
+      ],
+      NOW,
+    );
+    expect(xml).not.toContain("old-publication-c10");
+    expect(xml).not.toContain("<url>");
+  });
+
+  it("excludes clusters whose archive first_seen_at is outside the window", () => {
+    const xml = renderNewsSitemap(
+      [
+        makeCluster({
+          id: "c11",
+          slug: "old-first-seen-c11",
+          firstPublishedAt: hoursAgo(3),
+          lastPublishedAt: hoursAgo(1),
+        }),
+      ],
+      NOW,
+      new Map([["c11", hoursAgo(60)]]),
+    );
+    expect(xml).not.toContain("old-first-seen-c11");
+  });
+
+  it("keeps a cluster whose archive first_seen_at is fresh even if source coverage is older", () => {
+    const firstSeen = hoursAgo(2);
+    const xml = renderNewsSitemap(
+      [
+        makeCluster({
+          id: "c12",
+          slug: "late-discovery-c12",
+          firstPublishedAt: hoursAgo(47),
+          lastPublishedAt: hoursAgo(47),
+        }),
+      ],
+      NOW,
+      new Map([["c12", firstSeen]]),
+    );
+    expect(xml).toContain("late-discovery-c12");
+    expect(xml).toContain(`<news:publication_date>${firstSeen}</news:publication_date>`);
+  });
+
+  it("skips clusters with an unparseable publication_date", () => {
+    const xml = renderNewsSitemap(
+      [
+        makeCluster({
+          id: "c13",
+          slug: "bad-publication-c13",
+          firstPublishedAt: "not-a-date",
+        }),
+      ],
+      NOW,
+    );
+    expect(xml).not.toContain("bad-publication-c13");
+    expect(xml).toContain("</urlset>");
+  });
 });
