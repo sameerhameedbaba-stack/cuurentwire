@@ -24,9 +24,11 @@ Format: date | what | live URL | notes. Only entries verified live belong here.
   Received"; contact ovyajewels@gmail.com — support@currentwire.us was
   intended but the form submitted first; contact-only field, no action) |
   editor review can take months.
-- 2026-08-19 | Listicle pitch emails | 4 pitches (iTechGuides, Wisp, Readless,
-  daily.dev) drafted by the loop, reviewed and sent by the owner same day |
-  replies come to the owner's Gmail; weekly run checks the articles for
-  added mentions.
+- 2026-08-19 | Listicle pitch emails | 4 pitches SENT from ovyajewels@gmail.com
+  (verified in Sent folder): iTechGuides, Wisp, Readless, daily.dev | replies
+  arrive at ovyajewels@gmail.com; weekly run checks the four articles for
+  added mentions. (Note: 4 stale unsent drafts of the same pitches remain in
+  sameerhameedbaba@gmail.com Drafts — safe to delete, never send them, they
+  would be duplicates.)
 
 (no verified-live placements yet)
