@@ -70,6 +70,37 @@ export function bigrams(tokens: string[]): Set<string> {
   return result;
 }
 
+/**
+ * Meta description: whole sentences wherever possible.
+ *
+ * A word-boundary truncation ends in "…" mid-thought, which reads as broken
+ * copy in a SERP snippet. This keeps adding complete sentences while they fit
+ * and only falls back to `truncate` when even the first sentence is too long
+ * to show. Trailing separators left by a clipped sentence (", ", " - ", ": ")
+ * are cleaned off so the snippet never ends on a dangling connector.
+ */
+export function metaDescription(text: string, maxLength = 155): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (!clean) return "";
+  if (clean.length <= maxLength) return clean;
+
+  // Sentence ends: . ! ? optionally followed by a closing quote/bracket, then
+  // whitespace. Decimals and common abbreviations keep their following token,
+  // so a split there simply yields a longer "sentence" — never a wrong cut.
+  const sentences = clean.match(/[^.!?]+(?:[.!?]+["')\]]*\s+|[.!?]+$)/g);
+  if (sentences) {
+    let out = "";
+    for (const sentence of sentences) {
+      const next = (out + sentence).trimEnd();
+      if (next.length > maxLength) break;
+      out = next + " ";
+    }
+    const kept = out.trim();
+    if (kept) return kept;
+  }
+  return truncate(clean, maxLength).replace(/[\s,;:\-–—]+…$/, "…");
+}
+
 /** Truncate on a word boundary with an ellipsis. */
 export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;

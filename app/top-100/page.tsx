@@ -21,9 +21,20 @@ export const dynamic = "force-dynamic";
 const DESCRIPTION =
   "The 100 most important current stories across the United States and Canada — ranked by freshness, coverage breadth, source authority and momentum.";
 
+const PAGE_SIZE = 25;
+
+/** Ranked-list thumbnails above the fold: loaded eagerly, not lazily. */
+const EAGER_THUMBNAILS = 4;
+
 // Pages 2-4 carry ranks 26-100: each needs its own canonical and title so
 // Google doesn't treat them as duplicates of page 1 (same pattern as /latest).
 // Filtered variants still canonicalize to the plain page.
+//
+// Out-of-range pages (?page=9, ?page=999) must NOT self-canonicalize: the body
+// clamps to the last real page, so every out-of-range number would otherwise
+// serve the same 25 stories under its own canonical — an unbounded duplicate
+// URL space. They get noindex,follow instead: not indexed, still crawled
+// through to the stories they link.
 export async function generateMetadata({
   searchParams,
 }: {
@@ -32,15 +43,24 @@ export async function generateMetadata({
   const params = await searchParams;
   const raw = Array.isArray(params.page) ? params.page[0] : params.page;
   const page = Math.max(1, Number.parseInt(raw ?? "1", 10) || 1);
+  // The canonical space ignores filters, so the page count that bounds it is
+  // the unfiltered one.
+  const { stories } = await getTop100({
+    country: "all",
+    category: "all",
+    time: "latest",
+    sort: "importance",
+  });
+  const totalPages = Math.max(1, Math.ceil(stories.length / PAGE_SIZE));
+  const inRange = page <= totalPages;
   return pageMetadata({
     title: page > 1 ? `Top 100 Right Now — Page ${page}` : "Top 100 Right Now",
     description: DESCRIPTION,
-    path: page > 1 ? `/top-100?page=${page}` : "/top-100",
+    path: inRange && page > 1 ? `/top-100?page=${page}` : "/top-100",
+    noIndexFollow: !inRange,
     rssPath: "/rss",
   });
 }
-
-const PAGE_SIZE = 25;
 
 const COUNTRY_OPTIONS: { value: CountryFilter; label: string }[] = [
   { value: "all", label: "All" },
@@ -118,7 +138,7 @@ export default async function Top100Page({
       <meta name="cw-dataset-version" content={dataset.datasetVersion} />
       <ItemListJsonLd
         clusters={visible}
-        path="/top-100"
+        path={currentPage > 1 ? `/top-100?page=${currentPage}` : "/top-100"}
         name="Top 100 Right Now"
         startPosition={(currentPage - 1) * PAGE_SIZE + 1}
       />
@@ -214,6 +234,7 @@ export default async function Top100Page({
                 <RankedStory
                   cluster={cluster}
                   rank={(currentPage - 1) * PAGE_SIZE + index + 1}
+                  eagerThumbnail={index < EAGER_THUMBNAILS}
                 />
               </li>
             ))}

@@ -23,7 +23,7 @@ import { getClusterBySlugWithVersion, getRelatedClusters } from "@/lib/news/quer
 import { resolveStoryRequest, type StoryResolution } from "@/lib/news/story-resolution";
 import { COUNTRY_LABELS, type StoryCluster } from "@/lib/news/types";
 import { entitySlug } from "@/lib/news/classification/entities";
-import { truncate } from "@/lib/utils/text";
+import { metaDescription } from "@/lib/utils/text";
 import { fullTimestamp } from "@/lib/utils/time";
 import {
   BreadcrumbJsonLd,
@@ -96,6 +96,12 @@ async function buildStoryView(request: StoryRequest): Promise<StoryView | null> 
   return null;
 }
 
+/**
+ * Headline length past which the " | CurrentWire" suffix is dropped. Google
+ * renders roughly 60 characters of a title; the suffix costs 14 of them.
+ */
+const TITLE_SUFFIX_BUDGET = 46;
+
 export async function generateMetadata({
   params,
 }: {
@@ -114,11 +120,17 @@ export async function generateMetadata({
   if (!view) notFound();
   const { cluster, publishedByUsAt } = view;
   const description = cluster.summary
-    ? truncate(cluster.summary, 160)
+    ? metaDescription(cluster.summary)
     : `Coverage of "${cluster.title}" from ${cluster.sourceNames.slice(0, 3).join(", ")}.`;
   const canonical = new URL(`/story/${cluster.slug}`, siteConfig.url).toString();
   return {
-    title: cluster.title,
+    // Long headlines are kept truthful and whole, so the " | CurrentWire"
+    // suffix is what gets dropped: it costs 14 characters of SERP width that
+    // the headline itself needs. Short headlines keep the brand.
+    title:
+      cluster.title.length > TITLE_SUFFIX_BUDGET
+        ? { absolute: cluster.title }
+        : cluster.title,
     description,
     alternates: { canonical },
     openGraph: {

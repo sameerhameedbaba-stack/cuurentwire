@@ -15,13 +15,17 @@ export function StoryImage({
   aspect = "16/9",
   sizes = "(max-width: 768px) 100vw, 50vw",
   priority = false,
+  eager = false,
 }: {
   src?: string;
   alt: string;
   category: CategoryId;
   aspect?: "16/9" | "3/2" | "4/3" | "1/1";
   sizes?: string;
+  /** The LCP image of the page — eager plus fetchPriority="high". */
   priority?: boolean;
+  /** Above the fold but not the LCP element — eager at normal priority. */
+  eager?: boolean;
 }) {
   const aspectClass = {
     "16/9": "aspect-[16/9]",
@@ -47,16 +51,22 @@ export function StoryImage({
         <img
           src={src}
           alt={alt}
-          loading={priority ? "eager" : "lazy"}
+          loading={priority || eager ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : undefined}
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
+        // Next 16 deprecated `priority` in favour of explicit hints, and the
+        // preload it emitted never carried fetchPriority through to the <img>
+        // (docs: 01-app/03-api-reference/02-components/image.md — "use
+        // loading='eager' or fetchPriority='high' instead of preload").
         <Image
           src={src}
           alt={alt}
           fill
           sizes={sizes}
-          priority={priority}
+          loading={priority || eager ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : undefined}
           className="object-cover"
         />
       )}

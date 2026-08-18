@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LastUpdated } from "@/components/news/LastUpdated";
 import { listActiveSources } from "@/lib/news/queries";
+import { shouldIndexCollection } from "@/lib/seo/indexing";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { LinkListJsonLd } from "@/lib/seo/structured-data";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +29,19 @@ export default async function SourcesPage() {
 
   return (
     <div className="mx-auto max-w-[900px] px-4 py-8 sm:px-6">
+      {/* Only the publisher hubs that clear the thin-collection bar are listed:
+          the ones below it answer noindex, and an ItemList must not point at
+          pages we ask Google to drop. */}
+      <LinkListJsonLd
+        name="Sources"
+        path="/sources"
+        items={sources
+          .filter((source) => shouldIndexCollection(source.articleCount))
+          .map((source) => ({
+            name: source.name,
+            url: `/source/${source.slug}`,
+          }))}
+      />
       <header className="border-b-2 border-ink pb-5 dark:border-rule-strong">
         <h1 className="headline text-3xl sm:text-4xl">Sources</h1>
         <p className="mt-2 text-sm text-muted sm:text-base">

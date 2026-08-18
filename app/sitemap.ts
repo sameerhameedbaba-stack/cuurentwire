@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next";
 import { CATEGORIES, PUBLIC_CATEGORY_IDS } from "@/config/categories";
 import { siteConfig } from "@/config/site";
 import { getDataset } from "@/lib/cache/store";
+import { listActiveSources } from "@/lib/news/queries";
+import { deriveTrending } from "@/lib/news/trending";
+import { shouldIndexCollection } from "@/lib/seo/indexing";
 
 export const dynamic = "force-dynamic";
 
@@ -40,8 +43,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
       });
     }
+
+    // Topic and source hubs are indexable once they clear the thin-collection
+    // bar (the same gate the pages themselves apply), but nothing listed them
+    // for discovery. Only the indexable ones go in: a sitemap must never
+    // advertise a URL that answers noindex.
+    for (const topic of deriveTrending(dataset.clusters, 60)) {
+      if (!shouldIndexCollection(topic.clusterCount)) continue;
+      entries.push({
+        url: `${base}/topic/${topic.slug}`,
+        changeFrequency: "hourly",
+        priority: 0.5,
+      });
+    }
   } catch {
     // Sitemap still serves the static routes if the feed is unavailable.
+  }
+
+  try {
+    const { sources } = await listActiveSources();
+    for (const source of sources) {
+      if (!shouldIndexCollection(source.articleCount)) continue;
+      entries.push({
+        url: `${base}/source/${source.slug}`,
+        changeFrequency: "daily",
+        priority: 0.5,
+      });
+    }
+  } catch {
+    // Source hubs are a bonus: their absence never breaks the sitemap.
   }
 
   return entries;

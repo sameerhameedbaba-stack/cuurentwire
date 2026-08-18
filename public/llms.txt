@@ -16,6 +16,11 @@ original publishers listed on each story page for the underlying reporting.
 - [United States](https://currentwire.us/us): top stories affecting the US
 - [Canada](https://currentwire.us/canada): top stories affecting Canada
 
+## Coverage hubs
+
+- [Topics](https://currentwire.us/topics): entities, places and themes derived from current coverage; each hub at /topic/<slug> lists every current story mentioning it
+- [Sources](https://currentwire.us/sources): publications currently represented, grouped by authority tier; each hub at /source/<slug> lists that publisher's stories. Listing is aggregation only and implies no partnership or endorsement.
+
 ## Sections
 
 - [Politics](https://currentwire.us/politics)
@@ -40,4 +45,13 @@ original publishers listed on each story page for the underlying reporting.
 
 - [RSS](https://currentwire.us/rss): main feed of top stories
 - [News sitemap](https://currentwire.us/news-sitemap.xml): stories from the last 48 hours
-- [Sitemap](https://currentwire.us/sitemap.xml): all indexable pages
+- [Sitemap](https://currentwire.us/sitemap.xml): current stories, sections and coverage hubs
+- [Archive sitemap](https://currentwire.us/archive-sitemap.xml): every story URL ever published, including those no longer in the live ranking
+
+## Facts worth knowing before citing
+
+- Story URLs are permanent. A story that leaves the live ranking keeps its URL and still returns 200; when two stories turn out to cover the same event, the older URL permanently redirects to the surviving one. URLs are never deleted.
+- Each story page names every publisher that covered the event and links to their original reporting. The summary on the page is CurrentWire's; the reporting is theirs.
+- Dates on story pages are real: publication is when CurrentWire first published the page, and "latest coverage" is the newest source timestamp. Neither is ever set to the render time.
+- Rankings are computed from freshness, coverage breadth, source authority and momentum. The method is published at /methodology.
+- Category and topic assignment is automated and benchmarked against manually validated stories; it is not perfect. Corrections are handled at /corrections.

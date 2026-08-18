@@ -224,12 +224,29 @@ export async function getLatest(
   const current = Math.min(Math.max(1, Math.floor(page)), pageCount);
   const start = (current - 1) * limit;
   return {
-    articles: articles.slice(start, start + limit),
+    articles: withClusterSlugs(articles.slice(start, start + limit), dataset),
     total,
     page: current,
     pageCount,
     dataset,
   };
+}
+
+/**
+ * Attach each article's cluster slug so listing links resolve directly.
+ * Without it, cards link to /story/<clusterId>, which exists only as a 307
+ * alias — every crawl of a listing page costs an extra hop and the canonical
+ * URL never receives the link itself.
+ */
+export function withClusterSlugs(
+  articles: Article[],
+  dataset: NewsDataset,
+): Article[] {
+  const slugById = new Map(dataset.clusters.map((c) => [c.id, c.slug]));
+  return articles.map((article) => {
+    const slug = article.clusterId ? slugById.get(article.clusterId) : undefined;
+    return slug ? { ...article, clusterSlug: slug } : article;
+  });
 }
 
 /** Parse a 1-based ?page= value; anything invalid falls back to page 1. */
@@ -385,7 +402,12 @@ export async function getSourceStories(sourceSlug: string): Promise<{
   const sourceName = articles[0]?.source ?? null;
   const source =
     SOURCES.find((s) => slugify(s.name, 60) === sourceSlug) ?? null;
-  return { source, sourceName: sourceName ?? source?.name ?? null, articles, dataset };
+  return {
+    source,
+    sourceName: sourceName ?? source?.name ?? null,
+    articles: withClusterSlugs(articles, dataset),
+    dataset,
+  };
 }
 
 /** All sources that currently have at least one article, for /sources. */

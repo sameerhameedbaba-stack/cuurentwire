@@ -211,10 +211,13 @@ export function RankedStory({
   cluster,
   rank,
   showThumbnail = true,
+  eagerThumbnail = false,
 }: {
   cluster: StoryCluster;
   rank: number;
   showThumbnail?: boolean;
+  /** Above the fold on the ranked list — skip lazy loading for these. */
+  eagerThumbnail?: boolean;
 }) {
   return (
     <article className="group flex gap-4 border-b border-rule py-4 last:border-b-0">
@@ -258,6 +261,7 @@ export function RankedStory({
               category={cluster.category}
               aspect="4/3"
               sizes="112px"
+              eager={eagerThumbnail}
             />
           </Link>
         </div>
@@ -281,8 +285,11 @@ export function ArticleRow({ article }: { article: Article }) {
           <ContentTypeBadge contentType={article.contentType} />
         </div>
         <h3 className="mt-1 text-[0.9375rem] font-semibold leading-snug">
-          {article.clusterId ? (
-            <Link href={`/story/${article.clusterId}`} className="hover:text-brand-ink">
+          {article.clusterSlug || article.clusterId ? (
+            <Link
+              href={`/story/${article.clusterSlug ?? article.clusterId}`}
+              className="hover:text-brand-ink"
+            >
               <span className="story-link">{article.title}</span>
             </Link>
           ) : (

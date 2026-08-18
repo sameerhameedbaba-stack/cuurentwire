@@ -7,12 +7,19 @@ export function pageMetadata({
   description,
   path,
   noIndex = false,
+  noIndexFollow = false,
   rssPath,
 }: {
   title: string;
   description: string;
   path: string;
   noIndex?: boolean;
+  /**
+   * Keep links crawlable while the page itself stays out of the index. Used by
+   * out-of-range pagination, where the URL must not be indexed but the stories
+   * it links to must still be discovered.
+   */
+  noIndexFollow?: boolean;
   /** Feed for this page, advertised via <link rel="alternate"> for auto-discovery. */
   rssPath?: string;
 }): Metadata {
@@ -32,7 +39,11 @@ export function pageMetadata({
           }
         : {}),
     },
-    robots: noIndex ? { index: false, follow: false } : undefined,
+    robots: noIndex
+      ? { index: false, follow: false }
+      : noIndexFollow
+        ? { index: false, follow: true }
+        : undefined,
     openGraph: {
       title,
       description,

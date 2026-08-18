@@ -75,6 +75,13 @@ export interface Article {
   entities: string[];
   provider: string;
   clusterId?: string;
+  /**
+   * Canonical slug of the cluster this article belongs to, attached at query
+   * time (never persisted — the slug follows the cluster's current headline).
+   * Listing links use it so they point straight at /story/<slug> instead of
+   * the /story/<clusterId> alias, which only 307s there.
+   */
+  clusterSlug?: string;
   isMock: boolean;
 }
 

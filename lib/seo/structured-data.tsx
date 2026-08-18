@@ -175,6 +175,43 @@ export function ItemListJsonLd({
   );
 }
 
+/**
+ * ItemList for pages whose entries are not story clusters (the reverse-chron
+ * feed, the publisher index). Same shape as ItemListJsonLd; the caller
+ * supplies name/url pairs that must already be canonical, indexable URLs.
+ */
+export function LinkListJsonLd({
+  items,
+  path,
+  name,
+  startPosition = 1,
+}: {
+  items: { name: string; url: string }[];
+  path: string;
+  name: string;
+  startPosition?: number;
+}) {
+  return (
+    <JsonLd
+      data={{
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        name,
+        url: `${siteConfig.url}${path}`,
+        numberOfItems: items.length,
+        itemListElement: items.slice(0, 30).map((item, index) => ({
+          "@type": "ListItem",
+          position: startPosition + index,
+          name: item.name,
+          url: item.url.startsWith("http")
+            ? item.url
+            : `${siteConfig.url}${item.url}`,
+        })),
+      }}
+    />
+  );
+}
+
 export function BreadcrumbJsonLd({
   items,
 }: {

@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { getSourceStories } from "@/lib/news/queries";
 import { NOINDEX_FOLLOW, shouldIndexCollection } from "@/lib/seo/indexing";
 import { pageMetadata } from "@/lib/seo/metadata";
-import { BreadcrumbJsonLd } from "@/lib/seo/structured-data";
+import { BreadcrumbJsonLd, LinkListJsonLd } from "@/lib/seo/structured-data";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +48,16 @@ export default async function SourcePage({
           { name: "Sources", path: "/sources" },
           { name: sourceName, path: `/source/${slug}` },
         ]}
+      />
+      <LinkListJsonLd
+        name={`${sourceName} — Latest stories`}
+        path={`/source/${slug}`}
+        items={articles
+          .filter((article) => article.clusterSlug)
+          .map((article) => ({
+            name: article.title,
+            url: `/story/${article.clusterSlug}`,
+          }))}
       />
       <header className="border-b-2 border-ink pb-5 dark:border-rule-strong">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-ink">Source</p>

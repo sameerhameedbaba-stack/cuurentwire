@@ -11,6 +11,7 @@ import {
   type CountryFilter,
 } from "@/lib/news/queries";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { LinkListJsonLd } from "@/lib/seo/structured-data";
 
 export const dynamic = "force-dynamic";
 
@@ -40,11 +41,18 @@ export async function generateMetadata({
   const page = parsePageParam(first(params.page));
   // Country tabs canonicalize to the full feed (as before); deeper pages
   // get their own canonical so paginated content is indexed distinctly.
+  // Out-of-range pages get noindex,follow rather than a self-canonical: the
+  // body clamps to the last real page, so ?page=99 and ?page=5000 would
+  // otherwise each claim to be a distinct URL serving identical content.
+  const { pageCount } = await getLatest("all", PAGE_SIZE, page);
+  const inRange = page <= pageCount;
   return pageMetadata({
     title: page > 1 ? `Latest News — Page ${page}` : "Latest News",
     description:
       "The newest reporting across the United States, Canada and the world, in reverse chronological order.",
-    path: page > 1 ? `/latest?page=${page}` : "/latest",
+    path: inRange && page > 1 ? `/latest?page=${page}` : "/latest",
+    noIndexFollow: !inRange,
+    rssPath: "/rss",
   });
 }
 
@@ -82,6 +90,17 @@ export default async function LatestPage({
   return (
     <div className="mx-auto max-w-[900px] px-4 py-8 sm:px-6">
       <meta name="cw-dataset-version" content={dataset.datasetVersion} />
+      <LinkListJsonLd
+        name={page > 1 ? `Latest News — Page ${page}` : "Latest News"}
+        path={page > 1 ? `/latest?page=${page}` : "/latest"}
+        startPosition={(page - 1) * PAGE_SIZE + 1}
+        items={articles
+          .filter((article) => article.clusterSlug)
+          .map((article) => ({
+            name: article.title,
+            url: `/story/${article.clusterSlug}`,
+          }))}
+      />
       {/* Pagination discovery hints for crawlers (hoisted into <head>). */}
       {page > 1 ? (
         <link

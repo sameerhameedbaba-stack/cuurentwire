@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { bigrams, fnv1a, jaccard, significantTokens, slugify, stableId, truncate } from "@/lib/utils/text";
+import {
+  bigrams,
+  fnv1a,
+  jaccard,
+  metaDescription,
+  significantTokens,
+  slugify,
+  stableId,
+  truncate,
+} from "@/lib/utils/text";
 import { relativeTime } from "@/lib/utils/time";
 
 describe("slugify", () => {
@@ -71,5 +80,48 @@ describe("relativeTime", () => {
   });
   it("handles invalid input gracefully", () => {
     expect(relativeTime("garbage", now)).toBe("");
+  });
+});
+
+describe("metaDescription", () => {
+  it("returns short text unchanged", () => {
+    expect(metaDescription("A short summary.")).toBe("A short summary.");
+  });
+
+  it("keeps whole sentences instead of clipping mid-thought", () => {
+    const text =
+      "Residents began returning home on Monday. Roughly 1,200 properties were cleared for re-entry after crews finished inspecting every street in the evacuation zone.";
+    const out = metaDescription(text);
+    expect(out).toBe("Residents began returning home on Monday.");
+    expect(out.endsWith("…")).toBe(false);
+  });
+
+  it("packs as many complete sentences as fit", () => {
+    const text = "One two three. Four five six. " + "x".repeat(200) + ".";
+    const out = metaDescription(text);
+    expect(out).toBe("One two three. Four five six.");
+  });
+
+  it("falls back to ellipsis truncation when the first sentence is too long", () => {
+    const text = `${"word ".repeat(60)}ends here. Second sentence.`;
+    const out = metaDescription(text);
+    expect(out.length).toBeLessThanOrEqual(156);
+    expect(out.endsWith("…")).toBe(true);
+  });
+
+  it("never ends on a dangling connector before the ellipsis", () => {
+    const text = `${"alpha ".repeat(24)}- beta gamma delta epsilon zeta eta theta iota kappa lambda.`;
+    const out = metaDescription(text);
+    expect(out).not.toMatch(/[\s,;:\-–—]…$/);
+  });
+
+  it("collapses whitespace and handles empty input", () => {
+    expect(metaDescription("  spaced\n\nout  text.  ")).toBe("spaced out text.");
+    expect(metaDescription("   ")).toBe("");
+  });
+
+  it("respects a custom max length", () => {
+    const text = "First sentence here. Second sentence here. Third one here.";
+    expect(metaDescription(text, 25)).toBe("First sentence here.");
   });
 });
