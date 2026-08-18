@@ -1,0 +1,39 @@
+[
+  {
+    "date": "2026-08-18T14:28:22.298Z",
+    "base": "https://currentwire.us",
+    "strategy": "mobile",
+    "pages": [
+      {
+        "url": "https://currentwire.us/",
+        "field": null,
+        "lab": {
+          "lcpMs": 4502,
+          "cls": 0,
+          "tbtMs": 8,
+          "score": 75
+        }
+      },
+      {
+        "url": "https://currentwire.us/top-100",
+        "field": null,
+        "lab": {
+          "lcpMs": 3452,
+          "cls": 0.001,
+          "tbtMs": 2,
+          "score": 91
+        }
+      },
+      {
+        "url": "https://currentwire.us/story/trump-asks-supreme-court-to-allow-ballroom-work-to-continue-ccc5744182b11",
+        "field": null,
+        "lab": {
+          "lcpMs": 2306,
+          "cls": 0,
+          "tbtMs": 25,
+          "score": 96
+        }
+      }
+    ]
+  }
+]
