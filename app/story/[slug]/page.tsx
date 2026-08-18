@@ -42,6 +42,22 @@ import {
 // revalidates /story/[slug] after every new dataset as a faster bound.
 export const revalidate = 300;
 
+/**
+ * ISR only engages for a dynamic segment when generateStaticParams returns an
+ * array — "You must return an empty array from generateStaticParams ... in
+ * order to revalidate (ISR) paths at runtime"
+ * (node_modules/next/dist/docs/01-app/03-api-reference/04-functions/generate-static-params.md).
+ * Without it the `revalidate` above is inert: every request server-renders and
+ * answers `Cache-Control: private, no-cache, no-store`. Empty (not the story
+ * list) on purpose — prerendering 2,000+ archived stories at build time would
+ * blow up build duration for pages that are read once a month; each URL is
+ * cached on its first visit instead, and the cron's revalidatePath keeps them
+ * fresh.
+ */
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  return [];
+}
+
 interface StoryRequest {
   resolution: StoryResolution;
   /** Version of the live snapshot the cluster was read from (live hits only). */

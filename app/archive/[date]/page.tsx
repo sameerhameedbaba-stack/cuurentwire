@@ -10,6 +10,16 @@ import { BreadcrumbJsonLd, LinkListJsonLd } from "@/lib/seo/structured-data";
 // at most once per 30-minute refresh, so hourly re-renders are plenty.
 export const revalidate = 3600;
 
+/**
+ * Required for the `revalidate` above to do anything: a dynamic segment with
+ * no generateStaticParams is server-rendered on every request. Empty array =
+ * nothing prerendered at build, every day page ISR-cached on first visit.
+ * See app/story/[slug]/page.tsx for the doc reference.
+ */
+export async function generateStaticParams(): Promise<{ date: string }[]> {
+  return [];
+}
+
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /**

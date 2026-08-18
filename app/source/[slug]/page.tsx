@@ -13,6 +13,16 @@ import { BreadcrumbJsonLd, LinkListJsonLd } from "@/lib/seo/structured-data";
 // dataset so a fresh generation flips this page promptly.
 export const revalidate = 300;
 
+/**
+ * Required for the `revalidate` above to do anything: a dynamic segment with
+ * no generateStaticParams is server-rendered on every request. Empty array =
+ * nothing prerendered at build, every source hub ISR-cached on first visit.
+ * See app/story/[slug]/page.tsx for the doc reference.
+ */
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  return [];
+}
+
 export async function generateMetadata({
   params,
 }: {
