@@ -47,6 +47,18 @@ test.describe("ai search and indexnow surfaces", () => {
   });
 });
 
+test.describe("archive browse", () => {
+  test("/archive responds 200 with the archive heading", async ({ page }) => {
+    // The index renders (with an empty state) even without a database, so
+    // this holds on local runs where story_archive has no data.
+    const response = await page.goto("/archive");
+    expect(response?.status()).toBe(200);
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Archive" }),
+    ).toBeVisible();
+  });
+});
+
 test.describe("internal category bucket", () => {
   test("/general renders but is noindexed", async ({ page }) => {
     const response = await page.goto("/general");

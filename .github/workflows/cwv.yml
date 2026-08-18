@@ -1,0 +1,40 @@
+name: Core Web Vitals check
+
+# Weekly PSI/CrUX measurement (seo/BACKLOG.md item 19). The script exits 0
+# with a skip line until the PSI_API_KEY repo secret exists, so this
+# workflow is green-but-skipping until the owner adds the free key. With a
+# key it measures /, /top-100 and one story page (mobile strategy) and
+# commits data/cwv-history.json back.
+
+on:
+  schedule:
+    - cron: "17 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cwv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run CWV check
+        env:
+          PSI_API_KEY: ${{ secrets.PSI_API_KEY }}
+        run: node scripts/cwv-check.mjs
+      - name: Commit updated history
+        # The history file only exists once a keyed run has happened —
+        # keyless skip runs write nothing and commit nothing.
+        if: always()
+        run: |
+          if [ -f data/cwv-history.json ]; then
+            git config user.name "cwv-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add data/cwv-history.json
+            git diff --cached --quiet || git commit -m "chore: cwv history $(date -u +%F)"
+            git push
+          fi

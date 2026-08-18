@@ -19,7 +19,12 @@ import {
   getStoryArchiveExtras,
 } from "@/lib/database/archive";
 import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
-import { getClusterBySlugWithVersion, getRelatedClusters } from "@/lib/news/queries";
+import {
+  getClusterBySlugWithVersion,
+  getEntityClusterCounts,
+  getMoreInCategory,
+  getRelatedClusters,
+} from "@/lib/news/queries";
 import { resolveStoryRequest, type StoryResolution } from "@/lib/news/story-resolution";
 import { COUNTRY_LABELS, type StoryCluster } from "@/lib/news/types";
 import { entitySlug } from "@/lib/news/classification/entities";
@@ -173,7 +178,7 @@ export default async function StoryPage({
   // Archived stories can still surface related live coverage via entities;
   // the archive extras (update log + all-time source union) and earlier
   // coverage are best-effort (empty without a database).
-  const [related, archiveExtras, earlierCoverage] = await Promise.all([
+  const [related, archiveExtras, earlierCoverage, topicCounts] = await Promise.all([
     getRelatedClusters(cluster),
     getStoryArchiveExtras(cluster.id),
     findEarlierCoverage({
@@ -184,7 +189,22 @@ export default async function StoryPage({
       // be older than to count as earlier coverage.
       firstPublishedAt: cluster.firstPublishedAt,
     }),
+    getEntityClusterCounts(),
   ]);
+  // Excludes what Related coverage already shows, so it waits for `related` —
+  // still the same cached dataset, not an extra fetch.
+  const moreInCategory = await getMoreInCategory(
+    cluster,
+    related.map((c) => c.id),
+  );
+  // Chip hygiene: an "In this story" chip must lead somewhere. For a live
+  // story the current cluster itself contributes 1 to its entities' counts,
+  // so a chip needs a second live cluster; an archived story is absent from
+  // the live dataset, so any live match at all makes the topic page useful.
+  const minTopicClusters = isArchived ? 1 : 2;
+  const topicChips = cluster.entities.filter(
+    (entity) => (topicCounts.get(entitySlug(entity)) ?? 0) >= minTopicClusters,
+  );
   const history = archiveExtras.history;
   const lead = cluster.lead;
   const categoryDef = CATEGORIES[cluster.category];
@@ -354,14 +374,15 @@ export default async function StoryPage({
             <ShareActions url={storyUrl} title={cluster.title} />
           </div>
 
-          {/* Entities / topics */}
-          {cluster.entities.length > 0 ? (
+          {/* Entities / topics — only chips whose /topic page has coverage
+              beyond this story (see topicCounts above). */}
+          {topicChips.length > 0 ? (
             <div className="no-print mt-8">
               <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
                 In this story
               </h2>
               <ul className="mt-2 flex flex-wrap gap-1.5">
-                {cluster.entities.map((entity) => (
+                {topicChips.map((entity) => (
                   <li key={entity}>
                     <Link
                       href={`/topic/${entitySlug(entity)}`}
@@ -402,6 +423,21 @@ export default async function StoryPage({
                 {related.map((relatedCluster) => (
                   <div key={relatedCluster.id} className="py-2.5">
                     <HeadlineStory cluster={relatedCluster} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+          {moreInCategory.length > 0 ? (
+            <section aria-label={`More in ${categoryDef.label}`} className="mt-8">
+              <SectionHeader
+                title={`More in ${categoryDef.label}`}
+                href={categoryDef.path}
+              />
+              <div className="divide-y divide-rule">
+                {moreInCategory.map((categoryCluster) => (
+                  <div key={categoryCluster.id} className="py-2.5">
+                    <HeadlineStory cluster={categoryCluster} />
                   </div>
                 ))}
               </div>

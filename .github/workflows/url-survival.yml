@@ -43,3 +43,4 @@ jobs:
         run: |
           gh workflow enable surface-coherence.yml || true
           gh workflow enable seo-health.yml || true
+          gh workflow enable cwv.yml || true

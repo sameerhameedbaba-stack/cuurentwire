@@ -305,6 +305,47 @@ export async function getRelatedClusters(
     .map((r) => r.cluster);
 }
 
+/**
+ * One pass over the live dataset: how many clusters mention each entity,
+ * keyed by topic slug (same slugging as getTopicStories, so a count of N
+ * here means /topic/<slug> lists N live stories). Story pages use this to
+ * drop "In this story" chips that would land the reader on a topic page
+ * showing nothing beyond the story they came from — one Map for the whole
+ * page, never a per-chip query.
+ */
+export async function getEntityClusterCounts(): Promise<Map<string, number>> {
+  const dataset = await getDataset();
+  const counts = new Map<string, number>();
+  for (const cluster of dataset.clusters) {
+    // Entities are deduped per cluster upstream, but two distinct entities
+    // can share a slug — a Set keeps each cluster counted at most once.
+    const slugs = new Set(cluster.entities.map((entity) => slugify(entity, 60)));
+    for (const slug of slugs) counts.set(slug, (counts.get(slug) ?? 0) + 1);
+  }
+  return counts;
+}
+
+/**
+ * Compact crawl path out of a story page: the top-ranked live clusters from
+ * the same PRIMARY category, minus the current story and anything already
+ * shown in Related coverage. Same curated gate as the category pages' Top
+ * modules (a press release without independent coverage never fills an
+ * editorial slot), and served from the already-cached dataset — no extra
+ * queries. Dataset order IS ranking order, so a plain slice is "top ranked".
+ */
+export async function getMoreInCategory(
+  cluster: StoryCluster,
+  excludeIds: Iterable<string> = [],
+  limit = 4,
+): Promise<StoryCluster[]> {
+  const dataset = await getDataset();
+  const excluded = new Set([cluster.id, ...excludeIds]);
+  return dataset.clusters
+    .filter(isCuratedEligible)
+    .filter((c) => c.category === cluster.category && !excluded.has(c.id))
+    .slice(0, limit);
+}
+
 export interface SearchFilters {
   country?: CountryFilter;
   category?: CategoryId | "all";

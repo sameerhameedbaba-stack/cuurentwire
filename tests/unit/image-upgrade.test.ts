@@ -25,6 +25,33 @@ describe("upgradeImageUrl", () => {
     expect(upgradeImageUrl(large)).toBe(large);
   });
 
+  it("rewrites CBS 60x60 signed thumbnails to the original asset", () => {
+    // Live-verified 2026-08-18: swapping the size 404s (the 32-hex segment
+    // signs one rendition), but dropping /thumbnail/<size>/<hex>/ serves the
+    // original image on assets1/2/3.cbsnewsstatic.com.
+    expect(
+      upgradeImageUrl(
+        "https://assets2.cbsnewsstatic.com/hub/i/r/2026/08/18/7e95546a-4955-45f4-8541-6b31f30ad0e6/thumbnail/60x60/d006f34b9787183ffa7b36998ae056e8/gettyimages-2288809425.jpg",
+      ),
+    ).toBe(
+      "https://assets2.cbsnewsstatic.com/hub/i/r/2026/08/18/7e95546a-4955-45f4-8541-6b31f30ad0e6/gettyimages-2288809425.jpg",
+    );
+  });
+
+  it("leaves card-sized CBS renditions and unexpected CBS shapes alone", () => {
+    const large =
+      "https://assets1.cbsnewsstatic.com/hub/i/r/2026/08/18/abc/thumbnail/1200x630/d006f34b9787183ffa7b36998ae056e8/pic.jpg";
+    expect(upgradeImageUrl(large)).toBe(large);
+    // No signature segment — not the verified shape, pass through untouched.
+    const unsigned =
+      "https://assets1.cbsnewsstatic.com/hub/i/r/2026/08/18/abc/thumbnail/60x60/pic.jpg";
+    expect(upgradeImageUrl(unsigned)).toBe(unsigned);
+    // CBS-lookalike path on another host stays untouched.
+    const otherHost =
+      "https://example.com/hub/i/r/2026/08/18/abc/thumbnail/60x60/d006f34b9787183ffa7b36998ae056e8/pic.jpg";
+    expect(upgradeImageUrl(otherHost)).toBe(otherHost);
+  });
+
   it("never touches signed Guardian URLs or unknown hosts", () => {
     const guardian =
       "https://i.guim.co.uk/img/media/0443f4/470_0_3333_2667/master/3333.jpg?width=700&quality=85&s=96de5a";

@@ -4,7 +4,16 @@ import { Wordmark } from "./Wordmark";
 
 const COLUMNS: { heading: string; links: readonly { label: string; href: string }[] }[] = [
   { heading: "News", links: siteConfig.navigation.footer.news },
-  { heading: "Explore", links: siteConfig.navigation.footer.explore },
+  {
+    heading: "Explore",
+    // Archive is appended in code: it is the sitewide HTML crawl path into
+    // the permanent story archive, shipped alongside these components rather
+    // than the brand config.
+    links: [
+      ...siteConfig.navigation.footer.explore,
+      { label: "Archive", href: "/archive" },
+    ],
+  },
   { heading: "CurrentWire", links: siteConfig.navigation.footer.company },
   { heading: "Legal", links: siteConfig.navigation.footer.legal },
 ];

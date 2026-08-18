@@ -66,6 +66,18 @@ async function runArchiveSchemaMigration(db: Db): Promise<boolean> {
       sql`create index if not exists story_archive_entities_gin on story_archive using gin (entities)`,
     );
   }
+  // Serves the /archive day-bucket GROUP BY, the day-range browse pages and
+  // the sitemap's ORDER BY first_seen_at — partial, since merged rows are
+  // excluded from every one of those reads.
+  const firstSeen = await db.execute(sql`
+    select 1 from pg_indexes
+    where tablename = 'story_archive' and indexname = 'story_archive_first_seen_idx'
+  `);
+  if (firstSeen.rows.length === 0) {
+    await db.execute(
+      sql`create index if not exists story_archive_first_seen_idx on story_archive (first_seen_at) where merged_into_cluster_id is null`,
+    );
+  }
   return true;
 }
 
@@ -472,6 +484,105 @@ export async function listArchivedStoriesForSitemap(
     }));
   } catch (error) {
     logger.warn("database.archive_sitemap_query_failed", {
+      error: describeDbError(error),
+    });
+    return [];
+  }
+}
+
+/** One UTC day bucket of the archive index: the date and how many stories it holds. */
+export interface ArchiveDaySummary {
+  /** YYYY-MM-DD (UTC day of first_seen_at). */
+  day: string;
+  storyCount: number;
+}
+
+/** One story row on a dated archive browse page — a text-only title link. */
+export interface ArchiveDayStory {
+  slug: string;
+  title: string;
+  category: string;
+  sourceCount: number;
+  firstSeenAt: string;
+}
+
+/** ~13 months of day buckets; revisit alongside archive-sitemap sharding. */
+const ARCHIVE_BROWSE_DAYS_LIMIT = 400;
+/** Comfortably above the ~300-480 stories the archive gains per day. */
+const ARCHIVE_BROWSE_STORIES_LIMIT = 1000;
+const ARCHIVE_DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Date-bucketed archive browse — the HTML crawl path into the permanent
+ * archive. Both /archive surfaces share this ONE read function:
+ *
+ * Without a day: the UTC day buckets that contain archived, non-merged
+ * stories, newest first — a single aggregate query the caller runs at most
+ * once per ISR revalidation, never per request.
+ * With a day (YYYY-MM-DD): that day's stories as plain link rows, newest
+ * first, via a first_seen_at range predicate (index-compatible; note that
+ * first_seen_at has no index yet — see seo/BACKLOG.md).
+ *
+ * Days bucket on first_seen_at — when CurrentWire first archived the story,
+ * its real publication time — so a story lives on exactly one day page and
+ * past days never change. Empty on ANY failure or bad input (no DB,
+ * malformed day, query error) — never throws; the pages render an empty
+ * state for an empty index and 404 an empty day.
+ */
+export function getArchiveBrowse(): Promise<ArchiveDaySummary[]>;
+export function getArchiveBrowse(day: string): Promise<ArchiveDayStory[]>;
+export async function getArchiveBrowse(
+  day?: string,
+): Promise<ArchiveDaySummary[] | ArchiveDayStory[]> {
+  const db = getDb();
+  if (!db) return [];
+  try {
+    if (day === undefined) {
+      const dayBucket = sql<string>`to_char(${storyArchive.firstSeenAt} at time zone 'UTC', 'YYYY-MM-DD')`;
+      const rows = await db
+        .select({ day: dayBucket, storyCount: sql<number>`count(*)::int` })
+        .from(storyArchive)
+        .where(isNull(storyArchive.mergedIntoClusterId))
+        .groupBy(dayBucket)
+        // The fixed-width YYYY-MM-DD text sorts chronologically.
+        .orderBy(desc(dayBucket))
+        .limit(ARCHIVE_BROWSE_DAYS_LIMIT);
+      return rows.map((row) => ({
+        day: row.day,
+        storyCount: Number(row.storyCount),
+      }));
+    }
+    if (!ARCHIVE_DAY_RE.test(day)) return [];
+    const start = new Date(`${day}T00:00:00.000Z`);
+    if (Number.isNaN(start.getTime())) return [];
+    const end = new Date(start.getTime() + 86_400_000);
+    const rows = await db
+      .select({
+        slug: storyArchive.slug,
+        title: storyArchive.title,
+        category: storyArchive.category,
+        sourceCount: storyArchive.sourceCount,
+        firstSeenAt: storyArchive.firstSeenAt,
+      })
+      .from(storyArchive)
+      .where(
+        and(
+          isNull(storyArchive.mergedIntoClusterId),
+          gte(storyArchive.firstSeenAt, start),
+          lt(storyArchive.firstSeenAt, end),
+        ),
+      )
+      .orderBy(desc(storyArchive.firstSeenAt))
+      .limit(ARCHIVE_BROWSE_STORIES_LIMIT);
+    return rows.map((row) => ({
+      slug: row.slug,
+      title: row.title,
+      category: row.category,
+      sourceCount: row.sourceCount,
+      firstSeenAt: row.firstSeenAt.toISOString(),
+    }));
+  } catch (error) {
+    logger.warn("database.archive_browse_failed", {
       error: describeDbError(error),
     });
     return [];

@@ -7,6 +7,7 @@ import {
   hasConflictingAction,
   hasSharedAction,
   idfWeight,
+  isDeathEventPair,
   isStrongFingerprint,
   MIN_SHARED_RARE_STEMS,
   sharedRareStems,
@@ -205,13 +206,35 @@ export function decidePair(ctx: ClusterContext, i: number, j: number): PairDecis
     (strong &&
       fingerprintContainment(ctx.prints[i], ctx.prints[j], ctx.stats) >=
         containmentBar &&
-      headlineSim >= FINGERPRINT_MIN_HEADLINE_SIMILARITY);
+      headlineSim >= FINGERPRINT_MIN_HEADLINE_SIMILARITY) ||
+    // Same-event DEATH rule (isDeathEventPair): explicit death signal on
+    // BOTH sides + shared person anchor + no non-death action disagreement.
+    // The person's name is often the only shared rare material between
+    // "dies at 82" and "Obituary: … remembered as …" coverage, which sits
+    // below every containment bar — the live four-page split. Only the
+    // surface-overlap sanity floor applies; no category margin, mirroring
+    // the strong-fingerprint paths.
+    (isDeathPair(ctx, i, j) && headlineSim >= FINGERPRINT_MIN_HEADLINE_SIMILARITY);
   return {
     merge,
     headlineSimilarity: headlineSim,
     fingerprintSimilarity: fpSim,
     strongFingerprint: strong,
   };
+}
+
+/**
+ * Death-event pair with the 48h publication window enforced locally: the
+ * clustering caller already windows candidate pairs, but this rule is
+ * deliberately strong enough to merge name-only-anchor coverage, so it
+ * re-checks time itself and never outlives the window through any caller.
+ */
+function isDeathPair(ctx: ClusterContext, i: number, j: number): boolean {
+  return (
+    Math.abs(ctx.feats[i].time - ctx.feats[j].time) <=
+      TIME_WINDOW_HOURS * 3_600_000 &&
+    isDeathEventPair(ctx.prints[i], ctx.prints[j], ctx.stats)
+  );
 }
 
 /** Union-find over article indices. */
@@ -418,6 +441,10 @@ function memberSupportsMember(ctx: ClusterContext, i: number, j: number): boolea
   if (articleSimilarity(ctx.feats[i], ctx.feats[j]) >= MIN_LEAD_SIMILARITY) {
     return true;
   }
+  // Mirror the death-event merge path: an obituary variant admitted on the
+  // name anchor alone must not be evicted by validation for the same low
+  // surface overlap the rule exists to bridge.
+  if (isDeathPair(ctx, i, j)) return true;
   if (!isStrongFingerprint(ctx.prints[i], ctx.prints[j], ctx.stats)) {
     return false;
   }

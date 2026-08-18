@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-08-18T07:23:34.662Z",
+  "ranAt": "2026-08-18T13:44:37.892Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -13,23 +13,24 @@
   "stats": {
     "pagesFetched": 14,
     "pageErrors": [],
-    "cards": 498,
-    "cardsWithId": 498,
-    "cardsWithCategory": 422,
-    "cardsWithCountry": 192,
-    "cardsWithSources": 34,
-    "storyPagesFetched": 202,
+    "cards": 508,
+    "cardsWithId": 508,
+    "cardsWithCategory": 434,
+    "cardsWithCountry": 200,
+    "cardsWithSources": 50,
+    "storyPagesFetched": 216,
     "storyErrors": [],
-    "uniqueClusters": 101
+    "uniqueClusters": 110
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.847,
-    "country": 0.386,
-    "sources": 0.068
+    "category": 0.854,
+    "country": 0.394,
+    "sources": 0.098
   },
   "versionsSeen": [
-    "20260818T072106Z-f3f1a4"
+    "20260818T134359Z-4d4d46",
+    "20260818T134522Z-38113f"
   ],
   "violations": [],
   "warningsTotal": 0,

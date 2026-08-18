@@ -164,7 +164,7 @@ plumbing (which the health check shows is clean).
     API returns 403 without a key. Until one exists there is no lab or field
     Core Web Vitals data; this run measured TTFB, transfer weight and asset
     strategy instead, which cannot substitute for LCP/INP/CLS.
-    Status: BLOCKED(user)
+    Status: automation shipped, awaiting PSI_API_KEY repo secret (owner, 2 min)
 
 ## Shipped 2026-08-18 (weekly deep run) — all verified live after deploy
 

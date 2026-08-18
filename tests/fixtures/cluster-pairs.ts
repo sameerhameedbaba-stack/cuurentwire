@@ -1470,4 +1470,75 @@ export const CLUSTER_PAIRS: ClusterPair[] = [
   { a: "Drought forces Marrow Valley to tap emergency reservoir", b: "Textile mill conversion brings 200 apartments to Ulverdale", label: "DIFFERENT_EVENT" },
   { a: "Referee shortage delays start of Foxdale youth league", b: "Fennwich museum acquires long-lost Ferren seascape painting", label: "DIFFERENT_EVENT" },
   { a: "Ostenholm airport unveils expanded international terminal", b: "Retiring judge Hale Morrow reflects on 25 years on bench", label: "DIFFERENT_EVENT" },
+
+  // ════════════════════════════════════════════════════════════════════
+  // DEATH / OBITUARY coverage (round-10 live defect: one person's death
+  // splitting into several story pages because publishers phrase it apart —
+  // "dies at 82", "dead at 82", "Obituary: … remembered", "passes away" —
+  // and the name is often the only shared rare anchor).
+  // ════════════════════════════════════════════════════════════════════
+  // One death, three phrasings — all pairwise combinations MUST merge.
+  {
+    a: "Dovan Reck, pioneering heart surgeon, dies at 82",
+    b: "Renowned heart surgeon Dovan Reck dead at 82",
+    label: "SAME_EVENT",
+    mustMerge: true,
+  },
+  {
+    a: "Dovan Reck, pioneering heart surgeon, dies at 82",
+    b: "Obituary: Dovan Reck remembered as mentor to generations of surgeons",
+    label: "SAME_EVENT",
+    mustMerge: true,
+  },
+  {
+    a: "Renowned heart surgeon Dovan Reck dead at 82",
+    b: "Obituary: Dovan Reck remembered as mentor to generations of surgeons",
+    label: "SAME_EVENT",
+    mustMerge: true,
+  },
+  // "passes away" phrasing: the bare verb sits in the legislation group, so
+  // this pair regression-tests the passes-away normalization.
+  {
+    a: "Folk singer Mira Quessel passes away at 77",
+    b: "Mira Quessel, whose songs defined an era, dies at 77",
+    label: "SAME_EVENT",
+    mustMerge: true,
+  },
+  // Mourning phrasing on one side.
+  {
+    a: "Nation mourns poet Halvern Oss, dead at 91",
+    b: "Poet Halvern Oss dies at 91 after long illness",
+    label: "SAME_EVENT",
+  },
+  // Obituary long-form with descriptors.
+  {
+    a: "Obituary: Architect Senna Vail, who reshaped the Averston skyline, dies at 88",
+    b: "Averston architect Senna Vail dead at 88",
+    label: "SAME_EVENT",
+  },
+  // Guards. A death report and a same-name story WITHOUT a death signal
+  // must stay apart (the living-person trap).
+  {
+    a: "Actor Corvin Dail dies at 68",
+    b: "Corvin Dail retrospective planned at Marnholt film festival",
+    label: "RELATED_EVENT",
+  },
+  {
+    a: "Chef Rilo Vasquez dead at 59 after sudden illness",
+    b: "Rilo Vasquez to open third Delverton restaurant this spring",
+    label: "RELATED_EVENT",
+  },
+  // Two DIFFERENT people dying the same day: no shared name anchor.
+  {
+    a: "Sculptor Bren Malloway dies at 84",
+    b: "Historian Essa Vint dies at 84",
+    label: "DIFFERENT_EVENT",
+  },
+  // Two deadly events at the same place on the same day: the shared death
+  // marker must not bridge them — their non-death actions disagree.
+  {
+    a: "Two dead after houseboat fire on Lake Merrin",
+    b: "Three dead in Lake Merrin powerboat collision near marina",
+    label: "DIFFERENT_EVENT",
+  },
 ];

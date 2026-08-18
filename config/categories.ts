@@ -65,6 +65,11 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "appeals court", "federal judge", "special election", "midterms",
       "socialist", "socialism", "progressives", "maga", "press secretary",
       "deportation",
+      // Live misfile round (Fauci/Sen. Johnson filed under health):
+      // congressional-oversight vocabulary must outweigh a single medical
+      // name. No bare "hearing" — it collides with hearing loss/aids.
+      "subpoena", "senate committee", "house committee", "committee hearing",
+      "congressional hearing", "oversight hearing", "testify", "testimony",
     ],
     // "general" (the GNews catch-all topic) must never imply politics.
     providerAliases: ["politics", "nation"],
@@ -89,6 +94,10 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       // Real-headline benchmark round.
       "treasury yield", "funding round", "valuation", "minority stake",
       "plant closure", "assembly plant", "automaker", "chairman", "rent",
+      // Live misfile round ("Nvidia discloses $21B stake in SpaceX" filed
+      // under science): a disclosed stake is a markets story. The idiom
+      // senses ("at stake", "high-stakes") are cancelled by negatives below.
+      "stake",
     ],
     providerAliases: ["business", "economy", "finance", "money", "markets"],
   },
@@ -279,10 +288,13 @@ export const ENTITY_CATEGORY_SIGNALS: Record<string, CategoryId> = {
   "federal reserve": "business", "s&p 500": "business", "dow jones": "business",
   "nasdaq": "business", "bank of canada": "business", "wall street": "business",
   "opec": "business", "imf": "business",
-  // Space and research
-  "spacex": "science", "nasa": "science", "james webb": "science",
-  "canadian space agency": "science", "virgin galactic": "science",
-  "blue origin": "science", "rocket lab": "science",
+  // Space and research. SpaceX/Blue Origin/Virgin Galactic are NOT here:
+  // they are investor-news regulars, so they moved to
+  // CONDITIONAL_ENTITY_SIGNALS and only imply science alongside actual
+  // space-activity vocabulary. ("Rocket Lab" stays — its own name already
+  // carries the activity word.)
+  "nasa": "science", "james webb": "science",
+  "canadian space agency": "science", "rocket lab": "science",
   // Big Tech. No "intel": it collides with the intelligence shorthand
   // ("US intel officials") that is common in politics/world coverage.
   "openai": "technology", "microsoft": "technology", "google": "technology",
@@ -306,6 +318,35 @@ export const ENTITY_CATEGORY_SIGNALS: Record<string, CategoryId> = {
 };
 
 /**
+ * Entity signals that only fire alongside supporting context. Used for
+ * companies whose coverage routinely spans sections — SpaceX headlines are
+ * as often investor news ("Nvidia discloses $21B stake in SpaceX", a live
+ * /science misfile) as space news. The entity is matched like a regular
+ * entity signal, but scores only when at least one `requires` keyword
+ * co-occurs anywhere in title + description.
+ */
+export interface ConditionalEntitySignal {
+  entity: string;
+  category: CategoryId;
+  /** Keywords (word-boundary + optional plural) that unlock the signal. */
+  requires: string[];
+}
+
+/** Vocabulary that marks a story as being about actual space activity. */
+const SPACE_ACTIVITY_CONTEXT = [
+  "launch", "launches", "launched", "liftoff", "orbit", "orbital", "rocket",
+  "mission", "crew", "crewed", "astronaut", "satellite", "spacecraft",
+  "space station", "starship", "starlink", "booster", "capsule",
+  "spaceflight", "spaceport", "lunar", "moon", "mars", "space",
+];
+
+export const CONDITIONAL_ENTITY_SIGNALS: ConditionalEntitySignal[] = [
+  { entity: "spacex", category: "science", requires: SPACE_ACTIVITY_CONTEXT },
+  { entity: "blue origin", category: "science", requires: SPACE_ACTIVITY_CONTEXT },
+  { entity: "virgin galactic", category: "science", requires: SPACE_ACTIVITY_CONTEXT },
+];
+
+/**
  * Negative keywords per category — conservative kill list for obvious false
  * positives (e.g. player-trade sports headlines matching business "trade").
  * A hit subtracts the weight of a title keyword hit.
@@ -316,11 +357,33 @@ export const NEGATIVE_KEYWORDS: Partial<Record<CategoryId, string[]>> = {
     "box office", "trade deadline", "touchdown", "home run",
     // "bank"/"union"/"labour" keyword collisions outside finance.
     "west bank", "food bank", "labour party", "labor party", "european union",
+    // Idiom senses of the "stake" keyword ("what's at stake in the
+    // election", "high-stakes hearing") are not markets coverage.
+    "at stake", "high-stakes", "the stakes",
   ],
   politics: ["quarterback", "playoff"],
-  // "outbreak" is a health keyword; a tornado outbreak is weather.
-  health: ["tornado outbreak"],
+  health: [
+    // "outbreak" is a health keyword; a tornado outbreak is weather.
+    "tornado outbreak",
+    // Live misfile: the Centcom USS Lincoln story filed under health on a
+    // lone "mental health" hit. A military frame means the story's subject
+    // is defense, not medicine.
+    "centcom", "uss", "warship", "aircraft carrier", "carrier strike group",
+  ],
 };
+
+/**
+ * Financial-frame tie-break. When the top score is an exact tie that
+ * includes business and one of these terms appears in the text, the story
+ * is about the money — business wins the tie instead of falling to the
+ * general bucket. Live misfile: "Nvidia discloses $21B stake in SpaceX"
+ * (business/technology entity tie; the $21B stake IS the story).
+ * Deliberately excludes "shares" — as a verb it fires on celebrity copy.
+ */
+export const BUSINESS_TIEBREAK_KEYWORDS = [
+  "stake", "investment", "valuation", "acquisition", "merger",
+  "takeover", "buyout",
+];
 
 /**
  * Feed-section priors: domains whose feeds are dedicated to one section.

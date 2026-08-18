@@ -11,9 +11,13 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteConfig.url;
   // /search is intentionally absent: it is noindex and robots-disallowed.
+  // /archive/<date> pages are also absent by design: this route renders per
+  // request, and listing the day pages would cost a Neon aggregate on every
+  // sitemap fetch. They are all one link from /archive (listed below), and
+  // every story they link to is already in archive-sitemap.xml.
   const staticPaths = [
     "", "/latest", "/top-100", "/us", "/canada", "/topics",
-    "/sources", "/about", "/news-desk", "/methodology",
+    "/sources", "/archive", "/about", "/news-desk", "/methodology",
     "/editorial-standards", "/corrections", "/contact", "/privacy",
     "/terms", "/copyright",
   ];

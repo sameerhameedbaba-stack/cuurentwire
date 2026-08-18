@@ -5,6 +5,12 @@ import {
   pickCountry,
   pickLead,
 } from "@/lib/news/clustering/cluster";
+import {
+  buildCorpusStats,
+  buildFingerprint,
+  hasDeathSignal,
+  isDeathEventPair,
+} from "@/lib/news/clustering/fingerprint";
 import { normalizeArticle } from "@/lib/news/normalization/normalize";
 import {
   clearPreviousDataset,
@@ -208,6 +214,77 @@ describe("clusterArticles category decoupling", () => {
   });
 });
 
+describe("clusterArticles death-event merging (same-person obituary variants)", () => {
+  // Unrelated fillers give the small test corpus realistic IDF texture, the
+  // way the eval end-to-end test does.
+  const fillers = () => [
+    makeArticle("Riverton Rangers beat Harbor City Falcons in season opener", "outlet-w.com", 60),
+    makeArticle("Governor Hale vetoes school funding bill after weeks of debate", "outlet-x.com", 90),
+    makeArticle("Stock markets close mixed as investors weigh earnings reports", "outlet-y.com", 100),
+    makeArticle("Wildfire crews respond to active fires across the provincial interior", "outlet-z.com", 45),
+  ];
+
+  it("clusters four death phrasings of one person into one story", () => {
+    const deaths = [
+      makeArticle("Tommy John, pioneering surgery namesake, dies at 82", "outlet-a.com", 40),
+      makeArticle("Baseball great Tommy John dead at 82", "outlet-b.com", 30),
+      makeArticle("Obituary: Tommy John remembered as mentor to generations of pitchers", "outlet-c.com", 20),
+      makeArticle("Tommy John passes away at 82", "outlet-d.com", 10),
+    ];
+    const clusters = clusterArticles([...deaths, ...fillers()], NOW);
+    const death = clusters.filter((c) =>
+      c.articles.some((a) => a.title.includes("Tommy John")),
+    );
+    expect(death).toHaveLength(1);
+    expect(death[0].articles).toHaveLength(4);
+    expect(death[0].sourceCount).toBe(4);
+    // Fillers stay singletons.
+    expect(clusters).toHaveLength(5);
+  });
+
+  it("keeps two DIFFERENT deaths on the same day separate", () => {
+    const articles = [
+      makeArticle("Legendary coach Marla Venn dies at 90", "outlet-a.com", 40),
+      makeArticle("Marla Venn, transformative basketball coach, dead at 90", "outlet-b.com", 30),
+      makeArticle("Author Peteris Kalv dies at 90", "outlet-c.com", 25),
+      makeArticle("Peteris Kalv, prizewinning novelist, dead at 90", "outlet-d.com", 15),
+      ...fillers(),
+    ];
+    const clusters = clusterArticles(articles, NOW);
+    const venn = clusters.filter((c) => c.articles.some((a) => a.title.includes("Marla Venn")));
+    const kalv = clusters.filter((c) => c.articles.some((a) => a.title.includes("Peteris Kalv")));
+    expect(venn).toHaveLength(1);
+    expect(venn[0].articles).toHaveLength(2);
+    expect(kalv).toHaveLength(1);
+    expect(kalv[0].articles).toHaveLength(2);
+    expect(venn[0].id).not.toBe(kalv[0].id);
+  });
+
+  it("does not merge a death report with a living-person story sharing the name", () => {
+    const articles = [
+      makeArticle("Tommy John, pioneering surgery namesake, dies at 82", "outlet-a.com", 40),
+      makeArticle("Tommy John surgery increasingly common among teenage pitchers", "outlet-b.com", 30),
+      ...fillers(),
+    ];
+    const clusters = clusterArticles(articles, NOW);
+    for (const cluster of clusters) {
+      const titles = cluster.articles.map((a) => a.title);
+      expect(
+        titles.some((t) => t.includes("dies")) &&
+          titles.some((t) => t.includes("teenage pitchers")),
+      ).toBe(false);
+    }
+  });
+
+  it("does not merge same-person death coverage published more than 48h apart", () => {
+    const articles = [
+      makeArticle("Tommy John, pioneering surgery namesake, dies at 82", "outlet-a.com", 10),
+      makeArticle("Obituary: Tommy John remembered as mentor to generations", "outlet-b.com", 60 * 60),
+    ];
+    expect(clusterArticles(articles, NOW)).toHaveLength(2);
+  });
+});
+
 describe("clusterArticles anti-chaining validation", () => {
   it("evicts members far from the cluster lead into singletons", () => {
     // A and C each resemble bridge B, but A and C barely resemble each other.
@@ -347,6 +424,58 @@ describe("clusterArticles previous-run id continuity", () => {
     expect(winner?.id).toBe(mintedFromA);
     expect(loser?.id).toBe(`c${stableId(`cluster:${articleA.canonicalUrl}#2`)}`);
     expect(loser?.slug.endsWith(loser!.id)).toBe(true);
+  });
+});
+
+describe("death-event fingerprint rule", () => {
+  it("hasDeathSignal: explicit death phrasings only", () => {
+    expect(hasDeathSignal("Tommy John dies at 82")).toBe(true);
+    expect(hasDeathSignal("Baseball great Tommy John dead at 82")).toBe(true);
+    expect(hasDeathSignal("Tommy John passes away at 82")).toBe(true);
+    expect(hasDeathSignal("Obituary: Tommy John remembered as mentor")).toBe(true);
+    expect(hasDeathSignal("Nation mourns Tommy John")).toBe(true);
+    expect(hasDeathSignal("Tommy John retires from coaching")).toBe(false);
+    expect(hasDeathSignal("Bank extends loan deadline for farmers")).toBe(false);
+  });
+
+  it("isDeathEventPair: same name merges, different names and living-person stories do not", () => {
+    const titles = [
+      "Tommy John dies at 82",
+      "Tommy John passes away at 82",
+      "Obituary: Tommy John remembered as mentor and pioneer",
+      "Vera Lindale dies at 82",
+      "Tommy John surgery increasingly common among teenage pitchers",
+      "Riverton Rangers beat Harbor City Falcons in season opener",
+      "Governor Hale vetoes school funding bill after weeks of debate",
+    ];
+    const prints = titles.map((t) => buildFingerprint(t, []));
+    const stats = buildCorpusStats(prints);
+
+    // All death phrasings of one person pair up — including the pair whose
+    // ONLY anchor is the leading "Tommy John" name (position-0 name pair)
+    // and the passes-away wording.
+    expect(isDeathEventPair(prints[0], prints[1], stats)).toBe(true);
+    expect(isDeathEventPair(prints[0], prints[2], stats)).toBe(true);
+    expect(isDeathEventPair(prints[1], prints[2], stats)).toBe(true);
+    // Two different people dying the same day: no shared name anchor.
+    expect(isDeathEventPair(prints[0], prints[3], stats)).toBe(false);
+    // Death signal required on BOTH sides (living-person story).
+    expect(isDeathEventPair(prints[0], prints[4], stats)).toBe(false);
+    // Unrelated stories, no death signal at all.
+    expect(isDeathEventPair(prints[5], prints[6], stats)).toBe(false);
+  });
+
+  it("isDeathEventPair: two deadly events at one place disagree on the act", () => {
+    const prints = [
+      "Two dead after houseboat fire on Lake Merrin",
+      "Three dead in Lake Merrin powerboat collision near marina",
+      "Two dead after houseboat blaze on Lake Merrin, marina closed",
+    ].map((t) => buildFingerprint(t, []));
+    const stats = buildCorpusStats(prints);
+    // fire vs collision: the shared death marker must not bridge them.
+    expect(isDeathEventPair(prints[0], prints[1], stats)).toBe(false);
+    // fire vs blaze: same act, genuinely the same event — the rule may fire.
+    expect(isDeathEventPair(prints[0], prints[2], stats)).toBe(true);
   });
 });
 

@@ -313,18 +313,19 @@ describe("ensureArchiveSchema", () => {
     const execute = vi.fn(async () => ({ rows: [{ ok: 1 }] }));
     getDbMock.mockReturnValue({ execute });
     await expect(ensureArchiveSchema()).resolves.toBe(true);
-    // One existence check for the column, one for the index — no DDL.
-    expect(execute).toHaveBeenCalledTimes(2);
+    // Existence checks only (history column, entities gin index,
+    // first_seen partial index) — no DDL.
+    expect(execute).toHaveBeenCalledTimes(3);
     await expect(ensureArchiveSchema()).resolves.toBe(true);
-    expect(execute).toHaveBeenCalledTimes(2);
+    expect(execute).toHaveBeenCalledTimes(3);
   });
 
   it("issues the ALTER and CREATE INDEX when the checks find nothing", async () => {
     const execute = vi.fn(async () => ({ rows: [] }));
     getDbMock.mockReturnValue({ execute });
     await expect(ensureArchiveSchema()).resolves.toBe(true);
-    // check + alter + check + create index.
-    expect(execute).toHaveBeenCalledTimes(4);
+    // check + alter, then check + create for each of the two indexes.
+    expect(execute).toHaveBeenCalledTimes(6);
   });
 
   it("resolves false on failure and stays disabled for that db", async () => {

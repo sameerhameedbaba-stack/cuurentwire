@@ -1,6 +1,8 @@
 import {
+  BUSINESS_TIEBREAK_KEYWORDS,
   CATEGORIES,
   CATEGORY_IDS,
+  CONDITIONAL_ENTITY_SIGNALS,
   ENTITY_CATEGORY_SIGNALS,
   NEGATIVE_KEYWORDS,
   type CategoryId,
@@ -10,8 +12,11 @@ import {
  * Deterministic keyword-scored category classifier.
  * Title matches weigh more than description matches; an exact provider
  * category alias is a strong signal but never the only one. Entity signals
- * (word-boundary matched) weigh like a title keyword hit; feed-section
- * priors are a weak nudge; negative keywords kill obvious false positives.
+ * (word-boundary matched) weigh like a title keyword hit; conditional
+ * entity signals additionally need a context keyword to co-occur;
+ * feed-section priors are a weak nudge; negative keywords kill obvious
+ * false positives; an exact top tie that includes business resolves to
+ * business when a financial-frame keyword is present.
  */
 
 export interface CategoryInput {
@@ -137,6 +142,18 @@ export function classifyCategory(input: CategoryInput): CategoryResult {
     }
   }
 
+  // Conditional entity signals — the entity alone is ambiguous (SpaceX in
+  // investor news), so it scores only when a required context keyword
+  // co-occurs anywhere in the text.
+  for (const signal of CONDITIONAL_ENTITY_SIGNALS) {
+    if (!boundaryRegex(signal.entity).test(combined)) continue;
+    if (!signal.requires.some((keyword) => keywordRegex(keyword).test(combined))) {
+      continue;
+    }
+    scores.set(signal.category, (scores.get(signal.category) ?? 0) + ENTITY_WEIGHT);
+    matchedSignals.push(`${signal.category}:entity:${signal.entity}`);
+  }
+
   // Negative keywords — subtract and drop categories pushed to zero or below.
   for (const [id, negatives] of Object.entries(NEGATIVE_KEYWORDS) as [
     CategoryId,
@@ -168,7 +185,23 @@ export function classifyCategory(input: CategoryInput): CategoryResult {
 
   const sorted = [...scores.entries()].sort((a, b) => b[1] - a[1]);
   const topScore = sorted[0][1];
-  const tiedTop = sorted.filter(([, s]) => s === topScore).map(([id]) => id);
+  let tiedTop = sorted.filter(([, s]) => s === topScore).map(([id]) => id);
+
+  // Financial-frame tie-break: an exact top tie that includes business
+  // while a money keyword is present is a money story ("Nvidia discloses
+  // $21B stake in SpaceX" ties business/technology on entity signals —
+  // the stake is the story). Business wins instead of falling to general.
+  if (tiedTop.length > 1 && topScore >= MIN_PRIMARY_SCORE && tiedTop.includes("business")) {
+    const frame = BUSINESS_TIEBREAK_KEYWORDS.find((keyword) =>
+      keywordRegex(keyword).test(combined),
+    );
+    if (frame) {
+      const index = sorted.findIndex(([id]) => id === "business");
+      sorted.unshift(...sorted.splice(index, 1));
+      tiedTop = ["business"];
+      matchedSignals.push(`business:tiebreak:${frame}`);
+    }
+  }
 
   // Ambiguity guards. A specific category needs a minimum score, and an
   // exact tie between different categories must never be decided by map

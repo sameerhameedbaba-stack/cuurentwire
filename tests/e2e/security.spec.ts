@@ -17,14 +17,26 @@ test.describe("admin auth", () => {
   // Production-mode gating of /admin/status (404 without the cookie) is not
   // testable against the local dev server — dev access is intentionally open.
   // We can still assert the cookie behavior of the auth route itself.
-  test("/admin/auth?key=wrong redirects without setting the admin cookie", async ({
+  test("GET /admin/auth ignores ?key= and never authenticates", async ({
     request,
   }) => {
+    // The secret moved out of the URL: GET renders the sign-in form only.
     const response = await request.get("/admin/auth?key=wrong", {
       maxRedirects: 0,
     });
-    expect(response.status()).toBe(307);
-    expect(response.headers()["location"]).toContain("/admin/status");
+    expect(response.status()).toBe(200);
+    const setCookie = response.headers()["set-cookie"] ?? "";
+    expect(setCookie).not.toContain("cw-admin");
+  });
+
+  test("POST /admin/auth with a wrong key sets no admin cookie", async ({
+    request,
+  }) => {
+    const response = await request.post("/admin/auth", {
+      form: { key: "wrong" },
+      maxRedirects: 0,
+    });
+    expect(response.status()).toBe(303);
     const setCookie = response.headers()["set-cookie"] ?? "";
     expect(setCookie).not.toContain("cw-admin");
   });

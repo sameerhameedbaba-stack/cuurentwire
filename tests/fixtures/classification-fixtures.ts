@@ -76,6 +76,12 @@ const POLITICS: CategoryFixture[] = [
   c("City council byelection draws record advance ballots", "politics"),
   c("Minister faces questions over procurement contract", "politics"),
   c("Conservative Party picks new leader after long convention", "politics"),
+  // audit: appeared on /health — covid/vaccine vocabulary outweighed the
+  // actual subject, a Senate investigation.
+  c("Fauci declines to sit for interview with Sen. Ron Johnson", "politics", true, {
+    description:
+      "The Senate committee said Fauci refused to testify about the government's covid vaccine response and could face a subpoena.",
+  }),
 ];
 
 const BUSINESS: CategoryFixture[] = [
@@ -113,6 +119,23 @@ const BUSINESS: CategoryFixture[] = [
     description:
       "The monthly jobs report showed hiring moderating while unemployment held steady.",
   }),
+  // audit: appeared on /science — the SpaceX entity signal alone dragged a
+  // markets story there.
+  c("Nvidia discloses $21B stake in SpaceX", "business", true, {
+    description:
+      "The chipmaker's securities filing revealed the stake, making it one of the largest outside investors in Elon Musk's company.",
+  }),
+  // audit-flavor: the Paramount/Warner prediction-market story appeared on
+  // /science ("Warner Bros. Discovery" fired the lone "discovery" keyword).
+  c(
+    "Prediction markets favor Paramount in takeover battle for Warner Bros. Discovery",
+    "business",
+    true,
+    {
+      description:
+        "Traders on prediction market platforms put the odds of a Paramount acquisition of Warner Bros. Discovery above 70 percent.",
+    },
+  ),
 ];
 
 const TECHNOLOGY: CategoryFixture[] = [
@@ -381,6 +404,15 @@ const GENERAL: CategoryFixture[] = [
   c("Morning briefing: your Tuesday roundup", "general"),
   c("The week in review", "general"),
   c("Quiz: how closely did you follow the headlines?", "general"),
+  // audit: the Centcom USS Lincoln defense story appeared on /health on a
+  // lone "mental health" hit. The taxonomy has no defense section, so with
+  // the military frame killing the health score it lands in general —
+  // low-confidence because a reader could also argue for politics.
+  c(
+    "Centcom extends USS Abraham Lincoln deployment as Navy monitors sailors' mental health",
+    "general",
+    false,
+  ),
 ];
 
 export const categoryFixtures: CategoryFixture[] = [

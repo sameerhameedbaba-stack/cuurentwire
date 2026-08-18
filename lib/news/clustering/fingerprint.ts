@@ -105,7 +105,13 @@ function undouble(t: string): string {
 const ACTION_GROUPS: string[][] = [
   ["released", "releases", "release", "freed", "frees", "liberated"],
   ["kidnapped", "kidnaps", "kidnap", "kidnapping", "abducted", "abducts", "abduction"],
-  ["killed", "kills", "dead", "dies", "died", "death", "deaths", "slain", "fatal", "fatally"],
+  // Death coverage vocabulary sits in ONE group on purpose: obituary-style
+  // headlines ("Obituary: …", "remembered as", "nation mourns") describe the
+  // same act as "dies at 82", and keeping them in separate groups would make
+  // an obituary CONFLICT with the death report it covers. Publisher-specific
+  // obituary boilerplate becoming a marker also keeps it out of the stem
+  // pool, where it would dilute containment for name-anchored pairs.
+  ["killed", "kills", "dead", "dies", "died", "death", "deaths", "slain", "fatal", "fatally", "obituary", "obituaries", "obit", "mourns", "mourned", "mourning", "remembered"],
   ["arrested", "arrests", "detained", "detains", "apprehended", "custody"],
   // "captures/captured" also sit in the seize group — "captures the title"
   // vs "captured by rebels" is genuine polysemy (multi-group membership).
@@ -242,14 +248,50 @@ export interface EventFingerprint {
    * anchors a strong fingerprint must share.
    */
   proper: Set<string>;
+  /** True when the headline carries an explicit death/obituary signal. */
+  death: boolean;
+  /**
+   * Adjacent capitalized token pairs ("tommy john"), stemmed — full
+   * two-token proper names for the death-event rule. Position 0 counts:
+   * obituary headlines routinely LEAD with the person's name, where the
+   * single-token `proper` heuristic is blind.
+   */
+  properPairs: Set<string>;
+}
+
+/**
+ * Death/obituary signal on a headline. Deliberately explicit phrasings only
+ * (no "killed"/"loses battle" metaphors): the death-event rule this feeds is
+ * a targeted fix for obituary coverage splitting, so its trigger vocabulary
+ * stays narrow.
+ */
+const DEATH_SIGNAL = /\b(?:die[ds]|dead|deaths?|passe[ds]\s+away|obituar(?:y|ies)|obit|remembered|mourn(?:s|ed|ing)?)\b/i;
+
+export function hasDeathSignal(title: string): boolean {
+  return DEATH_SIGNAL.test(title);
+}
+
+/**
+ * "passes away"/"passed away" rewritten to "dies"/"died" BEFORE token
+ * mapping: "passes" alone sits in the approves~passes legislation group, so
+ * without this a "passes away at 82" headline carries a legislative action
+ * marker that CONFLICTS with the "dies at 82" wording of the same event —
+ * disqualifying the strong fingerprint exactly where it is needed.
+ */
+function normalizeDeathPhrases(title: string): string {
+  return title
+    .replace(/\bpasses\s+away\b/gi, "dies")
+    .replace(/\bpassed\s+away\b/gi, "died");
 }
 
 /** Build the event fingerprint for one headline (+ its extracted entities). */
 export function buildFingerprint(title: string, entities: string[]): EventFingerprint {
+  const death = hasDeathSignal(title);
+  const matchTitle = normalizeDeathPhrases(title);
   const canonical = new Set<string>();
   const stems = new Set<string>();
   const actions = new Set<string>();
-  for (const token of significantTokens(title)) {
+  for (const token of significantTokens(matchTitle)) {
     const stem = stemToken(token);
     if (WEAK_TOKENS.has(stem)) continue;
     const markers = ACTION_GROUP_INDEX.get(stem);
@@ -265,7 +307,7 @@ export function buildFingerprint(title: string, entities: string[]): EventFinger
   }
 
   const proper = new Set<string>();
-  const words = title.split(/\s+/);
+  const words = matchTitle.split(/\s+/);
   for (let i = 1; i < words.length; i++) {
     if (!/^[A-Z]/.test(words[i])) continue;
     for (const token of significantTokens(words[i])) {
@@ -280,7 +322,26 @@ export function buildFingerprint(title: string, entities: string[]): EventFinger
     }
   }
 
-  return { canonical, stems, actions, proper };
+  // Adjacent capitalized pairs, position 0 included. Both halves must be
+  // plain fingerprint stems (not action markers, not weak tokens), so
+  // "Tommy John" qualifies while "John Dies" does not.
+  const properPairs = new Set<string>();
+  const addPair = (first: string[], second: string[]) => {
+    if (first.length !== 1 || second.length !== 1) return;
+    const s1 = stemToken(first[0]);
+    const s2 = stemToken(second[0]);
+    if (stems.has(s1) && stems.has(s2)) properPairs.add(`${s1} ${s2}`);
+  };
+  for (let i = 0; i + 1 < words.length; i++) {
+    if (!/^[A-Z]/.test(words[i]) || !/^[A-Z]/.test(words[i + 1])) continue;
+    addPair(significantTokens(words[i]), significantTokens(words[i + 1]));
+  }
+  for (const entity of entities) {
+    const tokens = significantTokens(entity);
+    if (tokens.length === 2) addPair([tokens[0]], [tokens[1]]);
+  }
+
+  return { canonical, stems, actions, proper, death, properPairs };
 }
 
 /** Document frequencies of canonical tokens across the current run corpus. */
@@ -417,4 +478,70 @@ export function isStrongFingerprint(
   if (rare.length < MIN_SHARED_RARE_STEMS) return false;
   if (!rare.some((stem) => a.proper.has(stem) || b.proper.has(stem))) return false;
   return !hasConflictingAction(a, b);
+}
+
+/** Marker of the death action group ("killed" leads it). */
+const DEATH_ACTION_MARKER = `act:${stemToken("killed")}`;
+
+/** Minimum shared rare proper-noun stems for the death-event anchor. */
+export const DEATH_ANCHOR_MIN_SHARED_PROPER = 2;
+
+/**
+ * Same-event DEATH rule (live defect: one person's death splitting into
+ * several story pages because publishers phrase it apart — "dies at 82",
+ * "dead at 82", "Obituary: … remembered" — and the person's NAME is often
+ * the only shared rare anchor, below every containment bar). A pair is a
+ * death-event pair when ALL hold:
+ *  1. BOTH headlines carry an explicit death signal (dies/dead/obituary/
+ *     mourns/…, see DEATH_SIGNAL) — a death report never pairs with a
+ *     living-person story this way;
+ *  2. they share a proper-noun anchor: at least
+ *     DEATH_ANCHOR_MIN_SHARED_PROPER shared rare capitalized stems, or one
+ *     shared full two-token name (properPairs, both stems rare) — two
+ *     DIFFERENT people dying the same day share neither;
+ *  3. besides the death marker itself they do not DISAGREE on the act: two
+ *     deadly events in one place ("houseboat fire on Lake Merrin" vs "Lake
+ *     Merrin powerboat collision") both carry the death marker, and only
+ *     their remaining action markers tell them apart.
+ * The 48h publication window is enforced by the caller, like every other
+ * pair rule here.
+ */
+export function isDeathEventPair(
+  a: EventFingerprint,
+  b: EventFingerprint,
+  stats: CorpusStats,
+): boolean {
+  if (!a.death || !b.death) return false;
+
+  // (3) non-death action disagreement: both sides name another act from the
+  // table and share none of them — different deadly events, not rewordings.
+  const extraA = [...a.actions].filter((m) => m !== DEATH_ACTION_MARKER);
+  const extraB = [...b.actions].filter((m) => m !== DEATH_ACTION_MARKER);
+  if (extraA.length > 0 && extraB.length > 0 && !extraA.some((m) => extraB.includes(m))) {
+    return false;
+  }
+
+  // (2a) two shared rare capitalized stems.
+  let sharedProper = 0;
+  for (const stem of a.stems) {
+    if (!b.stems.has(stem)) continue;
+    if ((stats.df.get(stem) ?? 1) > stats.rareDfMax) continue;
+    if (a.proper.has(stem) || b.proper.has(stem)) sharedProper++;
+  }
+  if (sharedProper >= DEATH_ANCHOR_MIN_SHARED_PROPER) return true;
+
+  // (2b) one shared full two-token name, both halves rare — catches
+  // headlines that LEAD with the name, where capitalization at position 0
+  // makes the single-token proper heuristic blind.
+  for (const pair of a.properPairs) {
+    if (!b.properPairs.has(pair)) continue;
+    const [s1, s2] = pair.split(" ");
+    if (
+      (stats.df.get(s1) ?? 1) <= stats.rareDfMax &&
+      (stats.df.get(s2) ?? 1) <= stats.rareDfMax
+    ) {
+      return true;
+    }
+  }
+  return false;
 }

@@ -170,6 +170,79 @@ describe("classifyCategory", () => {
     expect(prior.primary).toBe("technology");
     expect(prior.scores.technology!).toBeLessThan(explicit.scores.technology!);
   });
+
+  // Live misfile round: single entity signals and single weak keywords must
+  // not outweigh the story's actual subject.
+
+  it("audit regression: Nvidia's SpaceX stake is business, never science", () => {
+    // Live: appeared on /science — the SpaceX entity signal alone dragged a
+    // markets story there. Without space-activity context the entity stays
+    // silent, and the financial frame resolves the business/technology tie.
+    const bare = classifyCategory({ title: "Nvidia discloses $21B stake in SpaceX" });
+    expect(bare.primary).toBe("business");
+    expect(bare.matchedSignals).not.toContain("science:entity:spacex");
+
+    const withDescription = classifyCategory({
+      title: "Nvidia discloses $21B stake in SpaceX",
+      description:
+        "The chipmaker's securities filing revealed the stake, making it one of the largest outside investors in Elon Musk's company.",
+    });
+    expect(withDescription.primary).toBe("business");
+  });
+
+  it("audit regression: Paramount/Warner prediction-market story is business", () => {
+    // Live: appeared on /science — "Warner Bros. Discovery" fired the lone
+    // science keyword "discovery" against a deal story.
+    const result = classifyCategory({
+      title:
+        "Prediction markets favor Paramount in takeover battle for Warner Bros. Discovery",
+      description:
+        "Traders on prediction market platforms put the odds of a Paramount acquisition of Warner Bros. Discovery above 70 percent.",
+    });
+    expect(result.primary).toBe("business");
+    expect(result.primary).not.toBe("science");
+  });
+
+  it("audit regression: Centcom USS Lincoln story is not health", () => {
+    // Live: appeared on /health on a lone "mental health" hit against a
+    // clearly military story. The military frame kills the health score;
+    // with no defense section the honest homes are politics or general.
+    const result = classifyCategory({
+      title:
+        "Centcom extends USS Abraham Lincoln deployment as Navy monitors sailors' mental health",
+    });
+    expect(result.primary).not.toBe("health");
+    expect(["politics", "general"]).toContain(result.primary);
+  });
+
+  it("audit regression: Fauci congressional-hearing story is politics, not health", () => {
+    // Live: appeared on /health — a single medical name plus covid/vaccine
+    // vocabulary outweighed the actual subject, a Senate investigation.
+    const result = classifyCategory({
+      title: "Fauci declines to sit for interview with Sen. Ron Johnson",
+      description:
+        "The Senate committee said Fauci refused to testify about the government's covid vaccine response and could face a subpoena.",
+    });
+    expect(result.primary).toBe("politics");
+  });
+
+  it("still classifies space-activity SpaceX coverage as science", () => {
+    // The conditional entity must keep firing when the story IS about space.
+    const launch = classifyCategory({
+      title: "SpaceX launches 24 Starlink satellites from Cape Canaveral",
+    });
+    expect(launch.primary).toBe("science");
+    expect(launch.matchedSignals).toContain("science:entity:spacex");
+  });
+
+  it("keeps idiomatic 'at stake'/'high-stakes' out of business", () => {
+    // The new "stake" keyword must not drag political idioms into markets.
+    const result = classifyCategory({
+      title: "What's at stake in Tuesday's special election",
+    });
+    expect(result.primary).toBe("politics");
+    expect(result.scores.business ?? 0).toBe(0);
+  });
 });
 
 describe("extractEntities", () => {
