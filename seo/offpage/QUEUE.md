@@ -8,6 +8,10 @@ to LEDGER.md.
 Paste-ready standing texts (name, tagline, descriptions, category, email) are
 in PLAYBOOK.md — copy from there wherever a form asks.
 
+Progress 2026-08-19 (live session): items 1, 2, 3 SUBMITTED (see LEDGER.md);
+item 5 drafted in Gmail — owner sends; item 4 still open. Owner's preferred
+contact email for future submissions: support@currentwire.us.
+
 ## This week (~30–40 minutes total)
 
 ### 1. Bing Webmaster Tools — HIGH value, ~10 min
