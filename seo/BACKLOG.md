@@ -1,7 +1,8 @@
 # SEO Backlog
 
 Re-prioritized 2026-08-18 from the weekly deep run (evidence in
-`reports/2026-08-18-weekly.md`; daily-loop evidence in `reports/2026-08-18.md`).
+`reports/2026-08-18-weekly.md`; daily-loop evidence in `reports/2026-08-18.md`);
+statuses re-verified live on 2026-08-19 (`reports/2026-08-19.md`).
 Statuses: OPEN / SHIPPED / BLOCKED(user). Verify a fix live before flipping it
 to SHIPPED.
 
@@ -39,7 +40,16 @@ plumbing (which the health check shows is clean).
 
 ## Open — high value
 
-1. **Story pages are internal-link dead ends.** Measured 2026-08-18 across 40
+1. ~~**Story pages are internal-link dead ends.**~~ **SHIPPED** — fixed by the
+   "Finish line" app commit (79e77e5, 2026-08-18) with the "More in
+   {Category}" rail, exactly the separate honestly-labelled rail this item
+   specified. Verified live 2026-08-19 on 3 of 3 sampled story pages: each
+   renders "More in ..." and **4 outbound links to other stories** (was 0 on
+   39 of 40 pages a day earlier). "Related coverage" is unchanged and still
+   absent from story pages, which is the intended round-8 precision bar.
+   Original text kept below for the measurement record.
+
+   Measured 2026-08-18 across 40
    live + archived story pages: **39 of 40 (97%) have zero outbound links to
    any other story**, and 10 of 40 have no topic links either. The "Related
    coverage" rail does not render at all — the heading is absent from every
@@ -54,17 +64,34 @@ plumbing (which the health check shows is clean).
    today" — that always renders 4-6 links chosen by category and recency. It
    makes no relatedness claim, so it cannot be wrong. Needs a unit test
    asserting every story page renders at least 4 internal story links.
-   Impact: the largest remaining structural item. Status: OPEN
+   Impact: the largest remaining structural item. Status: SHIPPED (79e77e5,
+   verified live 2026-08-19: 4 story links on 3 of 3 sampled pages)
 
-2. **No CDN caching on HTML.** Every page still serves
-   `private, no-cache, no-store, max-age=0, must-revalidate`;
-   `X-Vercel-Cache: MISS` on 25/25 cache-busted fetches this week. TTFB
-   medians measured 2026-08-18: home 627ms, /latest 590ms, /top-100 559ms,
-   story 557ms, topic hub 538ms. Content only changes when the 30-min cron
-   runs, so ISR (`revalidate = 300`) is a free LCP-floor and crawl-budget win.
-   Do it carefully: verify `unstable_cache` interplay, and re-check archived
-   stories, alias 307s and merge 308s after the change.
-   Impact: LCP floor sitewide, and the biggest single CWV lever available.
+2. **No CDN caching on HTML — dynamic routes.** **SHIPPED 2026-08-19.**
+   Root cause found this run: `/story/[slug]`, `/topic/[slug]`,
+   `/source/[slug]` and `/archive/[date]` all *declared*
+   `export const revalidate`, and the cron already called `revalidatePath` on
+   three of them — but Next 16 only applies ISR to a dynamic segment when the
+   page **also exports `generateStaticParams`**. Without it the config line is
+   inert; all four sat in the build's ƒ (Dynamic) bucket and served
+   `private, no-cache, no-store` with `X-Vercel-Cache: MISS` on every fetch,
+   including repeat fetches of the same URL. Each now returns `[]` (nothing
+   prerendered at build; every URL cached on its first visit). Verified live
+   after deploy: all four answer `X-Nextjs-Prerender: 1` +
+   `public, max-age=0, must-revalidate`, `X-Vercel-Cache: HIT` on the second
+   fetch, and **warm story TTFB 110–125 ms against the 557 ms median measured
+   2026-08-18** (topic hub 102–126 ms vs 538 ms). Nothing regressed:
+   `url-survival.mjs` checked 1,286 published URLs with 0 dead and 118
+   redirects all resolving 200, merge 308s still 308, clusterId aliases still
+   307, unknown story/source/date still 404, `seo-health.mjs` all green.
+   Guarded by `tests/unit/isr-route-config.test.ts`.
+
+2b. **`/top-100` and `/latest` are still `force-dynamic`** (measured
+   2026-08-19: `no-store`, `X-Vercel-Cache: MISS`, TTFB 378–456 ms), because
+   both read `searchParams` for filters and pagination. The unfiltered
+   canonical URLs are the ones that matter for indexing, so the fix is a
+   cached path for the no-params case, not removing the filters. Smaller and
+   fiddlier than item 2 was; measure before assuming it is worth it.
    Status: OPEN
 
 3. **Single-source story pages are thin.** ~170-210 words of main-content text
@@ -92,13 +119,16 @@ plumbing (which the health check shows is clean).
    2026-08-18 daily crawl; classifier bug — fix belongs in `lib/news/` with
    benchmark coverage, per
    `MEMORY/2026-08-15-category-dedup-already-engineered.md`):
-   - `/story/lakers-governor-jeanie-buss-says-siblings-cannot-sell-familys-stake-to-bob-iger-cdf300f9d9eea`
-     filed under **politics** (ranked #7 on `/politics`) — "governor" is an NBA
-     team-ownership title, a false positive on a role word.
+   - ~~`/story/lakers-governor-jeanie-buss-...-cdf300f9d9eea` filed under
+     **politics**~~ — FIXED by the classifier changes in 79e77e5; re-checked
+     live 2026-08-19, it now reports `"articleSection":"Business"` (an
+     ownership-stake dispute — correct).
    - `/story/theban-tomb-reveals-how-egyptian-burial-trends-evolved-in-time-c4e2e50b44255`
-     filed under **technology** (ranked #8 on `/technology`) — it is archaeology.
+     still filed under **technology** (re-checked live 2026-08-19) — it is
+     archaeology. No archaeology/history signal exists in the classifier, so
+     it lands on technology by elimination; `science` is the honest bucket.
    Impact: poisons the exact topical signal category pages rank on.
-   Status: OPEN
+   Status: OPEN (one of two fixed)
 
 6. **"Most covered" exists as data but not as a page.** `?sort=most-covered`
    canonicalizes to `/top-100` (verified live), so CurrentWire's most
@@ -117,12 +147,13 @@ plumbing (which the health check shows is clean).
    singular/plural and containment variants and drop headline-fragment bigrams.
    Fix in entity normalization with benchmark coverage. Status: OPEN
 
-8. **Archived stories have no HTML browse path.** 1,520 of 1,720 permanent
-   story URLs appear only in `archive-sitemap.xml` — no page on the site links
-   to them except the occasional topic hub. Sitemap-only discovery works, but a
-   dated or topic-based archive index would make them properly reachable (and
-   pairs naturally with item 1).
-   Impact: crawl depth on 88% of the URL inventory. Status: OPEN
+8. ~~**Archived stories have no HTML browse path.**~~ **SHIPPED** — `/archive`
+   (day buckets by month, linked from the footer) and `/archive/<date>` landed
+   in 79e77e5. Verified live 2026-08-19: `/archive` 200 with a self-canonical,
+   `/archive/2026-08-18` 200 with BreadcrumbList + ItemList JSON-LD (both
+   parse) and **623 outbound story links** on that one day page. Every
+   permanent story URL is now reachable by real HTML links, not only sitemaps.
+   Status: SHIPPED (79e77e5, verified live 2026-08-19)
 
 ## Open — polish
 
@@ -165,6 +196,17 @@ plumbing (which the health check shows is clean).
     Core Web Vitals data; this run measured TTFB, transfer weight and asset
     strategy instead, which cannot substitute for LCP/INP/CLS.
     Status: automation shipped, awaiting PSI_API_KEY repo secret (owner, 2 min)
+
+## Shipped 2026-08-19 (daily loop) — verified live after deploy
+
+- **ISR was inert on every dynamic route** (backlog item 2). Four routes
+  declared `export const revalidate` but exported no `generateStaticParams`,
+  which Next 16 requires before ISR engages on a dynamic segment — so
+  `/story/[slug]`, `/topic/[slug]`, `/source/[slug]` and `/archive/[date]`
+  server-rendered every request under `no-store`. All four now return `[]`
+  and flip from ƒ (Dynamic) to ● (SSG) in the build output. Live evidence and
+  the full no-regression sweep are recorded against item 2 above.
+  `tests/unit/isr-route-config.test.ts` is the standing guard. SHIPPED
 
 ## Shipped 2026-08-18 (weekly deep run) — all verified live after deploy
 
