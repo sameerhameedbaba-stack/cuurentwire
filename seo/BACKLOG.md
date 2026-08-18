@@ -8,6 +8,35 @@ to SHIPPED.
 Ranking rule used here: how much indexable, crawlable, citable value the fix
 creates per unit of risk. Items measured this week carry their measurement.
 
+## GSC index review — 2026-08-18 (owner asked; read via Search Console UI)
+
+State as of GSC data dated 8/14-8/15: **88 indexed, 185 not indexed, 4 reasons.**
+Verdict: three of the four reasons are correct behavior; the fourth is the known
+strategic work, plus one real bug found and fixed the same day.
+
+- "Excluded by noindex" (23) — all `/topic/*` hubs below the thin-collection
+  bar. Intentional by design; as hubs accumulate stories they flip indexable
+  and into the sitemap. No action.
+- "Page with redirect" (13) — merge 308s, `/story/<clusterId>` 307 aliases, www.
+  Correct behavior. The /latest fix (weekly run) stops feeding new alias URLs
+  to Google, so this decays on its own. No action.
+- "Not found 404" (2) — two story URLs from before the permanent archive
+  existed (2026-08-15 era, one a since-dissolved bad merge; both verified 404
+  live). Nothing to restore — data was never archived; Google drops these.
+  No action.
+- "Crawled - currently not indexed" (147) — the real one. Sampled examples
+  break into: (a) `/story/<clusterId>` alias URLs — feeding stopped by the
+  weekly /latest fix; (b) filtered `/top-100?...` variants that canonicalize
+  away — correct; (c) indexable topic hubs Google hasn't chosen yet — normal
+  for a young site; (d) **thin single-source and press-release story pages —
+  this IS backlog items 1, 3 and 4**; (e) `/general` — a real bug, fixed:
+  the internal low-confidence bucket rendered indexable with a self-canonical.
+  Now noindexed (e2e-tested). SHIPPED 2026-08-18.
+
+Bottom line: 88/273 indexed at 3 weeks old with zero backlinks is a normal
+young-site ratio; the lever that moves it is items 1, 3 and 4 below, not
+plumbing (which the health check shows is clean).
+
 ## Open — high value
 
 1. **Story pages are internal-link dead ends.** Measured 2026-08-18 across 40

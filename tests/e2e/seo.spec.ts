@@ -47,6 +47,18 @@ test.describe("ai search and indexnow surfaces", () => {
   });
 });
 
+test.describe("internal category bucket", () => {
+  test("/general renders but is noindexed", async ({ page }) => {
+    const response = await page.goto("/general");
+    expect(response?.status()).toBe(200);
+    const robots = await page
+      .locator('meta[name="robots"]')
+      .first()
+      .getAttribute("content");
+    expect(robots).toContain("noindex");
+  });
+});
+
 test.describe("discover directives", () => {
   test("home page allows large image previews", async ({ page }) => {
     await page.goto("/");

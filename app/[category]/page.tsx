@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CATEGORIES, CATEGORY_IDS, isCategoryId } from "@/config/categories";
+import {
+  CATEGORIES,
+  CATEGORY_IDS,
+  PUBLIC_CATEGORY_IDS,
+  isCategoryId,
+} from "@/config/categories";
 import { ArticleRow, HeroStory, StandardStory, HeadlineStory } from "@/components/news/cards";
 import { LastUpdated } from "@/components/news/LastUpdated";
 import { SectionHeader } from "@/components/news/SectionHeader";
@@ -25,12 +30,17 @@ export async function generateMetadata({
   // notFound() here (before streaming starts) so the response is a real 404.
   if (!isCategoryId(category)) notFound();
   const def = CATEGORIES[category];
+  // "general" is the internal low-confidence bucket: it renders if visited
+  // directly but must never be indexed or promoted (it is absent from nav,
+  // sitemap and feeds — see PUBLIC_CATEGORY_IDS).
+  const isPublic = (PUBLIC_CATEGORY_IDS as readonly string[]).includes(category);
   return pageMetadata({
     title: def.label,
     description: def.description,
     path: def.path,
+    noIndex: !isPublic,
     // Every public category has a matching feed (app/rss/[feed]).
-    rssPath: `/rss/${category}`,
+    rssPath: isPublic ? `/rss/${category}` : undefined,
   });
 }
 
