@@ -69,6 +69,32 @@ learn something. See `BACKLOG.md` for prioritized work and `reports/` for run lo
   competitor content-gap snapshot (free crawls + web search), llms.txt refresh,
   BACKLOG re-prioritization.
 
+## Search engine coverage map (verified 2026-08-19 — keep current)
+
+How every engine gets CurrentWire's results. The owner's rule: results must
+reach ALL search engines, not just Google, at $0 and zero recurring effort.
+
+| Engine | How results arrive | Status |
+|---|---|---|
+| Google (Search + News + Discover) | GSC-verified; sitemap.xml + news-sitemap.xml + archive-sitemap.xml submitted; News eligibility is automatic (no submission program exists anymore) | ✅ automatic |
+| Bing | Bing Webmaster Tools verified (GSC import, 2026-08-19), 3 sitemaps submitted; IndexNow pings every new story within ~30 min | ✅ automatic |
+| DuckDuckGo | Sources results from Bing — covered by the Bing work above; no own submission program | ✅ via Bing |
+| Yahoo | Powered by Bing | ✅ via Bing |
+| Yandex, Naver, Seznam | Consume the IndexNow protocol; our single ping to api.indexnow.org distributes to all participating engines | ✅ automatic |
+| Brave Search | Independent index built from user browsing (Web Discovery); no submission program exists — nothing to do | ✅ nothing possible |
+| AI engines (ChatGPT, Perplexity, Claude, Gemini) | robots.txt allows all crawlers (verified: User-Agent * / Allow /); llms.txt published; citable permanent URLs | ✅ automatic |
+
+Maintenance: the daily seo-health check already verifies robots.txt, the three
+sitemaps, and the IndexNow key file — any regression here fails loudly.
+
+## Owner time budget (standing rule, set 2026-08-19)
+
+The owner spends AT MOST 15-20 minutes per week on SEO, all of it on the
+weekly off-page checklist (Thursday run). Everything else must be fully
+automatic or it doesn't ship. Checklists are capped at 2-4 actions; an empty
+week is reported honestly as "nothing this week". Owner submission email:
+support@currentwire.us.
+
 ## Verification method (before marking anything done)
 
 Fetch the live URL after deploy and check the actual output: parse JSON-LD, validate
