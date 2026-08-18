@@ -31,37 +31,66 @@ Verify a fix live before flipping it to SHIPPED.
    and/or delay indexing until a second source or original summary exists.
    Impact: aggregator thin-content ceiling — the #1 strategic risk. Status: OPEN
 
+5. **Category misclassification on live section pages** (found 2026-08-18 crawl,
+   classifier/clustering bug — fix in `lib/news/`, with benchmark coverage, per
+   `MEMORY/2026-08-15-category-dedup-already-engineered.md`):
+   - `/story/lakers-governor-jeanie-buss-says-siblings-cannot-sell-familys-stake-to-bob-iger-cdf300f9d9eea`
+     is filed under **politics** (ranked #7 on `/politics`). It is a sports/business
+     ownership story; "governor" is an NBA team-ownership title here, so the
+     politics keyword is a false positive on a title-cased role word.
+   - `/story/theban-tomb-reveals-how-egyptian-burial-trends-evolved-in-time-c4e2e50b44255`
+     is filed under **technology** (ranked #8 on `/technology`). It is archaeology
+     — science/culture.
+   Impact: poisons section-page topical relevance, the exact signal category pages
+   rank on. Status: OPEN
+
 ## Open — polish
 
-5. Hero image: ensure `fetchpriority="high"` reaches the rendered img + preload
+6. Hero image: ensure `fetchpriority="high"` reaches the rendered img + preload
    (audit found the preload without it); eager-load the first 3–5 /top-100
    thumbnails (all 22 currently lazy). Status: OPEN
-6. /topics and /latest have zero JSON-LD — add CollectionPage/ItemList. Status: OPEN
-7. Publisher logo for News surfaces: replace 408-byte generic logo.svg reference
+7. /topics and /latest have zero JSON-LD — add CollectionPage/ItemList. Status: OPEN
+8. Publisher logo for News surfaces: replace 408-byte generic logo.svg reference
    with a proper wordmark (route-generated PNG, explicit width/height) in
    NewsArticle publisher.logo. Status: OPEN
-8. Story `<title>` can exceed 60 chars for long headlines — decide truncation
+9. Story `<title>` can exceed 60 chars for long headlines — decide truncation
    policy (headlines are kept truthful; maybe drop the " | CurrentWire" suffix
    when long). Status: OPEN
-9. In-body interlinking between trust pages is partial (about→standards,
+10. In-body interlinking between trust pages is partial (about→standards,
    contact→corrections etc.). Corrections→standards link shipped 2026-08-15;
    rest open. Status: OPEN
-10. Warm the hero `/_next/image` URL right after each cron refresh so first
+11. Warm the hero `/_next/image` URL right after each cron refresh so first
     viewers hit the edge cache (one curl in the cron, $0). Status: OPEN
-11. Shard `/archive-sitemap.xml` via generateSitemaps (v16 `Promise<string>` id
+12. Shard `/archive-sitemap.xml` via generateSitemaps (v16 `Promise<string>` id
     signature) when the archive approaches 40,000 stories — single file is fine
     for years at current volume. Status: OPEN (future)
 
 ## Blocked on owner (free keys/accounts — the only human steps that exist)
 
-12. **Google Search Console**: already verified (2026-08-14) with sitemap.xml +
+13. **Google Search Console**: already verified (2026-08-14) with sitemap.xml +
     news-sitemap.xml submitted. Remaining: submit the new archive-sitemap.xml
     in the GSC UI, and optionally create a free API service account so the
     daily loop can pull clicks/impressions/coverage. No billing. Status: BLOCKED(user)
-13. **Bing Webmaster Tools**: verify the site (can import from GSC), get the free
+14. **Bing Webmaster Tools**: verify the site (can import from GSC), get the free
     API key. IndexNow pings already flow without it. Status: BLOCKED(user)
-14. **PageSpeed Insights API key** (free, no billing): keyless quota was 0 at
+15. **PageSpeed Insights API key** (free, no billing): keyless quota was 0 at
     audit time, so CWV lab data needs a key. Status: BLOCKED(user)
+
+## Shipped 2026-08-18 (daily loop)
+
+- **Google News sitemap emitted out-of-window publication_date** — the renderer
+  kept a story whenever its source coverage was inside 48h, but emitted
+  `first_seen_at` as `<news:publication_date>`, so stories we published days ago
+  that picked up fresh coverage stayed in the feed with a stale publication date.
+  9 of 307 live entries were affected (oldest 2026-08-14T18:38:49.853Z) and the
+  daily health check had failed on it since 2026-08-17. Both timestamps are now
+  required to be inside the window; late-discovered stories (fresh first_seen_at,
+  older coverage) still qualify. 5 new unit tests. Verified live 2026-08-18
+  11:42Z: 296 entries, 0 older than 48h, health check ALL CHECKS PASSED. SHIPPED
+- **`npx eslint .` was not a usable gate** — ignore patterns were root-anchored
+  (`.next/**`), so `.next/` build output inside agent worktrees under
+  `.claude/worktrees/` was linted: 1398 errors / 21362 warnings from generated
+  chunks. Patterns are now `**/`-prefixed; `npx eslint .` reports zero problems. SHIPPED
 
 ## Shipped 2026-08-15 (baseline round)
 
