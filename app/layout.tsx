@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import { Archivo, Inter } from "next/font/google";
 import { siteConfig } from "@/config/site";
 import { Footer } from "@/components/layout/Footer";
+import { GoogleAnalytics } from "@/components/layout/GoogleAnalytics";
 import { Header } from "@/components/layout/Header";
 import { DemoBanner } from "@/components/layout/DemoBanner";
 import "./globals.css";
@@ -155,6 +156,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Footer />
+        <GoogleAnalytics />
       </body>
     </html>
   );

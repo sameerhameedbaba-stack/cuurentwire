@@ -96,6 +96,7 @@ See [.env.example](.env.example) for the full annotated list.
 | `DATABASE_URL` | no | PostgreSQL connection string |
 | `CRON_SECRET` | prod | Bearer token protecting `/api/cron/news-refresh` |
 | `ADMIN_SECRET` | prod | Admin diagnostics key — visit `/admin/auth?key=...` once per browser to set the access cookie |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | no | Google Analytics 4 ID (`G-…`); unset = no analytics loaded |
 | `CONTACT_EMAIL` etc. | no | Contact addresses shown on the site |
 
 Configure **at least one** provider for live news. Multiple providers improve

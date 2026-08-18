@@ -29,6 +29,12 @@ export default function PrivacyPage() {
           saved in your browser’s local storage (key: <code>cw-theme</code>).
           It never leaves your device.
         </li>
+        <li>
+          <strong>Analytics cookies.</strong> Google Analytics sets
+          first-party cookies (names starting with <code>_ga</code>) so that
+          repeat visits are counted as one visitor instead of many. See the
+          Analytics section below.
+        </li>
       </ul>
       <p>
         CurrentWire does not set advertising or cross-site tracking cookies.
@@ -43,9 +49,25 @@ export default function PrivacyPage() {
 
       <h2>Analytics</h2>
       <p>
-        No third-party analytics service is currently enabled. If aggregate,
-        privacy-respecting usage measurement is added later, this page will be
-        updated first.
+        CurrentWire uses <strong>Google Analytics 4</strong> to understand, in
+        aggregate, which pages are read and where readers come from. It
+        records pages viewed, approximate location (country/region derived
+        from your network), and device and browser type. Google Analytics 4
+        does not log or store individual IP addresses, and we have not
+        enabled advertising features or Google Signals — the data is used
+        only as anonymous, aggregate statistics about how the site is used.
+      </p>
+      <p>
+        If you prefer not to be counted, standard tracker-blocking browser
+        settings and extensions (or Google’s{" "}
+        <a
+          href="https://tools.google.com/dlpage/gaoptout"
+          rel="noopener noreferrer"
+        >
+          opt-out add-on
+        </a>
+        ) stop this measurement, and the site works exactly the same without
+        it.
       </p>
 
       <h2>External links</h2>
