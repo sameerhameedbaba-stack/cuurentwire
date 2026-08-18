@@ -6,7 +6,10 @@ import { getDataset } from "@/lib/cache/store";
 import { deriveTrending } from "@/lib/news/trending";
 import { pageMetadata } from "@/lib/seo/metadata";
 
-export const dynamic = "force-dynamic";
+// ISR (audit F1): serve from the edge cache and re-render at most every
+// 5 minutes. The cron refresh calls revalidatePath() after each new
+// dataset so a fresh generation flips this page promptly.
+export const revalidate = 300;
 
 export const metadata: Metadata = pageMetadata({
   title: "Topics",

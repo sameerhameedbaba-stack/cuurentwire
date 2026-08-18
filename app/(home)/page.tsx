@@ -19,7 +19,10 @@ import {
   WebSiteJsonLd,
 } from "@/lib/seo/structured-data";
 
-export const dynamic = "force-dynamic";
+// ISR (audit F1): serve from the edge cache and re-render at most every
+// 5 minutes. The cron refresh calls revalidatePath() after each new
+// dataset so a fresh generation flips this page promptly.
+export const revalidate = 300;
 
 // Self-canonical for the highest-value URL on the site. openGraph fields are
 // restated because a page-level openGraph replaces the layout's wholesale,
@@ -35,6 +38,11 @@ export const metadata: Metadata = {
     title: siteConfig.seo.defaultTitle,
     description: siteConfig.seo.defaultDescription,
     url: "/",
+    // Restated like the fields above: this openGraph replaces the layout's
+    // wholesale, images included (audit F3).
+    images: [
+      { url: "/opengraph-image", width: 1200, height: 630, alt: siteConfig.name },
+    ],
   },
 };
 

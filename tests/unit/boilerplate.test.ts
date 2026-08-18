@@ -103,6 +103,88 @@ describe("cleanDescription", () => {
   });
 });
 
+describe("cleanDescription strips Guardian closure and teaser chrome (R9 audit)", () => {
+  it("empties the live-blog closure notice served as an entire description", () => {
+    // Live-captured 2026-08-18: a story's <meta name=description> was
+    // EXACTLY this string.
+    expect(cleanDescription("This blog is now closed.", "theguardian.com")).toBe("");
+    // The general shape, publisher-agnostic (sentence-anchored).
+    expect(cleanDescription("This live blog has closed.")).toBe("");
+  });
+
+  it("keeps a sentence that merely mentions a closed blog mid-sentence", () => {
+    const text = "Readers asked why this blog is now closed on weekends.";
+    expect(cleanDescription(text)).toBe(text);
+  });
+
+  it("strips First Thing teaser sentences from homepage card text", () => {
+    // Live-captured shape: "Plus: the Italian nuns… Don't already get First
+    // Thing in your inbox?" trailing a real summary sentence.
+    expect(
+      cleanDescription(
+        "Trump orders review of national guard deployment. " +
+          "Plus: the Italian nuns who refused to leave their convent. " +
+          "Don't already get First Thing in your inbox? Sign up here.",
+        "theguardian.com",
+      ),
+    ).toBe("Trump orders review of national guard deployment.");
+  });
+
+  it("strips teaser and live-blog chrome from flat Guardian text", () => {
+    // No block boundaries at all — only the domain-scoped patterns can see
+    // the chrome here.
+    const flat =
+      "UK inflation eases to 3.2% Business live – latest updates Don't already get First Thing in your inbox? The ONS said prices rose more slowly in July.";
+    expect(cleanDescription(flat, "theguardian.com")).toBe(
+      "UK inflation eases to 3.2% The ONS said prices rose more slowly in July.",
+    );
+  });
+
+  it("keeps a mid-sentence 'plus' untouched", () => {
+    const text = "The deal adds 4,000 jobs plus a new research campus in Waterloo.";
+    expect(cleanDescription(text, "theguardian.com")).toBe(text);
+  });
+
+  it("is idempotent on the closure and teaser fixtures", () => {
+    const once = cleanDescription(
+      "Plus: the Italian nuns who refused to leave their convent. " +
+        "This blog is now closed. The minister spoke to reporters this morning.",
+      "theguardian.com",
+    );
+    expect(once).toBe("The minister spoke to reporters this morning.");
+    expect(cleanDescription(once, "theguardian.com")).toBe(once);
+  });
+});
+
+describe("cleanDescription drops SHOUTED legal disclaimers (R9 audit)", () => {
+  // Live-captured SEDAR+ prospectus disclaimer shape from a wire release.
+  const LEGAL =
+    "THE PROSPECTUS SUPPLEMENT, THE CORRESPONDING BASE SHELF PROSPECTUS AND ANY AMENDMENT THERETO ARE AVAILABLE ON SEDAR+ AT WWW.SEDARPLUS.CA.";
+
+  it("drops a long all-caps legal sentence, wherever it sits", () => {
+    expect(LEGAL.length).toBeGreaterThan(80);
+    expect(
+      cleanDescription(`The company closed its financing round. ${LEGAL}`),
+    ).toBe("The company closed its financing round.");
+    expect(cleanDescription(`${LEGAL} The company closed its financing round.`)).toBe(
+      "The company closed its financing round.",
+    );
+    expect(cleanDescription(LEGAL)).toBe("");
+  });
+
+  it("keeps short acronym-dense sentences under the length floor", () => {
+    const acronyms = "NASA, NATO and NORAD announced a joint AI plan.";
+    expect(cleanDescription(acronyms)).toBe(acronyms);
+  });
+
+  it("keeps long normal-case sentences", () => {
+    const long =
+      "Officials said the agreement, reached after months of negotiation between the two governments, will take effect next spring.";
+    expect(long.length).toBeGreaterThan(80);
+    expect(cleanDescription(long)).toBe(long);
+  });
+});
+
 describe("cleanDescription strips newsletter-digest chrome (The Hill)", () => {
   // Real thehill.com/homenews/feed/ CDATA after entity decoding — the RSS
   // provider decodes &#8202; to a U+200A hair space and &#038; to "&"

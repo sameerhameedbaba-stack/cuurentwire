@@ -219,6 +219,38 @@ describe("extractEntities", () => {
     ).toContain("Brixton Metals");
   });
 
+  it("strips possessives inside phrases (live /topic/liverpools-gakpo regression)", () => {
+    // "Liverpool's Gakpo" names Gakpo (of Liverpool) — the tokens are
+    // Liverpool + Gakpo, never a fused "Liverpools".
+    const entities = extractEntities("Slot praises Liverpool's Gakpo after cup win");
+    expect(entities).toContain("Liverpool Gakpo");
+    expect(entities.some((e) => /liverpools/i.test(e))).toBe(false);
+    // Typographic apostrophes behave identically.
+    const curly = extractEntities("Slot praises Liverpool’s Gakpo after cup win");
+    expect(curly).toContain("Liverpool Gakpo");
+  });
+
+  it("breaks phrases on negation fragments (live /topic/gop-dont regression)", () => {
+    for (const title of [
+      "Democrats warn GOP Don't Count on a Shutdown Deal",
+      "Democrats warn GOP Don’t Count on a Shutdown Deal",
+    ]) {
+      const entities = extractEntities(title);
+      expect(
+        entities.some((e) => /don.?t/i.test(e)),
+        `"${title}" must not fuse a negation into an entity`,
+      ).toBe(false);
+    }
+  });
+
+  it("breaks phrases on the CEO title (live /topic/ceo-josh-damaro regression)", () => {
+    const entities = extractEntities(
+      "Disney taps CEO Josh D'Amaro to lead experiences unit",
+    );
+    expect(entities).toContain("Josh D'Amaro");
+    expect(entities.some((e) => /^ceo\b/i.test(e))).toBe(false);
+  });
+
   it("treats corporate-filing phrases as generic, never relatedness evidence", () => {
     // Two unrelated issuers share this template language; it must never make
     // their stories look like coverage of the same event.

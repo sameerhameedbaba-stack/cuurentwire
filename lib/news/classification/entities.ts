@@ -169,7 +169,27 @@ const PHRASE_BREAK_WORDS = new Set([
   "approves", "approved", "rejects", "rejected", "signs", "signed", "begins",
   "returns", "returned", "is", "are", "was", "were", "to", "of", "for", "and",
   "with", "from", "by", "over", "into", "amid", "following",
+  // Negation fragments and the CEO title, observed fusing into junk live
+  // entities ("GOP Don't" → /topic/gop-dont, "CEO Josh D'Amaro" →
+  // /topic/ceo-josh-damaro). Bare forms included because token cleanup can
+  // strip the apostrophe before this check.
+  "don't", "dont", "won't", "wont", "can't", "cant", "isn't", "isnt",
+  "doesn't", "doesnt", "didn't", "didnt", "aren't", "arent", "ceo",
 ]);
+
+/**
+ * Join a capitalized phrase into an entity name. A possessive on a NON-final
+ * token is grammar, not part of a name — "Liverpool's Gakpo" names Gakpo (of
+ * Liverpool), so the tokens are Liverpool + Gakpo and the topic slug is
+ * liverpool-gakpo, never the live junk /topic/liverpools-gakpo. The FINAL
+ * token keeps its apostrophe: trailing possessives there are usually brand
+ * names ("Toronto McDonald's").
+ */
+function joinPhrase(phrase: string[]): string {
+  return phrase
+    .map((w, i) => (i < phrase.length - 1 ? w.replace(/'s?$/, "") : w))
+    .join(" ");
+}
 
 /**
  * Extract entities from a headline + description.
@@ -224,7 +244,10 @@ export function extractEntities(title: string, description?: string): string[] {
   const words = title.split(/\s+/);
   let phrase: string[] = [];
   for (let i = 0; i < words.length; i++) {
-    const word = words[i].replace(/[^A-Za-z0-9''-]/g, "");
+    // Typographic apostrophes normalize to straight quotes so "Don’t" and
+    // "Liverpool’s" behave exactly like their straight-quote forms in the
+    // break-word and possessive handling below.
+    const word = words[i].replace(/’/g, "'").replace(/[^A-Za-z0-9'-]/g, "");
     const isCapitalized = /^[A-Z][a-zA-Z''-]+$/.test(word);
     const isNoise =
       NOISE_WORDS.has(word.toLowerCase()) || PHRASE_BREAK_WORDS.has(word.toLowerCase());
@@ -236,15 +259,15 @@ export function extractEntities(title: string, description?: string): string[] {
     if (isCapitalized && !isNoise && i > 0) {
       phrase.push(word);
       if (breaksAfter) {
-        if (phrase.length >= 2) addPhrase(phrase.join(" "));
+        if (phrase.length >= 2) addPhrase(joinPhrase(phrase));
         phrase = [];
       }
     } else {
-      if (phrase.length >= 2) addPhrase(phrase.join(" "));
+      if (phrase.length >= 2) addPhrase(joinPhrase(phrase));
       phrase = [];
     }
   }
-  if (phrase.length >= 2) addPhrase(phrase.join(" "));
+  if (phrase.length >= 2) addPhrase(joinPhrase(phrase));
 
   return [...found.values()].slice(0, 8);
 }

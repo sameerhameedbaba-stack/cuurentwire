@@ -465,16 +465,31 @@ export async function getCategoryData(category: CategoryId): Promise<{
       (c) => c.category !== category && c.lead.categories.includes(category),
     )
     .slice(0, 6);
-  const latest = dataset.articles
-    .filter((a) => a.category === category)
-    .sort(
-      (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
-    )
-    .slice(0, 10);
+  const hero = clusters[0] ?? null;
+  const secondary = clusters.slice(1, 5);
+  const more = clusters.slice(5, 13);
+  // Every cluster rendered as a card above. The chronological Latest rail
+  // excludes their articles — the live defect showed the same story twice on
+  // one page (card + article row linking the bare-id /story/<clusterId>
+  // alias) — and carries cluster slugs so the rows link canonically.
+  const shown = new Set(
+    [...(hero ? [hero] : []), ...secondary, ...more, ...related].map((c) => c.id),
+  );
+  const latest = withClusterSlugs(
+    dataset.articles
+      .filter((a) => a.category === category)
+      .filter((a) => !a.clusterId || !shown.has(a.clusterId))
+      .sort(
+        (a, b) =>
+          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+      )
+      .slice(0, 10),
+    dataset,
+  );
   return {
-    hero: clusters[0] ?? null,
-    secondary: clusters.slice(1, 5),
-    more: clusters.slice(5, 13),
+    hero,
+    secondary,
+    more,
     related,
     latest,
     dataset,
@@ -516,18 +531,31 @@ export async function getCountryData(country: "us" | "canada"): Promise<{
     if (items.length > 0) byCategory[id] = items;
   }
 
-  const latest = dataset.articles
-    .filter((a) => matchesCountryFilter(a.country, country))
-    .sort(
-      (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
-    )
-    .slice(0, 8);
+  const topList = clusters.slice(0, 10);
+  // Everything the page renders as a card: hero, secondary and byCategory
+  // (accumulated in `used`) plus the ranked top list. The "Latest
+  // developments" rail excludes those clusters' articles — the live /canada
+  // defect rendered all six rail stories a second time through bare-id
+  // /story/<clusterId> alias links — and carries cluster slugs so the
+  // remaining rows link canonically.
+  const shown = new Set([...used, ...topList.map((c) => c.id)]);
+  const latest = withClusterSlugs(
+    dataset.articles
+      .filter((a) => matchesCountryFilter(a.country, country))
+      .filter((a) => !a.clusterId || !shown.has(a.clusterId))
+      .sort(
+        (a, b) =>
+          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+      )
+      .slice(0, 8),
+    dataset,
+  );
 
   return {
     hero,
     secondary,
     byCategory,
-    topList: clusters.slice(0, 10),
+    topList,
     latest,
     dataset,
   };

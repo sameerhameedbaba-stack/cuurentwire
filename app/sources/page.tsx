@@ -6,7 +6,10 @@ import { shouldIndexCollection } from "@/lib/seo/indexing";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { LinkListJsonLd } from "@/lib/seo/structured-data";
 
-export const dynamic = "force-dynamic";
+// ISR (audit F1): serve from the edge cache and re-render at most every
+// 5 minutes. The cron refresh calls revalidatePath() after each new
+// dataset so a fresh generation flips this page promptly.
+export const revalidate = 300;
 
 export const metadata: Metadata = pageMetadata({
   title: "Sources",

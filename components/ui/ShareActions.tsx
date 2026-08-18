@@ -1,16 +1,26 @@
 "use client";
 
 import { Check, Link2, Mail, Share2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 /**
  * Accessible share panel: copy link, native Web Share on supported devices,
  * and standard share intents (X, Facebook, LinkedIn, email).
  */
+/** Capability never changes after load — subscribe is a no-op. */
+function subscribeNever(): () => void {
+  return () => {};
+}
+
 export function ShareActions({ url, title }: { url: string; title: string }) {
   const [copied, setCopied] = useState(false);
-  const [canNativeShare] = useState(
-    () => typeof navigator !== "undefined" && typeof navigator.share === "function",
+  // Feature-detect via useSyncExternalStore: the server snapshot is false,
+  // the client snapshot reads navigator.share — React reconciles the
+  // difference without a hydration error, and no effect/setState is needed.
+  const canNativeShare = useSyncExternalStore(
+    subscribeNever,
+    () => typeof navigator.share === "function",
+    () => false,
   );
 
   async function copyLink() {

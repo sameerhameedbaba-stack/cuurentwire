@@ -31,7 +31,11 @@ import {
   clampDateModified,
 } from "@/lib/seo/structured-data";
 
-export const dynamic = "force-dynamic";
+// ISR (audit F1): each story page is cached up to 5 minutes. notFound()/
+// redirect() results share the same window, so a wrongly cached 404 or a
+// stale pre-merge page self-heals within 300s — and the cron refresh
+// revalidates /story/[slug] after every new dataset as a faster bound.
+export const revalidate = 300;
 
 interface StoryRequest {
   resolution: StoryResolution;

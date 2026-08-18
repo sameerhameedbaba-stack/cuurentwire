@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  actions: write # re-enable sibling scheduled workflows below
 
 jobs:
   probe:
@@ -30,3 +31,15 @@ jobs:
           git add data/url-ledger.json
           git diff --cached --quiet || git commit -m "chore: url survival ledger $(date -u +%F)"
           git push
+      - name: Re-enable sibling scheduled workflows
+        # GitHub auto-disables scheduled workflows on public repos after 60
+        # days of repository inactivity. This workflow commits daily, so it
+        # runs as long as anything does — have it re-arm the other probes so
+        # none of them can stop silently. Best-effort by design.
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow enable surface-coherence.yml || true
+          gh workflow enable seo-health.yml || true

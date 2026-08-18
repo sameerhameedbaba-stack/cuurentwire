@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import { siteConfig } from "@/config/site";
 import { forceRefresh } from "@/lib/cache/store";
@@ -15,6 +16,8 @@ export const maxDuration = 60;
 // Best-effort guard against unauthenticated hammering. Module state is
 // per-instance (serverless instances each get their own window), so this is
 // not a global limit — it only bounds abuse of a single warm instance.
+// Only UNAUTHORIZED attempts count toward the window (audit F5): counting
+// before auth let an attacker 429 the real scheduled cron out of its slot.
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 let rateWindowStart = 0;
@@ -31,16 +34,46 @@ function rateLimited(): boolean {
 }
 
 /**
+ * ISR'd public surfaces (audit F1): revalidated after every successful
+ * refresh so a fresh dataset flips pages promptly instead of waiting out
+ * their 5-minute window. Dynamic patterns invalidate lazily — each cached
+ * story/topic/source page re-renders on its next visit. Literal paths for
+ * static pages; `type: "page"` is required for patterns.
+ */
+const ISR_SURFACES: { path: string; type?: "page" }[] = [
+  { path: "/" },
+  { path: "/us" },
+  { path: "/canada" },
+  { path: "/topics" },
+  { path: "/sources" },
+  { path: "/[category]", type: "page" },
+  { path: "/story/[slug]", type: "page" },
+  { path: "/topic/[slug]", type: "page" },
+  { path: "/source/[slug]", type: "page" },
+];
+
+/** Best-effort: a revalidation failure must never fail the cron response. */
+function revalidateIsrSurfaces(): void {
+  for (const surface of ISR_SURFACES) {
+    try {
+      if (surface.type) revalidatePath(surface.path, surface.type);
+      else revalidatePath(surface.path);
+    } catch (error) {
+      logger.warn("cron.revalidate_path_failed", {
+        path: surface.path,
+        error: error instanceof Error ? error.message : "unknown",
+      });
+    }
+  }
+}
+
+/**
  * Scheduled news refresh.
  * Protected by CRON_SECRET via `Authorization: Bearer <secret>` (Vercel Cron
  * convention) or an `x-cron-secret` header. Refreshes the in-process cache and
  * archives the dataset to PostgreSQL when configured.
  */
 export async function GET(request: NextRequest) {
-  if (rateLimited()) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  }
-
   const secret = env.cronSecret;
   if (!secret) {
     // Refuse to run unauthenticated in production; allow locally for testing.
@@ -57,12 +90,18 @@ export async function GET(request: NextRequest) {
       secureCompare(auth, `Bearer ${secret}`) ||
       secureCompare(headerSecret, secret);
     if (!authorized) {
+      // Auth verified first; only failed attempts spend the rate window, so
+      // hammering can never 429 the genuine scheduled cron (audit F5).
+      if (rateLimited()) {
+        return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+      }
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }
 
   try {
     const dataset = await forceRefresh();
+    revalidateIsrSurfaces();
     let persisted = false;
     let archivedStories = 0;
     let indexNowSubmitted = 0;

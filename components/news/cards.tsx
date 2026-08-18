@@ -8,7 +8,15 @@ function storyHref(cluster: StoryCluster): string {
 }
 
 /** Dominant lead story — homepage hero. */
-export function HeroStory({ cluster }: { cluster: StoryCluster }) {
+export function HeroStory({
+  cluster,
+  headingLevel = "h1",
+}: {
+  cluster: StoryCluster;
+  /** Pages that render their own h1 (country/category) demote the hero to h2. */
+  headingLevel?: "h1" | "h2";
+}) {
+  const Heading = headingLevel;
   return (
     <article className="group">
       <Link href={storyHref(cluster)} className="block">
@@ -27,11 +35,11 @@ export function HeroStory({ cluster }: { cluster: StoryCluster }) {
         <StatusBadge status={cluster.status} />
         <ContentTypeBadge contentType={cluster.contentType} />
       </div>
-      <h1 className="headline mt-2 text-[2rem] leading-[1.08] sm:text-[2.5rem] lg:text-[3.25rem]">
+      <Heading className="headline mt-2 text-[2rem] leading-[1.08] sm:text-[2.5rem] lg:text-[3.25rem]">
         <Link href={storyHref(cluster)} className="hover:text-brand-ink">
           <span className="story-link">{cluster.title}</span>
         </Link>
-      </h1>
+      </Heading>
       {cluster.summary ? (
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
           {cluster.summary}
@@ -129,7 +137,14 @@ export function StandardStory({
 }
 
 /** Compact story — dense rows with small thumbnail. */
-export function CompactStory({ cluster }: { cluster: StoryCluster }) {
+export function CompactStory({
+  cluster,
+  eagerThumbnail = false,
+}: {
+  cluster: StoryCluster;
+  /** Above the fold (homepage top-stories rail) — skip lazy loading for these. */
+  eagerThumbnail?: boolean;
+}) {
   return (
     <article className="group flex gap-3">
       <div className="w-24 shrink-0 sm:w-28">
@@ -140,6 +155,7 @@ export function CompactStory({ cluster }: { cluster: StoryCluster }) {
             category={cluster.category}
             aspect="1/1"
             sizes="112px"
+            eager={eagerThumbnail}
           />
         </Link>
       </div>

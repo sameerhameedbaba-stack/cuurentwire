@@ -20,20 +20,20 @@ export function Header() {
           <div className="flex items-center gap-1">
             <Link
               href="/latest"
-              className="rounded-news px-2 py-1 text-xs font-semibold text-muted transition-colors hover:text-ink"
+              className="rounded-news px-2 py-2 text-xs font-semibold text-muted transition-colors hover:text-ink"
             >
               Latest
             </Link>
             <Link
               href="/top-100"
-              className="rounded-news px-2 py-1 text-xs font-semibold text-muted transition-colors hover:text-ink"
+              className="rounded-news px-2 py-2 text-xs font-semibold text-muted transition-colors hover:text-ink"
             >
               Top 100
             </Link>
             <Link
               href="/search"
               aria-label="Search"
-              className="flex h-8 w-8 items-center justify-center rounded-news text-muted transition-colors hover:bg-wash hover:text-ink"
+              className="flex h-11 w-11 items-center justify-center rounded-news text-muted transition-colors hover:bg-wash hover:text-ink"
             >
               <Search className="h-4 w-4" aria-hidden />
             </Link>

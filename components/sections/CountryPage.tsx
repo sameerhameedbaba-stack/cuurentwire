@@ -52,7 +52,9 @@ export async function CountryPage({
       <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12">
         {/* Lead + supporting */}
         <div className="lg:col-span-8">
-          <HeroStory cluster={data.hero} />
+          {/* The page header above is the h1 — the hero headline demotes to
+              h2 so the page never carries two h1s. */}
+          <HeroStory cluster={data.hero} headingLevel="h2" />
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
             {data.secondary.map((cluster) => (
               <StandardStory key={cluster.id} cluster={cluster} showImage />

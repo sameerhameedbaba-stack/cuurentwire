@@ -3,6 +3,13 @@ import { HeroStory } from "@/components/news/cards";
 import { CompactStory } from "@/components/news/cards";
 import { SectionHeader } from "@/components/news/SectionHeader";
 
+/**
+ * Rail thumbnails above the fold: loaded eagerly, not lazily (same pattern as
+ * /top-100). The hero cluster is often imageless, so without this the page
+ * can render with every image lazy and no protected LCP candidate.
+ */
+const EAGER_THUMBNAILS = 3;
+
 /** Section A — dominant lead story with a rail of important secondaries. */
 export function TopStoriesSection({
   hero,
@@ -24,8 +31,12 @@ export function TopStoriesSection({
         <div className="lg:col-span-5 xl:col-span-4">
           <SectionHeader title="More top stories" />
           <div className="flex flex-col gap-5">
-            {secondary.map((cluster) => (
-              <CompactStory key={cluster.id} cluster={cluster} />
+            {secondary.map((cluster, index) => (
+              <CompactStory
+                key={cluster.id}
+                cluster={cluster}
+                eagerThumbnail={index < EAGER_THUMBNAILS}
+              />
             ))}
           </div>
         </div>

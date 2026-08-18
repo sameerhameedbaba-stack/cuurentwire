@@ -83,3 +83,63 @@ export function appendStoryHistory(
   const combined = [...history, ...events];
   return combined.length > limit ? combined.slice(combined.length - limit) : combined;
 }
+
+/** Public story pages render at most this many update events. */
+export const DISPLAY_UPDATE_LIMIT = 6;
+
+/**
+ * A coverage change that is undone within this window is feed rotation, not
+ * story news: publishers rotate a story out of their feed windows and back
+ * within hours (live: 2→1→2→1 inside one hour).
+ */
+const COVERAGE_CHURN_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Pure DISPLAY filter over a stored history. The stored events are the ops
+ * record and stay complete — this only decides what a reader sees:
+ *
+ * - A coverage_change pair that nets to zero within 24h (A→B then B→A) is
+ *   churn and drops together; an odd-length oscillation chain cancels in
+ *   pairs, so its survivor still reports the genuine net movement, and real
+ *   growth (or a reversal slower than the window) always renders.
+ * - category_changed never renders publicly: reclassification is an ops
+ *   signal, not something that happened to the story.
+ * - At most DISPLAY_UPDATE_LIMIT most-recent survivors are kept.
+ *
+ * Survivors come back oldest-to-newest; events sharing an `at` (a refresh
+ * stamps its whole batch with one time) keep their stored relative order.
+ */
+export function displayableUpdates(events: StoryUpdateEvent[]): StoryUpdateEvent[] {
+  const chronological = [...events].sort(
+    (a, b) => new Date(a.at).getTime() - new Date(b.at).getTime(),
+  );
+  const kept: StoryUpdateEvent[] = [];
+  for (const event of chronological) {
+    if (event.kind === "category_changed") continue;
+    if (event.kind === "coverage_change") {
+      // The most recent SURVIVING coverage_change, wherever it sits —
+      // source_added or headline events may have landed after it.
+      let previousIndex = -1;
+      for (let i = kept.length - 1; i >= 0; i--) {
+        if (kept[i].kind === "coverage_change") {
+          previousIndex = i;
+          break;
+        }
+      }
+      const previous = previousIndex === -1 ? null : kept[previousIndex];
+      if (
+        previous !== null &&
+        previous.kind === "coverage_change" &&
+        previous.from === event.to &&
+        previous.to === event.from &&
+        new Date(event.at).getTime() - new Date(previous.at).getTime() <=
+          COVERAGE_CHURN_WINDOW_MS
+      ) {
+        kept.splice(previousIndex, 1);
+        continue;
+      }
+    }
+    kept.push(event);
+  }
+  return kept.slice(-DISPLAY_UPDATE_LIMIT);
+}

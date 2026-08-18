@@ -15,6 +15,18 @@ test.describe("homepage", () => {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
+  test("at least one image loads eagerly when any images render", async ({ page }) => {
+    // LCP guard: the hero cluster is often imageless, so the top-stories rail
+    // must eagerly load its first thumbnails — an all-lazy homepage leaves the
+    // LCP image undiscovered. A fully imageless dataset is also acceptable.
+    await page.goto("/");
+    const imgCount = await page.locator("img").count();
+    if (imgCount > 0) {
+      const eagerCount = await page.locator('img[loading="eager"]').count();
+      expect(eagerCount).toBeGreaterThanOrEqual(1);
+    }
+  });
+
   test("skip link targets main content", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("#main-content")).toHaveCount(1);
@@ -60,12 +72,16 @@ test.describe("country pages", () => {
   test("US page renders", async ({ page }) => {
     await page.goto("/us");
     await expect(page.getByRole("heading", { name: "United States", level: 1 })).toBeVisible();
+    // Exactly one h1: the page title owns it; the hero story demotes to h2.
+    await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.locator("main article").first()).toBeVisible();
   });
 
   test("Canada page renders", async ({ page }) => {
     await page.goto("/canada");
     await expect(page.getByRole("heading", { name: "Canada", level: 1 })).toBeVisible();
+    // Exactly one h1: the page title owns it; the hero story demotes to h2.
+    await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.locator("main article").first()).toBeVisible();
   });
 });

@@ -38,14 +38,21 @@ const nextConfig: NextConfig = {
   // Vercel's build pipeline conflicts with standalone output, so skip it there.
   output: process.env.VERCEL ? undefined : "standalone",
   images: {
-    // Publisher imagery comes from arbitrary news CDNs; https only. The
-    // hostname wildcard is an accepted risk: an allowlist is impractical for
-    // a news aggregator, and Vercel's image optimizer applies its own
-    // platform limits. A long cache TTL keeps optimizer invocations low.
-    remotePatterns: [{ protocol: "https", hostname: "**" }],
-    minimumCacheTTL: 86400,
+    // Serve images as-is (2026-08 audit): the Vercel image optimizer's free
+    // tier is ~5K transformations/month — a news homepage full of publisher
+    // imagery burns through that — and the wildcard remotePatterns the
+    // optimizer needed made /_next/image an open proxy for arbitrary https
+    // URLs. Unoptimized kills both; publisher CDNs already serve sized,
+    // compressed variants. remotePatterns removed: it is inert (and
+    // misleading) once the optimizer is off.
+    unoptimized: true,
   },
   headers: async () => [{ source: "/(.*)", headers: securityHeaders }],
+  experimental: {
+    // Server-rendered 404 for unmatched URLs (app/global-not-found.tsx) —
+    // the default client-only 404 shipped an empty <body> without JS.
+    globalNotFound: true,
+  },
   // www serves the whole site as a duplicate host without this — one
   // canonical host (the apex) for every URL.
   redirects: async () => [

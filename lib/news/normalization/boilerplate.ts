@@ -61,10 +61,39 @@ const BOILERPLATE_SENTENCE = new RegExp(
       // The Hill digest image credit — literal placeholder text, optionally
       // preceded by the © the template renders.
       "(?:©\\s*)?photo credit\\b",
+      // Guardian live-blog closure notice — live-captured 2026-08-18 as a
+      // story's ENTIRE meta description ("This blog is now closed.").
+      "this (?:live )?blog (?:is now|has) closed\\b",
+      // Guardian First Thing newsletter teaser question.
+      "don['’]?t already get\\b[^.!?\\n]{0,60}\\bin your inbox",
+      // Guardian business live-blog chrome label.
+      "business live [–—-] latest updates",
+      // Newsletter teaser sentence ("Plus: the Italian nuns…"). Sentence-
+      // anchored: a mid-sentence "plus" is never touched, and a news summary
+      // sentence STARTING "Plus:" is a teaser by construction.
+      "plus:\\s",
     ].join("|") +
     ")",
   "i",
 );
+
+/**
+ * Securities-law disclaimers arrive SHOUTED ("THE PROSPECTUS SUPPLEMENT,
+ * CORRESPONDING BASE SHELF PROSPECTUS … AVAILABLE ON SEDAR+ …" — live
+ * capture). A long sentence whose letters are almost all uppercase is legal
+ * boilerplate, never news prose; acronym-dense real sentences ("NASA and
+ * NATO…") stay under the length floor.
+ */
+const SHOUTED_MIN_LENGTH = 80;
+const SHOUTED_UPPER_RATIO = 0.9;
+
+function isShoutedLegalText(fragment: string): boolean {
+  if (fragment.length <= SHOUTED_MIN_LENGTH) return false;
+  const letters = fragment.match(/\p{L}/gu)?.length ?? 0;
+  if (letters === 0) return false;
+  const upper = fragment.match(/\p{Lu}/gu)?.length ?? 0;
+  return upper / letters > SHOUTED_UPPER_RATIO;
+}
 
 /** Trailing fragments with no sentence punctuation ("Continue reading…"). */
 const TRAILING_FRAGMENT = /(?:continue reading|read more|click here)[\s.…]*$/i;
@@ -108,10 +137,21 @@ const LEADING_CHROME_MAX_LENGTH = 60;
  * for the sentence-anchored rules to anchor on. Guardian only — the breadth
  * scan found zero live hits for other publishers; no speculative patterns.
  */
-const DOMAIN_BOILERPLATE: ReadonlyArray<{ domain: RegExp; pattern: RegExp }> = [
+const DOMAIN_BOILERPLATE: ReadonlyArray<{
+  domain: RegExp;
+  patterns: ReadonlyArray<RegExp>;
+}> = [
   {
     domain: /(?:^|\.)theguardian\.com$/,
-    pattern: /sign up for (?:the )?[^.!?\n]{0,60}?(?:email|newsletter)\b[.!]?/gi,
+    patterns: [
+      /sign up for (?:the )?[^.!?\n]{0,60}?(?:email|newsletter)\b[.!]?/gi,
+      // Live-captured 2026-08-18: live-blog closure notices and First Thing
+      // newsletter teasers reach summaries as flat text with no block
+      // boundary for the sentence-anchored rules to see.
+      /this (?:live )?blog (?:is now|has) closed\.?/gi,
+      /don['’]?t already get [^.!?\n]{0,60}? in your inbox\??/gi,
+      /business live [–—-] latest updates/gi,
+    ],
   },
 ];
 
@@ -151,7 +191,10 @@ export function cleanDescription(description: string, sourceDomain?: string): st
   if (domain) {
     for (const rule of DOMAIN_BOILERPLATE) {
       if (rule.domain.test(domain)) {
-        text = text.replace(rule.pattern, " ").replace(/[ \t]{2,}/g, " ");
+        for (const pattern of rule.patterns) {
+          text = text.replace(pattern, " ");
+        }
+        text = text.replace(/[ \t]{2,}/g, " ");
       }
     }
   }
@@ -171,6 +214,7 @@ export function cleanDescription(description: string, sourceDomain?: string): st
   for (let i = 0; i < fragments.length; i++) {
     const fragment = fragments[i].trim();
     if (BOILERPLATE_SENTENCE.test(fragment)) continue;
+    if (isShoutedLegalText(fragment)) continue;
     if (leadingChrome) {
       if (
         i < LEADING_CHROME_MAX_FRAGMENTS &&

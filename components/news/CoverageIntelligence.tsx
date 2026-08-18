@@ -1,25 +1,26 @@
 import Link from "next/link";
 import type { EarlierCoverageItem } from "@/lib/database/archive";
 import type { ArchivedSourceRef } from "@/lib/database/schema";
-import {
-  corroboratedDetails,
-  describeUpdateEvent,
-  sourceMix,
-} from "@/lib/news/coverage-analysis";
+import { corroboratedDetails, sourceMix } from "@/lib/news/coverage-analysis";
 import type { StoryUpdateEvent } from "@/lib/news/story-updates";
 import type { StoryCluster } from "@/lib/news/types";
 import { Timestamp } from "./atoms";
 
 /**
  * "Automated coverage analysis" — deterministic signals derived from the
- * coverage listed on the page (source mix, recorded update log, all-time
- * coverage, details corroborated by independent sources, earlier archive
- * coverage). Every block is omitted entirely when its input is empty; the
- * whole section disappears when nothing remains. No generated claims.
+ * coverage listed on the page (source mix, all-time coverage, details
+ * corroborated by independent sources, earlier archive coverage). Every
+ * block is omitted entirely when its input is empty; the whole section
+ * disappears when nothing remains. No generated claims.
+ *
+ * Update events render in ONE place on a story page — interleaved in the
+ * "How coverage developed" timeline (CoverageTimeline) — never here: the
+ * old "Update log" block repeated every event the timeline already showed.
+ * The history prop stays in the signature so the page's call site keeps
+ * compiling; this component deliberately ignores it.
  */
 export function CoverageIntelligence({
   cluster,
-  history,
   earlierCoverage,
   allTimeSources = [],
 }: {
@@ -31,9 +32,6 @@ export function CoverageIntelligence({
 }) {
   const mix = sourceMix(cluster);
   const details = corroboratedDetails(cluster);
-  const events = [...history].sort(
-    (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime(),
-  );
 
   // Publisher feeds rotate a story out of their windows while it is still
   // the same story, so the coverage list above can be SHORTER than the
@@ -70,7 +68,6 @@ export function CoverageIntelligence({
 
   if (
     mixParts.length === 0 &&
-    events.length === 0 &&
     details.length === 0 &&
     earlierCoverage.length === 0 &&
     !showAllTime
@@ -111,25 +108,6 @@ export function CoverageIntelligence({
             {allTimeNames.length} publications have covered this story since
             CurrentWire first saw it: {allTimeNames.join(", ")}.
           </p>
-        </div>
-      ) : null}
-
-      {events.length > 0 ? (
-        <div className="mt-5">
-          <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
-            Update log
-          </h3>
-          <ul className="mt-1 divide-y divide-rule">
-            {events.map((event, index) => (
-              <li
-                key={`${event.kind}-${event.version}-${index}`}
-                className="flex flex-wrap items-baseline gap-x-2 py-1.5 text-sm"
-              >
-                <Timestamp iso={event.at} className="text-xs text-muted" />
-                <span>{describeUpdateEvent(event)}</span>
-              </li>
-            ))}
-          </ul>
         </div>
       ) : null}
 

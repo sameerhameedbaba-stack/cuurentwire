@@ -192,6 +192,14 @@ export function parseItemsWithStats(xml: string): {
  * pick the widest one. Attribute values are XML-escaped in the source
  * (&amp; between query params), so the winner must be entity-decoded or
  * publishers reject the URL and the image optimizer returns 502.
+ *
+ * Fallback shapes, in priority order after media:content / media:thumbnail /
+ * enclosure (measured live 2026-08-18 — 38% of stories had no image at all):
+ * 1. an item-level <image> child — CBS carries the story thumbnail ONLY
+ *    there (10/10 items);
+ * 2. the first usable <img> inside content:encoded / Atom content /
+ *    description HTML — NPR, Financial Post and The Verge carry the art
+ *    ONLY there (NPR 10/10 items).
  */
 function bestImageUrl(block: string): string | undefined {
   let best: { url: string; width: number } | undefined;
@@ -208,7 +216,56 @@ function bestImageUrl(block: string): string | undefined {
   const url =
     best?.url ??
     block.match(/<enclosure[^>]*url=["']([^"']+)["'][^>]*type=["']image/i)?.[1];
-  return url ? decodeEntities(url.trim()) : undefined;
+  if (url) return decodeEntities(url.trim());
+  return imageChildUrl(block) ?? embeddedImgUrl(block);
+}
+
+/**
+ * CBS-style item-level <image> child. Verified live: the URL is the tag's
+ * plain text content (<image>https://assets1.cbsnewsstatic.com/...</image>);
+ * some generators nest a <url> child instead (the channel-level RSS shape).
+ * Never confused with the channel <image> block — parsing operates on
+ * individual <item> blocks only.
+ */
+function imageChildUrl(block: string): string | undefined {
+  const inner = firstTag(block, "image");
+  if (!inner) return undefined;
+  const candidate = decodeEntities((firstTag(inner, "url") ?? inner).trim());
+  return candidate.startsWith("https://") ? candidate : undefined;
+}
+
+/** Known tracking-beacon URL fragments (NPR rss pixel, WP stats, FeedBurner). */
+const BEACON_URL_RE =
+  /\/images\/tracking\/|pixel\.wp\.com|stats\.wordpress\.com|\/~r\/|doubleclick\.net/i;
+
+/**
+ * First usable <img> inside the item's HTML body. CDATA bodies carry literal
+ * tags; escaped bodies need one entity pass before any tag is visible — scan
+ * raw first, because decoding the whole fragment up front corrupts tag
+ * boundaries (The Verge puts &gt; inside data-caption attributes).
+ */
+function embeddedImgUrl(block: string): string | undefined {
+  for (const tag of ["content:encoded", "content", "description", "summary"]) {
+    const html = firstTag(block, tag);
+    if (!html) continue;
+    const src = firstUsableImg(html) ?? firstUsableImg(decodeEntities(html));
+    if (src) return src;
+  }
+  return undefined;
+}
+
+function firstUsableImg(html: string): string | undefined {
+  for (const m of html.matchAll(/<img\s[^>]*?src=["']([^"']+)["'][^>]*>/gi)) {
+    // 1x1 tracking pixels declare their size; beacons hide in known paths.
+    if (/\s(?:width|height)=["']?1["']?[\s/>]/i.test(m[0])) continue;
+    // https-only: also rejects data: URIs, protocol-relative URLs and NPR's
+    // literal src='undefined' placeholder.
+    const src = decodeEntities(m[1].trim());
+    if (!src.startsWith("https://")) continue;
+    if (BEACON_URL_RE.test(src)) continue;
+    return src;
+  }
+  return undefined;
 }
 
 function firstTag(block: string, tag: string): string | undefined {

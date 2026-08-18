@@ -300,7 +300,11 @@ describe("country surfaces (fixture pipeline)", () => {
     expect(canada.topList.length).toBe(10);
     expectNoUS(canada.topList, "canada.topList");
 
-    expect(canada.latest.length).toBe(8);
+    // The rail excludes clusters already rendered as cards (see the
+    // duplicate-story suite below), so with this small fixture set it holds
+    // fewer than its 8-row capacity — but never runs empty.
+    expect(canada.latest.length).toBeGreaterThan(0);
+    expect(canada.latest.length).toBeLessThanOrEqual(8);
     for (const [i, article] of canada.latest.entries()) {
       expect(
         article.country,
@@ -473,6 +477,39 @@ describe("press releases in curated modules (fixture pipeline)", () => {
     expect(search.results.some((c) => c.id === pr.id)).toBe(true);
   });
 
+  it("gates every homepage band and the category more-list on curated eligibility", async () => {
+    // R9 audit follow-up: the live leak entered through content-type
+    // misclassification of syndicated copies, not a missing gate — this
+    // pins the gate itself over every band-shaped module.
+    const home = await getHomepageData();
+    for (const [id, clusters] of Object.entries(home.sections)) {
+      for (const cluster of clusters ?? []) {
+        expect(
+          isCuratedEligible(cluster),
+          `homepage section ${id} "${cluster.title}" must be curated-eligible`,
+        ).toBe(true);
+      }
+    }
+    for (const cluster of [...home.us, ...home.canada]) {
+      expect(
+        isCuratedEligible(cluster),
+        `homepage country band "${cluster.title}" must be curated-eligible`,
+      ).toBe(true);
+    }
+    const business = await getCategoryData("business");
+    for (const cluster of [
+      ...(business.hero ? [business.hero] : []),
+      ...business.secondary,
+      ...business.more,
+      ...business.related,
+    ]) {
+      expect(
+        isCuratedEligible(cluster),
+        `/business curated "${cluster.title}" must be curated-eligible`,
+      ).toBe(true);
+    }
+  });
+
   it("keeps a release with independent pickup curated-eligible", async () => {
     const picked = findCluster("Harbour Ridge Copper");
     // One issuer release plus one newsroom's own report on a different
@@ -490,5 +527,67 @@ describe("press releases in curated modules (fixture pipeline)", () => {
         (c) => c.id === picked.id,
       ),
     ).toBe(true);
+  });
+});
+
+/**
+ * Duplicate-story regression (R9 audit): /canada rendered all six "Latest
+ * developments" stories a SECOND time — the same clusters already shown as
+ * cards — through bare-id /story/<clusterId> links that only 308-redirect.
+ * Two invariants fix it end to end: the latest rail excludes clusters the
+ * page already renders as cards, and every clustered article row carries the
+ * canonical cluster slug so no listing link needs the redirect alias.
+ */
+describe("no story renders twice on one surface (fixture pipeline)", () => {
+  it("country latest rail excludes card clusters and links canonically", async () => {
+    for (const country of ["canada", "us"] as const) {
+      const data = await getCountryData(country);
+      const cardIds = new Set(
+        [
+          data.hero!,
+          ...data.secondary,
+          ...Object.values(data.byCategory).flatMap((c) => c ?? []),
+          ...data.topList,
+        ].map((c) => c.id),
+      );
+      expect(data.latest.length).toBeGreaterThan(0);
+      for (const article of data.latest) {
+        expect(
+          article.clusterId === undefined || !cardIds.has(article.clusterId),
+          `/${country} latest "${article.title}" duplicates a card cluster`,
+        ).toBe(true);
+        if (article.clusterId) {
+          expect(
+            article.clusterSlug,
+            `/${country} latest "${article.title}" must link by cluster slug`,
+          ).toBeDefined();
+        }
+      }
+    }
+  });
+
+  it("category latest rail excludes card clusters and links canonically", async () => {
+    const business = await getCategoryData("business");
+    const cardIds = new Set(
+      [
+        ...(business.hero ? [business.hero] : []),
+        ...business.secondary,
+        ...business.more,
+        ...business.related,
+      ].map((c) => c.id),
+    );
+    expect(business.latest.length).toBeGreaterThan(0);
+    for (const article of business.latest) {
+      expect(
+        article.clusterId === undefined || !cardIds.has(article.clusterId),
+        `/business latest "${article.title}" duplicates a card cluster`,
+      ).toBe(true);
+      if (article.clusterId) {
+        expect(
+          article.clusterSlug,
+          `/business latest "${article.title}" must link by cluster slug`,
+        ).toBeDefined();
+      }
+    }
   });
 });

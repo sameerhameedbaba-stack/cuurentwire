@@ -36,8 +36,11 @@ function makeArticle(overrides: Partial<Article> = {}): Article {
 function makeCluster(
   articles: Article[],
   entities: string[] = [],
-): Pick<StoryCluster, "articles" | "entities"> {
-  return { articles, entities };
+  // Neutral by default so the headline-echo filter only fires when a test
+  // opts in with a colliding title.
+  title = "Storm system moves through the region",
+): Pick<StoryCluster, "articles" | "entities" | "title"> {
+  return { articles, entities, title };
 }
 
 describe("isPressReleaseMember", () => {
@@ -132,22 +135,111 @@ describe("extractNumericPhrases", () => {
 });
 
 describe("corroboratedDetails", () => {
-  it("corroborates an entity appearing on two distinct independent domains", () => {
+  // This suite previously asserted that a cluster entity ("Senate") WAS a
+  // corroborated detail — which is exactly the live redundancy bug: the
+  // "In this story" chips already name every cluster entity, so repeating
+  // one below as a "corroborated detail" told the reader nothing. Displayed
+  // chips are now excluded; secondary names from member articles and
+  // numeric phrases are the honest content.
+
+  it("never echoes a displayed 'In this story' chip as a detail (live regression)", () => {
+    // Live: "UnitedHealthcare CEO" rendered as a corroborated detail of the
+    // story it headlined, directly below the chip naming the same entity.
     const cluster = makeCluster(
       [
-        makeArticle({ id: "a1", sourceDomain: "a.example", source: "Example Wire" }),
+        makeArticle({
+          id: "a1",
+          sourceDomain: "a.example",
+          source: "Example Wire",
+          title: "UnitedHealthcare CEO shooting suspect appears in court",
+          entities: ["UnitedHealthcare CEO"],
+        }),
         makeArticle({
           id: "a2",
           sourceDomain: "b.example",
           source: "Northern Post",
-          title: "Rail safety bill clears the Senate",
+          title: "Court date set for UnitedHealthcare CEO shooting suspect",
+          entities: ["UnitedHealthcare CEO"],
         }),
       ],
-      ["Senate"],
+      ["UnitedHealthcare CEO"],
+    );
+    expect(corroboratedDetails(cluster)).toEqual([]);
+  });
+
+  it("corroborates a secondary name that is not a chip, not generic, not in the title", () => {
+    const cluster = makeCluster(
+      [
+        makeArticle({
+          id: "a1",
+          sourceDomain: "a.example",
+          source: "Example Wire",
+          title: "Missionary freed in Niger",
+          description: "Kevin Rideout was released unharmed, his family said.",
+          entities: ["Kevin Rideout"],
+        }),
+        makeArticle({
+          id: "a2",
+          sourceDomain: "b.example",
+          source: "Northern Post",
+          title: "Kevin Rideout released after weeks in captivity",
+          entities: [],
+        }),
+      ],
+      ["Niger Christian"],
     );
     expect(corroboratedDetails(cluster)).toEqual([
-      { phrase: "Senate", sources: ["Example Wire", "Northern Post"] },
+      { phrase: "Kevin Rideout", sources: ["Example Wire", "Northern Post"] },
     ]);
+  });
+
+  it("drops any candidate that appears in the cluster's own headline", () => {
+    // "$2 billion" is corroborated across two domains, but it IS the story's
+    // headline — the subject of the page, not a detail of it.
+    const cluster = makeCluster(
+      [
+        makeArticle({ id: "a1", sourceDomain: "a.example", title: "Fine of $2 billion issued" }),
+        makeArticle({ id: "a2", sourceDomain: "b.example", title: "Regulator's $2 billion penalty" }),
+      ],
+      [],
+      "Bank hit with $2 billion fine",
+    );
+    expect(corroboratedDetails(cluster)).toEqual([]);
+  });
+
+  it("matches the headline-echo filter case-insensitively", () => {
+    const cluster = makeCluster(
+      [
+        makeArticle({ id: "a1", sourceDomain: "a.example", title: "Star suspended 8 games" }),
+        makeArticle({ id: "a2", sourceDomain: "b.example", title: "League bans star for 8 games" }),
+      ],
+      [],
+      "Star Banned 8 Games After Probe",
+    );
+    expect(corroboratedDetails(cluster)).toEqual([]);
+  });
+
+  it("drops generic dictionary entities seeded from member articles", () => {
+    // Live regression: "Canada" rendered as a corroborated detail of a
+    // Canada story. A generic entity locates a story; it never details it.
+    const cluster = makeCluster(
+      [
+        makeArticle({
+          id: "a1",
+          sourceDomain: "a.example",
+          title: "Wildfires spread across Canada",
+          entities: ["Canada"],
+        }),
+        makeArticle({
+          id: "a2",
+          sourceDomain: "b.example",
+          title: "Canada battles record wildfire season",
+          entities: ["Canada"],
+        }),
+      ],
+      [],
+    );
+    expect(corroboratedDetails(cluster)).toEqual([]);
   });
 
   it("ignores phrases repeated only within a single domain", () => {
@@ -251,19 +343,22 @@ describe("corroboratedDetails", () => {
     expect(corroboratedDetails(cluster)).toEqual([]);
   });
 
-  it("caps output at 6 details, entities first, in stable order", () => {
-    const entities = ["Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot", "Golf"];
-    const text = `Report on ${entities.join(", ")} today`;
+  it("caps output at 6 details in stable first-appearance order", () => {
+    // Cluster entities no longer seed candidates (they are the displayed
+    // chips), so the cap is exercised on numeric phrases alone.
+    const text = "Convoy of 3 ships, 4 planes, 5 trucks, 6 tanks, 7 drones, 8 jeeps, 9 boats";
     const cluster = makeCluster(
       [
         makeArticle({ id: "a1", sourceDomain: "a.example", title: text }),
         makeArticle({ id: "a2", sourceDomain: "b.example", title: text }),
       ],
-      entities,
+      [],
     );
     const details = corroboratedDetails(cluster);
     expect(details).toHaveLength(6);
-    expect(details.map((d) => d.phrase)).toEqual(entities.slice(0, 6));
+    expect(details.map((d) => d.phrase)).toEqual([
+      "3 ships", "4 planes", "5 trucks", "6 tanks", "7 drones", "8 jeeps",
+    ]);
   });
 });
 

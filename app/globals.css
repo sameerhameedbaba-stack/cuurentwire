@@ -15,7 +15,7 @@
   --ink: #151515;          /* primary text */
   --ink-deep: #090909;     /* near-black premium sections */
   --muted: #666666;        /* metadata, secondary text */
-  --faint: #8a8a85;        /* tertiary text */
+  --faint: #6f6f6a;        /* tertiary text — 4.71:1 on paper (WCAG AA) */
   --rule: #e5e5e2;         /* borders, dividers */
   --rule-strong: #cfcfca;
   --brand: #c91920;        /* editorial red */
@@ -32,7 +32,7 @@
   --ink: #f4f4f2;
   --ink-deep: #ffffff;
   --muted: #a3a39d;
-  --faint: #7c7c76;
+  --faint: #85857e; /* clears 4.5:1 on surface (WCAG AA) */
   --rule: #303030;
   --rule-strong: #444442;
   --brand: #e0343b;

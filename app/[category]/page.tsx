@@ -15,7 +15,9 @@ import { getCategoryData } from "@/lib/news/queries";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { BreadcrumbJsonLd, ItemListJsonLd } from "@/lib/seo/structured-data";
 
-export const dynamic = "force-dynamic";
+// ISR: category pages re-render at most every 5 minutes — the dataset only
+// changes on the 30-minute refresh, so per-request rendering bought nothing.
+export const revalidate = 300;
 
 export function generateStaticParams() {
   return CATEGORY_IDS.map((category) => ({ category }));
@@ -111,7 +113,9 @@ export default async function CategoryPage({
 
       <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12">
         <div className="lg:col-span-8">
-          <HeroStory cluster={data.hero} />
+          {/* The page header above is the h1 — the hero headline demotes to
+              h2 so the page never carries two h1s. */}
+          <HeroStory cluster={data.hero} headingLevel="h2" />
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
             {data.secondary.map((cluster) => (
               <StandardStory key={cluster.id} cluster={cluster} showImage />

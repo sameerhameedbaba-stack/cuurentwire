@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { describeUpdateEvent } from "@/lib/news/coverage-analysis";
 import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
-import type { StoryUpdateEvent } from "@/lib/news/story-updates";
+import { displayableUpdates, type StoryUpdateEvent } from "@/lib/news/story-updates";
 import type { Article, StoryCluster } from "@/lib/news/types";
 import { Timestamp } from "./atoms";
 
@@ -10,6 +10,13 @@ import { Timestamp } from "./atoms";
  * publish time, and an outbound link to the original reporting.
  */
 export function CoverageSources({ cluster }: { cluster: StoryCluster }) {
+  // Derived from the rendered list itself, NEVER cluster.sourceCount: the
+  // list shows every all-time report while sourceCount tracks the active
+  // feed window, and the two drift apart (live: "8 reports from 1 source"
+  // directly above a list naming 6 outlets). "publications", deliberately
+  // not the byline's "N sources" string, which the production probe
+  // scripts/surface-coherence.mjs regex-anchors on story pages.
+  const publicationCount = new Set(cluster.articles.map((a) => a.source)).size;
   return (
     <section aria-labelledby="coverage-heading">
       <h2
@@ -19,14 +26,14 @@ export function CoverageSources({ cluster }: { cluster: StoryCluster }) {
         Coverage
       </h2>
       {/* Count coherence: the list below renders one entry per REPORT, so
-          when reports outnumber distinct sources the header states both —
-          the visible list length always matches a stated number. */}
+          when reports outnumber distinct publications the header states
+          both — every stated number matches what the reader can count. */}
       <p className="text-sm text-muted">
-        {cluster.articles.length !== cluster.sourceCount
-          ? `${cluster.articles.length} reports from ${cluster.sourceCount} source${cluster.sourceCount === 1 ? "" : "s"}.`
-          : cluster.sourceCount === 1
+        {cluster.articles.length !== publicationCount
+          ? `${cluster.articles.length} reports from ${publicationCount} publication${publicationCount === 1 ? "" : "s"}.`
+          : publicationCount === 1
             ? "1 publication is covering this story."
-            : `${cluster.sourceCount} publications are covering this story.`}
+            : `${publicationCount} publications are covering this story.`}
       </p>
       <ul className="mt-4 divide-y divide-rule">
         {cluster.articles.map((article) => (
@@ -70,7 +77,10 @@ type TimelineEntry =
  * Timeline of coverage built strictly from clustered article timestamps and
  * recorded story-update events, interleaved chronologically — rendered when
  * at least two distinct reports exist. No invented events: publish entries
- * come from member articles, update entries from the persisted update log.
+ * come from member articles, update entries from the persisted update log,
+ * churn-filtered for display by displayableUpdates (net-zero coverage
+ * oscillation and ops-only reclassifications never render). This timeline
+ * is the ONE place update events appear on a story page.
  */
 export function CoverageTimeline({
   cluster,
@@ -86,7 +96,7 @@ export function CoverageTimeline({
       at: article.publishedAt,
       article,
     })),
-    ...history.map((event) => ({
+    ...displayableUpdates(history).map((event) => ({
       type: "update" as const,
       at: event.at,
       event,

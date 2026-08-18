@@ -8,6 +8,19 @@ import { CONTENT_TYPE_LABELS, type StoryCluster } from "@/lib/news/types";
  * CurrentWire is never marked as the original publisher of third-party work.
  */
 
+/**
+ * Publisher logo (audit F6): a raster PNG with explicit dimensions —
+ * Google's article guidance wants <=600x60 and reads a dimensionless SVG as
+ * a weak signal. Generated from public/logo.svg by scripts/generate-logo.mjs;
+ * keep these numbers in sync with the committed file (350x60).
+ */
+const PUBLISHER_LOGO = {
+  "@type": "ImageObject",
+  url: `${siteConfig.url}/logo-600.png`,
+  width: 350,
+  height: 60,
+};
+
 function JsonLd({ data }: { data: object }) {
   return (
     <script
@@ -31,10 +44,7 @@ export function OrganizationJsonLd() {
         url: siteConfig.url,
         description: siteConfig.description,
         email: siteConfig.contactEmail,
-        logo: {
-          "@type": "ImageObject",
-          url: `${siteConfig.url}/logo.svg`,
-        },
+        logo: PUBLISHER_LOGO,
         publishingPrinciples: `${siteConfig.url}/editorial-standards`,
         correctionsPolicy: `${siteConfig.url}/corrections`,
         masthead: `${siteConfig.url}/news-desk`,
@@ -45,6 +55,8 @@ export function OrganizationJsonLd() {
 }
 
 export function WebSiteJsonLd() {
+  // No SearchAction (audit F7): robots.txt disallows /search, and schema
+  // must never advertise an action crawlers are told not to fetch.
   return (
     <JsonLd
       data={{
@@ -52,14 +64,6 @@ export function WebSiteJsonLd() {
         "@type": "WebSite",
         name: siteConfig.name,
         url: siteConfig.url,
-        potentialAction: {
-          "@type": "SearchAction",
-          target: {
-            "@type": "EntryPoint",
-            urlTemplate: `${siteConfig.url}/search?q={search_term_string}`,
-          },
-          "query-input": "required name=search_term_string",
-        },
       }}
     />
   );
@@ -132,10 +136,7 @@ export function StoryJsonLd({
           "@type": "Organization",
           name: siteConfig.name,
           url: siteConfig.url,
-          logo: {
-            "@type": "ImageObject",
-            url: `${siteConfig.url}/logo.svg`,
-          },
+          logo: PUBLISHER_LOGO,
         },
         about: cluster.entities.map((name) => ({ "@type": "Thing", name })),
       }}

@@ -50,11 +50,16 @@ export function pageMetadata({
       url: canonical,
       siteName: siteConfig.name,
       type: "website",
+      // Page-level openGraph REPLACES the layout's wholesale in this Next
+      // version, so the shared card must be restated here or list pages
+      // ship no preview image at all.
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: siteConfig.name }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ["/opengraph-image"],
     },
   };
 }

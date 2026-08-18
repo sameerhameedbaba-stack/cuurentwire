@@ -208,8 +208,17 @@ describe("persistDataset (mocked db)", () => {
   });
 
   it("caps the append-only tables after a successful persist", async () => {
+    // Includes the write-only archive tables (articles, story_clusters,
+    // article_cluster_members) — nothing reads them back, and uncapped they
+    // alone would fill Neon's free tier in ~4 months.
     await persistDataset(makeDataset([makeCluster()]));
-    expect(deletes).toEqual(["ranking_snapshots", "ingestion_runs"]);
+    expect(deletes).toEqual([
+      "ranking_snapshots",
+      "ingestion_runs",
+      "article_cluster_members",
+      "articles",
+      "story_clusters",
+    ]);
   });
 
   it("logs the compact CAUSE of a failed statement, not the SQL dump", async () => {

@@ -11,9 +11,11 @@ vi.mock("@/lib/database/client", () => ({
 }));
 
 import {
+  DISPLAY_UPDATE_LIMIT,
   STORY_HISTORY_LIMIT,
   appendStoryHistory,
   diffStoryForHistory,
+  displayableUpdates,
   type StoryUpdateEvent,
   type StoryUpdateSnapshot,
 } from "@/lib/news/story-updates";
@@ -188,6 +190,113 @@ describe("appendStoryHistory", () => {
     const stored = [sourceEvent("A"), sourceEvent("B")];
     const capped = appendStoryHistory(stored, [sourceEvent("C")], 2);
     expect(capped.map((e) => (e.kind === "source_added" ? e.source : ""))).toEqual(["B", "C"]);
+  });
+});
+
+describe("displayableUpdates", () => {
+  // Pure DISPLAY filter: the stored history keeps everything for ops; this
+  // decides what a reader sees. Live regression it guards: "Coverage went
+  // from 2 to 1 / 1 to 2 / 2 to 1 sources" plus "Reclassified from world to
+  // politics / politics to world / world to politics" within one hour.
+  const T0 = "2026-08-18T00:00:00.000Z";
+  function atOffset(hours: number): string {
+    return new Date(Date.parse(T0) + hours * 3_600_000).toISOString();
+  }
+  function coverage(from: number, to: number, at: string): StoryUpdateEvent {
+    return { kind: "coverage_change", at, version: VERSION, from, to };
+  }
+  function reclass(from: string, to: string, at: string): StoryUpdateEvent {
+    return { kind: "category_changed", at, version: VERSION, from, to };
+  }
+  function joined(source: string, at: string): StoryUpdateEvent {
+    return { kind: "source_added", at, version: VERSION, source };
+  }
+
+  it("returns an empty history unchanged", () => {
+    expect(displayableUpdates([])).toEqual([]);
+  });
+
+  it("drops a coverage pair that nets to zero within 24h", () => {
+    expect(
+      displayableUpdates([coverage(2, 1, atOffset(0)), coverage(1, 2, atOffset(1))]),
+    ).toEqual([]);
+  });
+
+  it("collapses the live oscillation chain to its net movement", () => {
+    // 2→1, 1→2, 2→1 inside one hour: the first pair cancels, the survivor
+    // truthfully reports the net 2→1 movement.
+    const events = [
+      coverage(2, 1, atOffset(0)),
+      coverage(1, 2, atOffset(0.5)),
+      coverage(2, 1, atOffset(1)),
+    ];
+    expect(displayableUpdates(events)).toEqual([coverage(2, 1, atOffset(1))]);
+  });
+
+  it("keeps genuine growth", () => {
+    const events = [coverage(1, 2, atOffset(0)), coverage(2, 4, atOffset(2))];
+    expect(displayableUpdates(events)).toEqual(events);
+  });
+
+  it("keeps growth that follows cancelled churn", () => {
+    const events = [
+      coverage(1, 2, atOffset(0)),
+      coverage(2, 1, atOffset(1)),
+      coverage(1, 2, atOffset(2)),
+    ];
+    expect(displayableUpdates(events)).toEqual([coverage(1, 2, atOffset(2))]);
+  });
+
+  it("does not pair a shrink with non-mirror growth", () => {
+    // 4→2 then 2→3 does not return to the starting count — both are real.
+    const events = [coverage(4, 2, atOffset(0)), coverage(2, 3, atOffset(1))];
+    expect(displayableUpdates(events)).toEqual(events);
+  });
+
+  it("keeps a reversal slower than the 24h window", () => {
+    // A story genuinely losing coverage and regaining it a day later is
+    // news, not feed rotation.
+    const events = [coverage(2, 1, atOffset(0)), coverage(1, 2, atOffset(25))];
+    expect(displayableUpdates(events)).toEqual(events);
+  });
+
+  it("cancels churn across intervening non-coverage events", () => {
+    const kept = joined("Northern Post", atOffset(0.5));
+    const events = [coverage(1, 2, atOffset(0)), kept, coverage(2, 1, atOffset(1))];
+    expect(displayableUpdates(events)).toEqual([kept]);
+  });
+
+  it("hides category_changed from public display entirely", () => {
+    // Reclassification stays in the STORED history for ops; the reader
+    // never sees a world → politics → world flap.
+    const events = [
+      reclass("world", "politics", atOffset(0)),
+      joined("Northern Post", atOffset(1)),
+      reclass("politics", "world", atOffset(2)),
+    ];
+    expect(displayableUpdates(events)).toEqual([joined("Northern Post", atOffset(1))]);
+  });
+
+  it("caps at the most recent survivors", () => {
+    const events = Array.from({ length: DISPLAY_UPDATE_LIMIT + 3 }, (_, i) =>
+      joined(`Source ${i}`, atOffset(i)),
+    );
+    const visible = displayableUpdates(events);
+    expect(visible).toHaveLength(DISPLAY_UPDATE_LIMIT);
+    expect(visible).toEqual(events.slice(3));
+  });
+
+  it("returns survivors oldest-to-newest even from unsorted input", () => {
+    const a = joined("A", atOffset(0));
+    const b = joined("B", atOffset(1));
+    const c = joined("C", atOffset(2));
+    expect(displayableUpdates([c, a, b])).toEqual([a, b, c]);
+  });
+
+  it("preserves stored order for events stamped with the same time", () => {
+    // A refresh stamps its whole batch with one `at`.
+    const batch = [joined("A", T0), joined("B", T0), coverage(1, 3, T0)];
+    expect(displayableUpdates(batch)).toEqual(batch);
   });
 });
 

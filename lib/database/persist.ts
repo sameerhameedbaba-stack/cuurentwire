@@ -27,6 +27,14 @@ const INSERT_CHUNK = 100;
 const RANKING_SNAPSHOT_RETENTION_DAYS = 3;
 const INGESTION_RUN_RETENTION_DAYS = 30;
 
+/**
+ * The article/cluster archive tables are written every run but never read by
+ * the app (story pages serve from story_archive, coherence from
+ * dataset_snapshots). Left uncapped they alone would fill Neon's 0.5GB free
+ * tier in ~4 months, so they get the same 30-day cap as ingestion_runs.
+ */
+const ARCHIVE_RETENTION_DAYS = 30;
+
 /** Keep the first row per key — first occurrence wins, like dedupeExact. */
 function dedupeBy<T>(rows: T[], key: (row: T) => string): T[] {
   const seen = new Set<string>();
@@ -218,10 +226,20 @@ async function enforceRetention(now: Date = new Date()): Promise<void> {
     const runCutoff = new Date(
       now.getTime() - INGESTION_RUN_RETENTION_DAYS * 86_400_000,
     );
+    const archiveCutoff = new Date(
+      now.getTime() - ARCHIVE_RETENTION_DAYS * 86_400_000,
+    );
     await db
       .delete(rankingSnapshots)
       .where(lt(rankingSnapshots.capturedAt, snapshotCutoff));
     await db.delete(ingestionRuns).where(lt(ingestionRuns.startedAt, runCutoff));
+    await db
+      .delete(articleClusterMembers)
+      .where(lt(articleClusterMembers.addedAt, archiveCutoff));
+    await db.delete(articles).where(lt(articles.publishedAt, archiveCutoff));
+    await db
+      .delete(storyClusters)
+      .where(lt(storyClusters.lastPublishedAt, archiveCutoff));
   } catch (error) {
     logger.warn("database.retention_failed", { error: describeDbError(error) });
   }

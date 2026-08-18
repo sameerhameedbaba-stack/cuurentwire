@@ -77,7 +77,13 @@ const PR_HEADLINE_VERBS = [
   /\bcompletes?\s+(?:its\s+)?(?:private\s+placement|offering|bought[\s-]deal)/i,
   /\bcloses?\s+(?:private\s+placement|offering|bought[\s-]deal)/i,
   /\bdeclares?\s+(?:quarterly\s+|monthly\s+|annual\s+)?(?:cash\s+)?di(?:vidend|stribution)\b/i,
-  /\bannounces?\s+(?:pricing|closing|upsizing)\s+of\b/i,
+  /\bannounces?\s+(?:pricing|closing|upsizing|upsize)\s+(?:of|to)\b/i,
+  // Corporate M&A / executive-appointment shapes measured leaking live:
+  // "JM Test Systems Acquires McMurray Technical Services", "CloudWerx
+  // Names Ahmed Shama as Chief Executive Officer". Both require corporate
+  // objects so journalism ("Senate names new committee chair") cannot fire.
+  /^[A-Z][\w.,&()' -]{0,60}\bAcquires?\b\s+[A-Z]/,
+  /\b[Nn]ames?\s+[A-Z][\w.' -]{2,40}\s+(?:as\s+)?(?:CEO|CFO|COO|CTO|[Cc]hief\s+(?:[Ee]xecutive|[Ff]inancial|[Oo]perating|[Tt]echnology)\s+[Oo]fficer|[Pp]resident\s+and\s+CEO)\b/,
   // Securities-lawsuit spam: "XYZ Shareholder Alert", "Investor Notice",
   // "law firm reminds investors of the lead plaintiff deadline". Kept to
   // law-firm boilerplate phrasings — plain "class action" or "urges

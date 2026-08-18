@@ -1,9 +1,14 @@
-import Image from "next/image";
 import { CATEGORIES, type CategoryId } from "@/config/categories";
+import { RemoteImage } from "./RemoteImage";
 
 /**
  * Editorial image with graceful fallback.
- * - Remote publisher images render through next/image.
+ * - Remote publisher images render through next/image with the optimizer
+ *   bypassed (images.unoptimized in next.config.ts — Vercel Hobby's 5,000
+ *   transformations/month cannot cover our ingest, and a blown quota 402s
+ *   every NEW image mid-cycle): plain publisher src, no generated srcset.
+ * - A remote image whose publisher CDN has died swaps to the category
+ *   placeholder client-side (see RemoteImage) instead of a broken frame.
  * - Local placeholder art renders as plain <img> (SVG assets).
  * - Missing imagery falls back to a typographic category placeholder —
  *   never a fabricated news photograph.
@@ -56,18 +61,21 @@ export function StoryImage({
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
-        // Next 16 deprecated `priority` in favour of explicit hints, and the
-        // preload it emitted never carried fetchPriority through to the <img>
-        // (docs: 01-app/03-api-reference/02-components/image.md — "use
+        // Client wrapper: onError needs a client component, and archived
+        // stories hotlink publisher CDNs forever — when the upstream dies
+        // the frame swaps to the placeholder passed here as a
+        // server-rendered node. Next 16 deprecated `priority` in favour of
+        // explicit hints, and the preload it emitted never carried
+        // fetchPriority through to the <img> (docs:
+        // 01-app/03-api-reference/02-components/image.md — "use
         // loading='eager' or fetchPriority='high' instead of preload").
-        <Image
+        <RemoteImage
           src={src}
           alt={alt}
-          fill
           sizes={sizes}
-          loading={priority || eager ? "eager" : "lazy"}
-          fetchPriority={priority ? "high" : undefined}
-          className="object-cover"
+          priority={priority}
+          eager={eager}
+          fallback={<CategoryPlaceholder category={category} />}
         />
       )}
     </div>

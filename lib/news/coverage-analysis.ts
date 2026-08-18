@@ -118,15 +118,29 @@ export function extractNumericPhrases(text: string): string[] {
 }
 
 /**
- * Details corroborated by independent coverage: verbatim phrases (canonical
- * entities plus extracted numeric phrases) that appear in the title +
- * description of articles from at least two DISTINCT independent
+ * Details corroborated by independent coverage: verbatim phrases (member
+ * articles' entity names plus extracted numeric phrases) that appear in the
+ * title + description of articles from at least two DISTINCT independent
  * (non-press-release) domains. Case-insensitive verbatim matching only;
- * same-domain repeats never count as corroboration. Stable order: entities
- * in cluster order first, then numeric phrases by first appearance.
+ * same-domain repeats never count as corroboration.
+ *
+ * Redundancy filters — the block must ADD information, never echo the page
+ * (live regression: "UnitedHealthcare CEO", "West Bank", "Canada" rendered
+ * as "corroborated details" of the very stories they headlined):
+ * - a candidate appearing in the cluster's own title is the story's
+ *   subject, not a detail;
+ * - an entity-seeded candidate never duplicates a displayed "In this story"
+ *   chip (cluster.entities — the page already names those), and never comes
+ *   from the generic dictionary ("Canada" locates a story, it does not
+ *   detail it).
+ * In practice this leaves numeric phrases and secondary names, which is the
+ * honest content; callers hide the block entirely when nothing survives.
+ *
+ * Stable order: entity names by first appearance in member order, then
+ * numeric phrases by first appearance.
  */
 export function corroboratedDetails(
-  cluster: Pick<StoryCluster, "articles" | "entities">,
+  cluster: Pick<StoryCluster, "articles" | "entities" | "title">,
 ): CorroboratedDetail[] {
   const docs = cluster.articles
     .filter((a) => !isPressReleaseMember(a))
@@ -135,23 +149,31 @@ export function corroboratedDetails(
       return {
         domain: a.sourceDomain,
         source: a.source,
+        entities: a.entities,
         text,
         lower: text.toLowerCase(),
       };
     });
   if (docs.length < 2) return [];
 
+  const titleLower = cluster.title.toLowerCase();
+  const chipKeys = new Set(cluster.entities.map((e) => e.trim().toLowerCase()));
+
   const candidates: string[] = [];
   const seen = new Set<string>();
-  const push = (phrase: string) => {
+  const push = (phrase: string, entitySeeded: boolean) => {
     const key = phrase.toLowerCase();
     if (phrase.length < 2 || seen.has(key)) return;
     seen.add(key);
+    if (titleLower.includes(key)) return;
+    if (entitySeeded && (chipKeys.has(key) || isGenericEntity(phrase))) return;
     candidates.push(phrase);
   };
-  for (const entity of cluster.entities) push(entity);
   for (const doc of docs) {
-    for (const phrase of extractNumericPhrases(doc.text)) push(phrase);
+    for (const entity of doc.entities) push(entity, true);
+  }
+  for (const doc of docs) {
+    for (const phrase of extractNumericPhrases(doc.text)) push(phrase, false);
   }
 
   const details: CorroboratedDetail[] = [];
