@@ -12,6 +12,7 @@ original publishers listed on each story page for the underlying reporting.
 ## Rankings
 
 - [Top 100](https://currentwire.us/top-100): the full ranked list of current top stories, updated continuously
+- [Most Covered](https://currentwire.us/most-covered): stories ranked by how many distinct publishers are reporting them — a measure of coverage breadth, explicitly NOT of importance, agreement or verification, and a lower bound limited to the publishers CurrentWire ingests
 - [Latest](https://currentwire.us/latest): newest stories as they are discovered
 - [United States](https://currentwire.us/us): top stories affecting the US
 - [Canada](https://currentwire.us/canada): top stories affecting Canada

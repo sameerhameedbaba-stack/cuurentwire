@@ -1,13 +1,15 @@
 import { ExternalLink } from "lucide-react";
 import { describeUpdateEvent } from "@/lib/news/coverage-analysis";
 import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
+import { coverageExcerpt } from "@/lib/news/story-context";
 import { displayableUpdates, type StoryUpdateEvent } from "@/lib/news/story-updates";
 import type { Article, StoryCluster } from "@/lib/news/types";
 import { Timestamp } from "./atoms";
 
 /**
  * Full coverage list for a clustered story: every publication, its headline,
- * publish time, and an outbound link to the original reporting.
+ * a short attributed excerpt of the summary that publisher distributes with
+ * its own feed, publish time, and an outbound link to the original reporting.
  */
 export function CoverageSources({ cluster }: { cluster: StoryCluster }) {
   // Derived from the rendered list itself, NEVER cluster.sourceCount: the
@@ -17,6 +19,12 @@ export function CoverageSources({ cluster }: { cluster: StoryCluster }) {
   // not the byline's "N sources" string, which the production probe
   // scripts/surface-coherence.mjs regex-anchors on story pages.
   const publicationCount = new Set(cluster.articles.map((a) => a.source)).size;
+  // The lead's description IS the dek at the top of the page (clustering:
+  // `summary: lead.description`), so coverageExcerpt drops it — on a
+  // one-article story nothing here renders, by design.
+  const hasExcerpts = cluster.articles.some(
+    (article) => coverageExcerpt(article.description, cluster.summary) !== undefined,
+  );
   return (
     <section aria-labelledby="coverage-heading">
       <h2
@@ -35,35 +43,49 @@ export function CoverageSources({ cluster }: { cluster: StoryCluster }) {
             ? "1 publication is covering this story."
             : `${publicationCount} publications are covering this story.`}
       </p>
+      {hasExcerpts ? (
+        <p className="mt-1 text-xs text-faint">
+          Excerpts are the summaries each publisher distributes with its own
+          feed, shortened and attributed.
+        </p>
+      ) : null}
       <ul className="mt-4 divide-y divide-rule">
-        {cluster.articles.map((article) => (
-          <li key={article.id} className="py-3">
-            <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
-              {article.source}
-              <span className="ml-2 rounded-news border border-rule px-1 py-px text-[0.625rem] font-semibold tracking-wider text-faint">
-                Tier {article.sourceTier}
-              </span>
-            </p>
-            {isSafeExternalUrl(article.url) ? (
-              <a
-                href={article.url}
-                rel="noopener noreferrer"
-                target="_blank"
-                className="group mt-1 inline-flex items-start gap-1.5 font-semibold leading-snug hover:text-brand-ink"
-              >
-                <span className="story-link">{article.title}</span>
-                <ExternalLink
-                  className="mt-1 h-3.5 w-3.5 shrink-0 text-muted group-hover:text-brand-ink"
-                  aria-hidden
-                />
-                <span className="sr-only">(opens original report in a new tab)</span>
-              </a>
-            ) : (
-              <p className="mt-1 font-semibold leading-snug">{article.title}</p>
-            )}
-            <Timestamp iso={article.publishedAt} className="mt-1 block text-xs text-muted" />
-          </li>
-        ))}
+        {cluster.articles.map((article) => {
+          const excerpt = coverageExcerpt(article.description, cluster.summary);
+          return (
+            <li key={article.id} className="py-3">
+              <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
+                {article.source}
+                <span className="ml-2 rounded-news border border-rule px-1 py-px text-[0.625rem] font-semibold tracking-wider text-faint">
+                  Tier {article.sourceTier}
+                </span>
+              </p>
+              {isSafeExternalUrl(article.url) ? (
+                <a
+                  href={article.url}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  className="group mt-1 inline-flex items-start gap-1.5 font-semibold leading-snug hover:text-brand-ink"
+                >
+                  <span className="story-link">{article.title}</span>
+                  <ExternalLink
+                    className="mt-1 h-3.5 w-3.5 shrink-0 text-muted group-hover:text-brand-ink"
+                    aria-hidden
+                  />
+                  <span className="sr-only">(opens original report in a new tab)</span>
+                </a>
+              ) : (
+                <p className="mt-1 font-semibold leading-snug">{article.title}</p>
+              )}
+              {excerpt ? (
+                <p className="mt-1 text-sm leading-snug text-muted">
+                  {excerpt} <span className="text-faint">— {article.source}</span>
+                </p>
+              ) : null}
+              <Timestamp iso={article.publishedAt} className="mt-1 block text-xs text-muted" />
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
@@ -76,11 +98,14 @@ type TimelineEntry =
 /**
  * Timeline of coverage built strictly from clustered article timestamps and
  * recorded story-update events, interleaved chronologically — rendered when
- * at least two distinct reports exist. No invented events: publish entries
- * come from member articles, update entries from the persisted update log,
- * churn-filtered for display by displayableUpdates (net-zero coverage
- * oscillation and ops-only reclassifications never render). This timeline
- * is the ONE place update events appear on a story page.
+ * at least two ENTRIES exist, counting reports and displayable updates
+ * together. The old gate counted member articles only, which hid an already
+ * recorded timeline on every one-article story (95.8% of the news sitemap,
+ * censused 2026-08-19). No invented events: publish entries come from member
+ * articles, update entries from the persisted update log, churn-filtered for
+ * display by displayableUpdates (net-zero coverage oscillation and ops-only
+ * reclassifications never render). This timeline is the ONE place update
+ * events appear on a story page.
  */
 export function CoverageTimeline({
   cluster,
@@ -89,7 +114,6 @@ export function CoverageTimeline({
   cluster: StoryCluster;
   history?: StoryUpdateEvent[];
 }) {
-  if (cluster.articles.length < 2) return null;
   const entries: TimelineEntry[] = [
     ...cluster.articles.map((article) => ({
       type: "report" as const,
@@ -102,6 +126,8 @@ export function CoverageTimeline({
       event,
     })),
   ].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+  // A one-entry "timeline" is not a timeline.
+  if (entries.length < 2) return null;
   const firstReportIndex = entries.findIndex((e) => e.type === "report");
   return (
     <section aria-labelledby="timeline-heading" className="mt-8">

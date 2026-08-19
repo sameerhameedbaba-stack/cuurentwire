@@ -158,6 +158,30 @@ test.describe("news desk", () => {
     await expect(bylineLink).toBeVisible();
     await expect(bylineLink).toHaveAttribute("href", "/news-desk");
   });
+
+  // Backlog item 3: the CurrentWire-authored context module is the original
+  // main content on a single-source story. Only what renders unconditionally
+  // is asserted — the signal breakdown is dropped for archive-rebuilt
+  // clusters by design, and a story reached from /top-100 is always live.
+  test("story page carries the CurrentWire-authored context module", async ({ page }) => {
+    await page.goto("/top-100");
+    await page.locator("main ol article h3 a").first().click();
+    await expect(page).toHaveURL(/\/story\//, { timeout: 15_000 });
+    const context = page.locator("section", {
+      has: page.getByRole("heading", { name: "How CurrentWire compiled this story" }),
+    });
+    await expect(context.first()).toBeVisible();
+    // Per-story values, not standing prose: the tier link and the score table.
+    await expect(
+      context.first().locator('a[href="/methodology/publisher-tiers"]'),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Signal breakdown", exact: true }),
+    ).toBeVisible();
+    await expect(context.first().getByText("Filed under")).toBeVisible();
+    // The module must not break the single-h1 rule the SEO spec relies on.
+    await expect(page.locator("h1")).toHaveCount(1);
+  });
 });
 
 test.describe("rss and seo endpoints", () => {

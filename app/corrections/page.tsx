@@ -3,10 +3,15 @@ import Link from "next/link";
 import { ProsePage } from "@/components/layout/ProsePage";
 import { siteConfig } from "@/config/site";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { TrustPageJsonLd } from "@/lib/seo/structured-data";
+
+/** One string for both <meta name="description"> and the WebPage JSON-LD. */
+const DESCRIPTION =
+  "How to report an error in CurrentWire coverage, and how we handle it.";
 
 export const metadata: Metadata = pageMetadata({
   title: "Corrections",
-  description: "How to report an error in CurrentWire coverage, and how we handle it.",
+  description: DESCRIPTION,
   path: "/corrections",
 });
 
@@ -44,8 +49,11 @@ export default function CorrectionsPage() {
       <p>
         We review reports promptly. Material inaccuracies are corrected as soon
         as they are verified; classification and clustering fixes also feed
-        improvements to the automated systems that caused them. Our
-        summarization and attribution rules are published in the{" "}
+        improvements to the automated systems that caused them — the{" "}
+        <Link href="/news-desk">news desk page</Link> describes what those
+        systems do, and the <Link href="/methodology">methodology</Link>{" "}
+        documents the signals they use. Our summarization and attribution rules
+        are published in the{" "}
         <Link href="/editorial-standards">editorial standards</Link>.
       </p>
 
@@ -68,6 +76,11 @@ export default function CorrectionsPage() {
       <p>
         For anything else, see the <Link href="/contact">contact page</Link>.
       </p>
+      <TrustPageJsonLd
+        path="/corrections"
+        name="Corrections"
+        description={DESCRIPTION}
+      />
     </ProsePage>
   );
 }

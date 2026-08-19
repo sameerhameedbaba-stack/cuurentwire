@@ -16,7 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // sitemap fetch. They are all one link from /archive (listed below), and
   // every story they link to is already in archive-sitemap.xml.
   const staticPaths = [
-    "", "/latest", "/top-100", "/us", "/canada", "/topics",
+    "", "/latest", "/top-100", "/most-covered", "/us", "/canada", "/topics",
     "/sources", "/archive", "/about", "/news-desk", "/methodology",
     // Evergreen reference pages. Nested under /methodology so the URL
     // hierarchy matches the BreadcrumbList they emit.

@@ -11,14 +11,42 @@ import { CONTENT_TYPE_LABELS, type StoryCluster } from "@/lib/news/types";
 /**
  * Publisher logo (audit F6): a raster PNG with explicit dimensions —
  * Google's article guidance wants <=600x60 and reads a dimensionless SVG as
- * a weak signal. Generated from public/logo.svg by scripts/generate-logo.mjs;
- * keep these numbers in sync with the committed file (350x60).
+ * a weak signal. Generated from public/logo.svg by scripts/generate-logo.mjs.
+ *
+ * These numbers are hand-maintained (the generator writes the PNG but cannot
+ * edit this file), so tests/unit/publisher-logo.test.ts reads the committed
+ * PNG's IHDR chunk and fails if they ever drift apart. Exported for that test
+ * only. NOT an ImageResponse route: ImageResponse supports "only `ttf`, `otf`,
+ * and `woff` font formats" (node_modules/next/dist/docs/01-app/
+ * 03-api-reference/04-functions/image-response.md, "Behavior") and next/font
+ * self-hosts Archivo as woff2, so a generated wordmark would silently fall
+ * back to Arial and stop being our mark.
  */
-const PUBLISHER_LOGO = {
+export const PUBLISHER_LOGO = {
   "@type": "ImageObject",
   url: `${siteConfig.url}/logo-600.png`,
   width: 350,
   height: 60,
+};
+
+/**
+ * Publisher reference shared by NewsArticle and the standalone page types.
+ * Byte-identical to the object StoryJsonLd used to inline — hoisted so
+ * /about, /methodology, /editorial-standards, /corrections, /contact and
+ * /topics all name the same publisher entity instead of drifting apart.
+ */
+const PUBLISHER_ORGANIZATION = {
+  "@type": "Organization",
+  name: siteConfig.name,
+  url: siteConfig.url,
+  logo: PUBLISHER_LOGO,
+};
+
+/** The site a page belongs to — matches WebSiteJsonLd on the home page. */
+const PART_OF_WEBSITE = {
+  "@type": "WebSite",
+  name: siteConfig.name,
+  url: siteConfig.url,
 };
 
 function JsonLd({ data }: { data: object }) {
@@ -132,12 +160,7 @@ export function StoryJsonLd({
         publishingPrinciples: `${siteConfig.url}/editorial-standards`,
         correctionsPolicy: `${siteConfig.url}/corrections`,
         isBasedOn: cluster.articles.map((a) => a.url),
-        publisher: {
-          "@type": "Organization",
-          name: siteConfig.name,
-          url: siteConfig.url,
-          logo: PUBLISHER_LOGO,
-        },
+        publisher: PUBLISHER_ORGANIZATION,
         about: cluster.entities.map((name) => ({ "@type": "Thing", name })),
       }}
     />
@@ -252,27 +275,104 @@ export function ReferencePageJsonLd({
   description: string;
   path: string;
 }) {
-  return (
-    <JsonLd
-      data={{
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        name,
-        description,
-        url: `${siteConfig.url}${path}`,
-        inLanguage: "en",
-        isPartOf: {
-          "@type": "WebSite",
-          name: siteConfig.name,
-          url: siteConfig.url,
-        },
-        publisher: {
-          "@type": "Organization",
-          name: siteConfig.name,
-          url: siteConfig.url,
-          logo: PUBLISHER_LOGO,
-        },
-      }}
-    />
-  );
+  // Same payload it always emitted, now built by trustPageSchema: a reference
+  // page IS a trust page whose type happens to be the default WebPage, and two
+  // near-identical builders would drift the moment one of them gained a field.
+  return <JsonLd data={trustPageSchema({ name, description, path })} />;
+}
+
+/**
+ * Hub page whose value is the collection itself (/topics): CollectionPage
+ * wrapping an ItemList of the hub URLs.
+ *
+ * The caller must pass ONLY URLs that answer `index`. Topic hubs below
+ * `shouldIndexCollection` are deliberately `noindex, follow`, and schema must
+ * never advertise a URL that tells crawlers to stay out — the same rule
+ * app/sitemap.ts already applies to this exact list.
+ *
+ * `numberOfItems` counts what is actually emitted, not the pre-slice total:
+ * declaring 40 while listing 30 is a small lie and this site does not tell
+ * them.
+ */
+export function collectionPageSchema({
+  path,
+  name,
+  description,
+  items,
+}: {
+  path: string;
+  name: string;
+  description: string;
+  /** Already filtered to indexable URLs by the caller. */
+  items: { name: string; url: string }[];
+}) {
+  const listed = items.slice(0, 30);
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name,
+    description,
+    url: `${siteConfig.url}${path}`,
+    inLanguage: "en",
+    isPartOf: PART_OF_WEBSITE,
+    publisher: PUBLISHER_ORGANIZATION,
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: listed.length,
+      itemListElement: listed.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.name,
+        url: item.url.startsWith("http")
+          ? item.url
+          : `${siteConfig.url}${item.url}`,
+      })),
+    },
+  };
+}
+
+export function CollectionPageJsonLd(
+  props: Parameters<typeof collectionPageSchema>[0],
+) {
+  return <JsonLd data={collectionPageSchema(props)} />;
+}
+
+/**
+ * Trust / editorial-policy pages: /about (AboutPage), /contact (ContactPage)
+ * and the policy pages (WebPage, also used by the /methodology/* reference
+ * pages). These are the exact URLs OrganizationJsonLd already points at via
+ * publishingPrinciples, correctionsPolicy, masthead and
+ * actionableFeedbackPolicy — typing them closes the E-E-A-T loop in both
+ * directions instead of leaving them as merely crawlable prose.
+ *
+ * Deliberately carries NO datePublished/dateModified. These pages are edited
+ * in git, not published on a date the site records, so any timestamp here
+ * would be invented. Guarded by tests/unit/structured-data-pages.test.ts and
+ * by scripts/seo-health.mjs against the live HTML.
+ */
+export function trustPageSchema({
+  path,
+  name,
+  description,
+  type = "WebPage",
+}: {
+  path: string;
+  name: string;
+  description: string;
+  type?: "AboutPage" | "ContactPage" | "WebPage";
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": type,
+    name,
+    description,
+    url: `${siteConfig.url}${path}`,
+    inLanguage: "en",
+    isPartOf: PART_OF_WEBSITE,
+    publisher: PUBLISHER_ORGANIZATION,
+  };
+}
+
+export function TrustPageJsonLd(props: Parameters<typeof trustPageSchema>[0]) {
+  return <JsonLd data={trustPageSchema(props)} />;
 }

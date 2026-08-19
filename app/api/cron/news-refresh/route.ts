@@ -46,6 +46,7 @@ const ISR_SURFACES: { path: string; type?: "page" }[] = [
   { path: "/canada" },
   { path: "/topics" },
   { path: "/sources" },
+  { path: "/most-covered" },
   { path: "/[category]", type: "page" },
   { path: "/story/[slug]", type: "page" },
   { path: "/topic/[slug]", type: "page" },

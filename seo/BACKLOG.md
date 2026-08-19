@@ -1,240 +1,298 @@
 # SEO Backlog
 
-Re-prioritized 2026-08-18 from the weekly deep run (evidence in
-`reports/2026-08-18-weekly.md`; daily-loop evidence in `reports/2026-08-18.md`);
-statuses re-verified live on 2026-08-19 (`reports/2026-08-19.md`).
-Statuses: OPEN / SHIPPED / BLOCKED(user). Verify a fix live before flipping it
-to SHIPPED.
+**Status 2026-08-19: nothing is open.** Every item carried into this run was
+either shipped and verified live, closed as obsolete with the command that
+proved it, or converted from a human to-do into automated monitoring. Evidence
+for each is in `reports/2026-08-19.md`; the historical record below is kept
+because the measurements in it are the baseline future runs compare against.
 
-Ranking rule used here: how much indexable, crawlable, citable value the fix
-creates per unit of risk. Items measured this week carry their measurement.
+Statuses: OPEN / SHIPPED / CLOSED / BLOCKED(user). Verify a fix live before
+flipping it to SHIPPED. Ranking rule when items exist: how much indexable,
+crawlable, citable value a fix creates per unit of risk.
+
+## Open
+
+Nothing. New findings go here; do not invent work to fill the section. The
+standing monitors that will produce the next items are:
+
+- `.github/workflows/seo-health.yml` — daily, 19 checks against production.
+  Fails loudly on any regression, including the three added 2026-08-19: story
+  ISR caching, duplicate font preloads, and trust-page JSON-LD.
+- `.github/workflows/url-survival.yml` — daily, proves no published `/story/`
+  URL has died. 1,286 URLs, 0 dead as of 2026-08-19.
+- `.github/workflows/cwv.yml` — weekly Core Web Vitals, now keyless.
+- The daily and weekly agent loops in `PLAYBOOK.md`.
+
+## Known and accepted — not work, but do not "fix" these
+
+- **The operator identity line on `/about`** is deliberately deferred. It is a
+  business decision, not an oversight.
+- **`/topic/*` hubs below the thin-collection bar are `noindex, follow`.** They
+  flip indexable as they accumulate stories. Working as designed.
+- **Merge 308s and `/story/<clusterId>` 307s show as "Page with redirect" in
+  GSC.** That is the URL-permanence guarantee doing its job.
+- **`/general` is noindexed.** It is the internal low-confidence bucket, not a
+  public section.
+- **`/top-100` and `/latest` are `force-dynamic`.** They must read
+  `searchParams`, which opts a route into dynamic rendering in this Next
+  version — no route segment config can change that. Their canonical
+  unfiltered documents carry an edge-only cache directive instead
+  (`next.config.ts`), which is the only lever Next sanctions.
+- **Coverage breadth on this site tops out low** (max 2 publishers per story in
+  the 2026-08-19 snapshot, 13 publishers represented of 43 configured). That is
+  a function of the ingest feed list in the `RSS_FEEDS` env var, not of the
+  ranking code. `/most-covered` states it on the page as a lower bound rather
+  than hiding it.
 
 ## GSC index review — 2026-08-18 (owner asked; read via Search Console UI)
 
 State as of GSC data dated 8/14-8/15: **88 indexed, 185 not indexed, 4 reasons.**
-Verdict: three of the four reasons are correct behavior; the fourth is the known
-strategic work, plus one real bug found and fixed the same day.
+Three of the four reasons were correct behaviour; the fourth was the strategic
+work now shipped.
 
-- "Excluded by noindex" (23) — all `/topic/*` hubs below the thin-collection
-  bar. Intentional by design; as hubs accumulate stories they flip indexable
-  and into the sitemap. No action.
-- "Page with redirect" (13) — merge 308s, `/story/<clusterId>` 307 aliases, www.
-  Correct behavior. The /latest fix (weekly run) stops feeding new alias URLs
-  to Google, so this decays on its own. No action.
+- "Excluded by noindex" (23) — thin `/topic/*` hubs. Intentional.
+- "Page with redirect" (13) — merge 308s, alias 307s, www. Correct.
 - "Not found 404" (2) — two story URLs from before the permanent archive
-  existed (2026-08-15 era, one a since-dissolved bad merge; both verified 404
-  live). Nothing to restore — data was never archived; Google drops these.
-  No action.
-- "Crawled - currently not indexed" (147) — the real one. Sampled examples
-  break into: (a) `/story/<clusterId>` alias URLs — feeding stopped by the
-  weekly /latest fix; (b) filtered `/top-100?...` variants that canonicalize
-  away — correct; (c) indexable topic hubs Google hasn't chosen yet — normal
-  for a young site; (d) **thin single-source and press-release story pages —
-  this IS backlog items 1, 3 and 4**; (e) `/general` — a real bug, fixed:
-  the internal low-confidence bucket rendered indexable with a self-canonical.
-  Now noindexed (e2e-tested). SHIPPED 2026-08-18.
+  existed. Nothing to restore.
+- "Crawled - currently not indexed" (147) — the real one. Broke down into
+  alias URLs (feeding stopped), filtered `/top-100?...` variants that
+  canonicalize away (correct), indexable topic hubs Google had not chosen yet
+  (normal for a young site), and **thin single-source story pages plus the
+  absence of any evergreen content** — which were backlog items 1, 3 and 4 and
+  are now shipped. `/general` rendering indexable was a real bug, fixed
+  2026-08-18.
 
-Bottom line: 88/273 indexed at 3 weeks old with zero backlinks is a normal
-young-site ratio; the lever that moves it is items 1, 3 and 4 below, not
-plumbing (which the health check shows is clean).
+Re-measure this in the next weekly run: the levers that move it (internal
+linking, story depth, evergreen hubs, and large-thumbnail eligibility, which
+was silently broken sitewide until 2026-08-19) all landed after that snapshot.
 
-## Open — high value
+## Shipped 2026-08-19 (backlog clear-out) — all verified live after deploy
 
-1. ~~**Story pages are internal-link dead ends.**~~ **SHIPPED** — fixed by the
-   "Finish line" app commit (79e77e5, 2026-08-18) with the "More in
-   {Category}" rail, exactly the separate honestly-labelled rail this item
-   specified. Verified live 2026-08-19 on 3 of 3 sampled story pages: each
-   renders "More in ..." and **4 outbound links to other stories** (was 0 on
-   39 of 40 pages a day earlier). "Related coverage" is unchanged and still
-   absent from story pages, which is the intended round-8 precision bar.
-   Original text kept below for the measurement record.
+Every remaining OPEN item was designed, adversarially reviewed, implemented and
+verified in one run. The reviews changed three of them materially; those
+corrections are recorded here because they are the reusable part.
 
-   Measured 2026-08-18 across 40
-   live + archived story pages: **39 of 40 (97%) have zero outbound links to
-   any other story**, and 10 of 40 have no topic links either. The "Related
-   coverage" rail does not render at all — the heading is absent from every
-   story page sampled. This is not a bug: `scoreArchiveRelatedness` requires
-   two shared specific entities (or one plus high title similarity), a
-   precision bar round-8 raised deliberately, and almost no pair clears it.
-   With 1,720 permanent story URLs, that is 1,720 crawl dead ends and no
-   story-to-story link equity anywhere on the site.
-   **Fix (do not lower the round-8 bar):** keep "Related coverage" exactly as
-   it is for genuine same-storyline matches, and add a *separate, honestly
-   labelled* navigational rail — "More in {Category}" or "Also on CurrentWire
-   today" — that always renders 4-6 links chosen by category and recency. It
-   makes no relatedness claim, so it cannot be wrong. Needs a unit test
-   asserting every story page renders at least 4 internal story links.
-   Impact: the largest remaining structural item. Status: SHIPPED (79e77e5,
-   verified live 2026-08-19: 4 story links on 3 of 3 sampled pages)
+### 1. Story pages were internal-link dead ends — SHIPPED (79e77e5)
 
-2. **No CDN caching on HTML — dynamic routes.** **SHIPPED 2026-08-19.**
-   Root cause found this run: `/story/[slug]`, `/topic/[slug]`,
-   `/source/[slug]` and `/archive/[date]` all *declared*
-   `export const revalidate`, and the cron already called `revalidatePath` on
-   three of them — but Next 16 only applies ISR to a dynamic segment when the
-   page **also exports `generateStaticParams`**. Without it the config line is
-   inert; all four sat in the build's ƒ (Dynamic) bucket and served
-   `private, no-cache, no-store` with `X-Vercel-Cache: MISS` on every fetch,
-   including repeat fetches of the same URL. Each now returns `[]` (nothing
-   prerendered at build; every URL cached on its first visit). Verified live
-   after deploy: all four answer `X-Nextjs-Prerender: 1` +
-   `public, max-age=0, must-revalidate`, `X-Vercel-Cache: HIT` on the second
-   fetch, and **warm story TTFB 110–125 ms against the 557 ms median measured
-   2026-08-18** (topic hub 102–126 ms vs 538 ms). Nothing regressed:
-   `url-survival.mjs` checked 1,286 published URLs with 0 dead and 118
-   redirects all resolving 200, merge 308s still 308, clusterId aliases still
-   307, unknown story/source/date still 404, `seo-health.mjs` all green.
-   Guarded by `tests/unit/isr-route-config.test.ts`.
+Measured 2026-08-18: 39 of 40 story pages had **zero** outbound links to any
+other story. The "More in {Category}" rail fixed it. Verified live 2026-08-19:
+4 outbound story links on 3 of 3 sampled pages. "Related coverage" is unchanged
+and still rare, which is the intended round-8 precision bar, not a bug.
 
-2b. **`/top-100` and `/latest` are still `force-dynamic`** (measured
-   2026-08-19: `no-store`, `X-Vercel-Cache: MISS`, TTFB 378–456 ms), because
-   both read `searchParams` for filters and pagination. The unfiltered
-   canonical URLs are the ones that matter for indexing, so the fix is a
-   cached path for the no-params case, not removing the filters. Smaller and
-   fiddlier than item 2 was; measure before assuming it is worth it.
-   Status: OPEN
+### 2. No CDN caching on HTML — SHIPPED
 
-3. **Single-source story pages are thin.** ~170-210 words of main-content text
-   per story (measured on 4 pages; better than the baseline's 25-100 estimate
-   because the round-7 coverage modules now render, but still thin), much of it
-   a publisher-supplied dek. Options, cheapest first: render each source's
-   publisher-provided description in the Coverage section (already ingested,
-   attributed, $0); always render the timeline and context modules; delay
-   indexing until a second source or an original summary exists.
-   Impact: the aggregator thin-content ceiling — the #1 strategic risk.
-   Status: OPEN
+Root cause: `/story/[slug]`, `/topic/[slug]`, `/source/[slug]` and
+`/archive/[date]` declared `export const revalidate` but exported no
+`generateStaticParams`, which Next 16 requires before ISR engages on a dynamic
+segment. All four sat in the build's ƒ bucket serving `no-store` on every
+request, including repeat fetches of the same URL. Each now returns `[]`.
+Verified live: `X-Nextjs-Prerender: 1`, `HIT` on the second fetch, and **warm
+story TTFB 110–125 ms against the 557 ms median measured 2026-08-18**. No
+regression: `url-survival.mjs` 1,286 URLs / 0 dead, merge 308s still 308, alias
+307s still 307, unknown URLs still 404.
+Guard: `tests/unit/isr-route-config.test.ts`.
 
-4. **No evergreen content of any kind.** Competitor structure measured
-   2026-08-18 from live sitemaps: AllSides publishes 7,005 indexable URLs of
-   which **2,437 are `/blog/*` and 9 are `/media-bias/*` reference pages** —
-   non-perishable content that ranks year-round and attracts the links a news
-   archive never will. CurrentWire's only non-perishable pages are the 9 trust
-   pages. Candidate hubs CurrentWire can write honestly from data it already
-   has: how story ranking works in practice, what "coverage breadth" measures,
-   a publisher-tier reference page. White-hat, no fabrication, and it is the
-   standard answer to the thin-content ceiling.
-   Impact: link acquisition and topical authority. Status: OPEN
+### 2b. `/top-100` and `/latest` — SHIPPED, with the review's correction
 
-5. **Category misclassification on live section pages** (found in the
-   2026-08-18 daily crawl; classifier bug — fix belongs in `lib/news/` with
-   benchmark coverage, per
-   `MEMORY/2026-08-15-category-dedup-already-engineered.md`):
-   - ~~`/story/lakers-governor-jeanie-buss-...-cdf300f9d9eea` filed under
-     **politics**~~ — FIXED by the classifier changes in 79e77e5; re-checked
-     live 2026-08-19, it now reports `"articleSection":"Business"` (an
-     ownership-stake dispute — correct).
-   - `/story/theban-tomb-reveals-how-egyptian-burial-trends-evolved-in-time-c4e2e50b44255`
-     still filed under **technology** (re-checked live 2026-08-19) — it is
-     archaeology. No archaeology/history signal exists in the classifier, so
-     it lands on technology by elimination; `science` is the honest bucket.
-   Impact: poisons the exact topical signal category pages rank on.
-   Status: OPEN (one of two fixed)
+Both must read `searchParams`, which forces dynamic rendering; no segment
+config can change it. The one lever Next sanctions is a `next.config` headers
+rule, scoped with `missing` so it fires only on the canonical unfiltered
+document (filters, pagination and RSC requests excluded).
 
-6. **"Most covered" exists as data but not as a page.** `?sort=most-covered`
-   canonicalizes to `/top-100` (verified live), so CurrentWire's most
-   differentiated signal — how many independent outlets are covering a story —
-   has no indexable URL. Ground News built its entire identity on this angle.
-   A `/most-covered` route with its own canonical, title and ItemList is a
-   small change against an already-computed field.
-   Impact: the clearest content-gap win available. Status: OPEN
+**What the review changed:** the first version set a public
+`s-maxage=300`. On Vercel that header is applied by the edge proxy, and no
+route on this deployment has ever produced a cache HIT from a Cache-Control
+string alone — every measured HIT carries `X-Nextjs-Prerender: 1`. So if the
+edge ignored the rule, the site would have been telling every downstream shared
+cache to hold the two freshness-critical pages for five minutes while the
+origin re-rendered each time, and it would also have overwritten the `no-store`
+Next sets on error renders. Split: the TTL now rides in
+`Vercel-CDN-Cache-Control` (consumed and stripped at the edge, so nothing
+downstream can be misinformed) and the client-facing header is byte-identical
+to what `/` already serves. A header that cannot lie beats a header that might.
+Guard: `tests/unit/list-cache-headers.test.ts`.
 
-7. **Near-duplicate topic hubs from entity extraction.** Verified live
-   2026-08-18: `/topic/big-bend` and `/topic/big-bend-national-park` both
-   resolve, and `/topic/bay-giants` and `/topic/unitedhealthcare-ceo` still
-   return 200 with zero stories. The thin ones are correctly `noindex, follow`
-   and are excluded from the sitemap, so the damage is now crawl waste rather
-   than index dilution — but the entity normalizer should still fold
-   singular/plural and containment variants and drop headline-fragment bigrams.
-   Fix in entity normalization with benchmark coverage. Status: OPEN
+### 3. Single-source story pages were thin — SHIPPED (scoped down)
 
-8. ~~**Archived stories have no HTML browse path.**~~ **SHIPPED** — `/archive`
-   (day buckets by month, linked from the footer) and `/archive/<date>` landed
-   in 79e77e5. Verified live 2026-08-19: `/archive` 200 with a self-canonical,
-   `/archive/2026-08-18` 200 with BreadcrumbList + ItemList JSON-LD (both
-   parse) and **623 outbound story links** on that one day page. Every
-   permanent story URL is now reachable by real HTML links, not only sitemaps.
-   Status: SHIPPED (79e77e5, verified live 2026-08-19)
+See `reports/2026-08-19.md` for the measured before/after. The design's own
+measurement is why it was scoped down: it would have added ~254 words of which
+only ~36 were per-story unique and ~218 were a site-wide fixed disclosure.
+Adding 218 words of identical boilerplate to 2,199 permanent story URLs is
+mass-duplicated text on a site already fighting a duplicate-content ceiling.
+Shipped the per-story-unique parts; the fixed prose lives on `/methodology/*`
+and is linked instead. **A sentence that does not change between two stories
+does not belong in the story template.**
 
-## Open — polish
+### 4. No evergreen content of any kind — SHIPPED
 
-9. **Publisher logo for News surfaces**: `NewsArticle.publisher.logo` is still
-   the 408-byte generic `logo.svg` with no width or height. Replace with a
-   route-generated wordmark PNG with explicit dimensions. Status: OPEN
-10. **No font preload**: Inter and Archivo are self-hosted with
-    `font-display: swap`, but the head carries zero `rel="preload"` woff2
-    links (measured 2026-08-18), so headline text repaints after CSS parse.
-    Preloading the two headline weights is a small, safe CLS/LCP win.
-    Status: OPEN
-11. **/topics has no JSON-LD** — add CollectionPage. (`/latest`, `/sources` and
-    `/source/*` got ItemList on 2026-08-18.) Status: OPEN
-12. **Trust pages carry no JSON-LD** — AboutPage/WebPage with `publisher` on
-    /about, /methodology, /editorial-standards and /corrections would make the
-    E-E-A-T pages machine-readable, not merely crawlable. Status: OPEN
-13. In-body interlinking between trust pages is partial (about to standards,
-    contact to corrections). Corrections to standards shipped 2026-08-15; the
-    rest is open. Status: OPEN
-14. `/contact` is 77 words — the thinnest trust page. Status: OPEN
-15. Warm the hero `/_next/image` URL right after each cron refresh so first
-    viewers hit the edge cache (one curl in the cron, $0). Note: the hero image
-    already measured `X-Vercel-Cache: HIT` at 12KB/393ms on 2026-08-18, so this
-    is lower value than it looked at baseline. Status: OPEN (low)
-16. ~~Shard `/archive-sitemap.xml` via generateSitemaps when the archive
-    approaches 40,000 stories.~~ **CLOSED 2026-08-19 — converted from a human
-    to-do into an automatic alarm.** `scripts/seo-health.mjs` now fails when
-    `/archive-sitemap.xml` exceeds 45,000 URLs, ~5,000 short of the 50,000
-    sitemap cap, with the fix named in the failure message. 2,163 URLs
-    measured today, so it is still years away — but nobody has to remember it
-    now. Status: SHIPPED (as monitoring)
+Three reference pages under `/methodology/`: `coverage-breadth`,
+`publisher-tiers`, `duplicate-stories`. Every figure on them is **computed at
+render from the production scoring functions** (`RANKING_WEIGHTS`,
+`coverageFactor`, `freshnessFactor`, `TIER_WEIGHT`) rather than typed into
+copy, so the pages cannot drift from the code they describe.
 
-## Was blocked on the owner — resolved 2026-08-19
+**What the review changed:** the draft would have published "on 491 pairs,
+precision 0.989, recall 0.806" as an accuracy figure. Those numbers come from
+`tests/fixtures/cluster-pairs.ts`, whose own header says every pair is invented
+— fictional towns, companies and people — and PLAYBOOK.md's rule is
+"Real-headline accuracy is the only accuracy we quote." The count was stale
+too (501 pairs now, not 491). The page publishes **no measured accuracy**; it
+states the CI gates, which are contract values in the repo rather than
+measurements of the world, and says plainly that the pairs are written for the
+test rather than sampled from live coverage. A guard comment forbids
+reintroducing a figure.
 
-17. ~~**Google Search Console — submit `archive-sitemap.xml` in the UI.**~~
-    **CLOSED — not required.** `robots.txt` already advertises all three
-    sitemaps, verified live 2026-08-19:
-    `Sitemap: https://currentwire.us/sitemap.xml`,
-    `.../news-sitemap.xml`, `.../archive-sitemap.xml`. Google discovers
-    sitemaps from `robots.txt` without any UI action, so this was never a
-    prerequisite for indexing — only for per-sitemap coverage *reporting*.
-    Optional and entirely the owner's call; nothing is blocked on it. The
-    free GSC API service account remains a nice-to-have for pulling
-    clicks/impressions into the daily loop, also optional. Status: CLOSED
-18. ~~**Bing Webmaster Tools.**~~ **DONE 2026-08-19** — site verified by GSC
-    import (Administrator), all 3 sitemaps submitted, 0 errors; logged in
-    `seo/offpage/LEDGER.md`. The optional free API key is not needed:
-    IndexNow already pushes every new story to Bing within ~30 min, and
-    DuckDuckGo and Yahoo source from Bing (see the coverage map in
-    PLAYBOOK.md). Status: SHIPPED
-19. ~~**PageSpeed Insights API key.**~~ **CLOSED 2026-08-19 — no key needed.**
-    The keyless PSI endpoint still returns HTTP 429 (re-confirmed today), so
-    `scripts/cwv-check.mjs` no longer depends on it. It now defaults to a
-    keyless probe that drives the Chromium the e2e suite already installs,
-    under Lighthouse's mobile throttling (4x CPU, 1638.4 kbps, 150 ms), and
-    reads LCP/CLS/FCP/TTFB from the browser's own PerformanceObserver.
-    First real measurement, 2026-08-19 (`data/cwv-history.json`):
+Two more prose claims were false and were rewritten: that an all-press-release
+story's source-mix line prints "0 independent domains" (it was suppressed by a
+`> 0` guard — the guard was fixed so the sentence became true), and that a
+story's address never changes as coverage grows (`pickLead()` re-selects the
+lead and the slug is built from its title — which is exactly why `/story/`
+307s old addresses). **Prose about behaviour is a claim; verify it against the
+code the way you verify a statistic.**
 
-    | Page | LCP | CLS | FCP | TTFB |
-    |---|---|---|---|---|
-    | `/` | **3,632 ms** | 0.001 | 1,912 ms | 135 ms |
-    | `/top-100` | 1,628 ms | 0.006 | 1,628 ms | 90 ms |
-    | story page | 1,588 ms | 0 | 1,588 ms | 281 ms |
+### 5. Category misclassification — SHIPPED
 
-    CLS is effectively zero everywhere and two of three pages have good LCP.
-    A PSI key would only ever add CrUX *field* data on top, and CrUX needs
-    real traffic volume this site does not have yet — so it would report
-    nothing today even if the owner added one. `.github/workflows/cwv.yml`
-    runs the keyless probe weekly and commits the history.
-    Status: SHIPPED (keyless; PSI key optional, not blocking)
+The Lakers/Jeanie Buss story was fixed upstream (now Business). The Theban tomb
+story was traced, not guessed: it scored **zero on every category**, so the
+arstechnica.com feed prior — weight 2, exactly `MIN_PRIMARY_SCORE` — decided it
+alone at confidence 1.0. Archaeology coverage had two words to stand on. Fixed
+as a dictionary change, not a rule change.
 
-20. **Homepage LCP is 3,632 ms — the one bad Core Web Vital** (new, found by
-    the keyless probe above on 2026-08-19; every other page measured good).
-    Measured cause: the hero image is a **71,262-byte JPEG served from
-    `ichef.bbci.co.uk`**, a third-party origin that needs DNS + TLS before
-    the LCP element can even start downloading, and `next.config.ts` sets
-    `images.unoptimized = true` so there is no resizing. Cheapest honest fix
-    first: emit `<link rel="preconnect">` for the current hero image's origin
-    (it changes per story, so it must be derived from the rendered hero, not
-    hardcoded). Re-measure with `node scripts/cwv-check.mjs` after.
-    Status: OPEN
+**What the review changed:** the first dictionary created **nine new
+confident-wrong placements**. "Ancient city of Aleppo faces new shelling"
+scored science, and "ancient city" is the standard dateline of siege reporting;
+"excavation" is a construction word at least as often as an archaeology one;
+bare "dinosaur" caught a film franchise. It also moved **zero** stories on the
+313-story real-production benchmark, so it was buying nothing while adding
+collisions. Narrowed to precise phrases, five entries removed with the headline
+that broke each recorded in the code, and five collision guards added as
+fixtures. **Turning a harmless `general` abstention into a confident wrong
+section is worse than the misfile being fixed.** Fixtures 268 → 288,
+high-confidence accuracy held at 98.9%.
+
+### 6. "Most covered" had no indexable URL — SHIPPED
+
+`?sort=most-covered` canonicalized straight back to `/top-100`, so the site's
+most differentiated signal had no home. `/most-covered` is now a static ISR
+route with its own canonical, title, BreadcrumbList and ItemList, linked from
+the footer, `/top-100`, the sitemap and llms.txt. The `?sort=` dimension was
+removed from `/top-100`'s generated URL space entirely — one less duplicate
+URL family for Google to fetch and discard.
+
+The page states its own limits on the page: breadth is not importance, not
+agreement, not verification; it is measured only over publishers we ingest and
+is therefore a **lower bound**; syndication is excluded; ties are common. That
+honesty section is also what stops it being thin.
+Guards: `tests/unit/most-covered.test.ts`, four Playwright specs.
+
+### 7. Near-duplicate topic hubs — SHIPPED
+
+A topic identity-key layer (`lib/news/topics.ts`) folds containment and
+singular/plural variants and drops headline-fragment bigrams. Consolidation is
+`rel=canonical`, never a redirect, because `/topic/<slug>` answers 200 for any
+slug — so no advertised URL can start 404ing, and every variant keeps serving a
+**superset** of what it served before. Folding is curated, never naive
+substring matching: `/topic/florida` and `/topic/florida-house` are both real.
+Verified live: `/topic/big-bend` now canonicalizes onto
+`/topic/big-bend-national-park`; `york`/`new-york` and
+`washington`/`washington-post` correctly stayed separate; `bay-giants` and
+`unitedhealthcare-ceo` are gone from `/topics`.
+
+The eligibility floor also moved from articles to **distinct clusters**, which
+is precisely what syndication inflates — three copies of one release are one
+story. That made an existing test's premise obsolete in a good way; it now
+asserts the stronger property.
+
+### 8. Archived stories had no HTML browse path — SHIPPED (79e77e5)
+
+`/archive` and `/archive/<date>`. Verified live: `/archive/2026-08-18` returns
+200 with BreadcrumbList + ItemList and **623 outbound story links**.
+
+### 9. Publisher logo for News surfaces — SHIPPED (cb0bb63), now guarded
+
+Already done and proven live: `/logo-600.png`, 3,858 bytes, IHDR 350x60, and
+`NewsArticle.publisher.logo` carries the URL with explicit width and height. An
+ImageResponse route was rejected — it accepts only ttf/otf/woff, not the woff2
+next/font ships, so a generated wordmark would silently fall back to Arial.
+`tests/unit/publisher-logo.test.ts` reads the PNG's IHDR so the hand-maintained
+schema numbers cannot drift from the file.
+
+### 10. Font preload — SHIPPED as a DELETION
+
+Already shipped in cb0bb63, and shipped wrong. `next/font` injects its own
+preload per subset by default and root-layout fonts preload on all routes, so
+the head carried **four preload links for two files** on every route measured.
+The hand-rolled manifest-reading block in `app/layout.tsx` was deleted.
+Verified live: 2 links, 2 files, no duplicates. The health check now fails if
+the count drops below two or any href repeats. **The fix for a "missing" tag
+can be removal.**
+
+### 11-14. Trust-page schema, interlinking and /contact — SHIPPED
+
+`/topics` gets CollectionPage (listing only hubs that clear the indexing bar,
+so it can never advertise a `noindex` URL). `/about` gets AboutPage,
+`/methodology`, `/editorial-standards` and `/corrections` get WebPage,
+`/contact` gets ContactPage — all six shipped **zero** JSON-LD blocks before
+today. In-body links now connect all seven trust pages. `/contact` went from 77
+words to ~440 with no invented staff, phone numbers, postal addresses or
+response-time promises. The health check verifies all six page types daily.
+
+### 15. Warm the hero `/_next/image` URL — CLOSED as obsolete
+
+`images.unoptimized` is on, so images are served as-is from `src` and live HTML
+contains zero occurrences of `/_next/image`. There is no URL to warm. Proven by
+command, not assumed.
+
+### 16. Shard the archive sitemap — CLOSED, converted to monitoring
+
+`scripts/seo-health.mjs` now fails when `/archive-sitemap.xml` exceeds 45,000
+URLs, ~5,000 short of the 50,000 cap, with the fix named in the failure
+message. 2,199 URLs today. Nobody has to remember it.
+
+### 17. Google Search Console sitemap submission — CLOSED, not required
+
+`robots.txt` advertises all three sitemaps, verified live. Google discovers
+sitemaps from `robots.txt` with no UI action, so this was never a prerequisite
+for indexing — only for per-sitemap reporting. Optional, owner's call.
+
+### 18. Bing Webmaster Tools — SHIPPED
+
+Verified by GSC import, all 3 sitemaps submitted, 0 errors
+(`seo/offpage/LEDGER.md`). The optional API key is unnecessary: IndexNow
+already pushes every new story to Bing within ~30 min, and DuckDuckGo and Yahoo
+source from Bing.
+
+### 19. PageSpeed Insights API key — CLOSED, no key needed
+
+The keyless PSI endpoint still returns HTTP 429, so `scripts/cwv-check.mjs` no
+longer depends on it. It defaults to a keyless probe driving the Chromium the
+e2e suite already installs, under Lighthouse's mobile throttling (4x CPU,
+1638.4 kbps, 150 ms), reading LCP/CLS/FCP/TTFB from the browser's own
+PerformanceObserver. It reports no Lighthouse score, because one cannot be
+derived from those metrics and inventing it would be a fabricated number.
+A PSI key would only add CrUX **field** data, which needs real traffic volume
+this site does not have yet — it would report nothing today even if added.
+
+### 20. Homepage LCP 3,632 ms — SHIPPED
+
+Found by the new keyless probe; every other page measured good. Cause: the hero
+is a third-party publisher-CDN image (71 KB JPEG on `ichef.bbci.co.uk`) whose
+download cannot start until DNS, TCP and TLS complete against a host the
+browser has never seen. `ImageOriginPreconnect` derives the origin from the
+rendered hero — it changes per story, so a hardcoded list would be wrong within
+the hour — and opens the connection early. Verified live in the head.
+
+### Found while working: every `pageMetadata()` page shipped no robots meta
+
+Not on any backlog. `/us`, `/topics`, `/top-100`, `/politics`, `/sources`,
+`/methodology` and `/about` carried **no `<meta name="robots">` at all**,
+silently losing `max-image-preview:large` and `max-snippet:-1` — large-thumbnail
+eligibility in Discover and Top Stories. Page-level metadata replaces the root
+layout's wholesale in this Next version, and `undefined` counts as replacing it
+with nothing. The helper already documented that exact hazard for `openGraph`
+one field above. Verified live on 7 pages before and after; guarded by
+`tests/unit/page-metadata-robots.test.ts`.
+
 
 ## Shipped 2026-08-19 (daily loop) — verified live after deploy
 

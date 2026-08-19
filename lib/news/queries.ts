@@ -115,6 +115,80 @@ export async function getTop100(filters: Top100Filters = {}): Promise<{
   };
 }
 
+/**
+ * Coverage-breadth floor for /most-covered. One publisher is not breadth at
+ * all — it is a single report — and the live dataset is a long tail of
+ * exactly that, so admitting sourceCount-1 clusters would turn the page into
+ * a worse copy of the Top 100. Two distinct publishers is the smallest count
+ * at which "most covered" means anything.
+ */
+export const MIN_COVERAGE_SOURCES = 2;
+
+/**
+ * Items rendered on /most-covered. ItemListJsonLd emits
+ * `numberOfItems: clusters.length` but slices `itemListElement` at 30, so a
+ * longer list would publish JSON-LD claiming more items than it lists. 25
+ * stays under that ceiling, matches the Top 100 page size, and keeps the
+ * route a single canonical URL with no pagination space to defend.
+ */
+export const MOST_COVERED_LIMIT = 25;
+
+export interface MostCoveredResult {
+  /** The page's list, already capped. */
+  stories: StoryCluster[];
+  /** Clusters clearing MIN_COVERAGE_SOURCES, BEFORE the display cap. */
+  qualifying: number;
+  /** Ranked-eligible clusters considered — the honest denominator. */
+  rankedTotal: number;
+  /** Highest sourceCount in the current dataset; 0 when nothing qualifies. */
+  maxSourceCount: number;
+  /** Distinct publishers present in the current dataset. */
+  publishersRepresented: number;
+}
+
+/**
+ * Selection for /most-covered, kept pure so the floor, the tiebreak and the
+ * denominators are unit-testable without mocking the dataset cache.
+ *
+ * Same eligibility gate as every other curated ranking module
+ * (isTop100Eligible): a press release plus its syndicated copies is one
+ * distribution chain, not broad coverage, so it never reaches this page.
+ *
+ * Ties are the normal case — many stories sit at the same publisher count —
+ * so the secondary key is the published ranking score. That makes the order
+ * deterministic and explainable instead of dependent on array position.
+ */
+export function selectMostCovered(
+  clusters: StoryCluster[],
+  articles: Article[],
+  limit: number = MOST_COVERED_LIMIT,
+): MostCoveredResult {
+  const ranked = clusters.filter(isTop100Eligible);
+  const qualified = ranked
+    .filter((c) => c.sourceCount >= MIN_COVERAGE_SOURCES)
+    .sort(
+      (a, b) => b.sourceCount - a.sourceCount || b.rankingScore - a.rankingScore,
+    );
+  return {
+    stories: qualified.slice(0, Math.max(0, limit)),
+    qualifying: qualified.length,
+    rankedTotal: ranked.length,
+    maxSourceCount: qualified[0]?.sourceCount ?? 0,
+    publishersRepresented: new Set(articles.map((a) => a.sourceSlug)).size,
+  };
+}
+
+/** Live wrapper for /most-covered. getDataset() dedupes per request. */
+export async function getMostCovered(
+  limit: number = MOST_COVERED_LIMIT,
+): Promise<MostCoveredResult & { dataset: NewsDataset }> {
+  const dataset = await getDataset();
+  return {
+    ...selectMostCovered(dataset.clusters, dataset.articles, limit),
+    dataset,
+  };
+}
+
 export interface HomepageData {
   dataset: NewsDataset;
   breaking: StoryCluster | null;

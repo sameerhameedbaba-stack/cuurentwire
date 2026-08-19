@@ -10,7 +10,6 @@ import {
   parseCountryFilter,
   parseTimeFilter,
   type CountryFilter,
-  type SortOrder,
   type TimeFilter,
 } from "@/lib/news/queries";
 import { pageMetadata } from "@/lib/seo/metadata";
@@ -78,18 +77,20 @@ const TIME_OPTIONS: { value: TimeFilter; label: string }[] = [
   { value: "24h", label: "24 hours" },
 ];
 
+// ?sort= is deliberately absent from the generated URL space: coverage
+// breadth now has its own cacheable, indexable page at /most-covered, and
+// every extra query dimension on this force-dynamic route is a URL Google
+// must fetch in full and then discard through the canonical.
 function filterHref(params: {
   country: CountryFilter;
   category: string;
   time: TimeFilter;
-  sort: SortOrder;
   page?: number;
 }): string {
   const query = new URLSearchParams();
   if (params.country !== "all") query.set("country", params.country);
   if (params.category !== "all") query.set("category", params.category);
   if (params.time !== "latest") query.set("time", params.time);
-  if (params.sort !== "importance") query.set("sort", params.sort);
   if (params.page && params.page > 1) query.set("page", String(params.page));
   const qs = query.toString();
   return qs ? `/top-100?${qs}` : "/top-100";
@@ -107,15 +108,12 @@ export default async function Top100Page({
   const country = parseCountryFilter(one(params.country));
   const category = parseCategoryFilter(one(params.category));
   const time = parseTimeFilter(one(params.time));
-  const sort: SortOrder =
-    one(params.sort) === "most-covered" ? "most-covered" : "importance";
   const page = Math.max(1, Number.parseInt(one(params.page) ?? "1", 10) || 1);
 
   const { stories, totalAvailable, dataset } = await getTop100({
     country,
     category,
     time,
-    sort,
   });
 
   const totalPages = Math.max(1, Math.ceil(stories.length / PAGE_SIZE));
@@ -124,7 +122,7 @@ export default async function Top100Page({
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
-  const current = { country, category, time, sort };
+  const current = { country, category, time };
 
   const chip = (active: boolean) =>
     `block whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
@@ -189,7 +187,7 @@ export default async function Top100Page({
             </Link>
           ))}
         </nav>
-        <nav aria-label="Time and sort" className="scrollbar-none mt-2 flex gap-1.5 overflow-x-auto">
+        <nav aria-label="Time filter" className="scrollbar-none mt-2 flex gap-1.5 overflow-x-auto">
           {TIME_OPTIONS.map((option) => (
             <Link
               key={option.value}
@@ -201,19 +199,14 @@ export default async function Top100Page({
             </Link>
           ))}
           <span aria-hidden className="mx-1 my-auto h-4 w-px shrink-0 bg-rule" />
+          {/* Not a filter — a link out. The old ?sort=most-covered chip
+              produced a URL that canonicalized straight back to /top-100,
+              so the signal had no indexable home. Now it has one. */}
           <Link
-            href={filterHref({ ...current, sort: "importance" })}
-            aria-current={sort === "importance" ? "true" : undefined}
-            className={chip(sort === "importance")}
+            href="/most-covered"
+            className="block whitespace-nowrap rounded-full border border-rule bg-surface px-3 py-1 text-xs font-semibold text-ink transition-colors hover:border-brand hover:text-brand-ink"
           >
-            Importance
-          </Link>
-          <Link
-            href={filterHref({ ...current, sort: "most-covered" })}
-            aria-current={sort === "most-covered" ? "true" : undefined}
-            className={chip(sort === "most-covered")}
-          >
-            Most Covered
+            Most Covered &rarr;
           </Link>
         </nav>
       </div>

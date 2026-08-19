@@ -6,6 +6,7 @@ import { CATEGORIES } from "@/config/categories";
 import { CategoryLabel, ContentTypeBadge, CountryBadge, SourceLine, StatusBadge, BreakingLabel } from "@/components/news/atoms";
 import { CoverageIntelligence } from "@/components/news/CoverageIntelligence";
 import { CoverageSources, CoverageTimeline } from "@/components/news/CoverageSources";
+import { StoryContext } from "@/components/news/StoryContext";
 import { StoryImage } from "@/components/news/StoryImage";
 import { HeadlineStory } from "@/components/news/cards";
 import { SectionHeader } from "@/components/news/SectionHeader";
@@ -225,8 +226,15 @@ export default async function StoryPage({
   const minTopicClusters = isArchived ? 1 : 2;
   const chipKeys = new Set<string>();
   const topicChips: { slug: string; display: string }[] = [];
+  // Live cluster counts for this story's topics, keyed by topic identity —
+  // StoryContext states how much OTHER live coverage each topic has. Read off
+  // the index already loaded above, so it costs no extra query, and keyed the
+  // same way as the chips so variants of one topic pool their counts.
+  const topicCounts = new Map<string, number>();
   for (const entity of cluster.entities) {
-    const entry = topicIndex.byKey.get(topicKey(entity));
+    const key = topicKey(entity);
+    const entry = topicIndex.byKey.get(key);
+    if (entry) topicCounts.set(key, entry.clusterCount);
     if (!entry || chipKeys.has(entry.key)) continue;
     if (entry.clusterCount < minTopicClusters || !isTopicEligible(entry)) continue;
     chipKeys.add(entry.key);
@@ -434,6 +442,18 @@ export default async function StoryPage({
             <CoverageSources cluster={cluster} />
             <CoverageTimeline cluster={cluster} history={history} />
           </div>
+
+          {/* Backlog item 3: CurrentWire's own record of how this page was
+              produced — the original main content on a single-source story.
+              Deliberately per-story values only, no standing prose: see the
+              header of StoryContext.tsx. topicCounts is built from the index
+              already loaded above, so this costs no extra query. */}
+          <StoryContext
+            cluster={cluster}
+            publishedByUsAt={publishedByUsAt}
+            topicCounts={topicCounts}
+            isArchived={isArchived}
+          />
 
           <p className="mt-10 border-t border-rule pt-4 text-xs leading-relaxed text-faint">
             {siteConfig.name} is a news discovery platform. This page summarizes

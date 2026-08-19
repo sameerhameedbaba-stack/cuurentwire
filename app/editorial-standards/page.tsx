@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ProsePage } from "@/components/layout/ProsePage";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { TrustPageJsonLd } from "@/lib/seo/structured-data";
+
+/** One string for both <meta name="description"> and the WebPage JSON-LD. */
+const DESCRIPTION =
+  "The principles governing accuracy, attribution, neutrality, transparency and corrections at CurrentWire.";
 
 export const metadata: Metadata = pageMetadata({
   title: "Editorial Standards",
-  description:
-    "The principles governing accuracy, attribution, neutrality, transparency and corrections at CurrentWire.",
+  description: DESCRIPTION,
   path: "/editorial-standards",
 });
 
@@ -24,7 +28,10 @@ export default function EditorialStandardsPage() {
         journalists, no AI-generated reporting. Summaries derive from
         publisher-provided metadata, and every story links out to the original
         reporting; CurrentWire does not host article bodies. The{" "}
-        <Link href="/methodology">methodology</Link> describes the process.
+        <Link href="/methodology">methodology</Link> describes the process, the{" "}
+        <Link href="/news-desk">news desk page</Link> explains the byline every
+        story carries, and <Link href="/about">about CurrentWire</Link> sets out
+        what the service is for.
       </p>
 
       <h2>Accuracy</h2>
@@ -97,6 +104,18 @@ export default function EditorialStandardsPage() {
         story. Curated sections show fewer items rather than filling the gap
         with unreported announcements.
       </p>
+
+      <h2>Questions about these standards</h2>
+      <p>
+        Standards nobody can question are not standards. Questions about
+        anything on this page, including disagreement with a judgement call, are
+        welcome through the <Link href="/contact">contact page</Link>.
+      </p>
+      <TrustPageJsonLd
+        path="/editorial-standards"
+        name="Editorial Standards"
+        description={DESCRIPTION}
+      />
     </ProsePage>
   );
 }

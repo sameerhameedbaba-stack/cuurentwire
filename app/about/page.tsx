@@ -3,11 +3,15 @@ import Link from "next/link";
 import { ProsePage } from "@/components/layout/ProsePage";
 import { siteConfig } from "@/config/site";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { TrustPageJsonLd } from "@/lib/seo/structured-data";
+
+/** One string for <meta>, the visible intro, and the AboutPage JSON-LD. */
+const DESCRIPTION =
+  "CurrentWire helps readers understand what matters now across the United States and Canada.";
 
 export const metadata: Metadata = pageMetadata({
   title: "About",
-  description:
-    "CurrentWire helps readers understand what matters now across the United States and Canada.",
+  description: DESCRIPTION,
   path: "/about",
 });
 
@@ -16,7 +20,7 @@ export default function AboutPage() {
     <ProsePage
       eyebrow="CurrentWire"
       title="About CurrentWire"
-      intro="CurrentWire helps readers understand what matters now across the United States and Canada."
+      intro={DESCRIPTION}
     >
       <p>
         Hundreds of stories are published every hour. CurrentWire organizes
@@ -29,7 +33,9 @@ export default function AboutPage() {
         from publisher feeds and news APIs and compiled algorithmically. We
         employ no journalists and publish no AI-generated reporting — summaries
         come from the metadata publishers supply with their own feeds. Our{" "}
-        <Link href="/methodology">methodology</Link> explains how this works.
+        <Link href="/methodology">methodology</Link> explains how this works,
+        and the <Link href="/news-desk">news desk page</Link> explains the
+        byline every story carries.
       </p>
       <p>
         We do not aim to replace original journalism. We help readers discover
@@ -41,6 +47,12 @@ export default function AboutPage() {
         lists the publications covering it, when each report appeared, and links
         straight to the original reporting. CurrentWire links out — it does not
         host publisher article bodies.
+      </p>
+      <p>
+        The rules that govern accuracy, attribution and neutrality are published
+        in our <Link href="/editorial-standards">editorial standards</Link>, and
+        when something is wrong there is a documented{" "}
+        <Link href="/corrections">corrections process</Link> for fixing it.
       </p>
       <h2>What makes CurrentWire different</h2>
       <ul>
@@ -89,6 +101,12 @@ export default function AboutPage() {
         <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>{" "}
         — or see the <Link href="/contact">contact page</Link>.
       </p>
+      <TrustPageJsonLd
+        path="/about"
+        name="About CurrentWire"
+        description={DESCRIPTION}
+        type="AboutPage"
+      />
     </ProsePage>
   );
 }

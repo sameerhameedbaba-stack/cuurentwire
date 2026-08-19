@@ -199,3 +199,58 @@ test.describe("evergreen reference pages", () => {
     }
   });
 });
+
+test.describe("most covered", () => {
+  test("/most-covered is its own indexable URL with ItemList schema", async ({
+    page,
+  }) => {
+    // Coverage breadth is CurrentWire's most differentiated signal and used
+    // to exist only as ?sort=most-covered, which canonicalized straight back
+    // to /top-100 — so the signal had no indexable home at all.
+    const response = await page.goto("/most-covered");
+    expect(response?.status()).toBe(200);
+
+    await expect(page.locator("h1")).toHaveCount(1);
+    await expect(page).toHaveTitle(/Most Covered/i);
+    await expect(
+      page.locator('link[rel="canonical"]'),
+    ).toHaveAttribute("href", /\/most-covered$/);
+
+    const blocks = await page
+      .locator('script[type="application/ld+json"]')
+      .allTextContents();
+    expect(blocks.length).toBeGreaterThan(0);
+    const parsed = blocks.map((b) => JSON.parse(b));
+    expect(parsed.some((b) => b["@type"] === "BreadcrumbList")).toBe(true);
+
+    // When the page has items, its ItemList must not claim more than it lists.
+    const itemList = parsed.find((b) => b["@type"] === "ItemList");
+    if (itemList) {
+      expect(itemList.numberOfItems).toBe(itemList.itemListElement.length);
+      expect(itemList.url).toContain("/most-covered");
+    }
+  });
+
+  test("states plainly what breadth does not mean", async ({ page }) => {
+    // The honesty section is what keeps this page from being a thin list and
+    // from overclaiming: breadth is not importance, agreement or verification.
+    await page.goto("/most-covered");
+    const main = page.locator("main");
+    await expect(main).toContainText(/not.*importance/i);
+    await expect(main).toContainText(/lower bound/i);
+  });
+
+  test("/top-100 links out to it instead of offering a sort filter", async ({
+    page,
+  }) => {
+    await page.goto("/top-100");
+    await expect(page.locator('a[href="/most-covered"]').first()).toBeVisible();
+    // The old chip generated ?sort=most-covered URLs that canonicalized away.
+    expect(await page.locator('a[href*="sort=most-covered"]').count()).toBe(0);
+  });
+
+  test("the sitemap lists it", async ({ request }) => {
+    const body = await (await request.get("/sitemap.xml")).text();
+    expect(body).toContain("/most-covered</loc>");
+  });
+});

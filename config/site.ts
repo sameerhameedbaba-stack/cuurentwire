@@ -58,6 +58,7 @@ export const siteConfig = {
       ],
       explore: [
         { label: "Top 100", href: "/top-100" },
+        { label: "Most Covered", href: "/most-covered" },
         { label: "Topics", href: "/topics" },
         { label: "Sources", href: "/sources" },
         { label: "Search", href: "/search" },

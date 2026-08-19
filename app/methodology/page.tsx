@@ -3,11 +3,15 @@ import Link from "next/link";
 import { ProsePage } from "@/components/layout/ProsePage";
 import { RANKING_WEIGHTS } from "@/lib/news/ranking/score";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { TrustPageJsonLd } from "@/lib/seo/structured-data";
+
+/** One string for both <meta name="description"> and the WebPage JSON-LD. */
+const DESCRIPTION =
+  "How CurrentWire ranks the news: freshness, source authority, coverage breadth, geographic relevance and story velocity.";
 
 export const metadata: Metadata = pageMetadata({
   title: "Methodology",
-  description:
-    "How CurrentWire ranks the news: freshness, source authority, coverage breadth, geographic relevance and story velocity.",
+  description: DESCRIPTION,
   path: "/methodology",
 });
 
@@ -25,7 +29,9 @@ export default function MethodologyPage() {
         journalists on staff and no AI-generated reporting: headlines and
         summaries are derived from the metadata publishers provide with their
         own feeds, and every story links to the original reporting. CurrentWire
-        does not host article bodies.
+        does not host article bodies. The rules this compilation follows are
+        published in our{" "}
+        <Link href="/editorial-standards">editorial standards</Link>.
       </p>
 
       <h2>The “CurrentWire News Desk” byline</h2>
@@ -34,7 +40,9 @@ export default function MethodologyPage() {
         Desk”</strong>. This byline does not refer to a person or a newsroom —
         it identifies the automated compilation described on this page:
         collecting publisher reports, grouping them into one story and ranking
-        them. The journalism itself belongs to the attributed publishers.
+        them. The journalism itself belongs to the attributed publishers. The{" "}
+        <Link href="/news-desk">news desk page</Link> sets out in full what that
+        byline does and does not mean.
       </p>
 
       <h2>Ranking</h2>
@@ -143,6 +151,11 @@ export default function MethodologyPage() {
         and improves its methodology. Spotted an error? See the{" "}
         <Link href="/corrections">corrections process</Link>.
       </p>
+      <TrustPageJsonLd
+        path="/methodology"
+        name="How CurrentWire Ranks the News"
+        description={DESCRIPTION}
+      />
     </ProsePage>
   );
 }

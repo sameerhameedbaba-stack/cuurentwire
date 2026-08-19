@@ -210,6 +210,33 @@ if (!homeCanonical || homeCanonical.replace(/\/$/, "") !== BASE.replace(/\/$/, "
   fail("home canonical", `got ${homeCanonical}`);
 } else ok("home canonical", homeCanonical);
 
+// 8c. E-E-A-T pages must be machine-readable, not merely crawlable. All six
+// shipped ZERO JSON-LD blocks until 2026-08-19.
+const TRUST_PAGES = {
+  "/about": "AboutPage",
+  "/methodology": "WebPage",
+  "/editorial-standards": "WebPage",
+  "/corrections": "WebPage",
+  "/contact": "ContactPage",
+  "/topics": "CollectionPage",
+};
+let trustOk = 0;
+for (const [path, expected] of Object.entries(TRUST_PAGES)) {
+  const page = await get(path);
+  const blocks = extractJsonLd(page.body);
+  if (blocks.some((b) => b.__parseError)) {
+    fail("trust page JSON-LD parse", path);
+  } else if (!blocks.some((b) => b["@type"] === expected)) {
+    fail(
+      "trust page JSON-LD",
+      `${path} has no ${expected} block (found ${blocks.map((b) => b["@type"]).join(",") || "none"})`,
+    );
+  } else trustOk += 1;
+}
+if (trustOk === Object.keys(TRUST_PAGES).length) {
+  ok("trust page JSON-LD", `${trustOk} pages typed and parsing`);
+}
+
 // 9. Real 404 behavior
 const missing404 = await fetch(`${BASE}/zz-definitely-not-a-page-zz`, {
   headers: { "User-Agent": "CurrentWire-SEO-Health/1.0" },
