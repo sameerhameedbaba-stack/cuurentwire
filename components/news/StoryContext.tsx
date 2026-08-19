@@ -70,7 +70,7 @@ export function StoryContext({
           <>
             {" "}
             CurrentWire published this page
-            {facts.pickupDelay ? ` ${facts.pickupDelay} later` : ""}, on{" "}
+            {facts.pickupDelay ? ` ${facts.pickupDelay} later, on ` : " on "}
             <time dateTime={facts.publishedByUsAt}>
               {fullTimestamp(facts.publishedByUsAt)}
             </time>
@@ -114,6 +114,7 @@ export function StoryContext({
             >
               How each signal is calculated
             </Link>
+            .
           </p>
         </div>
       ) : null}
