@@ -100,7 +100,10 @@ export function normalizeArticle(raw: RawArticle, now: Date = new Date()): Artic
 
   const id = stableId(canonicalUrl);
   // Root-relative paths are local assets (demo art); remote URLs must be
-  // http(s), and known CDN thumbnails are upgraded to larger renditions.
+  // http(s), and known CDN renditions are normalized to a delivery width.
+  // upgradeImageUrl() returns undefined for formats no CDN can resize and no
+  // browser should download (a live 6 MB .bmp), so the story renders without
+  // an image rather than with an unbounded one.
   const imageUrl =
     raw.imageUrl &&
     (raw.imageUrl.startsWith("/") || canonicalizeUrl(raw.imageUrl))

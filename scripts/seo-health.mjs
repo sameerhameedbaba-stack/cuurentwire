@@ -8,8 +8,8 @@
  * Checks: robots.txt, all three sitemaps, news-sitemap freshness window,
  * RSS + per-section feeds, llms.txt, the IndexNow key file, a sampled story
  * page (canonical + parseable NewsArticle JSON-LD), the home page
- * (NewsMediaOrganization + large-preview robots directive), and real-404
- * behavior.
+ * (NewsMediaOrganization + large-preview robots directive), publisher image
+ * weight on /top-100, and real-404 behavior.
  */
 
 const BASE = process.env.SEO_BASE_URL ?? "https://currentwire.us";
@@ -248,6 +248,93 @@ for (const [path, expected] of Object.entries(TRUST_PAGES)) {
 }
 if (trustOk === Object.keys(TRUST_PAGES).length) {
   ok("trust page JSON-LD", `${trustOk} pages typed and parsing`);
+}
+
+// 8d. Publisher image weight. Ranked-list images come straight from publisher
+// CDNs — `images.unoptimized` is set, so nothing resizes them on our side and
+// the only lever is the per-host rules in lib/news/normalization/image-upgrade.
+// Before those rules, /top-100 carried 28 MB of images across 25 files, with a
+// single NPR original at 6,366 KB and a Politico one at 4,944 KB, and the
+// homepage LCP swung 3,632 -> 8,556 ms on nothing but which story was hero
+// (measured 2026-08-19). This check is what keeps "unbounded" bounded: it
+// fails when a host we DO cap comes back oversized, which is what a silently
+// broken rewrite rule looks like from the outside.
+const CAPPED_HOSTS = [
+  /^ichef\.bbci\.co\.uk$/,
+  /^assets\d+\.cbsnewsstatic\.com$/,
+  /^npr\.brightspotcdn\.com$/,
+  /^globalnews\.ca$/,
+  /^platform\.theverge\.com$/,
+  /^thehill\.com$/,
+];
+/** A capped host over this is a broken rule, not a big photo. */
+const CAPPED_MAX_KB = 500;
+/** Uncapped hosts over this are reported, not failed — we have no lever. */
+const UNCAPPED_REPORT_KB = 1024;
+/** Bound the runtime; the ranked list repeats the same hosts after this. */
+const IMAGE_SAMPLE = 15;
+
+const top100 = await get("/top-100");
+const imageUrls = [
+  ...new Set(
+    [...top100.body.matchAll(/<img[^>]+src="(https:\/\/[^"]+)"/g)]
+      .map((m) => m[1].replaceAll("&amp;", "&"))
+      .filter((u) => !u.startsWith(BASE)),
+  ),
+].slice(0, IMAGE_SAMPLE);
+
+if (imageUrls.length === 0) {
+  fail("publisher image weight", "no publisher images found on /top-100");
+} else {
+  const measured = [];
+  for (const url of imageUrls) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
+      const declared = Number(res.headers.get("content-length"));
+      const bytes = Number.isFinite(declared) && declared > 0
+        ? declared
+        : (await res.arrayBuffer()).byteLength;
+      measured.push({
+        host: new URL(url).hostname,
+        kb: Math.round(bytes / 1024),
+        type: res.headers.get("content-type") ?? "",
+        url,
+      });
+    } catch (e) {
+      // A publisher CDN refusing our fetch is their problem, not a regression.
+      console.log(`note image unreachable: ${new URL(url).hostname} (${e.message})`);
+    }
+  }
+  const capped = measured.filter((m) => CAPPED_HOSTS.some((re) => re.test(m.host)));
+  const overCap = capped.filter((m) => m.kb > CAPPED_MAX_KB);
+  // We drop .bmp/.tif at ingest (a live 6,221 KB bitmap, 2026-08-19) — one
+  // arriving here means that drop stopped working.
+  const undeliverable = measured.filter((m) => /bmp|tiff/.test(m.type));
+  if (overCap.length) {
+    fail(
+      "publisher image weight",
+      `${overCap.length} image(s) from capped hosts over ${CAPPED_MAX_KB} KB — is the per-host rule in lib/news/normalization/image-upgrade.ts still matching? e.g. ${overCap[0].kb} KB ${overCap[0].url}`,
+    );
+  } else if (undeliverable.length) {
+    fail(
+      "publisher image format",
+      `${undeliverable.length} undeliverable format(s) served — the ingest drop regressed: ${undeliverable[0].url}`,
+    );
+  } else {
+    const sorted = [...measured].map((m) => m.kb).sort((a, b) => a - b);
+    const total = sorted.reduce((a, b) => a + b, 0);
+    ok(
+      "publisher image weight",
+      `${measured.length} images, ${total} KB total, median ${sorted[Math.floor(sorted.length / 2)]} KB, max ${sorted.at(-1)} KB`,
+    );
+  }
+  for (const m of measured) {
+    if (m.kb > UNCAPPED_REPORT_KB && !CAPPED_HOSTS.some((re) => re.test(m.host))) {
+      // Reported, never failed: no free resize lever exists for these hosts,
+      // and a gate nobody can turn green is a gate everyone learns to ignore.
+      console.log(`note no resize lever for ${m.host} — ${m.kb} KB on /top-100`);
+    }
+  }
 }
 
 // 9. Real 404 behavior
