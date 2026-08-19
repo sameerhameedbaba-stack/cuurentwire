@@ -13,14 +13,12 @@ created. 4 of the 5 listicle pitches are sent — MediaHacker is the one left.
 
 ## This week
 
-Nothing pending — Feedspot, SaaSHub and the MediaHacker pitch all went out on
-2026-08-20 (see LEDGER.md). Contact name on every form from now on:
-**Rick Putman**, email **support@currentwire.us**.
+**Nothing pending.** Everything on the list went out on 2026-08-20: Feedspot
+submitted and email-confirmed, SaaSHub submitted *and verified* (badge ACTIVE),
+MediaHacker pitch sent. All 5 listicle targets are now pitched. See LEDGER.md.
 
-### Small follow-up: verify the SaaSHub domain — ~3 min
-SaaSHub moves verified products up the queue. In your SaaSHub account, find the
-verification option for CurrentWire and verify using an address on the
-product's own domain (support@currentwire.us). Free.
+Contact name on every form from now on: **Rick Putman**, email
+**support@currentwire.us**.
 
 ## Next week
 
@@ -28,6 +26,14 @@ product's own domain (support@currentwire.us). Free.
 2026-08-19 and needs ~1 week to age). Don't launch before that date — new
 accounts get filtered. When you have a free evening to answer comments, say so
 and the run will prepare the tagline, gallery images and launch text.
+
+## Recurring
+
+- **SaaSHub re-verification** — the badge expires quarterly. Next due ~2026-11.
+  When SaaSHub offers an "Experts" nomination in exchange for voting on an
+  unrelated product list, skip it.
+- **Logo + screenshots for SaaSHub** — the only gaps left on that listing. Needs
+  real image files; do it whenever there's a logo to upload.
 
 ## Later (when you have time)
 

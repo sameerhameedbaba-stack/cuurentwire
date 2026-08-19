@@ -92,6 +92,32 @@ stays "CurrentWire" and the contact email stays support@currentwire.us.
   states plainly that CurrentWire is automated, not a human-edited desk. Their
   form has a rotating arithmetic anti-spam question the owner answers.
 
-Still open after this session: SaaSHub domain verification with an
-@currentwire.us address (raises queue priority), and the Product Hunt launch
-window from 2026-08-26.
+**All three closed out the same day** (owner asked to finish everything; the
+owner still answered the anti-spam challenge personally — completing
+bot-detection is off-limits for the assistant regardless of permission):
+
+- **SaaSHub — submitted AND verified.** Verification Status: ACTIVE, green
+  badge on the listing. The public listing is still "Pending approval, up to
+  32 days" (free queue) — verification only raises priority, it does not
+  approve. Profile completed while there: description 1016/2000 (states
+  plainly that CurrentWire is automated with no human editorial desk and
+  produces no original reporting), release date 2026-08-14, Open Source = No,
+  pricing = Free option yes / free trial no / paid option no. Final categories:
+  News, RSS, News Aggregator, Web App, News & Books. Final competitors:
+  Google News, Feedly, Ground News, Inoreader, Flipboard, NewsBlur,
+  No Fee News, SmartNews. Logo and screenshots still missing (need real image
+  files) — the only remaining gaps.
+  After verifying, SaaSHub redirects to an Experts nomination page asking you
+  to vote on an unrelated "Top 5 Photos & Graphics Products" list in exchange
+  for a future nomination. Skipped — voting in a category we know nothing
+  about to buy a nomination is not white-hat. Skip it every quarter.
+- **MediaHacker — SENT.** "Thank you for your message. It has been sent."
+  All 5 listicle targets are now pitched.
+
+Correction to an earlier note: the 2026-08-19 Wikipedia assessment described
+CurrentWire as "3 weeks old". Git history says otherwise — first commit
+2026-08-13, first live deploy 2026-08-14, so the site was 5-6 days old then.
+The notability conclusion is unchanged either way.
+
+Still open: Product Hunt launch window from 2026-08-26; SaaSHub re-verification
+is required every quarter (next ~2026-11).
