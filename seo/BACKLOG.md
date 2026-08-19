@@ -154,16 +154,32 @@ downstream can be misinformed) and the client-facing header is byte-identical
 to what `/` already serves. A header that cannot lie beats a header that might.
 Guard: `tests/unit/list-cache-headers.test.ts`.
 
-### 3. Single-source story pages were thin — SHIPPED (scoped down)
+### 3. Single-source story pages were thin — SHIPPED (scoped down), modest
 
-See `reports/2026-08-19.md` for the measured before/after. The design's own
-measurement is why it was scoped down: it would have added ~254 words of which
-only ~36 were per-story unique and ~218 were a site-wide fixed disclosure.
-Adding 218 words of identical boilerplate to 2,199 permanent story URLs is
-mass-duplicated text on a site already fighting a duplicate-content ceiling.
-Shipped the per-story-unique parts; the fixed prose lives on `/methodology/*`
-and is linked instead. **A sentence that does not change between two stories
-does not belong in the story template.**
+Measured on 14 paired production URLs: single-report main content went
+**185 → 290 median words**. The module adds 119 words, of which **88 are a
+fixed template and ~31 are per-story values** (18 by a strict LCS-pair
+measure).
+
+It was scoped down from its design, which would have added 254 words with 218
+of them identical on all 2,199 permanent story URLs — mass-duplicated text on
+a site already fighting a duplicate-content ceiling. Duplicated mass across
+the archive drops ~479k → ~194k words. **A sentence that does not change
+between two stories does not belong in the story template**; the fixed prose
+lives on `/methodology/*` and is linked.
+
+State the result honestly in future runs: this roughly doubles a thin page but
+only ~31 of the new words are story-specific, so it is a real improvement and
+**not** a fix for the thin-content ceiling. The structural fix is item 4.
+The publisher-excerpt option from the original backlog turned out to be a
+near-no-op — it adds **0 words to 300 of 313 pages**, because on a one-article
+cluster the publisher description already *is* the dek.
+
+Two sentences the design wanted to publish were false and were dropped: that
+the classifier ignores the publisher's own section label (it does not — that
+is what misfiled the Theban tomb story), and that coverage points come from the
+publication-name count shown on the page (they come from
+`independentSourceCount`, distinct non-press-release domains).
 
 ### 4. No evergreen content of any kind — SHIPPED
 
