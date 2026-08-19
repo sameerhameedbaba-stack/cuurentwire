@@ -35,5 +35,225 @@
         }
       }
     ]
+  },
+  {
+    "date": "2026-08-18T23:58:40.851Z",
+    "base": "https://currentwire.us",
+    "strategy": "mobile",
+    "tool": "playwright-chromium",
+    "pages": [
+      {
+        "url": "https://currentwire.us/",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 3632,
+          "cls": 0.001,
+          "fcpMs": 1912,
+          "ttfbMs": 135,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/top-100",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 1628,
+          "cls": 0.006,
+          "fcpMs": 1628,
+          "ttfbMs": 90,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/story/trump-asks-supreme-court-to-allow-ballroom-work-to-continue-ccc5744182b11",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 1588,
+          "cls": 0,
+          "fcpMs": 1588,
+          "ttfbMs": 281,
+          "score": null
+        }
+      }
+    ]
+  },
+  {
+    "date": "2026-08-19T00:43:03.995Z",
+    "base": "https://currentwire.us",
+    "strategy": "mobile",
+    "tool": "playwright-chromium",
+    "pages": [
+      {
+        "url": "https://currentwire.us/",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 10368,
+          "cls": 0.001,
+          "fcpMs": 3776,
+          "ttfbMs": 2804,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/top-100",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 1948,
+          "cls": 0,
+          "fcpMs": 1948,
+          "ttfbMs": 134,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/story/trump-asks-supreme-court-to-allow-ballroom-work-to-continue-ccc5744182b11",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 2728,
+          "cls": 0,
+          "fcpMs": 2728,
+          "ttfbMs": 841,
+          "score": null
+        }
+      }
+    ]
+  },
+  {
+    "date": "2026-08-19T00:43:51.683Z",
+    "base": "https://currentwire.us",
+    "strategy": "mobile",
+    "tool": "playwright-chromium",
+    "pages": [
+      {
+        "url": "https://currentwire.us/",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 8556,
+          "cls": 0,
+          "fcpMs": 1492,
+          "ttfbMs": 100,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/top-100",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 1176,
+          "cls": 0.007,
+          "fcpMs": 1176,
+          "ttfbMs": 105,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/story/trump-asks-supreme-court-to-allow-ballroom-work-to-continue-ccc5744182b11",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 1528,
+          "cls": 0,
+          "fcpMs": 1528,
+          "ttfbMs": 306,
+          "score": null
+        }
+      }
+    ]
+  },
+  {
+    "date": "2026-08-19T22:22:24.237Z",
+    "base": "https://currentwire.us",
+    "strategy": "mobile",
+    "tool": "playwright-chromium",
+    "pages": [
+      {
+        "url": "https://currentwire.us/",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 6416,
+          "cls": 0.001,
+          "fcpMs": 3720,
+          "ttfbMs": 2838,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/top-100",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 1280,
+          "cls": 0.004,
+          "fcpMs": 1280,
+          "ttfbMs": 110,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/story/trump-asks-supreme-court-to-allow-ballroom-work-to-continue-ccc5744182b11",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 2532,
+          "cls": 0,
+          "fcpMs": 2532,
+          "ttfbMs": 890,
+          "score": null
+        }
+      }
+    ]
+  },
+  {
+    "date": "2026-08-19T22:23:08.002Z",
+    "base": "https://currentwire.us",
+    "strategy": "mobile",
+    "tool": "playwright-chromium",
+    "pages": [
+      {
+        "url": "https://currentwire.us/",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 2936,
+          "cls": 0,
+          "fcpMs": 2304,
+          "ttfbMs": 366,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/top-100",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 1252,
+          "cls": 0.004,
+          "fcpMs": 1252,
+          "ttfbMs": 104,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/story/trump-asks-supreme-court-to-allow-ballroom-work-to-continue-ccc5744182b11",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 1672,
+          "cls": 0,
+          "fcpMs": 1672,
+          "ttfbMs": 290,
+          "score": null
+        }
+      }
+    ]
   }
 ]
