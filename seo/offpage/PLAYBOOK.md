@@ -46,7 +46,7 @@ submits forms, never posts anywhere.
   Story URLs are permanent, the ranking method is public, and editorial
   policies (standards, corrections) are published on the site.
 - Category: News / News aggregator / Media
-- Contact: contact@currentwire.us
+- Contact: support@currentwire.us
 - RSS: https://currentwire.us/rss
 
 ## Social profiles (owner decision, still open)

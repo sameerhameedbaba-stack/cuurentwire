@@ -1,118 +1,96 @@
 # Off-page queue — owner's clicking list
 
-Every entry was verified live on 2026-08-19 (page fetched, cost confirmed
-free). Work top-down. When you finish one, tell the assistant "done: <name>"
-or just leave it — the weekly Thursday run re-checks and moves live listings
-to LEDGER.md.
+Work top-down. When you finish one, tell the assistant "done: <name>" or just
+leave it — the weekly run re-checks and moves live listings to LEDGER.md.
 
 Paste-ready standing texts (name, tagline, descriptions, category, email) are
-in PLAYBOOK.md — copy from there wherever a form asks.
+in PLAYBOOK.md — copy from there wherever a form asks. Contact email for all
+submissions: **support@currentwire.us**.
 
-Progress 2026-08-19 (live session): items 1, 2, 3 SUBMITTED (see LEDGER.md);
-item 5 drafted in Gmail — owner sends; item 4 still open. Owner's preferred
-contact email for future submissions: support@currentwire.us.
+Status 2026-08-20: items 1, 2, 3 from last week's list are submitted and
+awaiting review (LEDGER.md). Both accounts (Product Hunt, Hacker News) are
+created. 4 of the 5 listicle pitches are sent — MediaHacker is the one left.
 
-## This week (~30–40 minutes total)
+## This week (~15 minutes total)
 
-### 1. Bing Webmaster Tools — HIGH value, ~10 min
-- Go to https://www.bing.com/webmasters — sign in with any Microsoft account.
-- Choose "Import from Google Search Console" (fastest) using the
-  ovyajewels@gmail.com GSC property, or verify manually.
-- Submit sitemaps: `https://currentwire.us/sitemap.xml`,
-  `https://currentwire.us/news-sitemap.xml`,
-  `https://currentwire.us/archive-sitemap.xml`.
-- Why: Bing News inclusion is now automatic evaluation — this is the only
-  publisher-side lever. (The old PubHub submission program is dead; ignore
-  any guide mentioning it.) Also unlocks Bing data for the SEO loops.
+### 1. Feedspot free listing — ~5 min
+- Go to https://news.feedspot.com/usa_news_websites/ (verified live 2026-08-20,
+  page updated 2026-07-02).
+- Click the orange **"Submit Your Blog"** button (it opens a pop-up form, not a
+  new page).
+- Paste:
+  - Blog/Site URL: `https://currentwire.us`
+  - RSS feed: `https://currentwire.us/rss`
+  - Email: `support@currentwire.us`
+  - Description: `CurrentWire continuously discovers, ranks and organizes the
+    top 100 current news stories affecting the United States and Canada, with
+    transparent attribution and links to the original publishers.`
+- **Decline every paid upsell.** They will offer "featured placement" or a paid
+  fast-track after you submit — say no. The free listing is the whole point.
 
-### 2. Journalist's Toolbox — HIGH value, ~5 min, no account
-- Google Form: https://docs.google.com/forms/d/e/1FAIpQLSde1AWO4MHvCesi8hvvM7fKHtyWRJUZ0DmIuOAXHaS9XPyWuQ/viewform
-- Trusted journalism resource site (Mike Reilley / SPJ heritage), free,
-  editorial review.
-- 3-sentence description to paste: "CurrentWire is a free news-monitoring
-  tool that ranks the top 100 current US and Canada stories, updated every
-  few minutes. Every story page attributes and links all original publisher
-  reporting, with a public ranking methodology. RSS feeds are available
-  sitewide and per section."
-- Affiliation field: be honest — you operate the site.
+### 2. SaaSHub listing — ~8 min
+- Go to https://www.saashub.com/services/new (verified live and free
+  2026-08-20).
+- Paste:
+  - Website URL: `https://currentwire.us`
+  - Name: `CurrentWire`
+  - Tagline: `The top 100 US & Canada news stories, ranked and attributed.`
+  - Description: use the long description from PLAYBOOK.md.
+  - Categories: `News`, `News Aggregator`, `RSS`
+  - **Alternatives / competitors** (this is the field that matters — it puts
+    CurrentWire on their comparison pages): `Google News`, `Feedly`,
+    `Ground News`, `Inoreader`
+- If it offers **domain verification**, do it with `support@currentwire.us` —
+  it moves you up the review queue. Skip "Feature My Product" (paid).
+- Note their rules: they reject waiting-list landing pages and free
+  subdomains. CurrentWire is a live product on its own domain, so it qualifies.
 
-### 3. Curlie directory — HIGH value (followed link), ~10 min, no account
-- Read https://curlie.org/docs/en/add.html first (3-step process).
-- Search curlie.org for "currentwire" (confirm not listed), browse to the
-  most specific News category that shows a "suggest a site" icon.
-- Title: "CurrentWire". Description (neutral, no marketing): "Automated news
-  aggregator that ranks the top 100 current stories in the United States and
-  Canada, with links and attribution to the original publishers."
-- Editor-reviewed; can take months. That's normal.
+### 3. MediaHacker pitch — ~2 min
+The 5th listicle target; the other 4 went out on 2026-08-19.
+- Form: https://www.mediahacker.org/contact/ (their server blocks automated
+  fetches, so I could not re-verify it today — if the form is gone, skip it,
+  it is the lowest-value of the five.)
+- Article to reference: "10 Best News Aggregator Apps 2026"
+- Paste the pitch template from LEDGER.md / last week's item 5, with the first
+  line personalized to that article name.
 
-### 4. Create two accounts today (they need to age before use)
-- Product Hunt personal account (https://www.producthunt.com) — must be a
-  PERSONAL account, new accounts wait ~1 week before posting. Launch later
-  when you have a free evening.
-- Hacker News account (https://news.ycombinator.com) — for a future
-  "Show HN" post. NEVER ask anyone to upvote (instant burial).
+## Next week
 
-### 5. Pitch emails to live "best news aggregator" articles — ~10 min
-Send this template (personalize the first line per site):
+**Product Hunt launch window opens 2026-08-26** (your account ages ~1 week from
+2026-08-19). Don't launch before then — new accounts get filtered. When you
+have a free evening to answer comments, say so and the run will prepare the
+tagline, gallery images and launch text.
 
-> Subject: Suggestion for your news aggregator roundup
->
-> Hi — I read your piece [ARTICLE NAME] and wanted to suggest an addition:
-> CurrentWire (https://currentwire.us), a free news aggregator that ranks
-> the top 100 current US/Canada stories. What makes it different: the
-> ranking method is public (currentwire.us/methodology), every story
-> attributes and links all original publishers, and there's no paywall or
-> signup — which may interest readers who find Ground News gated.
-> I run the site, so happy to answer anything. Either way, thanks for the
-> useful roundup.
+## Later (when you have time)
 
-Targets (all articles verified live and recently updated):
-- iTechGuides → ratneshkumarofficial@gmail.com (article: "9 Best News
-  Aggregators in 2026", updated Aug 10)
-- Wisp → hi@wisp.news (article: "Ground News Alternatives", updated Aug 13)
-- MediaHacker → form at https://www.mediahacker.org/contact/ ("10 Best News
-  Aggregator Apps 2026")
-- Readless → support@readless.app (three 2026 listicles; one email covers all)
-- daily.dev → hi@daily.dev (long shot, strongest domain — worth one email)
+### 4. RSS readers (distribution, not SEO) — ~15 min
+Free account on Feedly / Inoreader / NewsBlur, add `https://currentwire.us/rss`
+in each — puts the feed in their search indexes.
 
-## Next weeks (when you have time)
+### 5. Show HN
+Account exists. Post when you have a free evening.
+Title: `Show HN: CurrentWire – ranks the top 100 US/Canada news stories with
+transparent source attribution`. Be present ~2-3 hours after posting. One
+genuine shot — no reposting. NEVER ask anyone to upvote (instant burial).
 
-### 6. Feedspot free listing — ~5 min
-"Submit your Blog" button on https://news.feedspot.com/usa_news_websites/
-(site URL + https://currentwire.us/rss). Decline every paid upsell.
-
-### 7. SaaSHub — ~10 min
-https://www.saashub.com/services/new — free; name Google News/Feedly/Ground
-News as alternatives so CurrentWire appears on their comparison pages.
-Verifying with an @currentwire.us email speeds review.
-
-### 8. Social profiles (your call — unlocks schema upgrade)
-The site config references x.com/currentwire, facebook.com/currentwire,
-linkedin.com/company/currentwire — none exist yet. If you create them (free),
-the weekly run will detect them, add them to the site's structured data
-(sameAs), and prepare posts. Only create what you'll keep.
-
-### 9. Show HN + Product Hunt launches
-When accounts have aged and you have a free evening to answer comments.
-Show HN title: `Show HN: CurrentWire – ranks the top 100 US/Canada news
-stories with transparent source attribution`. Be present ~2-3 hours after
-posting. One genuine shot each — no reposting.
-
-### 10. RSS readers (distribution, not SEO) — ~15 min
-Free account on Feedly / Inoreader / NewsBlur, add
-https://currentwire.us/rss in each — puts the feed in their search indexes.
+### 6. Social profiles (your call — unlocks a schema upgrade)
+Checked 2026-08-20: `linkedin.com/company/currentwire` returns 404,
+`facebook.com/currentwire` does not resolve to a CurrentWire page, and
+`x.com/currentwire` cannot be checked automatically (X blocks bots — you'd
+have to look yourself). None are wired into the site's structured data, which
+is correct. If you create any of them (free), tell me and I'll add `sameAs`
+to the Organization schema and prepare posts. Only create what you'll keep.
 
 ## Parked (do NOT do yet)
 
 - **AlternativeTo** — best directory in the niche, but its FAQ explicitly
   rejects "apps from small websites made with automated tools" and the free
-  queue takes months. Submit in 2-3 months once there's some traction/press.
+  queue takes months. Submit ~Oct-Nov 2026 once there's traction/press.
 - **Reddit** (r/SideProject; r/webdev Showoff SATURDAY ONLY;
   r/alphaandbetausers) — needs an account with real non-promotional history
   first (9:1 rule). Post as a builder sharing the ranking pipeline, never an ad.
 - **Wikipedia** — verified: no comparison page exists and CurrentWire fails
-  notability at 3 weeks old. Do not attempt; revisit only after independent
-  press coverage.
+  notability. Do not attempt; revisit only after independent press coverage.
 - **Indie Hackers / Blogarama / Uneed** — legitimate but low value; only
   after everything above.
 

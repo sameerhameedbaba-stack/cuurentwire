@@ -32,3 +32,28 @@ Format: date | what | live URL | notes. Only entries verified live belong here.
   would be duplicates.)
 
 (no verified-live placements yet)
+
+## Progress checks
+
+### 2026-08-20 (1 day after submission — nothing live yet, as expected)
+
+- Curlie: searched curlie.org for "currentwire" — no results. Still in the
+  editor queue. Normal; can take months.
+- Journalist's Toolbox: no indexed listing yet. Editorial review, no timeline.
+- Listicle pitches — all 4 articles re-fetched, none has added CurrentWire:
+  - iTechGuides "9 Best News Aggregators in 2026" — updated 2026-08-10 (before
+    the pitch), no mention.
+  - Wisp "7 Ground News Alternatives" — updated 2026-08-13, no mention.
+  - Readless "Best News Aggregators 2026" (upd. 2026-07-29) and "Best AI News
+    Aggregators" (upd. 2026-08-09) — no mention in either.
+  - daily.dev "10 Best News Aggregator Apps in 2026" — updated 2026-07-30, no
+    mention.
+- Web search for "currentwire.us" and "CurrentWire news aggregator": zero
+  mentions anywhere. No backlinks or citations yet.
+- Social profiles re-checked: linkedin.com/company/currentwire → HTTP 404;
+  facebook.com/currentwire → does not resolve to a CurrentWire page (a
+  different handle, @current.wire.3, is what surfaces); x.com/currentwire →
+  HTTP 402, X blocks automated fetches so this one cannot be verified from
+  here. No `sameAs` added to OrganizationJsonLd — correct, since no profile is
+  confirmed to exist. lib/seo/structured-data.tsx:63 still documents why.
+- No code changes this run. Docs only.
