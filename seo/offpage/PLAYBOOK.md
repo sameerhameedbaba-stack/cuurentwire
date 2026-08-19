@@ -46,7 +46,9 @@ submits forms, never posts anywhere.
   Story URLs are permanent, the ranking method is public, and editorial
   policies (standards, corrections) are published on the site.
 - Category: News / News aggregator / Media
-- Contact: support@currentwire.us
+- Contact name: Rick Putman (the owner this project is built for —
+  use this as the person/submitter name on every form from 2026-08-20)
+- Contact email: support@currentwire.us
 - RSS: https://currentwire.us/rss
 
 ## Social profiles (owner decision, still open)

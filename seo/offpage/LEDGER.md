@@ -57,3 +57,41 @@ Format: date | what | live URL | notes. Only entries verified live belong here.
   here. No `sameAs` added to OrganizationJsonLd — correct, since no profile is
   confirmed to exist. lib/seo/structured-data.tsx:63 still documents why.
 - No code changes this run. Docs only.
+
+### 2026-08-20 (live session with the owner — Chrome, owner clicked every submit)
+
+Standing change: the owner is building CurrentWire for **Rick Putman**. From
+today, Rick Putman is the person/submitter name on every form; the site name
+stays "CurrentWire" and the contact email stays support@currentwire.us.
+
+- **Feedspot — DONE, complete.** Free listing submitted from
+  https://news.feedspot.com/usa_news_websites/ (Name "CurrentWire", email
+  support@currentwire.us, URL https://currentwire.us). Submitting auto-created
+  a Feedspot account; the owner clicked "Confirm My Email" and the "Welcome to
+  FeedSpot" mail landed at 3:44 AM. Their Plans & Pricing upsell appears right
+  after submitting — declined, nothing paid. Listing itself is editor-reviewed.
+- **SaaSHub — SUBMITTED on the free tier.** The owner registered the account
+  (submission is impossible without one). Form as sent: name CurrentWire;
+  tagline "The top 100 current news stories across the United States and
+  Canada, continuously refreshed, intelligently ranked, deduplicated and
+  transparently attributed." (158/250); categories News + RSS + News
+  Aggregator; competitors Google News, Feedly, Ground News, Inoreader; no
+  LinkedIn URL (none exists). **Priority+ is $75 one-off — declined**, used the
+  Free option (queue up to 32 days, no corrections offered).
+  Follow-up alternatives step: selected newsblur, flipboard, smartnews,
+  no-fee-news. Deliberately did NOT select ABC News — it is a publisher
+  CurrentWire links to, not a competitor; claiming it would be false.
+  Note for next time: SaaSHub's "Selected: N" counter only updates on real
+  clicks, but the underlying `selected_slugs[]` checkboxes are what submit —
+  verify state in the DOM, not from the counter.
+- **MediaHacker — 5th listicle pitch prepared** at
+  https://www.mediahacker.org/contact/ (the other 4 went out 2026-08-19).
+  Personalized to their real article, "10 Best News Aggregator Apps to Stay
+  Informed (2026)" (verified live at
+  https://www.mediahacker.org/13491/best-news-aggregator-apps-2026/). The pitch
+  states plainly that CurrentWire is automated, not a human-edited desk. Their
+  form has a rotating arithmetic anti-spam question the owner answers.
+
+Still open after this session: SaaSHub domain verification with an
+@currentwire.us address (raises queue priority), and the Product Hunt launch
+window from 2026-08-26.
