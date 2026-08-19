@@ -172,6 +172,16 @@ const TECHNOLOGY: CategoryFixture[] = [
   c("Chip shortage eases as new fabs come online", "technology"),
   c("Tech company doubles down on overseas expansion", "technology", false),
   c("Antitrust regulators open probe into app store payments", "technology"),
+  // Archaeology-vocabulary near-misses: the deep-history dictionary must not
+  // swallow software coverage. There is no bare "ancient" keyword, and real
+  // tech vocabulary still outweighs a single archaeology word.
+  c("Ancient codebase: the 40-year-old software still running state payroll", "technology"),
+  c("Smartphone maker calls its rival's foldable an ancient design", "technology"),
+  c("Ransomware crew locks the excavation project's imaging software", "technology"),
+  c("Cloud storage vendor pitches an app for dig site photo archives", "technology", true, {
+    providerCategory: "technology",
+    providerCategoryIsPrior: true,
+  }),
   // Hard negative: crime story with tech nouns — known-hard for a keyword
   // classifier, kept honest as low-confidence.
   c("Police recover stolen smartphones after warehouse break-in", "world", false),
@@ -210,6 +220,13 @@ const WORLD: CategoryFixture[] = [
   c("Berlin hosts emergency summit on migration", "world"),
   // audit-flavor: the Nigerian vultures story must never be technology.
   c("Nigeria's disappearing vultures alarm communities across West Africa", "world"),
+  // Guard for the deep-history dictionary: bare "burial" is deliberately NOT
+  // a science keyword, so mass-burial war coverage stays world.
+  c("Mass burial begins in Gaza as families bury the dead", "world"),
+  // Guard: "ancient egypt"/"ancient rome"/"ancient greece" are deliberately
+  // NOT science keywords — tourism and exhibit copy used to outscore the
+  // world gazetteer 4-3 on the civilisation name alone.
+  c("Ancient Egypt tour operator files for bankruptcy", "world", false),
 ];
 
 const CLIMATE: CategoryFixture[] = [
@@ -310,6 +327,25 @@ const SCIENCE: CategoryFixture[] = [
   c("Asteroid sample reveals building blocks of life", "science"),
   // audit-flavor: vultures + scientists must land in science, not technology.
   c("Nigeria's vultures are disappearing and scientists are worried", "science"),
+  // audit: LIVE misfile 2026-08-19 — published to /technology with
+  // "articleSection":"Technology". Reproduced with the arstechnica.com feed
+  // prior the RSS provider really attaches, because the prior IS the other
+  // half of the bug: with no science evidence it decided the story alone.
+  c("Theban tomb reveals how Egyptian burial trends evolved in time", "science", true, {
+    description:
+      "Practices shifted from individuals buried in coffins to reusing sites for later mummy interments.",
+    providerCategory: "technology",
+    providerCategoryIsPrior: true,
+  }),
+  c("Excavation of a Bronze Age burial site uncovers grave goods", "science"),
+  c("Paleontologists describe a new horned dinosaur from Alberta badlands", "science"),
+  c("Radiocarbon dating pushes back the age of the cave paintings", "science"),
+  c("Ancient DNA links Neanderthal ancestry to modern immune genes", "science"),
+  c("Divers document a sarcophagus inside a flooded necropolis", "science"),
+  c("Archaeologists date the hieroglyphs on a newly opened tomb", "science", true, {
+    description: "The team excavated the chamber last spring.",
+  }),
+  c("Stone Age toolmakers travelled farther than thought, study finds", "science"),
 ];
 
 const CULTURE: CategoryFixture[] = [
@@ -350,6 +386,12 @@ const CULTURE: CategoryFixture[] = [
   c("Late-night TV series shakes up its format", "culture"),
   // Hard negative: business vocabulary in an entertainment story.
   c("Movie studio reports record box office revenue", "culture"),
+  // Hard negative for the new "tomb" keyword: the franchise is not a dig.
+  c("Tomb Raider film reboot tops the box office", "culture"),
+  // Guard: bare "dinosaur" is deliberately NOT a science keyword (only
+  // "dinosaur fossil"), so museum and franchise copy keeps its own section
+  // instead of tying science 3-3 and falling into the general bucket.
+  c("Dinosaur exhibit opens at the natural history museum", "culture"),
 ];
 
 const SPORTS: CategoryFixture[] = [
@@ -413,6 +455,11 @@ const GENERAL: CategoryFixture[] = [
     "general",
     false,
   ),
+  // Guards for the deep-history dictionary. These have no usable section
+  // signal, so the honest answer is the general bucket — NOT a confident
+  // /science placement off one archaeology-shaped word.
+  c("Tomb of the Unknown Soldier wreath ceremony marks Veterans Day", "general", false),
+  c("Excavation crews hit gas line, forcing evacuation downtown", "general", false),
 ];
 
 export const categoryFixtures: CategoryFixture[] = [

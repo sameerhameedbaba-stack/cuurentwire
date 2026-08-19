@@ -1,10 +1,17 @@
 name: Core Web Vitals check
 
-# Weekly PSI/CrUX measurement (seo/BACKLOG.md item 19). The script exits 0
-# with a skip line until the PSI_API_KEY repo secret exists, so this
-# workflow is green-but-skipping until the owner adds the free key. With a
-# key it measures /, /top-100 and one story page (mobile strategy) and
-# commits data/cwv-history.json back.
+# Weekly Core Web Vitals measurement (seo/BACKLOG.md item 19).
+#
+# Keyless by default: scripts/cwv-check.mjs drives the Chromium that
+# Playwright already installs, under Lighthouse's mobile throttling, and
+# reads LCP/CLS/FCP/TTFB from the browser's own PerformanceObserver. No API
+# key, no signup, no quota, $0 — so this workflow produces real data without
+# anything from the owner.
+#
+# If a PSI_API_KEY repo secret ever exists, the same script switches to
+# PageSpeed Insights instead, which adds CrUX field data on top. That needs
+# real traffic volume the site does not have yet, which is why the keyless
+# path is the default rather than a fallback.
 
 on:
   schedule:
@@ -22,13 +29,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium
+        # Only the browser the probe drives — --with-deps pulls the system
+        # libraries headless Chromium needs on a bare runner.
+        run: npx playwright install chromium --with-deps
       - name: Run CWV check
         env:
           PSI_API_KEY: ${{ secrets.PSI_API_KEY }}
         run: node scripts/cwv-check.mjs
       - name: Commit updated history
-        # The history file only exists once a keyed run has happened —
-        # keyless skip runs write nothing and commit nothing.
         if: always()
         run: |
           if [ -f data/cwv-history.json ]; then

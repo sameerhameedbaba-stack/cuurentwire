@@ -109,6 +109,35 @@ export default function MethodologyPage() {
         observable coverage patterns — never editorial dramatization.
       </p>
 
+      <h2>Reference pages</h2>
+      <p>
+        Three of the mechanisms above have their own reference page, with the
+        exact rules, the numbers they produce and worked examples:
+      </p>
+      <ul>
+        <li>
+          <Link href="/methodology/coverage-breadth">
+            What coverage breadth measures
+          </Link>{" "}
+          — what counts as an independent source, and what breadth is worth
+          against freshness.
+        </li>
+        <li>
+          <Link href="/methodology/publisher-tiers">
+            Publisher authority tiers
+          </Link>{" "}
+          — the three tiers, what each is worth, and how a publication is
+          matched to one.
+        </li>
+        <li>
+          <Link href="/methodology/duplicate-stories">
+            How duplicate stories are merged
+          </Link>{" "}
+          — the rules that decide whether two reports describe the same event,
+          and how accurate they are.
+        </li>
+      </ul>
+
       <p>
         Ranking systems can make mistakes. CurrentWire continuously evaluates
         and improves its methodology. Spotted an error? See the{" "}

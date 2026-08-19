@@ -82,7 +82,12 @@ export default function EditorialStandardsPage() {
         Most Covered, the Top 100, the top sections of country and category
         pages, trending topics, and the BREAKING label — unless the story has
         independent editorial coverage, and syndicated copies of one release
-        are never counted as independent sources.
+        are never counted as independent sources. The counting rule is set out
+        in{" "}
+        <Link href="/methodology/coverage-breadth">
+          what coverage breadth measures
+        </Link>
+        .
       </p>
       <p>
         A release that real newsrooms have picked up is a story, so it remains

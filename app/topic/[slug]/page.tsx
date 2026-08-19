@@ -28,12 +28,18 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const { topicName, stories } = await getTopicStories(slug);
+  const { topicName, canonicalSlug, stories } = await getTopicStories(slug);
   const name = topicName ?? "Topic";
+  // Near-duplicate hubs are consolidated with rel=canonical, never a
+  // redirect: this route answers 200 for ANY slug (verified live — a
+  // nonsense slug returns 200, noindex/follow), so every variant URL stays
+  // alive and simply points its equity at the canonical form.
+  // `alternates.canonical` emits <link rel="canonical"> — see
+  // node_modules/next/dist/docs/01-app/03-api-reference/04-functions/generate-metadata.md
   const metadata = pageMetadata({
     title: `${name} — Coverage`,
     description: `Current stories about ${name} across the United States and Canada, ranked by importance.`,
-    path: `/topic/${slug}`,
+    path: `/topic/${canonicalSlug}`,
   });
   // Thin topic pages stay crawlable (follow) but out of the index.
   if (!shouldIndexCollection(stories.length)) {
@@ -48,7 +54,7 @@ export default async function TopicPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { topicName, stories, dataset } = await getTopicStories(slug);
+  const { topicName, canonicalSlug, stories, dataset } = await getTopicStories(slug);
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6">
@@ -56,7 +62,7 @@ export default async function TopicPage({
         items={[
           { name: "Home", path: "/" },
           { name: "Topics", path: "/topics" },
-          { name: topicName ?? slug, path: `/topic/${slug}` },
+          { name: topicName ?? slug, path: `/topic/${canonicalSlug}` },
         ]}
       />
       <header className="border-b-2 border-ink pb-5 dark:border-rule-strong">
@@ -80,7 +86,7 @@ export default async function TopicPage({
         <>
           <ItemListJsonLd
             clusters={stories}
-            path={`/topic/${slug}`}
+            path={`/topic/${canonicalSlug}`}
             name={`${topicName} coverage`}
           />
           <ol className="mt-2">

@@ -178,24 +178,63 @@ plumbing (which the health check shows is clean).
     viewers hit the edge cache (one curl in the cron, $0). Note: the hero image
     already measured `X-Vercel-Cache: HIT` at 12KB/393ms on 2026-08-18, so this
     is lower value than it looked at baseline. Status: OPEN (low)
-16. Shard `/archive-sitemap.xml` via generateSitemaps when the archive
-    approaches 40,000 stories — 1,720 today, so this is years away.
-    Status: OPEN (future)
+16. ~~Shard `/archive-sitemap.xml` via generateSitemaps when the archive
+    approaches 40,000 stories.~~ **CLOSED 2026-08-19 — converted from a human
+    to-do into an automatic alarm.** `scripts/seo-health.mjs` now fails when
+    `/archive-sitemap.xml` exceeds 45,000 URLs, ~5,000 short of the 50,000
+    sitemap cap, with the fix named in the failure message. 2,163 URLs
+    measured today, so it is still years away — but nobody has to remember it
+    now. Status: SHIPPED (as monitoring)
 
-## Blocked on owner (free keys/accounts — the only human steps that exist)
+## Was blocked on the owner — resolved 2026-08-19
 
-17. **Google Search Console**: verified 2026-08-14 with sitemap.xml and
-    news-sitemap.xml submitted. Remaining: submit `archive-sitemap.xml` in the
-    GSC UI, and optionally create a free API service account so the daily loop
-    can pull clicks, impressions and coverage. No billing. Status: BLOCKED(user)
-18. **Bing Webmaster Tools**: verify the site (can import from GSC), get the
-    free API key. IndexNow pings already flow without it. Status: BLOCKED(user)
-19. **PageSpeed Insights API key** (free, no billing): the keyless endpoint
-    returned HTTP 429 `RESOURCE_EXHAUSTED` again on 2026-08-18, and the CrUX
-    API returns 403 without a key. Until one exists there is no lab or field
-    Core Web Vitals data; this run measured TTFB, transfer weight and asset
-    strategy instead, which cannot substitute for LCP/INP/CLS.
-    Status: automation shipped, awaiting PSI_API_KEY repo secret (owner, 2 min)
+17. ~~**Google Search Console — submit `archive-sitemap.xml` in the UI.**~~
+    **CLOSED — not required.** `robots.txt` already advertises all three
+    sitemaps, verified live 2026-08-19:
+    `Sitemap: https://currentwire.us/sitemap.xml`,
+    `.../news-sitemap.xml`, `.../archive-sitemap.xml`. Google discovers
+    sitemaps from `robots.txt` without any UI action, so this was never a
+    prerequisite for indexing — only for per-sitemap coverage *reporting*.
+    Optional and entirely the owner's call; nothing is blocked on it. The
+    free GSC API service account remains a nice-to-have for pulling
+    clicks/impressions into the daily loop, also optional. Status: CLOSED
+18. ~~**Bing Webmaster Tools.**~~ **DONE 2026-08-19** — site verified by GSC
+    import (Administrator), all 3 sitemaps submitted, 0 errors; logged in
+    `seo/offpage/LEDGER.md`. The optional free API key is not needed:
+    IndexNow already pushes every new story to Bing within ~30 min, and
+    DuckDuckGo and Yahoo source from Bing (see the coverage map in
+    PLAYBOOK.md). Status: SHIPPED
+19. ~~**PageSpeed Insights API key.**~~ **CLOSED 2026-08-19 — no key needed.**
+    The keyless PSI endpoint still returns HTTP 429 (re-confirmed today), so
+    `scripts/cwv-check.mjs` no longer depends on it. It now defaults to a
+    keyless probe that drives the Chromium the e2e suite already installs,
+    under Lighthouse's mobile throttling (4x CPU, 1638.4 kbps, 150 ms), and
+    reads LCP/CLS/FCP/TTFB from the browser's own PerformanceObserver.
+    First real measurement, 2026-08-19 (`data/cwv-history.json`):
+
+    | Page | LCP | CLS | FCP | TTFB |
+    |---|---|---|---|---|
+    | `/` | **3,632 ms** | 0.001 | 1,912 ms | 135 ms |
+    | `/top-100` | 1,628 ms | 0.006 | 1,628 ms | 90 ms |
+    | story page | 1,588 ms | 0 | 1,588 ms | 281 ms |
+
+    CLS is effectively zero everywhere and two of three pages have good LCP.
+    A PSI key would only ever add CrUX *field* data on top, and CrUX needs
+    real traffic volume this site does not have yet — so it would report
+    nothing today even if the owner added one. `.github/workflows/cwv.yml`
+    runs the keyless probe weekly and commits the history.
+    Status: SHIPPED (keyless; PSI key optional, not blocking)
+
+20. **Homepage LCP is 3,632 ms — the one bad Core Web Vital** (new, found by
+    the keyless probe above on 2026-08-19; every other page measured good).
+    Measured cause: the hero image is a **71,262-byte JPEG served from
+    `ichef.bbci.co.uk`**, a third-party origin that needs DNS + TLS before
+    the LCP element can even start downloading, and `next.config.ts` sets
+    `images.unoptimized = true` so there is no resizing. Cheapest honest fix
+    first: emit `<link rel="preconnect">` for the current hero image's origin
+    (it changes per story, so it must be derived from the rendered hero, not
+    hardcoded). Re-measure with `node scripts/cwv-check.mjs` after.
+    Status: OPEN
 
 ## Shipped 2026-08-19 (daily loop) — verified live after deploy
 

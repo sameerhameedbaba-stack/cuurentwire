@@ -38,7 +38,7 @@ export const SIMILARITY_THRESHOLD = 0.42;
  * differ must clear SIMILARITY_THRESHOLD + CROSS_CATEGORY_MARGIN, so a
  * misclassified article can still merge with its event.
  */
-const CROSS_CATEGORY_MARGIN = 0.05;
+export const CROSS_CATEGORY_MARGIN = 0.05;
 /**
  * Anti-chaining validation floor: after union-find, members of a multi-article
  * cluster whose similarity to the cluster lead falls below this are evicted
@@ -47,14 +47,14 @@ const CROSS_CATEGORY_MARGIN = 0.05;
  * strong fingerprint evidence against the lead — the same relaxed rule that
  * merged it in the first place.
  */
-const MIN_LEAD_SIMILARITY = 0.25;
+export const MIN_LEAD_SIMILARITY = 0.25;
 /**
  * Candidate blocking: tokens appearing in more than this many articles are
  * too common to be useful candidate keys and are skipped to keep candidate
  * generation far from O(n²).
  */
 const MAX_TOKEN_POSTINGS = 50;
-const TIME_WINDOW_HOURS = 48;
+export const TIME_WINDOW_HOURS = 48;
 /**
  * Relaxed-threshold path: when a pair has a STRONG fingerprint (>= 2 shared
  * rare stems incl. a proper-noun anchor + no action conflict,
@@ -107,7 +107,7 @@ export const WIDE_ANCHOR_MIN_RARE_STEMS = 3;
  * resume as ash clears"). Such pairs pay this extra margin on the headline
  * path and never qualify for the relaxed fingerprint path.
  */
-const CONFLICTING_ACTION_MARGIN = 0.15;
+export const CONFLICTING_ACTION_MARGIN = 0.15;
 /**
  * Second-pass cluster merge: clusters merge when their compact fingerprints
  * (top stems + actions + time overlap) share >= MIN_SHARED_RARE_STEMS rare

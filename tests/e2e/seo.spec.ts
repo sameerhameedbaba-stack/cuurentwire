@@ -135,3 +135,67 @@ test.describe("latest pagination", () => {
     await expect(page.locator("main article").first()).toBeVisible();
   });
 });
+
+test.describe("evergreen reference pages", () => {
+  const REFERENCE_PAGES = [
+    "/methodology/coverage-breadth",
+    "/methodology/publisher-tiers",
+    "/methodology/duplicate-stories",
+  ];
+
+  for (const path of REFERENCE_PAGES) {
+    test(`${path} is indexable with one h1, a self canonical and valid schema`, async ({
+      page,
+    }) => {
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(200);
+
+      await expect(page.locator("h1")).toHaveCount(1);
+
+      const canonical = await page
+        .locator('link[rel="canonical"]')
+        .getAttribute("href");
+      expect(canonical).toBeTruthy();
+      expect(new URL(canonical as string).pathname).toBe(path);
+
+      // Not noindexed: these are the site's evergreen pages.
+      const robots = await page
+        .locator('meta[name="robots"]')
+        .first()
+        .getAttribute("content");
+      expect(robots ?? "").not.toContain("noindex");
+
+      // Both JSON-LD blocks parse, and the breadcrumb trail ends on this page.
+      const blocks = await page
+        .locator('script[type="application/ld+json"]')
+        .allTextContents();
+      const parsed = blocks.map((block) => JSON.parse(block));
+      const webPage = parsed.find((data) => data["@type"] === "WebPage");
+      expect(webPage).toBeTruthy();
+      expect(new URL(webPage.url).pathname).toBe(path);
+      const crumbs = parsed.find((data) => data["@type"] === "BreadcrumbList");
+      expect(crumbs).toBeTruthy();
+      const trail = crumbs.itemListElement;
+      expect(trail).toHaveLength(3);
+      expect(new URL(trail[1].item).pathname).toBe("/methodology");
+      expect(new URL(trail[2].item).pathname).toBe(path);
+
+      // Links back to the hub, so the page is never a dead end.
+      await expect(page.locator('main a[href="/methodology"]').first()).toBeVisible();
+    });
+  }
+
+  test("the methodology hub links to every reference page", async ({ page }) => {
+    await page.goto("/methodology");
+    for (const path of REFERENCE_PAGES) {
+      await expect(page.locator(`main a[href="${path}"]`).first()).toBeVisible();
+    }
+  });
+
+  test("the sitemap lists the reference pages", async ({ request }) => {
+    const body = await (await request.get("/sitemap.xml")).text();
+    for (const path of REFERENCE_PAGES) {
+      expect(body).toContain(`${path}</loc>`);
+    }
+  });
+});

@@ -139,6 +139,20 @@ export const GENERIC_ENTITIES: ReadonlySet<string> = new Set([
   "definitive agreement", "special meeting", "record date",
 ]);
 
+/**
+ * Every curated entity NAME, in display form: the dictionary plus every
+ * alias target. Topic normalization (lib/news/topics.ts) uses this as the
+ * vocabulary that LICENSES a singular/plural fold — "Wildfire" may fold
+ * onto "Wildfires" only because "Wildfires" is curated here, which is what
+ * keeps proper plurals nobody curated ("Giants", "Washington Commanders",
+ * "Toronto Maple Leafs") from being mangled into invented singulars.
+ * Unlike GENERIC_ENTITIES this is names only — no filing boilerplate.
+ */
+export const CURATED_ENTITY_NAMES: readonly string[] = [
+  ...KNOWN_ENTITIES,
+  ...Object.values(ENTITY_ALIASES),
+];
+
 /** True for entities the dictionary/alias scan can produce (see GENERIC_ENTITIES). */
 export function isGenericEntity(entity: string): boolean {
   return GENERIC_ENTITIES.has(entity.trim().toLowerCase());

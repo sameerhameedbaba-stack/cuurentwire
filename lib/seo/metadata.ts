@@ -1,6 +1,34 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 
+/**
+ * The indexable robots directive, restated per page.
+ *
+ * Page-level `robots` REPLACES the root layout's wholesale in this Next
+ * version — exactly like `openGraph` below — and returning `undefined` counts
+ * as replacing it with nothing. Measured live 2026-08-19: `/us`, `/topics`,
+ * `/top-100`, `/politics`, `/sources`, `/methodology` and `/about` shipped no
+ * `<meta name="robots">` at all, while `/` and `/story/*` (which build their
+ * metadata by hand) carried the full directive. Every one of those pages was
+ * silently losing `max-image-preview:large` and `max-snippet:-1` — the
+ * directives that make a page eligible for large Discover and Top Stories
+ * thumbnails. Keep this in sync with app/layout.tsx.
+ */
+const INDEXABLE_ROBOTS = {
+  index: true,
+  follow: true,
+  "max-image-preview": "large",
+  "max-snippet": -1,
+  "max-video-preview": -1,
+  googleBot: {
+    index: true,
+    follow: true,
+    "max-image-preview": "large",
+    "max-snippet": -1,
+    "max-video-preview": -1,
+  },
+} as const;
+
 /** Build consistent page metadata: title, description, canonical, OG, Twitter. */
 export function pageMetadata({
   title,
@@ -43,7 +71,7 @@ export function pageMetadata({
       ? { index: false, follow: false }
       : noIndexFollow
         ? { index: false, follow: true }
-        : undefined,
+        : INDEXABLE_ROBOTS,
     openGraph: {
       title,
       description,

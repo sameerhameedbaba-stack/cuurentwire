@@ -52,7 +52,12 @@ export default function AboutPage() {
         <li>
           <strong>One story, all coverage.</strong> When many publications
           report the same event, CurrentWire groups that coverage into a single
-          story so the picture is clear, not repetitive.
+          story so the picture is clear, not repetitive. The rules behind that
+          grouping are published in{" "}
+          <Link href="/methodology/duplicate-stories">
+            how duplicate stories are merged
+          </Link>
+          .
         </li>
         <li>
           <strong>Transparent ranking.</strong> Our{" "}

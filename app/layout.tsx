@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import type { Metadata, Viewport } from "next";
 import { Archivo, Inter } from "next/font/google";
 import { siteConfig } from "@/config/site";
@@ -76,49 +74,20 @@ export const viewport: Viewport = {
   ],
 };
 
-/**
- * next/font emits self-hosted woff2 files, but this Next build injects no
- * <link rel="preload" as="font"> for them (audit F9) and offers no config
- * flag to turn injection on — so the links are hand-rolled from the build's
- * font manifest (never hardcoded hashes). Best-effort by design: a missing
- * or unreadable manifest simply yields no preload links, which is exactly
- * the status quo. The ?dpl asset suffix (skew protection) is mirrored from
- * the same global Next uses so preload URLs match the CSS's font URLs.
+/*
+ * Do NOT hand-roll <link rel="preload" as="font"> here. next/font injects one
+ * per preloaded subset by itself: "Fonts specified via `subsets` will have a
+ * link preload tag injected into the head when the `preload` option is true,
+ * which is the default", and a font called in the root layout "is preloaded on
+ * all routes" (node_modules/next/dist/docs/01-app/03-api-reference/
+ * 02-components/font.md — `subsets`, `preload`, "Preloading").
+ *
+ * Audit F9 claimed this build emitted none and added a manifest-reading block.
+ * Measured live 2026-08-19 on the homepage: the head carried FOUR font preloads
+ * for TWO files — Next's two plus that block's duplicates. The block is gone;
+ * scripts/seo-health.mjs now fails if the live count drops below two or any
+ * href repeats, so a real regression stays visible.
  */
-let cachedFontPreloadHrefs: string[] | null = null;
-
-function fontPreloadHrefs(): string[] {
-  if (cachedFontPreloadHrefs) return cachedFontPreloadHrefs;
-  const assetSuffix =
-    (globalThis as { NEXT_CLIENT_ASSET_SUFFIX?: string }).NEXT_CLIENT_ASSET_SUFFIX ?? "";
-  for (const manifestPath of [
-    // Production / standalone server bundle, then `next dev`.
-    join(process.cwd(), ".next", "server", "next-font-manifest.json"),
-    join(process.cwd(), ".next", "dev", "server", "next-font-manifest.json"),
-  ]) {
-    try {
-      const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as {
-        app?: Record<string, string[]>;
-      };
-      const files = new Set<string>();
-      for (const perRoute of Object.values(manifest.app ?? {})) {
-        for (const file of perRoute) {
-          if (file.endsWith(".woff2")) files.add(file);
-        }
-      }
-      if (files.size > 0) {
-        cachedFontPreloadHrefs = [...files]
-          .sort()
-          .map((file) => `/_next/${file}${assetSuffix}`);
-        return cachedFontPreloadHrefs;
-      }
-    } catch {
-      // Try the next candidate path; fall through to no preloads.
-    }
-  }
-  cachedFontPreloadHrefs = [];
-  return cachedFontPreloadHrefs;
-}
 
 /** Applies the saved/system theme before first paint to avoid a flash. */
 const themeInitScript = `(function(){try{var t=localStorage.getItem("cw-theme");var d=t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches);if(d)document.documentElement.classList.add("dark");}catch(e){}})();`;
@@ -131,16 +100,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${inter.variable} ${archivo.variable} h-full`}
     >
       <head>
-        {fontPreloadHrefs().map((href) => (
-          <link
-            key={href}
-            rel="preload"
-            href={href}
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-          />
-        ))}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="flex min-h-full flex-col">

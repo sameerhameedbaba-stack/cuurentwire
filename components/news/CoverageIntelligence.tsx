@@ -50,7 +50,13 @@ export function CoverageIntelligence({
   const showAllTime = allTimeNames.length > activeNames.size;
 
   const mixParts: string[] = [];
-  if (mix.independentDomains > 0) {
+  // ZERO is information here, not an empty value: a story carried only by
+  // syndicated copies of one press release has no independent editorial
+  // domain at all, and sourceMix() computes that honestly (it does not floor
+  // at 1 the way ranking's independentSourceCount does). Suppressing the 0
+  // hid exactly the case a reader most needs to see. Guarded on total so a
+  // memberless cluster still renders nothing.
+  if (mix.total > 0) {
     mixParts.push(
       `${mix.independentDomains} independent editorial domain${mix.independentDomains === 1 ? "" : "s"}`,
     );
@@ -94,6 +100,16 @@ export function CoverageIntelligence({
             Source mix
           </h3>
           <p className="mt-1 text-sm">{mixParts.join(" · ")}</p>
+          {/* The counting rule behind this line. Kept in its own paragraph so
+              the mix string itself stays exactly as an external probe reads it. */}
+          <p className="mt-1 text-xs text-faint">
+            <Link
+              href="/methodology/coverage-breadth"
+              className="underline underline-offset-2 hover:text-brand-ink"
+            >
+              What coverage breadth measures
+            </Link>
+          </p>
         </div>
       ) : null}
 

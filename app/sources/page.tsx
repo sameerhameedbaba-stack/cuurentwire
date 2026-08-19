@@ -51,6 +51,13 @@ export default async function SourcesPage() {
           Publications currently represented in CurrentWire coverage. Tiers
           reflect journalistic reputation and reach — never political
           orientation. See{" "}
+          <Link
+            href="/methodology/publisher-tiers"
+            className="underline hover:text-brand-ink"
+          >
+            what the tiers mean
+          </Link>{" "}
+          or{" "}
           <Link href="/methodology" className="underline hover:text-brand-ink">
             how ranking works
           </Link>

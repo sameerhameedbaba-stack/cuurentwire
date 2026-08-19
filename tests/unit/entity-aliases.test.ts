@@ -3,6 +3,7 @@ import {
   canonicalizeEntity,
   extractEntities,
 } from "@/lib/news/classification/entities";
+import { topicKey } from "@/lib/news/topics";
 
 /**
  * Entity alias canonicalization (Stage C audit fix): "USS Lincoln" and
@@ -85,5 +86,33 @@ describe("extractEntities canonicalization", () => {
     // "uk" inside "Ukraine" must not become United Kingdom.
     const entities = extractEntities("Ukraine grain exports resume via Black Sea");
     expect(entities).not.toContain("United Kingdom");
+  });
+});
+
+describe("alias canonicalization feeds one stable topic key", () => {
+  // Backlog item 7: the alias table and the topic-key layer must agree, or
+  // a single entity gets two hubs again.
+  it("collapses alias variants of one entity onto one topic key", () => {
+    expect(topicKey("USS Lincoln")).toBe(topicKey("USS Abraham Lincoln"));
+    expect(topicKey("The Fed")).toBe(topicKey("Federal Reserve"));
+    expect(topicKey("President Trump")).toBe(topicKey("Trump"));
+    expect(topicKey("NYC")).toBe(topicKey("New York City"));
+  });
+
+  it("keeps deliberately-unaliased lookalikes on their own keys", () => {
+    expect(topicKey("Abraham Lincoln")).not.toBe(topicKey("USS Abraham Lincoln"));
+    expect(topicKey("New York City")).not.toBe(topicKey("New York"));
+  });
+
+  it("turns every extracted entity into a valid, stable slug", () => {
+    const entities = extractEntities(
+      "Markets steady as the Fed weighs its next move on rates",
+    );
+    for (const entity of entities) {
+      const key = topicKey(entity);
+      expect(key).toMatch(/^[a-z0-9-]+$/);
+      // Idempotent: re-keying a key must not drift.
+      expect(topicKey(key.replace(/-/g, " "))).toBe(key);
+    }
   });
 });

@@ -36,6 +36,9 @@ original publishers listed on each story page for the underlying reporting.
 ## How it works
 
 - [Methodology](https://currentwire.us/methodology): how stories are discovered, clustered, and ranked
+- [Coverage breadth](https://currentwire.us/methodology/coverage-breadth): what counts as an independent source, why syndicated press-release copies never widen coverage, and the points a source count is worth
+- [Publisher tiers](https://currentwire.us/methodology/publisher-tiers): the three authority tiers, their weights, how a publisher is matched to one, and what tiers explicitly are not (no bias or accuracy rating)
+- [Duplicate story merging](https://currentwire.us/methodology/duplicate-stories): the deterministic rules that decide whether two reports describe the same event, and their measured precision and recall
 - [Editorial Standards](https://currentwire.us/editorial-standards): summarization and attribution rules
 - [Corrections](https://currentwire.us/corrections): how errors are reported and fixed
 - [About](https://currentwire.us/about): what CurrentWire is

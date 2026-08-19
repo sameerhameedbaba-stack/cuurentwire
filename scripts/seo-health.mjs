@@ -15,6 +15,8 @@
 const BASE = process.env.SEO_BASE_URL ?? "https://currentwire.us";
 const INDEXNOW_KEY = "d67fe7ac1896e8fd9e691a2d2abeca89";
 const NEWS_WINDOW_HOURS = 49; // 48h window + 1h grace for clock/emit skew
+/** Sitemaps cap at 50,000 URLs — alarm with runway, not at the cliff. */
+const ARCHIVE_SHARD_AT = 45_000;
 const FEEDS = [
   "us", "canada", "politics", "business", "technology", "world",
   "climate", "health", "science", "culture", "sports",
@@ -35,7 +37,12 @@ async function get(path) {
     headers: { "User-Agent": "CurrentWire-SEO-Health/1.0" },
     signal: AbortSignal.timeout(30_000),
   });
-  return { status: res.status, body: await res.text(), url: res.url };
+  return {
+    status: res.status,
+    body: await res.text(),
+    url: res.url,
+    headers: res.headers,
+  };
 }
 
 function extractJsonLd(html) {
@@ -99,6 +106,14 @@ if (archive.status !== 200 || !archive.body.includes("</urlset>")) {
   fail("archive-sitemap.xml", `status ${archive.status}`);
 } else if (archiveCount === 0) {
   fail("archive-sitemap empty", "0 entries — archive DB unreachable?");
+} else if (archiveCount > ARCHIVE_SHARD_AT) {
+  // Sitemaps cap at 50,000 URLs. Sharding via generateSitemaps is years away
+  // at the current rate, so instead of leaving "shard it someday" on a human
+  // to-do list, this alarm fires with ~5,000 URLs of runway.
+  fail(
+    "archive-sitemap size",
+    `${archiveCount} URLs > ${ARCHIVE_SHARD_AT} — shard /archive-sitemap.xml with generateSitemaps before it hits the 50,000 cap`,
+  );
 } else ok("archive-sitemap.xml", `${archiveCount} permanent story URLs`);
 
 // 5. RSS feeds
@@ -143,6 +158,24 @@ else {
   }
 }
 
+// 7b. Story pages must be ISR-cached, not server-rendered per request.
+// A dynamic route segment only gets ISR when the page exports
+// generateStaticParams — `export const revalidate` alone is silently inert
+// (Next 16). That failure is invisible in source review and cost the site
+// CDN caching on every story, topic, source and archive-day URL until
+// 2026-08-19. Only the response headers reveal it, so check them here.
+if (storyUrl) {
+  const cached = await get(storyUrl);
+  const cacheControl = cached.headers.get("cache-control") ?? "";
+  const prerender = cached.headers.get("x-nextjs-prerender");
+  if (/no-store/.test(cacheControl) || prerender !== "1") {
+    fail(
+      "story ISR caching",
+      `cache-control "${cacheControl}", x-nextjs-prerender "${prerender}" — ISR is off; does the route still export generateStaticParams?`,
+    );
+  } else ok("story ISR caching", `prerendered, ${cacheControl}`);
+}
+
 // 8. Home page: NewsMediaOrganization + large image previews
 const home = await get("/");
 const homeBlocks = extractJsonLd(home.body);
@@ -152,6 +185,26 @@ if (!homeBlocks.some((b) => b["@type"] === "NewsMediaOrganization")) {
 if (!home.body.includes("max-image-preview:large")) {
   fail("home robots directive", "max-image-preview:large missing");
 } else ok("home robots directive", "max-image-preview:large");
+// 8b. Font preloads: next/font injects exactly one per preloaded subset.
+// A hand-rolled block in app/layout.tsx duplicated them (4 links for 2 files,
+// measured 2026-08-19) and was removed — so this asserts both directions:
+// at least the two Next emits, and no href twice.
+const fontPreloads = [
+  ...home.body.matchAll(/<link[^>]*rel="preload"[^>]*as="font"[^>]*>/g),
+].map((m) => m[0].match(/href="([^"]+)"/)?.[1] ?? "");
+const uniqueFontPreloads = new Set(fontPreloads);
+if (fontPreloads.length < 2) {
+  fail(
+    "font preloads",
+    `${fontPreloads.length} on the home page — next/font should inject one per preloaded subset`,
+  );
+} else if (uniqueFontPreloads.size !== fontPreloads.length) {
+  fail(
+    "font preloads duplicated",
+    `${fontPreloads.length} links for ${uniqueFontPreloads.size} files — is a hand-rolled preload block back in app/layout.tsx?`,
+  );
+} else ok("font preloads", `${fontPreloads.length}, no duplicates`);
+
 const homeCanonical = home.body.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
 if (!homeCanonical || homeCanonical.replace(/\/$/, "") !== BASE.replace(/\/$/, "")) {
   fail("home canonical", `got ${homeCanonical}`);

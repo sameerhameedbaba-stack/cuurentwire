@@ -205,6 +205,45 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
       "fossil", "archaeology", "asteroid", "canadian space agency", "csa",
       "discovery", "laboratory", "experiment", "peer-reviewed", "quantum",
       "eclipse", "exoplanet", "comet", "spaceship",
+      // Deep-history vocabulary. Live misfile 2026-08-19: "Theban tomb
+      // reveals how Egyptian burial trends evolved in time" published to
+      // /technology. Traced: the headline scored ZERO on every category, so
+      // the arstechnica.com feed prior — weight 2, exactly MIN_PRIMARY_SCORE
+      // — was the only signal and decided the story alone at confidence 1.0.
+      // Archaeology, palaeontology and human-origins coverage had only
+      // "archaeology" and "fossil" to stand on. Deliberately NO bare
+      // "ancient" (metaphor magnet: "ancient codebase") and NO bare "burial"
+      // (mass-burial war coverage is world) — only the precise phrases below.
+      // Both spellings are listed; US outlets drop the "a".
+      "archaeological", "archaeologist", "archeology", "archeological",
+      "archeologist", "paleontology", "palaeontology", "paleontologist",
+      "palaeontologist", "archaeological dig", "dig site",
+      "tomb", "burial site", "burial chamber", "burial mound", "grave goods",
+      "necropolis", "sarcophagus", "mummy", "mummies", "mummified",
+      "hieroglyph", "hieroglyphic", "cave painting", "petroglyph",
+      "radiocarbon", "carbon dating", "bronze age", "stone age",
+      "prehistoric", "dinosaur fossil", "fossilized", "fossilised", "megafauna",
+      "hominin", "hominid", "neanderthal", "denisovan", "homo sapiens",
+      "ancient dna", "ancient tomb", "ancient settlement", "ancient burial",
+      "ancient remains", "ancient ruins", "ancient temple",
+      // Five entries were tried and REMOVED after measuring them against real
+      // headline shapes — each turned a harmless `general` abstention into a
+      // confident wrong /science placement:
+      //   "excavation"/"excavated" — construction and utility copy:
+      //     "Excavation crews hit gas line, forcing evacuation downtown"
+      //     -> science 3. Replaced by "archaeological dig"; "dig site" stays.
+      //   "ancient city" — the standard dateline of siege coverage:
+      //     "Ancient city of Aleppo faces new shelling" -> science 4.
+      //   "ancient egypt"/"ancient rome"/"ancient greece" — tourism and
+      //     museum copy: "Ancient Egypt tour operator files for bankruptcy"
+      //     -> science 4, beating world 3.
+      //   "iron age" — label and band names: "Iron Age Records signs three
+      //     new bands" -> science 4. "bronze age"/"stone age" are safe.
+      //   bare "dinosaur" — franchise and metaphor: "Jurassic World sequel
+      //     roars past rivals with dinosaur spectacle" -> science 3, and
+      //     "Dinosaur exhibit opens at the natural history museum" fell from
+      //     culture to a general tie. "dinosaur fossil" keeps the real sense;
+      //     "fossil" and "paleontologist" already cover the rest.
     ],
     providerAliases: ["science", "space"],
   },
@@ -362,6 +401,16 @@ export const NEGATIVE_KEYWORDS: Partial<Record<CategoryId, string[]>> = {
     "at stake", "high-stakes", "the stakes",
   ],
   politics: ["quarterback", "playoff"],
+  science: [
+    // The adventure franchise, not a dig — cancels the "tomb" keyword.
+    "tomb raider",
+    // The Arlington memorial, not an excavation. Recurring US ceremony copy:
+    // "Tomb of the Unknown Soldier wreath ceremony marks Veterans Day"
+    // scored science 3 on the lone "tomb" hit.
+    "unknown soldier",
+    // Entertainment-commerce framing is never science.
+    "box office",
+  ],
   health: [
     // "outbreak" is a health keyword; a tornado outbreak is weather.
     "tornado outbreak",

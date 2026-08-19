@@ -1,31 +1,37 @@
+import { isTopicEligible, topicIndexFor, topicKey } from "@/lib/news/topics";
 import type { StoryCluster, TrendingTopic } from "@/lib/news/types";
-import { slugify } from "@/lib/utils/text";
 
 /**
  * Trending topics derived from entity frequency across ranked clusters —
  * never hardcoded. Weight combines how many stories mention the entity and
  * how important those stories are.
+ *
+ * Grouped by TOPIC KEY, not by display string, so "Big Bend" and "Big Bend
+ * National Park" pool their evidence into one row pointing at one URL.
+ * `clusterCount` comes from the index (every cluster mentioning the topic),
+ * which is exactly what /topic/<slug> will list — so the sitemap's
+ * shouldIndexCollection() gate can no longer advertise a URL that renders
+ * fewer stories than the threshold.
  */
 export function deriveTrending(clusters: StoryCluster[], limit = 8): TrendingTopic[] {
-  const topics = new Map<
-    string,
-    { display: string; clusterCount: number; articleCount: number; score: number }
-  >();
+  const index = topicIndexFor(clusters);
+  const totals = new Map<string, { articleCount: number; score: number }>();
 
   for (const cluster of clusters) {
+    const seen = new Set<string>();
     for (const entity of cluster.entities.slice(0, 4)) {
+      const key = topicKey(entity);
+      if (!key) continue;
       // Skip bare country names — they are navigation, not topics.
-      const lower = entity.toLowerCase();
-      if (lower === "united states" || lower === "canada") continue;
-      const existing = topics.get(lower);
+      if (key === "united-states" || key === "canada") continue;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const existing = totals.get(key);
       if (existing) {
-        existing.clusterCount++;
         existing.articleCount += cluster.articles.length;
         existing.score += cluster.rankingScore;
       } else {
-        topics.set(lower, {
-          display: entity,
-          clusterCount: 1,
+        totals.set(key, {
           articleCount: cluster.articles.length,
           score: cluster.rankingScore,
         });
@@ -33,15 +39,24 @@ export function deriveTrending(clusters: StoryCluster[], limit = 8): TrendingTop
     }
   }
 
-  return [...topics.values()]
-    .filter((t) => t.clusterCount >= 2 || t.articleCount >= 3)
+  return [...totals.entries()]
+    .map(([key, totalsForKey]) => ({
+      entry: index.byKey.get(key),
+      ...totalsForKey,
+    }))
+    // A discovered phrase seen in exactly one story is a headline fragment
+    // until a second story corroborates it — it never gets a link or a URL.
+    .filter((row) => isTopicEligible(row.entry))
+    .filter(
+      (row) => row.entry!.clusterCount >= 2 || row.articleCount >= 3,
+    )
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
-    .map((t) => ({
-      topic: t.display,
-      slug: slugify(t.display, 60),
-      articleCount: t.articleCount,
-      clusterCount: t.clusterCount,
-      score: Math.round(t.score),
+    .map((row) => ({
+      topic: row.entry!.display,
+      slug: row.entry!.slug,
+      articleCount: row.articleCount,
+      clusterCount: row.entry!.clusterCount,
+      score: Math.round(row.score),
     }));
 }

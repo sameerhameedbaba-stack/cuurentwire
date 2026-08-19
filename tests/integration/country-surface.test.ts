@@ -455,11 +455,22 @@ describe("press releases in curated modules (fixture pipeline)", () => {
     const pr = release();
     const slugs = new Set(pr.entities.map((e) => slugify(e, 60)));
     expect(slugs.size).toBeGreaterThan(0);
-    // Ungated, the release's entities clear the trending article-count floor
-    // on three syndicated copies alone; the curated gate is what drops them.
+    // Two independent gates now drop this, and the assertion covers both.
+    //
+    // This test used to assert the OPPOSITE of the first expectation: that
+    // ungated deriveTrending surfaced the release's entities (its three
+    // syndicated copies cleared the old article-count floor), so that the
+    // curated gate could be shown to be what dropped them. The 2026-08-19
+    // topic-eligibility work moved the floor from articles to DISTINCT
+    // CLUSTERS, which is exactly the case syndication inflates — three
+    // copies of one release are one story, not three — so the boilerplate
+    // never reaches trending in the first place. The curated gate still
+    // stands behind it; this is defence in depth, and strictly stronger than
+    // what the test asserted before.
     expect(
       deriveTrending(dataset.clusters, 100).some((t) => slugs.has(t.slug)),
-    ).toBe(true);
+      "syndicated release boilerplate must not clear the topic-eligibility gate",
+    ).toBe(false);
     expect(dataset.trending.some((t) => slugs.has(t.slug))).toBe(false);
   });
 

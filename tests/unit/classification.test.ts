@@ -243,6 +243,43 @@ describe("classifyCategory", () => {
     expect(result.primary).toBe("politics");
     expect(result.scores.business ?? 0).toBe(0);
   });
+
+  it("routes the live Theban tomb misfile to science over its feed prior", () => {
+    // Audit regression, 2026-08-19. This story published to /technology with
+    // articleSection "Technology". Traced: it scored ZERO on every category,
+    // so the arstechnica.com feed prior (weight 2, exactly MIN_PRIMARY_SCORE)
+    // decided it alone at confidence 1.0. The prior is NOT removed — science
+    // simply now has real evidence and outranks it.
+    const result = classifyCategory({
+      title: "Theban tomb reveals how Egyptian burial trends evolved in time",
+      description:
+        "Practices shifted from individuals buried in coffins to reusing sites for later mummy interments.",
+      providerCategory: "technology",
+      providerCategoryIsPrior: true,
+    });
+    expect(result.primary).toBe("science");
+    expect(result.scores.science ?? 0).toBeGreaterThan(result.scores.technology ?? 0);
+  });
+
+  it("keeps construction, war datelines and franchises out of science", () => {
+    // The deep-history dictionary is the newest and widest keyword block in
+    // the taxonomy. Each of these scored /science at confidence 1.0 on a
+    // first-draft version of it; every one is a general/world/culture story
+    // that must never be promoted to a section on one archaeology-shaped
+    // word. Turning an abstention into a confident wrong section is worse
+    // than the misfile the block was added to fix.
+    for (const title of [
+      "Tomb of the Unknown Soldier wreath ceremony marks Veterans Day",
+      "Ancient city of Aleppo faces new shelling",
+      "Excavation crews hit gas line, forcing evacuation downtown",
+      "Jurassic World sequel roars past rivals with dinosaur spectacle",
+      "Iron Age Records signs three new bands",
+    ]) {
+      const result = classifyCategory({ title });
+      expect(result.scores.science ?? 0, `"${title}" must not score science`).toBe(0);
+      expect(result.primary, `"${title}" must not be science`).not.toBe("science");
+    }
+  });
 });
 
 describe("extractEntities", () => {

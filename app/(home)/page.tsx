@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { BreakingBanner } from "@/components/news/BreakingBanner";
 import { LastUpdated } from "@/components/news/LastUpdated";
+import { ImageOriginPreconnect } from "@/components/news/ImageOriginPreconnect";
 import { TrendingTopics } from "@/components/news/TrendingTopics";
 import { CategoryBand } from "@/components/sections/CategoryBand";
 import { CountrySection } from "@/components/sections/CountrySection";
@@ -84,6 +85,9 @@ export default async function HomePage() {
       {/* Cross-surface coherence probe: every list surface stamps the exact
           snapshot version it rendered from (React hoists this into <head>). */}
       <meta name="cw-dataset-version" content={data.dataset.datasetVersion} />
+      {/* The hero is the LCP element and lives on a publisher CDN — open the
+          connection before the parser reaches it. */}
+      <ImageOriginPreconnect src={data.hero.imageUrl} />
       <OrganizationJsonLd />
       <WebSiteJsonLd />
       <ItemListJsonLd

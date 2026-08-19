@@ -21,13 +21,13 @@ import {
 import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
 import {
   getClusterBySlugWithVersion,
-  getEntityClusterCounts,
   getMoreInCategory,
   getRelatedClusters,
+  getTopicIndex,
 } from "@/lib/news/queries";
 import { resolveStoryRequest, type StoryResolution } from "@/lib/news/story-resolution";
+import { isTopicEligible, topicKey } from "@/lib/news/topics";
 import { COUNTRY_LABELS, type StoryCluster } from "@/lib/news/types";
-import { entitySlug } from "@/lib/news/classification/entities";
 import { metaDescription } from "@/lib/utils/text";
 import { fullTimestamp } from "@/lib/utils/time";
 import {
@@ -194,7 +194,7 @@ export default async function StoryPage({
   // Archived stories can still surface related live coverage via entities;
   // the archive extras (update log + all-time source union) and earlier
   // coverage are best-effort (empty without a database).
-  const [related, archiveExtras, earlierCoverage, topicCounts] = await Promise.all([
+  const [related, archiveExtras, earlierCoverage, topicIndex] = await Promise.all([
     getRelatedClusters(cluster),
     getStoryArchiveExtras(cluster.id),
     findEarlierCoverage({
@@ -205,7 +205,7 @@ export default async function StoryPage({
       // be older than to count as earlier coverage.
       firstPublishedAt: cluster.firstPublishedAt,
     }),
-    getEntityClusterCounts(),
+    getTopicIndex(),
   ]);
   // Excludes what Related coverage already shows, so it waits for `related` —
   // still the same cached dataset, not an extra fetch.
@@ -217,10 +217,21 @@ export default async function StoryPage({
   // story the current cluster itself contributes 1 to its entities' counts,
   // so a chip needs a second live cluster; an archived story is absent from
   // the live dataset, so any live match at all makes the topic page useful.
+  // Counts and links come from the topic INDEX, so variants of one topic
+  // ("Big Bend" / "Big Bend National Park") pool their coverage and the
+  // chip points at the canonical URL. isTopicEligible additionally blocks
+  // uncorroborated one-story phrases — the archived branch used to let
+  // those through and link straight into a noindex hub.
   const minTopicClusters = isArchived ? 1 : 2;
-  const topicChips = cluster.entities.filter(
-    (entity) => (topicCounts.get(entitySlug(entity)) ?? 0) >= minTopicClusters,
-  );
+  const chipKeys = new Set<string>();
+  const topicChips: { slug: string; display: string }[] = [];
+  for (const entity of cluster.entities) {
+    const entry = topicIndex.byKey.get(topicKey(entity));
+    if (!entry || chipKeys.has(entry.key)) continue;
+    if (entry.clusterCount < minTopicClusters || !isTopicEligible(entry)) continue;
+    chipKeys.add(entry.key);
+    topicChips.push({ slug: entry.slug, display: entry.display });
+  }
   const history = archiveExtras.history;
   const lead = cluster.lead;
   const categoryDef = CATEGORIES[cluster.category];
@@ -391,20 +402,20 @@ export default async function StoryPage({
           </div>
 
           {/* Entities / topics — only chips whose /topic page has coverage
-              beyond this story (see topicCounts above). */}
+              beyond this story (see topicChips above). */}
           {topicChips.length > 0 ? (
             <div className="no-print mt-8">
               <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
                 In this story
               </h2>
               <ul className="mt-2 flex flex-wrap gap-1.5">
-                {topicChips.map((entity) => (
-                  <li key={entity}>
+                {topicChips.map((chip) => (
+                  <li key={chip.slug}>
                     <Link
-                      href={`/topic/${entitySlug(entity)}`}
+                      href={`/topic/${chip.slug}`}
                       className="block rounded-full border border-rule bg-surface px-3 py-1 text-xs font-semibold transition-colors hover:border-brand hover:text-brand-ink"
                     >
-                      {entity}
+                      {chip.display}
                     </Link>
                   </li>
                 ))}

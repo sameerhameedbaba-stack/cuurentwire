@@ -18,6 +18,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPaths = [
     "", "/latest", "/top-100", "/us", "/canada", "/topics",
     "/sources", "/archive", "/about", "/news-desk", "/methodology",
+    // Evergreen reference pages. Nested under /methodology so the URL
+    // hierarchy matches the BreadcrumbList they emit.
+    "/methodology/coverage-breadth",
+    "/methodology/publisher-tiers",
+    "/methodology/duplicate-stories",
     "/editorial-standards", "/corrections", "/contact", "/privacy",
     "/terms", "/copyright",
   ];

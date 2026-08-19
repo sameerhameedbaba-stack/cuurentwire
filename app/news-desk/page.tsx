@@ -35,7 +35,11 @@ export default function NewsDeskPage() {
         </li>
         <li>
           Clusters duplicate reports of the same event into one story with
-          transparent attribution to each publication.
+          transparent attribution to each publication — see{" "}
+          <Link href="/methodology/duplicate-stories">
+            how duplicate stories are merged
+          </Link>
+          .
         </li>
         <li>
           Ranks stories with a deterministic scoring system — see the{" "}

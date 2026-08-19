@@ -233,3 +233,46 @@ export function BreadcrumbJsonLd({
     />
   );
 }
+
+/**
+ * Evergreen reference page (the /methodology/* explainers).
+ *
+ * WebPage, not Article: these pages carry no byline and no honest publication
+ * date — they describe how the system works right now and are rewritten in
+ * place whenever it changes, so datePublished/dateModified would be invented.
+ * Never FAQPage/HowTo (playbook: they earn no rich result and invite
+ * fabricated markup).
+ */
+export function ReferencePageJsonLd({
+  name,
+  description,
+  path,
+}: {
+  name: string;
+  description: string;
+  path: string;
+}) {
+  return (
+    <JsonLd
+      data={{
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name,
+        description,
+        url: `${siteConfig.url}${path}`,
+        inLanguage: "en",
+        isPartOf: {
+          "@type": "WebSite",
+          name: siteConfig.name,
+          url: siteConfig.url,
+        },
+        publisher: {
+          "@type": "Organization",
+          name: siteConfig.name,
+          url: siteConfig.url,
+          logo: PUBLISHER_LOGO,
+        },
+      }}
+    />
+  );
+}

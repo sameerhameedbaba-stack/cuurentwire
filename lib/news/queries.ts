@@ -4,6 +4,12 @@ import { getDataset } from "@/lib/cache/store";
 import { matchesCountryFilter } from "@/lib/news/classification/geography";
 import { scoreArchiveRelatedness } from "@/lib/news/coverage-analysis";
 import { isCuratedEligible, isTop100Eligible } from "@/lib/news/ranking/score";
+import {
+  resolveTopic,
+  topicIndexFor,
+  topicKey,
+  type TopicIndex,
+} from "@/lib/news/topics";
 import type {
   Article,
   NewsDataset,
@@ -306,23 +312,17 @@ export async function getRelatedClusters(
 }
 
 /**
- * One pass over the live dataset: how many clusters mention each entity,
- * keyed by topic slug (same slugging as getTopicStories, so a count of N
- * here means /topic/<slug> lists N live stories). Story pages use this to
- * drop "In this story" chips that would land the reader on a topic page
- * showing nothing beyond the story they came from — one Map for the whole
- * page, never a per-chip query.
+ * The live topic index (lib/news/topics.ts): one entry per topic KEY, with
+ * its canonical slug/display and how many clusters mention it. Story pages
+ * use it to drop "In this story" chips that would land the reader on a
+ * topic page showing nothing beyond the story they came from, and to link
+ * the canonical topic URL rather than whichever variant this story happened
+ * to phrase. One index for the whole page, never a per-chip query — and
+ * memoized on the dataset's clusters array, so metadata and body share it.
  */
-export async function getEntityClusterCounts(): Promise<Map<string, number>> {
+export async function getTopicIndex(): Promise<TopicIndex> {
   const dataset = await getDataset();
-  const counts = new Map<string, number>();
-  for (const cluster of dataset.clusters) {
-    // Entities are deduped per cluster upstream, but two distinct entities
-    // can share a slug — a Set keeps each cluster counted at most once.
-    const slugs = new Set(cluster.entities.map((entity) => slugify(entity, 60)));
-    for (const slug of slugs) counts.set(slug, (counts.get(slug) ?? 0) + 1);
-  }
-  return counts;
+  return topicIndexFor(dataset.clusters);
 }
 
 /**
@@ -400,31 +400,43 @@ export async function searchStories(
   return { results: scored.map((r) => r.cluster).slice(0, limit), dataset };
 }
 
-/** Stories mentioning a topic/entity, for /topic/[slug]. */
+/**
+ * Stories mentioning a topic/entity, for /topic/[slug].
+ *
+ * URL PERMANENCE: matching is by topic KEY, not by exact slug. Every slug a
+ * topic has ever been published under — "big-bend" as well as
+ * "big-bend-national-park" — resolves to the same stories, so normalization
+ * changing which form is canonical can never strand a URL that has been
+ * advertised. `canonicalSlug` is what the page emits as rel=canonical, so
+ * the variants consolidate instead of competing. An unrecognized slug keeps
+ * today's behaviour exactly: no stories, a title-cased name, HTTP 200.
+ */
 export async function getTopicStories(topicSlug: string): Promise<{
   topicName: string | null;
+  canonicalSlug: string;
   stories: StoryCluster[];
   dataset: NewsDataset;
 }> {
   const dataset = await getDataset();
-  let topicName: string | null = null;
-  const stories = dataset.clusters.filter((cluster) => {
-    for (const entity of cluster.entities) {
-      if (slugify(entity, 60) === topicSlug) {
-        topicName ??= entity;
-        return true;
-      }
-    }
-    return false;
-  });
-  // Derive a readable name from the slug when no story currently matches.
-  if (!topicName && topicSlug) {
-    topicName = topicSlug
-      .split("-")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ");
+  const entry = resolveTopic(topicIndexFor(dataset.clusters), topicSlug);
+  if (!entry) {
+    const topicName = topicSlug
+      ? topicSlug
+          .split("-")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ")
+      : null;
+    return { topicName, canonicalSlug: topicSlug, stories: [], dataset };
   }
-  return { topicName, stories, dataset };
+  const stories = dataset.clusters.filter((cluster) =>
+    cluster.entities.some((entity) => topicKey(entity) === entry.key),
+  );
+  return {
+    topicName: entry.display,
+    canonicalSlug: entry.slug,
+    stories,
+    dataset,
+  };
 }
 
 /** Articles from one source, for /source/[slug]. */
