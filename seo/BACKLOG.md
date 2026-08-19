@@ -1,13 +1,12 @@
 # SEO Backlog
 
-**Status 2026-08-19: every item carried into this run is closed.** Each was
-shipped and verified live, closed as obsolete with the command that proved it,
-or converted from a human to-do into automated monitoring. One NEW item is
-open — publisher image weight — found by the keyless CWV probe built during
-this same run, and left open deliberately rather than patched in a hurry.
-Evidence for everything is in `reports/2026-08-19.md`; the historical record
-below is kept because its measurements are the baseline future runs compare
-against.
+**Status 2026-08-20: the backlog is empty.** The one item left open on
+2026-08-19 (publisher image weight) shipped and was verified live today.
+Everything before it was shipped and verified, closed as obsolete with the
+command that proved it, or converted from a human to-do into automated
+monitoring. Evidence is in `reports/2026-08-20.md` and `reports/2026-08-19.md`;
+the historical record below is kept because its measurements are the baseline
+future runs compare against.
 
 Statuses: OPEN / SHIPPED / CLOSED / BLOCKED(user). Verify a fix live before
 flipping it to SHIPPED. Ranking rule when items exist: how much indexable,
@@ -15,55 +14,82 @@ crawlable, citable value a fix creates per unit of risk.
 
 ## Open
 
-One item, found by the new keyless CWV probe at the very end of the
-2026-08-19 run and deliberately left for a run that can give it proper care.
+**Nothing.** The one item carried in — publisher image weight — shipped and
+was verified live on 2026-08-20; it is written up below. New findings go here;
+do not invent work to fill the section. The standing monitors that will
+produce the next items are:
 
-1. **Publisher image weight is unbounded, and it owns the homepage LCP.**
-   Measured 2026-08-19 across 12 ranked-list images on `/top-100`:
-
-   | Publisher host | Bytes |
-   |---|---|
-   | assets3.cbsnewsstatic.com | **2,044 KB** |
-   | assets2.cbsnewsstatic.com | 747 KB |
-   | assets1.cbsnewsstatic.com | 534 KB |
-   | s.abcnews.com | 176 KB |
-   | ichef.bbci.co.uk | 70 KB |
-   | thehill.com | 64 KB |
-   | globalnews.ca | 53 KB |
-
-   Median 64 KB, max 2,044 KB, 3,916 KB for the 12 sampled. Homepage LCP
-   swings with nothing but which story is hero: **3,632 ms** measured with a
-   71 KB BBC hero, **8,556 ms** measured a few hours later with a 546 KB CBS
-   hero, warm cache both times (TTFB 135 ms and 100 ms). FCP and TTFB are
-   good and stable; transfer size is the whole story.
-
-   Cause, and why it is not a simple revert: `lib/news/normalization/
-   image-upgrade.ts` strips CBS's signed `/thumbnail/<size>/<hex>/` segment
-   to serve the original, because the hex signs exactly one rendition and
-   every other size 404s (verified 2026-08-18). That was a deliberate quality
-   fix — the feed alternative is a 60x60 thumb — but it trades a thumbnail
-   for an unbounded original. And `next.config.ts` sets
-   `images.unoptimized` because the Vercel optimizer's free tier is ~5K
-   transformations/month and its wildcard `remotePatterns` made
-   `/_next/image` an open proxy. Both of those decisions are individually
-   right and together they leave no resizing path.
-
-   So this needs a real decision, not a quick patch: a free image proxy with
-   a strict host allowlist, a per-publisher size cap that prefers a mid-size
-   rendition where one is addressable, or accepting CBS thumbs for the hero
-   slot only. Re-measure with `node scripts/cwv-check.mjs` after any change.
-   Status: OPEN
-
-New findings go here; do not invent work to fill the section. The standing
-monitors that will produce the next items are:
-
-- `.github/workflows/seo-health.yml` — daily, 19 checks against production.
-  Fails loudly on any regression, including the three added 2026-08-19: story
-  ISR caching, duplicate font preloads, and trust-page JSON-LD.
+- `.github/workflows/seo-health.yml` — daily, **20** checks against production.
+  Fails loudly on any regression, including `publisher image weight` added
+  2026-08-20.
 - `.github/workflows/url-survival.yml` — daily, proves no published `/story/`
   URL has died. 1,286 URLs, 0 dead as of 2026-08-19.
 - `.github/workflows/cwv.yml` — weekly Core Web Vitals, now keyless.
 - The daily and weekly agent loops in `PLAYBOOK.md`.
+
+## Shipped 2026-08-20 (daily loop) — verified live after deploy
+
+### Publisher image weight is now capped at the source CDN — SHIPPED (745b105)
+
+The 2026-08-19 write-up said this needed "a real decision, not a quick patch",
+because CBS's signed thumbnail segment binds exactly one rendition and
+`images.unoptimized` leaves no local resizing path. Both facts are still true.
+Both were the wrong place to look: **the publishers' own CDNs take a delivery
+width on the original asset**, and nobody had asked them.
+
+Measured on `/top-100` before the fix (25 images, bytes + decoded pixel size):
+
+| Host | Before | Lever found | After |
+|---|---|---|---|
+| npr.brightspotcdn.com | **6,366 KB** 7559x5039 | `/resize/976x651!/quality/80/` | **84 KB** 976x651 |
+| assets1.cbsnewsstatic.com | **4,085 KB** 4896x3264 | `?width=976&quality=80` | **200 KB** 976x651 |
+| platform.theverge.com | 607 KB 3840x2160 | `&w=976` | 99 KB 976x549 |
+| globalnews.ca | 160 KB 1920x1080 | `&w=976` | 75 KB 976x549 |
+| static.politico.com | **4,944 KB** | none — see below | unchanged |
+
+Whole-page effect, `/top-100`, same page ~2 h apart (the story mix rotates, so
+this is the page's weight rather than a matched image set):
+
+| | Before | After |
+|---|---|---|
+| Publisher images | 25 | 25 |
+| Total bytes | **28,171 KB** | **1,933 KB** |
+| Heaviest single image | **6,216 KB** | **176 KB** |
+
+Homepage Core Web Vitals, keyless probe, mobile throttling, warm:
+
+| Run | Hero | LCP | CLS | TTFB |
+|---|---|---|---|---|
+| 2026-08-19 | 71 KB BBC | 3,632 ms | 0.001 | 135 ms |
+| 2026-08-19 | 546 KB CBS | **8,556 ms** | 0 | 100 ms |
+| 2026-08-20 | 84 KB NPR (**the same asset that was 6,366 KB**) | **2,936 ms** | 0 | 366 ms |
+
+The point is not the single number — it is that the hero can no longer *be* a
+half-megabyte image, so the LCP no longer swings on which story leads.
+
+Rules and their limits, all verified live before shipping:
+
+- An existing width is the publisher's own rendition choice and is **kept**.
+  The Hill's feed already ships `?w=900`; forcing 976 would fetch more bytes.
+- CBS thumbnails we keep (≥400 px) are served **exactly as signed**. `?width=`
+  on a signed rendition is unverified and the signature may bind the response.
+- `.bmp` / `.tif` are dropped at ingest and the story renders with no image.
+  `globalnews.ca/.../Classroom.bmp` was live on `/health` at **6,221 KB**;
+  WordPress's `?w=` resizer ignores those formats, so omission is the only
+  lever. Side effect, stated honestly: `score.ts` gives +0.35 for having an
+  image, so such a story ranks very slightly lower. That is arguably correct.
+- **Archived story pages keep their pre-fix image URLs.** Normalization runs at
+  ingest, so only stories re-ingested after the deploy carry capped URLs. The
+  ranked and section surfaces (where the LCP lives) refreshed within ~2 min.
+
+Guards: `tests/unit/image-upgrade.test.ts` (12 tests, each rule carrying the
+live-verified bytes and pixel dimensions in a comment) and a new
+`publisher image weight` check in `scripts/seo-health.mjs`, which **fails**
+when a capped host returns over 500 KB — the signature of a silently broken
+rewrite rule — and only **reports** oversized images from hosts with no lever,
+because a gate nobody can turn green is a gate everyone learns to ignore.
+Verified live 2026-08-20: `15 images, 1054 KB total, median 70 KB, max 121 KB`,
+20/20 checks passing.
 
 ## Known and accepted — not work, but do not "fix" these
 
@@ -80,6 +106,11 @@ monitors that will produce the next items are:
   version — no route segment config can change that. Their canonical
   unfiltered documents carry an edge-only cache directive instead
   (`next.config.ts`), which is the only lever Next sanctions.
+- **`static.politico.com` images cannot be resized.** It is a plain Cloudflare
+  passthrough: `?width=`, `?w=`, `?imwidth=`, `?fit=`, `?d=`, `?resize=` and
+  `?auto=webp` each returned the identical **4,944,055 bytes** on 2026-08-19.
+  There is no free lever, so the health check reports Politico images over
+  1 MB rather than failing on them. Re-probe only if Politico changes CDN.
 - **Coverage breadth on this site tops out low** (max 2 publishers per story in
   the 2026-08-19 snapshot, 13 publishers represented of 43 configured). That is
   a function of the ingest feed list in the `RSS_FEEDS` env var, not of the
