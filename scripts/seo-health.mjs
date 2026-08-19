@@ -143,7 +143,20 @@ if (!storyUrl) fail("story sample", "no /story/ URL in sitemap.xml");
 else {
   const story = await get(storyUrl);
   const canonical = story.body.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
-  if (canonical !== storyUrl) fail("story canonical", `${canonical} != ${storyUrl}`);
+  // Compare against the URL we actually landed on, not the sitemap entry.
+  // A story's slug is built from its LEAD article's headline, and pickLead()
+  // re-selects the lead on every refresh — so when a higher-tier publisher
+  // joins a cluster the slug changes and the old URL 307s to the new one
+  // (that redirect is the URL-permanence guarantee working). If that happens
+  // between this script's sitemap fetch and its story fetch, comparing to the
+  // sitemap URL fails on correct behaviour. Observed live 2026-08-19.
+  if (canonical !== story.url) {
+    fail("story canonical", `${canonical} != ${story.url}`);
+  } else if (story.url !== storyUrl) {
+    // Not a failure — but a sitemap should advertise canonical URLs, so a
+    // persistent mismatch here is worth seeing in the log.
+    ok("story canonical", `${canonical} (sitemap listed a pre-rename slug)`);
+  }
   const blocks = extractJsonLd(story.body);
   if (blocks.some((b) => b.__parseError)) fail("story JSON-LD parse", storyUrl);
   const article = blocks.find((b) => b["@type"] === "NewsArticle");

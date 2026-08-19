@@ -32,9 +32,11 @@ export function ImageOriginPreconnect({
   } catch {
     return null;
   }
-  // crossOrigin: images are fetched anonymously, and a preconnect whose CORS
-  // mode does not match the later request opens a connection that goes unused.
-  ReactDOM.preconnect(origin, { crossOrigin: "anonymous" });
+  // NO crossOrigin. A preconnect whose CORS mode does not match the later
+  // request opens a second connection that is never used, and these <img>
+  // tags carry no crossorigin attribute, so the browser fetches them in
+  // no-cors mode. Emitting both forms (as this did on first write) cost an
+  // extra TLS handshake competing with the LCP image on a throttled link.
   ReactDOM.preconnect(origin);
   return null;
 }

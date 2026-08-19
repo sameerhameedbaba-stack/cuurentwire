@@ -1,10 +1,13 @@
 # SEO Backlog
 
-**Status 2026-08-19: nothing is open.** Every item carried into this run was
-either shipped and verified live, closed as obsolete with the command that
-proved it, or converted from a human to-do into automated monitoring. Evidence
-for each is in `reports/2026-08-19.md`; the historical record below is kept
-because the measurements in it are the baseline future runs compare against.
+**Status 2026-08-19: every item carried into this run is closed.** Each was
+shipped and verified live, closed as obsolete with the command that proved it,
+or converted from a human to-do into automated monitoring. One NEW item is
+open — publisher image weight — found by the keyless CWV probe built during
+this same run, and left open deliberately rather than patched in a hurry.
+Evidence for everything is in `reports/2026-08-19.md`; the historical record
+below is kept because its measurements are the baseline future runs compare
+against.
 
 Statuses: OPEN / SHIPPED / CLOSED / BLOCKED(user). Verify a fix live before
 flipping it to SHIPPED. Ranking rule when items exist: how much indexable,
@@ -12,8 +15,47 @@ crawlable, citable value a fix creates per unit of risk.
 
 ## Open
 
-Nothing. New findings go here; do not invent work to fill the section. The
-standing monitors that will produce the next items are:
+One item, found by the new keyless CWV probe at the very end of the
+2026-08-19 run and deliberately left for a run that can give it proper care.
+
+1. **Publisher image weight is unbounded, and it owns the homepage LCP.**
+   Measured 2026-08-19 across 12 ranked-list images on `/top-100`:
+
+   | Publisher host | Bytes |
+   |---|---|
+   | assets3.cbsnewsstatic.com | **2,044 KB** |
+   | assets2.cbsnewsstatic.com | 747 KB |
+   | assets1.cbsnewsstatic.com | 534 KB |
+   | s.abcnews.com | 176 KB |
+   | ichef.bbci.co.uk | 70 KB |
+   | thehill.com | 64 KB |
+   | globalnews.ca | 53 KB |
+
+   Median 64 KB, max 2,044 KB, 3,916 KB for the 12 sampled. Homepage LCP
+   swings with nothing but which story is hero: **3,632 ms** measured with a
+   71 KB BBC hero, **8,556 ms** measured a few hours later with a 546 KB CBS
+   hero, warm cache both times (TTFB 135 ms and 100 ms). FCP and TTFB are
+   good and stable; transfer size is the whole story.
+
+   Cause, and why it is not a simple revert: `lib/news/normalization/
+   image-upgrade.ts` strips CBS's signed `/thumbnail/<size>/<hex>/` segment
+   to serve the original, because the hex signs exactly one rendition and
+   every other size 404s (verified 2026-08-18). That was a deliberate quality
+   fix — the feed alternative is a 60x60 thumb — but it trades a thumbnail
+   for an unbounded original. And `next.config.ts` sets
+   `images.unoptimized` because the Vercel optimizer's free tier is ~5K
+   transformations/month and its wildcard `remotePatterns` made
+   `/_next/image` an open proxy. Both of those decisions are individually
+   right and together they leave no resizing path.
+
+   So this needs a real decision, not a quick patch: a free image proxy with
+   a strict host allowlist, a per-publisher size cap that prefers a mid-size
+   rendition where one is addressable, or accepting CBS thumbs for the hero
+   slot only. Re-measure with `node scripts/cwv-check.mjs` after any change.
+   Status: OPEN
+
+New findings go here; do not invent work to fill the section. The standing
+monitors that will produce the next items are:
 
 - `.github/workflows/seo-health.yml` — daily, 19 checks against production.
   Fails loudly on any regression, including the three added 2026-08-19: story
@@ -273,14 +315,25 @@ derived from those metrics and inventing it would be a fabricated number.
 A PSI key would only add CrUX **field** data, which needs real traffic volume
 this site does not have yet — it would report nothing today even if added.
 
-### 20. Homepage LCP 3,632 ms — SHIPPED
+### 20. Homepage LCP — connection setup SHIPPED, image weight still OPEN
 
-Found by the new keyless probe; every other page measured good. Cause: the hero
-is a third-party publisher-CDN image (71 KB JPEG on `ichef.bbci.co.uk`) whose
-download cannot start until DNS, TCP and TLS complete against a host the
-browser has never seen. `ImageOriginPreconnect` derives the origin from the
-rendered hero — it changes per story, so a hardcoded list would be wrong within
-the hour — and opens the connection early. Verified live in the head.
+`ImageOriginPreconnect` derives the LCP image's origin from the rendered hero
+(it changes per story, so a hardcoded list would be wrong within the hour) and
+opens the connection before the parser reaches the `<img>`. Verified live.
+
+Two honest caveats, both worth carrying forward:
+
+- **The first version emitted two preconnects** to the same origin, one with
+  `crossorigin` and one without. Images with no `crossorigin` attribute are
+  fetched in no-cors mode, so the CORS-mode connection was never used — an
+  extra TLS handshake competing with the LCP image on a throttled link.
+  Corrected to the no-cors form only. *A preconnect whose CORS mode does not
+  match the eventual request is worse than no preconnect.*
+- **It did not fix the LCP, and measurement said so.** FCP improved
+  (1,912 → 1,492 ms) and TTFB is 100 ms, but LCP moved the wrong way because
+  the hero image changed from 71 KB to 546 KB between runs. That is open
+  item 1 above, and it is the real constraint — connection setup was never
+  going to beat half a megabyte on a throttled link.
 
 ### Found while working: every `pageMetadata()` page shipped no robots meta
 
