@@ -14,6 +14,7 @@ import {
   buildUrlToClusterId,
   clusterToArchiveRow,
   computeClusterMerges,
+  ArchiveUnavailableError,
   findArchivedStory,
   getArchiveFirstSeen,
   idTokenFromSlug,
@@ -729,7 +730,12 @@ describe("findArchivedStory lookup (mocked db)", () => {
     await expect(findArchivedStory("unknown-zzz")).resolves.toBeNull();
   });
 
-  it("swallows query failures and returns null", async () => {
+  // Premise corrected 2026-08-21. This test used to assert that a failed
+  // query "swallows ... and returns null" — the behaviour that let a
+  // database outage 404 1,322 permanent story URLs, because the caller
+  // cannot tell that null apart from "no such story". A failed query is
+  // now an error, and only a query that ANSWERS may produce null.
+  it("throws ArchiveUnavailableError when the query fails", async () => {
     getDbMock.mockReturnValue({
       select: () => ({
         from: () => ({
@@ -737,6 +743,8 @@ describe("findArchivedStory lookup (mocked db)", () => {
         }),
       }),
     });
-    await expect(findArchivedStory("anything-cl4b2n8x1")).resolves.toBeNull();
+    await expect(findArchivedStory("anything-cl4b2n8x1")).rejects.toBeInstanceOf(
+      ArchiveUnavailableError,
+    );
   });
 });

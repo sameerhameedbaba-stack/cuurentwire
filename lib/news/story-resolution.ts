@@ -1,4 +1,8 @@
-import type { ArchivedStory } from "@/lib/database/archive";
+import {
+  ArchiveUnavailableError,
+  looksLikePublishedStorySlug,
+  type ArchivedStory,
+} from "@/lib/database/archive";
 import { cleanDescription } from "@/lib/news/normalization/boilerplate";
 import type { StoryCluster } from "@/lib/news/types";
 
@@ -11,7 +15,9 @@ import type { StoryCluster } from "@/lib/news/types";
  *      another 308-redirects to the survivor (merge → redirect, NEVER
  *      deletion, never a chain: pointers are flattened at write time);
  *   3. story archive in Postgres, when configured;
- *   4. 404 only when none of the above knows the URL.
+ *   4. 404 only when none of the above knows the URL — and only when the
+ *      archive actually answered. An archive that is configured but
+ *      unreachable yields "unavailable" (a retriable 5xx), never 404.
  *
  * A hit under a non-canonical slug becomes a redirect to the canonical one.
  * Pure orchestration over injected lookups so the fallback logic is
@@ -47,7 +53,12 @@ export type StoryResolution =
   | { kind: "redirect"; slug: string }
   /** Cluster merge — permanent (308) to the surviving story. */
   | { kind: "merged"; slug: string }
-  | { kind: "not-found" };
+  | { kind: "not-found" }
+  /**
+   * The archive could not be consulted, and the slug looks like one we
+   * published. The caller must answer a RETRIABLE 5xx — never 404.
+   */
+  | { kind: "unavailable" };
 
 export interface StoryLookups {
   getLive: (slugOrId: string) => Promise<StoryCluster | null>;
@@ -67,14 +78,34 @@ export async function resolveStoryRequest(
     return { kind: "live", cluster: live };
   }
 
-  const archived = await lookups.getArchived(slug);
+  let archived: ArchivedStory | null;
+  try {
+    archived = await lookups.getArchived(slug);
+  } catch (error) {
+    if (!(error instanceof ArchiveUnavailableError)) throw error;
+    // The live dataset holds ~72h; everything older lives only in the
+    // archive. With the archive down we cannot tell "retired story" from
+    // "never existed", so we refuse to answer 404 for anything that
+    // carries a real cluster-id token. Junk paths still 404, because
+    // those were never story URLs whatever the database says.
+    return looksLikePublishedStorySlug(slug)
+      ? { kind: "unavailable" }
+      : { kind: "not-found" };
+  }
   if (!archived) return { kind: "not-found" };
 
   if (archived.mergedIntoClusterId) {
     // The survivor may be live (usual case) or itself archived.
     const liveTarget = await lookups.getLive(archived.mergedIntoClusterId);
     if (liveTarget) return { kind: "merged", slug: liveTarget.slug };
-    const archivedTarget = await lookups.getArchived(archived.mergedIntoClusterId);
+    // A failure resolving the merge target must not strand the request:
+    // the archived copy we already hold keeps the URL answering 200.
+    const archivedTarget = await lookups
+      .getArchived(archived.mergedIntoClusterId)
+      .catch((error: unknown) => {
+        if (error instanceof ArchiveUnavailableError) return null;
+        throw error;
+      });
     if (
       archivedTarget &&
       archivedTarget.slug !== slug &&

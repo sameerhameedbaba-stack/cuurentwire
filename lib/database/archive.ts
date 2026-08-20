@@ -35,6 +35,58 @@ import { storyArchive, type ArchivedSourceRef } from "./schema";
 type Db = NonNullable<ReturnType<typeof getDb>>;
 
 /**
+ * The archive was asked a question and could not answer it.
+ *
+ * This exists to keep an infrastructure outage from being reported as a
+ * fact about the world. Every archive read used to funnel "no DB", "no
+ * such row" and "the query blew up" into the same empty return value, so a
+ * database outage looked exactly like "that story never existed" — and the
+ * callers that decide HTTP status turned it into `404` on 1,322 permanent
+ * URLs and a `200` empty urlset on the archive sitemap. Both are permanent
+ * signals ("gone", "I have nothing") that outlive the outage that caused
+ * them; Google drops URLs on the first and can act on the second.
+ *
+ * So reads that decide whether a URL exists throw this instead of
+ * returning empty, and their callers answer with a RETRIABLE 5xx. Reads
+ * that merely *enrich* a page (first-seen dates, update history, earlier
+ * coverage) keep degrading quietly — a missing byline must never take a
+ * page down.
+ *
+ * "No DB configured" is deliberately NOT this error: a deployment without
+ * DATABASE_URL never promised permanence, so 404 is the honest answer
+ * there. Only a configured archive that fails to respond is unavailable.
+ */
+export class ArchiveUnavailableError extends Error {
+  constructor(operation: string, cause: unknown) {
+    super(`archive unavailable during ${operation}: ${describeDbError(cause)}`);
+    this.name = "ArchiveUnavailableError";
+  }
+}
+
+/**
+ * Cluster ids are `c` + the first 12 hex chars of a sha256 (see
+ * `stableId` in lib/utils/text.ts), and every published story slug ends
+ * with one. Verified against all 1,660 URLs in data/url-ledger.json on
+ * 2026-08-21: 1,660 of 1,660 match, 0 exceptions.
+ */
+const CLUSTER_ID_RE = /^c[0-9a-f]{12}$/;
+
+/**
+ * Could this path ever have been a published story URL?
+ *
+ * Used only while the archive is unavailable, to decide between a
+ * retriable 5xx and a plain 404. A slug carrying a well-formed cluster-id
+ * token is one this site plausibly published, so we must not declare it
+ * gone on the strength of a failed query. Anything else (crawler noise,
+ * scanner probes, hand-typed paths) never was a story URL, and answering
+ * 404 for it stays correct even mid-outage — which also keeps an outage
+ * from turning every junk request into a 5xx.
+ */
+export function looksLikePublishedStorySlug(slug: string): boolean {
+  return CLUSTER_ID_RE.test(idTokenFromSlug(slug));
+}
+
+/**
  * Runtime schema guard for columns/indexes added after the table shipped.
  * Neon is reachable only through DATABASE_URL in the deployment — there is
  * no manual migration path — so the app applies additive DDL itself:
@@ -457,8 +509,13 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
 
 /**
  * All live (non-merged) archived stories for the archive sitemap, newest
- * first. Best-effort: no DB or a failed query yields an empty list, so the
- * sitemap route still serves a valid empty urlset.
+ * first.
+ *
+ * No DB configured yields an empty list (that deployment has no archive).
+ * A FAILED QUERY throws ArchiveUnavailableError instead: an empty
+ * <urlset> is not "the query failed", it is this site telling every
+ * crawler it has zero permanent story URLs, and on 2026-08-21 that is
+ * exactly what it told them about 2,793 of them.
  */
 export async function listArchivedStoriesForSitemap(
   limit = 50_000,
@@ -483,10 +540,10 @@ export async function listArchivedStoriesForSitemap(
           : String(row.lastModifiedAt),
     }));
   } catch (error) {
-    logger.warn("database.archive_sitemap_query_failed", {
+    logger.error("database.archive_sitemap_query_failed", {
       error: describeDbError(error),
     });
-    return [];
+    throw new ArchiveUnavailableError("archive sitemap query", error);
   }
 }
 
@@ -582,6 +639,14 @@ export async function getArchiveBrowse(
       firstSeenAt: row.firstSeenAt.toISOString(),
     }));
   } catch (error) {
+    // Deliberately NOT ArchiveUnavailableError, unlike the sitemap and the
+    // story lookup. `/archive` is prerendered at build time (○ in the route
+    // table, revalidate 3600), so throwing here would fail `next build`
+    // whenever the database happened to be down — which is precisely when a
+    // deploy carrying the fix needs to succeed. An empty browse page during
+    // an outage is a thin page for an hour; a build that cannot ship is an
+    // outage nobody can end. The page emits no "gone" signal for any story
+    // URL, so the harm this trades away is small and self-healing.
     logger.warn("database.archive_browse_failed", {
       error: describeDbError(error),
     });
@@ -721,8 +786,13 @@ export function idTokenFromSlug(slug: string): string {
 
 /**
  * Look up an archived story by slug, exact cluster id, or the trailing id
- * token of the slug (same alias rules as the live dataset). Returns null
- * when the DB is not configured, nothing matches, or the query fails.
+ * token of the slug (same alias rules as the live dataset).
+ *
+ * Returns null when the DB is not configured or nothing matches — both are
+ * real answers meaning "this URL is not in the archive". A FAILED QUERY
+ * throws ArchiveUnavailableError, because this lookup is what stands
+ * between a published URL and `notFound()`, and "the database timed out"
+ * must never be rendered as "gone forever".
  */
 export async function findArchivedStory(slug: string): Promise<ArchivedStory | null> {
   const db = getDb();
@@ -748,7 +818,7 @@ export async function findArchivedStory(slug: string): Promise<ArchivedStory | n
     logger.error("database.archive_lookup_failed", {
       error: describeDbError(error),
     });
-    return null;
+    throw new ArchiveUnavailableError("story lookup", error);
   }
 }
 

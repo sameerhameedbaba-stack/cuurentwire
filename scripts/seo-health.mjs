@@ -99,13 +99,29 @@ if (news.status !== 200 || !news.body.includes("sitemap-news/0.9")) {
   }
 }
 
-// 4. archive-sitemap.xml: valid urlset (empty only if DB is down, still 200)
+// 4. archive-sitemap.xml: valid urlset, or an honest 503 while the archive
+// is down. Both are failures worth waking someone for, but they are DIFFERENT
+// failures and the message says which — on 2026-08-21 this check reported
+// "0 entries" for hours and the shape of the outage had to be reconstructed
+// from the story pages. The status code now carries that diagnosis:
+//   503        -> the archive is configured and not answering. The route is
+//                 doing the right thing; the database needs attention.
+//   200 empty  -> the route thinks the archive is legitimately empty, which
+//                 in production means DATABASE_URL is missing entirely.
 const archive = await get("/archive-sitemap.xml");
 const archiveCount = (archive.body.match(/<url>/g) ?? []).length;
-if (archive.status !== 200 || !archive.body.includes("</urlset>")) {
+if (archive.status === 503) {
+  fail(
+    "archive-sitemap unavailable",
+    "503 — the archive is configured but not answering. Permanent /story/ URLs are serving a retriable 5xx instead of 404, which is correct; restore the database (Neon) to end the outage.",
+  );
+} else if (archive.status !== 200 || !archive.body.includes("</urlset>")) {
   fail("archive-sitemap.xml", `status ${archive.status}`);
 } else if (archiveCount === 0) {
-  fail("archive-sitemap empty", "0 entries — archive DB unreachable?");
+  fail(
+    "archive-sitemap empty",
+    "0 entries with a 200 — the route believes the archive is EMPTY rather than unreachable, so DATABASE_URL is probably unset on the deployment (an unreachable DB now answers 503)",
+  );
 } else if (archiveCount > ARCHIVE_SHARD_AT) {
   // Sitemaps cap at 50,000 URLs. Sharding via generateSitemaps is years away
   // at the current rate, so instead of leaving "shard it someday" on a human

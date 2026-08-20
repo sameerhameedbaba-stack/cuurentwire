@@ -14,6 +14,7 @@ import { ShareActions } from "@/components/ui/ShareActions";
 import { siteConfig } from "@/config/site";
 import {
   archivedStoryToCluster,
+  ArchiveUnavailableError,
   findArchivedStory,
   findEarlierCoverage,
   getArchiveFirstSeen,
@@ -122,6 +123,27 @@ async function buildStoryView(request: StoryRequest): Promise<StoryView | null> 
   return null;
 }
 
+
+/**
+ * The archive is configured but did not answer, and this slug carries a
+ * real cluster-id token — so it is a URL we plausibly published.
+ *
+ * Throwing here produces a 500 through app/error.tsx. That is deliberate:
+ * `notFound()` is the ONLY other status this page can set (Next 16 gives a
+ * page no way to emit 503 — next/navigation exports notFound, forbidden
+ * and unauthorized, and nothing else), and a 404 is a permanent "gone"
+ * that survives the outage. A 5xx is retriable, so crawlers come back and
+ * the URL keeps its standing. Mass 5xx does slow crawling while an outage
+ * lasts; mass 404 deletes the archive from the index, which is worse and
+ * does not heal on its own.
+ *
+ * It must be thrown before the response starts streaming — same
+ * constraint as notFound() — which is why both call sites are at the top.
+ */
+function archiveUnavailable(slug: string): never {
+  throw new ArchiveUnavailableError(`/story/${slug}`, new Error("archive read failed"));
+}
+
 /**
  * Headline length past which the " | CurrentWire" suffix is dropped. Google
  * renders roughly 60 characters of a title; the suffix costs 14 of them.
@@ -138,6 +160,7 @@ export async function generateMetadata({
   const { resolution } = request;
   // Real 404 status requires notFound() before the response starts streaming.
   if (resolution.kind === "not-found") notFound();
+  if (resolution.kind === "unavailable") archiveUnavailable(slug);
   // The page itself 307s (alias) or 308s (merge); never rendered.
   if (resolution.kind === "redirect" || resolution.kind === "merged") {
     return { title: siteConfig.name };
@@ -184,6 +207,7 @@ export default async function StoryPage({
   const request = await resolveStory(slug);
   const { resolution } = request;
   if (resolution.kind === "not-found") notFound();
+  if (resolution.kind === "unavailable") archiveUnavailable(slug);
   if (resolution.kind === "redirect") redirect(`/story/${resolution.slug}`);
   // Cluster merge: permanent — crawlers transfer the old URL's standing to
   // the surviving canonical story (audit: merge → redirect, never deletion).
