@@ -255,5 +255,81 @@
         }
       }
     ]
+  },
+  {
+    "date": "2026-08-20T22:18:17.657Z",
+    "base": "https://currentwire.us",
+    "strategy": "mobile",
+    "tool": "playwright-chromium",
+    "pages": [
+      {
+        "url": "https://currentwire.us/",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 6344,
+          "cls": 0,
+          "fcpMs": 6344,
+          "ttfbMs": 2842,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/top-100",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 7376,
+          "cls": 0,
+          "fcpMs": 7376,
+          "ttfbMs": 112,
+          "score": null
+        }
+      }
+    ]
+  },
+  {
+    "date": "2026-08-20T22:23:53.571Z",
+    "base": "https://currentwire.us",
+    "strategy": "mobile",
+    "tool": "playwright-chromium",
+    "pages": [
+      {
+        "url": "https://currentwire.us/",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 7172,
+          "cls": 0,
+          "fcpMs": 5880,
+          "ttfbMs": 2858,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/top-100",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 4604,
+          "cls": 0,
+          "fcpMs": 2844,
+          "ttfbMs": 121,
+          "score": null
+        }
+      },
+      {
+        "url": "https://currentwire.us/story/live-abc-news-live-c5ebb5c5e7bdf",
+        "tool": "playwright-chromium",
+        "field": null,
+        "lab": {
+          "lcpMs": 4044,
+          "cls": 0,
+          "fcpMs": 3964,
+          "ttfbMs": 126,
+          "score": null
+        }
+      }
+    ]
   }
 ]

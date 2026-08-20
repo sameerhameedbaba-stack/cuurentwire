@@ -60,7 +60,11 @@ learn something. See `BACKLOG.md` for prioritized work and `reports/` for run lo
   IndexNow pinged for new story URLs on each refresh.
 - **Daily:** deterministic SEO health check (GitHub Actions) — sitemaps valid,
   news-sitemap fresh, RSS valid, robots reachable, JSON-LD parses on sampled pages,
-  llms.txt present. Fails loudly on regression.
+  llms.txt present. Fails loudly on regression — but "loudly" means the workflow
+  goes red, and nothing yet routes that to a person. Detection latency is
+  therefore up to ~24 h, bounded by the next agent loop, not by the check.
+  Measured three times now (2026-08-17, 2026-08-18, 2026-08-20). Do not describe
+  this alerting as real-time; BACKLOG.md item 3 is the open work.
 - **Daily (agent):** scheduled task runs the daily loop from this playbook — read
   MEMORY/ + BACKLOG.md, verify yesterday's stories flowed to sitemaps/IndexNow,
   crawl samples for schema/canonical/category regressions, fix top backlog items,
@@ -69,7 +73,7 @@ learn something. See `BACKLOG.md` for prioritized work and `reports/` for run lo
   competitor content-gap snapshot (free crawls + web search), llms.txt refresh,
   BACKLOG re-prioritization.
 
-## Search engine coverage map (verified 2026-08-19 — keep current)
+## Search engine coverage map (verified 2026-08-21 — keep current)
 
 How every engine gets CurrentWire's results. The owner's rule: results must
 reach ALL search engines, not just Google, at $0 and zero recurring effort.
@@ -86,6 +90,15 @@ reach ALL search engines, not just Google, at $0 and zero recurring effort.
 
 Maintenance: the daily seo-health check already verifies robots.txt, the three
 sitemaps, and the IndexNow key file — any regression here fails loudly.
+
+Re-verified 2026-08-21 by fetch: robots.txt 200 advertising all three sitemaps,
+`sitemap.xml` 200 (267 URLs), `news-sitemap.xml` 200 (333 entries, all in
+window), IndexNow key file 200, `llms.txt` 200. One exception, and it is the
+archive outage rather than a coverage-map regression: `archive-sitemap.xml`
+answers **503 with `Retry-After: 3600`** while the Neon archive is down. That
+is the correct answer — robots.txt keeps advertising it, and a 503 tells every
+engine to come back rather than to drop 2,793 permanent URLs. The map itself
+still holds; see BACKLOG.md item 1.
 
 ## Owner time budget (standing rule, set 2026-08-19)
 

@@ -39,11 +39,12 @@ original publishers listed on each story page for the underlying reporting.
 - [Methodology](https://currentwire.us/methodology): how stories are discovered, clustered, and ranked
 - [Coverage breadth](https://currentwire.us/methodology/coverage-breadth): what counts as an independent source, why syndicated press-release copies never widen coverage, and the points a source count is worth
 - [Publisher tiers](https://currentwire.us/methodology/publisher-tiers): the three authority tiers, their weights, how a publisher is matched to one, and what tiers explicitly are not (no bias or accuracy rating)
-- [Duplicate story merging](https://currentwire.us/methodology/duplicate-stories): the deterministic rules that decide whether two reports describe the same event, and their measured precision and recall
+- [Duplicate story merging](https://currentwire.us/methodology/duplicate-stories): the deterministic rules that decide whether two reports describe the same event, the precision-over-recall contract the build enforces on a labeled set, and why no accuracy percentage is published there
 - [Editorial Standards](https://currentwire.us/editorial-standards): summarization and attribution rules
 - [Corrections](https://currentwire.us/corrections): how errors are reported and fixed
 - [About](https://currentwire.us/about): what CurrentWire is
 - [News Desk](https://currentwire.us/news-desk): the automated desk behind story summaries
+- [Contact](https://currentwire.us/contact): the addressed inboxes for corrections, publisher enquiries about how their reporting is indexed and attributed, and technical issues
 
 ## Feeds
 
@@ -51,10 +52,12 @@ original publishers listed on each story page for the underlying reporting.
 - [News sitemap](https://currentwire.us/news-sitemap.xml): stories from the last 48 hours
 - [Sitemap](https://currentwire.us/sitemap.xml): current stories, sections and coverage hubs
 - [Archive sitemap](https://currentwire.us/archive-sitemap.xml): every story URL ever published, including those no longer in the live ranking
+- [Archive](https://currentwire.us/archive): HTML browse path over the same permanent URLs, one page per publication day at /archive/<YYYY-MM-DD>
 
 ## Facts worth knowing before citing
 
 - Story URLs are permanent. A story that leaves the live ranking keeps its URL and still returns 200; when two stories turn out to cover the same event, the older URL permanently redirects to the surviving one. URLs are never deleted.
+- A published story URL never answers 404. If the permanent archive is temporarily unreachable, those URLs answer a retriable 5xx and /archive-sitemap.xml answers 503 with Retry-After, rather than claiming the story is gone. Treat that as "ask again later", never as a removal.
 - Each story page names every publisher that covered the event and links to their original reporting. The summary on the page is CurrentWire's; the reporting is theirs.
 - Dates on story pages are real: publication is when CurrentWire first published the page, and "latest coverage" is the newest source timestamp. Neither is ever set to the render time.
 - Rankings are computed from freshness, coverage breadth, source authority and momentum. The method is published at /methodology.

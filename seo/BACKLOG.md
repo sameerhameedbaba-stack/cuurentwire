@@ -1,95 +1,174 @@
 # SEO Backlog
 
-**Status 2026-08-20: the backlog is empty.** The one item left open on
-2026-08-19 (publisher image weight) shipped and was verified live today.
-Everything before it was shipped and verified, closed as obsolete with the
-command that proved it, or converted from a human to-do into automated
-monitoring. Evidence is in `reports/2026-08-20.md` and `reports/2026-08-19.md`;
-the historical record below is kept because its measurements are the baseline
-future runs compare against.
+**Status 2026-08-21 (weekly deep run): five open items, one of them the only
+thing on this list the owner can act on.** The backlog was empty on 2026-08-20.
+It is not empty now, and nothing on it was invented to fill space — every item
+below names the command or fetch that found it during the 2026-08-21 weekly run
+(`reports/2026-08-21-weekly.md`).
 
 Statuses: OPEN / SHIPPED / CLOSED / BLOCKED(user). Verify a fix live before
-flipping it to SHIPPED. Ranking rule when items exist: how much indexable,
-crawlable, citable value a fix creates per unit of risk.
+flipping it to SHIPPED. Ranking rule: how much indexable, crawlable, citable
+value a fix creates per unit of risk.
 
-## Open
+## Open — ranked
 
-**Nothing.** The one item carried in — publisher image weight — shipped and
-was verified live on 2026-08-20; it is written up below. New findings go here;
-do not invent work to fill the section. The standing monitors that will
-produce the next items are:
+### 1. The permanent story archive is unreachable — BLOCKED(owner)
 
-- `.github/workflows/seo-health.yml` — daily, **20** checks against production.
-  Fails loudly on any regression, including `publisher image weight` added
-  2026-08-20.
-- `.github/workflows/url-survival.yml` — daily, proves no published `/story/`
-  URL has died. 1,286 URLs, 0 dead as of 2026-08-19.
-- `.github/workflows/cwv.yml` — weekly Core Web Vitals, now keyless.
-- The daily and weekly agent loops in `PLAYBOOK.md`.
+**This is the whole story of the week, and the only owner action on this file.**
 
-## Shipped 2026-08-20 (daily loop) — verified live after deploy
+The Neon Postgres archive stopped answering some time after 2026-08-19 22:20
+UTC. Measured 2026-08-20 22:0x UTC:
 
-### Publisher image weight is now capped at the source CDN — SHIPPED (745b105)
-
-The 2026-08-19 write-up said this needed "a real decision, not a quick patch",
-because CBS's signed thumbnail segment binds exactly one rendition and
-`images.unoptimized` leaves no local resizing path. Both facts are still true.
-Both were the wrong place to look: **the publishers' own CDNs take a delivery
-width on the original asset**, and nobody had asked them.
-
-Measured on `/top-100` before the fix (25 images, bytes + decoded pixel size):
-
-| Host | Before | Lever found | After |
-|---|---|---|---|
-| npr.brightspotcdn.com | **6,366 KB** 7559x5039 | `/resize/976x651!/quality/80/` | **84 KB** 976x651 |
-| assets1.cbsnewsstatic.com | **4,085 KB** 4896x3264 | `?width=976&quality=80` | **200 KB** 976x651 |
-| platform.theverge.com | 607 KB 3840x2160 | `&w=976` | 99 KB 976x549 |
-| globalnews.ca | 160 KB 1920x1080 | `&w=976` | 75 KB 976x549 |
-| static.politico.com | **4,944 KB** | none — see below | unchanged |
-
-Whole-page effect, `/top-100`, same page ~2 h apart (the story mix rotates, so
-this is the page's weight rather than a matched image set):
-
-| | Before | After |
+| Surface | Healthy (2026-08-20) | Now |
 |---|---|---|
-| Publisher images | 25 | 25 |
-| Total bytes | **28,171 KB** | **1,933 KB** |
-| Heaviest single image | **6,216 KB** | **176 KB** |
+| `/archive-sitemap.xml` | 2,793 permanent story URLs | **503**, `Retry-After: 3600` |
+| Published `/story/` URLs | 1,329 live, 0 dead | **1,322 of 1,329 answering 5xx** |
+| `/archive/<date>` | `/archive/2026-08-18` = 623 story links | 404 |
+| `/archive` | day-bucket browse | 42 words, no JSON-LD |
+| Live `sitemap.xml` story URLs | 200 of 200 | **195 of 200; 5 answer 500** |
 
-Homepage Core Web Vitals, keyless probe, mobile throttling, warm:
+The 5 failures in the *live* sitemap are the part that grows. `sitemap.xml` is
+rendered from a dataset snapshot, and every refresh rotates more stories out of
+the live window and into an archive that cannot answer — so the share of URLs
+the site actively advertises and cannot serve increases for as long as the
+outage lasts.
 
-| Run | Hero | LCP | CLS | TTFB |
-|---|---|---|---|---|
-| 2026-08-19 | 71 KB BBC | 3,632 ms | 0.001 | 135 ms |
-| 2026-08-19 | 546 KB CBS | **8,556 ms** | 0 | 100 ms |
-| 2026-08-20 | 84 KB NPR (**the same asset that was 6,366 KB**) | **2,936 ms** | 0 | 366 ms |
+**The status code is now the diagnosis** (shipped in `d060817` by the daily
+loop): a 503 means the archive is configured and failing, so `DATABASE_URL` is
+set on the deployment and the database itself is not answering. A missing env
+var would have produced a 200 with an empty `<urlset>` instead. That narrows
+the owner's check to the Neon project, not to Vercel's environment settings.
 
-The point is not the single number — it is that the hero can no longer *be* a
-half-megabyte image, so the LCP no longer swings on which story leads.
+Owner action, about five minutes, no payment: open the Neon console, check
+whether the project is suspended, over its free-tier compute allowance, or
+otherwise stopped, and resume it. Nothing in this repository can restore it.
 
-Rules and their limits, all verified live before shipping:
+Everything the *site* can do is already done: it emits retriable signals rather
+than permanent ones, so no crawler is being told a permanent URL is gone.
+Recovery needs no deploy — the surfaces re-populate once the database answers.
 
-- An existing width is the publisher's own rendition choice and is **kept**.
-  The Hill's feed already ships `?w=900`; forcing 976 would fetch more bytes.
-- CBS thumbnails we keep (≥400 px) are served **exactly as signed**. `?width=`
-  on a signed rendition is unverified and the signature may bind the response.
-- `.bmp` / `.tif` are dropped at ingest and the story renders with no image.
-  `globalnews.ca/.../Classroom.bmp` was live on `/health` at **6,221 KB**;
-  WordPress's `?w=` resizer ignores those formats, so omission is the only
-  lever. Side effect, stated honestly: `score.ts` gives +0.35 for having an
-  image, so such a story ranks very slightly lower. That is arguably correct.
-- **Archived story pages keep their pre-fix image URLs.** Normalization runs at
-  ingest, so only stories re-ingested after the deploy carry capped URLs. The
-  ranked and section surfaces (where the LCP lives) refreshed within ~2 min.
+### 2. Story pages answer 500 during the outage; the sitemap route answers 503
 
-Guards: `tests/unit/image-upgrade.test.ts` (12 tests, each rule carrying the
-live-verified bytes and pixel dimensions in a comment) and a new
-`publisher image weight` check in `scripts/seo-health.mjs`, which **fails**
-when a capped host returns over 500 KB — the signature of a silently broken
-rewrite rule — and only **reports** oversized images from hosts with no lever,
-because a gate nobody can turn green is a gate everyone learns to ignore.
-Verified live 2026-08-20: `15 images, 1054 KB total, median 70 KB, max 121 KB`,
-20/20 checks passing.
+`app/archive-sitemap.xml/route.ts` returns `503` with `Retry-After: 3600` and
+`Cache-Control: no-store`. A published `/story/` URL in the same outage returns
+a bare **500** — verified on five live-sitemap URLs and six ledger URLs, all
+500, plus one 504 from the edge.
+
+Both are retriable and neither says "gone", so the property that matters holds.
+But 503 with `Retry-After` is the signal Google documents for temporary
+unavailability, and 500 is the one that reads as a broken page. The two routes
+should agree. This is a refinement of a fix that is already correct on the
+decisive point — rank it accordingly, and do not let it delay item 1.
+
+### 3. Nothing routes a red monitor to a human
+
+`seo-health.yml` failed at **2026-08-20T07:27:37Z** and `url-survival.yml` at
+**2026-08-20T07:09:02Z** (`gh run list`). Both fired correctly, on the first
+morning of the outage. Nothing acted on either for roughly **15 hours**, until
+the daily agent loop ran and found the outage independently.
+
+This is the third occurrence of the same failure: 2026-08-17 and 2026-08-18
+also failed silently for two days (`reports/2026-08-18-weekly.md`). The alarms
+work. The delivery does not — and `gh` cannot read this repo's Actions logs
+(HTTP 403, admin rights required), so the loops reproduce the checks locally.
+
+Free options worth evaluating, in preference order: confirm whether GitHub's
+default scheduled-workflow-failure email already reaches the owner's address;
+add a step that opens a GitHub issue on failure, since issue notifications
+route differently from Actions notifications; or accept the agent loops as the
+delivery mechanism and state the detection latency honestly (up to about 24
+hours) instead of implying it is minutes.
+
+### 4. `/news-desk` is the one masthead page with no JSON-LD
+
+Verified live: `curl -s https://currentwire.us/news-desk | grep -c
+'application/ld+json'` returns **0**, against **1** for `/about`. The
+2026-08-19 clear-out typed six trust pages (`/about` AboutPage; `/methodology`,
+`/editorial-standards`, `/corrections` WebPage; `/contact` ContactPage;
+`/topics` CollectionPage) and missed this one — and `/news-desk` is the page
+`NewsMediaOrganization.masthead` points at, which makes it the worst one to
+miss. It is otherwise healthy: 200, 312 words, indexable, with
+`max-image-preview:large` present.
+
+`/privacy`, `/terms` and `/copyright` also carry none. Lower value, same fix.
+
+### 5. Seven of twelve sampled story pages have no outbound topic links
+
+Measured this run across 12 live story pages sampled from `/news-sitemap.xml`:
+outbound `/story/` links are **median 4, and zero on none of them**. The
+2026-08-19 "More in {Category}" rail is holding, and that was the single
+biggest finding of the 2026-08-18 weekly run, when 39 of 40 pages had zero.
+
+Outbound `/topic/` links are **median 0, absent on 7 of 12**. Topic hubs are
+exactly the surface that needs inbound links: 24 of them sit in `sitemap.xml`,
+they flip indexable as they accumulate stories, and story pages are where their
+link equity would have to come from. Same defect class as the story-link dead
+end, one hop up, and a smaller job than that fix was.
+
+## Watching, not yet work
+
+- **`/most-covered` is running 5 items** (ItemList and rendered links both 5;
+  it was 12 on 2026-08-19). Not a defect — coverage breadth on this site is
+  limited by the ingest feed list, and the page states that on itself. It does
+  mean the site's most differentiated page is thin on any given day.
+  Re-measure weekly; it becomes work if it stays at 5 while the feed list grows.
+- **Thin category pages**: `/climate` 3 items / 133 words, `/culture` 3 / 137,
+  `/science` 5 / 152, against `/politics` 13 / 639. Same cause. Do not pad them.
+- **One dedup recall miss**, recorded rather than filed:
+  `fbi-raids-eric-swalwells-home-amid-sexual-assault-claims-inquiry-report-c13c03e2081a1`
+  (General) and
+  `fbi-raided-swalwells-home-seized-devices-as-part-of-chinese-spy-probe-c9b2a99f3b09b`
+  (Politics) are one event across two clusters, published 70 minutes apart, one
+  source each. This is **inside the designed contract** — precision ≥ 0.98 is
+  held far above recall ≥ 0.80 because a wrong merge corrupts a story page
+  while a missed merge only leaves two pages where there should be one. Note
+  that the low-confidence half landed in `/general`, which is noindexed, so
+  Google sees one of the two. Do not re-tune clustering from one observation.
+- **25% of sampled story descriptions still end mid-sentence** (3 of 12; it was
+  53%, then 23% after the 2026-08-18 formatter fix). The residue is summaries
+  whose first sentence alone exceeds the meta-description limit — a summarizer
+  input-length question, not a formatter bug.
+
+## Shipped 2026-08-21 (weekly deep run) — verified live
+
+### `cwv-check.mjs` was recording an error page's Core Web Vitals — SHIPPED
+
+`firstStoryUrl()` took the **first** `/story/` entry in `data/url-ledger.json`
+with no liveness check. During this outage that entry answered **500** with a
+9,353-byte error page, and the probe measured it and wrote `LCP 1,172 ms` into
+`data/cwv-history.json` as a story-page vital. Nothing downstream could tell
+that number from a real one.
+
+Replaced with `firstLiveStoryUrl()`: it probes ledger order first, so the URL
+measured week to week does not move while the site is healthy; falls back to
+the most recently verified-alive entries; takes the first that answers **200**;
+and returns `null` — measuring two surfaces instead of three, loudly — when
+none do. Verified this run: it skipped 6 dead URLs (five 500s and a 504) and
+measured a live story instead.
+
+**The rule this leaves behind:** a monitoring script that chooses its own
+target must verify the target is healthy before reporting a number about it.
+Otherwise the first thing to break is the instrument, and it breaks quietly.
+
+### `llms.txt` refreshed — SHIPPED
+
+4,484 → 5,175 bytes. Three drifts corrected against the live pages:
+
+- It described `/methodology/duplicate-stories` as publishing "their measured
+  precision and recall". That page publishes **no** accuracy percentage and
+  says so in as many words — it publishes the CI contract. Fixed to match.
+- `/archive` (the HTML browse path over permanent URLs, shipped 2026-08-19) and
+  `/contact` were never listed. Added.
+- Added the failure contract, so an AI crawler that meets this outage retries
+  instead of recording a permanent URL as removed: a published story URL never
+  answers 404, and an unreachable archive answers a retriable 5xx while the
+  archive sitemap answers 503 with `Retry-After`.
+
+One line was written and then corrected before shipping: the draft described
+`/contact` as covering "takedown requests". The page has general, corrections,
+publisher and technical inboxes and no takedown channel. *Prose about a page is
+a claim about that page — check it against the page.*
+
 
 ## Known and accepted — not work, but do not "fix" these
 

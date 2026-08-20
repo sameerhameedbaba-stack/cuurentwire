@@ -60,19 +60,69 @@ const MOBILE_THROTTLE = {
 /** Quiet window after load before metrics are read, for late LCP and shifts. */
 const SETTLE_MS = 5_000;
 
-/** First /story/ URL the survival ledger knows about, or null. */
-function firstStoryUrl() {
+/**
+ * A /story/ URL from the survival ledger that is actually answering 200.
+ *
+ * The liveness probe is not decoration. On 2026-08-21 the story archive was
+ * down, the ledger's first entry was serving a 9 KB error page, and this
+ * script measured it and wrote "LCP 1,172 ms" into cwv-history.json as a
+ * story-page vital. A performance number for an error page is a fabricated
+ * metric wearing a real one's label, and nothing downstream could tell.
+ *
+ * Order matters for the history series: the ledger's own order is kept, so
+ * the URL measured week to week does not move while the site is healthy.
+ * Only when those are dead does it fall back to the freshest entries, and a
+ * total outage returns null so the run reports two surfaces instead of three.
+ */
+async function firstLiveStoryUrl() {
+  let entries;
   try {
     const ledger = JSON.parse(readFileSync(LEDGER_PATH, "utf-8"));
-    if (Array.isArray(ledger)) {
-      const entry = ledger.find(
-        (e) => typeof e?.url === "string" && e.url.includes("/story/"),
-      );
-      if (entry) return entry.url;
-    }
+    if (!Array.isArray(ledger)) return null;
+    entries = ledger.filter(
+      (e) => typeof e?.url === "string" && e.url.includes("/story/"),
+    );
   } catch {
     // ledger missing or unreadable — measure the two stable surfaces only
+    return null;
   }
+  if (entries.length === 0) return null;
+
+  // Ledger order first (the historical choice), then the most recently
+  // verified-alive URLs, deduped. Bounded so a full outage costs ~12 requests.
+  const freshest = entries
+    .slice()
+    .sort((a, b) => String(b.lastOk ?? "").localeCompare(String(a.lastOk ?? "")));
+  const candidates = [];
+  for (const e of [...entries.slice(0, 6), ...freshest.slice(0, 6)]) {
+    if (!candidates.includes(e.url)) candidates.push(e.url);
+  }
+
+  const skipped = [];
+  for (const url of candidates) {
+    let status = 0;
+    try {
+      status = (await fetch(url, { redirect: "follow" })).status;
+    } catch {
+      status = 0;
+    }
+    if (status === 200) {
+      if (skipped.length > 0) {
+        console.warn(
+          `[cwv-check] WARN: skipped ${skipped.length} story URL(s) not answering 200 ` +
+            `(${skipped.slice(0, 3).join(", ")}${skipped.length > 3 ? ", ..." : ""}) ` +
+            "— measuring the first live one instead",
+        );
+      }
+      return url;
+    }
+    skipped.push(`${status || "ERR"} ${url.replace(/^https?:\/\/[^/]+/, "")}`);
+  }
+  console.warn(
+    `[cwv-check] WARN: none of ${candidates.length} ledger story URLs answered 200 ` +
+      `(${skipped.slice(0, 3).join("; ")}) — the archive is probably down. ` +
+      "Measuring the two stable surfaces only rather than recording an error page's vitals.",
+  );
   return null;
 }
 
@@ -257,11 +307,11 @@ const fmt = (v) => (v === null || v === undefined ? "-" : String(v));
 
 const now = new Date().toISOString();
 const pages = [`${BASE}/`, `${BASE}/top-100`];
-const story = firstStoryUrl();
+const story = await firstLiveStoryUrl();
 if (story) pages.push(story);
 else
   console.warn(
-    "[cwv-check] WARN: no /story/ URL in data/url-ledger.json — checking stable surfaces only",
+    "[cwv-check] WARN: no live /story/ URL available — checking stable surfaces only",
   );
 
 // With a key: PSI (CrUX field data + a real Lighthouse score). Without one:
