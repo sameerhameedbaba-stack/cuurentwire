@@ -1,4 +1,5 @@
 import { and, desc, eq, gte, inArray, isNull, lt, ne, or, sql } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 import { isCategoryId } from "@/config/categories";
 import type { SourceTier } from "@/config/sources";
 import { isGenericEntity } from "@/lib/news/classification/entities";
@@ -61,6 +62,53 @@ export class ArchiveUnavailableError extends Error {
     super(`archive unavailable during ${operation}: ${describeDbError(cause)}`);
     this.name = "ArchiveUnavailableError";
   }
+}
+
+/**
+ * Read-through Data Cache for archive reads (added 2026-08-21).
+ *
+ * The Neon free plan allows 5 GB of data transfer per month, and uncached
+ * reads burned through it in five days (every query then failed with
+ * Postgres 53000 "data transfer quota exceeded" and the whole archive was
+ * offline until the monthly reset): crawlers re-render every story page
+ * each ISR window, and every render read the archive again. Archived rows
+ * are near-immutable, so read results are shared across renders via
+ * unstable_cache instead. A merge or history append surfaces late by at
+ * most the TTL, which costs nothing durable — the row itself is permanent.
+ *
+ * Failures are NEVER cached: a rejected promise is not stored, so a thrown
+ * ArchiveUnavailableError keeps signalling retriable 5xx upstream, and the
+ * fail-soft readers below throw INSIDE the cached scope and catch OUTSIDE
+ * it for the same reason (an outage must not freeze empty enrichments).
+ */
+const ARCHIVE_ROW_TTL_S = 21_600;
+const FIRST_SEEN_TTL_S = 1_800; // one read per page id-set per refresh cycle
+
+/**
+ * unstable_cache with a fallback for non-Next runtimes: outside a server
+ * request context it throws "Invariant: incrementalCache missing ..."
+ * (node_modules/next/dist/server/web/spec-extension/unstable-cache.js), so
+ * vitest and scripts run the real uncached query instead.
+ */
+function cachedRead<Args extends unknown[], Result>(
+  keyPrefix: string,
+  ttlSeconds: number,
+  fn: (...args: Args) => Promise<Result>,
+): (...args: Args) => Promise<Result> {
+  const cached = unstable_cache(fn, [keyPrefix], { revalidate: ttlSeconds });
+  return async (...args) => {
+    try {
+      return await cached(...args);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("incrementalCache missing")
+      ) {
+        return fn(...args);
+      }
+      throw error;
+    }
+  };
 }
 
 /**
@@ -517,35 +565,39 @@ export async function archiveDataset(dataset: NewsDataset): Promise<number> {
  * crawler it has zero permanent story URLs, and on 2026-08-21 that is
  * exactly what it told them about 2,793 of them.
  */
-export async function listArchivedStoriesForSitemap(
-  limit = 50_000,
-): Promise<{ slug: string; lastModifiedAt: string }[]> {
-  const db = getDb();
-  if (!db) return [];
-  try {
-    const rows = await db
-      .select({
-        slug: storyArchive.slug,
-        lastModifiedAt: storyArchive.lastModifiedAt,
-      })
-      .from(storyArchive)
-      .where(isNull(storyArchive.mergedIntoClusterId))
-      .orderBy(desc(storyArchive.firstSeenAt))
-      .limit(limit);
-    return rows.map((row) => ({
-      slug: row.slug,
-      lastModifiedAt:
-        row.lastModifiedAt instanceof Date
-          ? row.lastModifiedAt.toISOString()
-          : String(row.lastModifiedAt),
-    }));
-  } catch (error) {
-    logger.error("database.archive_sitemap_query_failed", {
-      error: describeDbError(error),
-    });
-    throw new ArchiveUnavailableError("archive sitemap query", error);
-  }
-}
+export const listArchivedStoriesForSitemap = cachedRead(
+  "archive-sitemap",
+  ARCHIVE_ROW_TTL_S,
+  async function listArchivedStoriesForSitemapUncached(
+    limit: number = 50_000,
+  ): Promise<{ slug: string; lastModifiedAt: string }[]> {
+    const db = getDb();
+    if (!db) return [];
+    try {
+      const rows = await db
+        .select({
+          slug: storyArchive.slug,
+          lastModifiedAt: storyArchive.lastModifiedAt,
+        })
+        .from(storyArchive)
+        .where(isNull(storyArchive.mergedIntoClusterId))
+        .orderBy(desc(storyArchive.firstSeenAt))
+        .limit(limit);
+      return rows.map((row) => ({
+        slug: row.slug,
+        lastModifiedAt:
+          row.lastModifiedAt instanceof Date
+            ? row.lastModifiedAt.toISOString()
+            : String(row.lastModifiedAt),
+      }));
+    } catch (error) {
+      logger.error("database.archive_sitemap_query_failed", {
+        error: describeDbError(error),
+      });
+      throw new ArchiveUnavailableError("archive sitemap query", error);
+    }
+  },
+);
 
 /** One UTC day bucket of the archive index: the date and how many stories it holds. */
 export interface ArchiveDaySummary {
@@ -794,33 +846,40 @@ export function idTokenFromSlug(slug: string): string {
  * between a published URL and `notFound()`, and "the database timed out"
  * must never be rendered as "gone forever".
  */
-export async function findArchivedStory(slug: string): Promise<ArchivedStory | null> {
-  const db = getDb();
-  if (!db) return null;
-  try {
-    const idToken = idTokenFromSlug(slug);
-    const rows = await db
-      .select(archivedStoryColumns)
-      .from(storyArchive)
-      .where(
-        or(
-          eq(storyArchive.slug, slug),
-          // Bare cluster ids and re-titled old links resolve by the stable
-          // id token — same alias rules as the live dataset.
-          inArray(storyArchive.clusterId, [slug, idToken]),
-        ),
-      )
-      .limit(3);
-    if (rows.length === 0) return null;
-    const exact = rows.find((r) => r.slug === slug) ?? rows.find((r) => r.clusterId === slug);
-    return rowToArchivedStory(exact ?? rows[0]);
-  } catch (error) {
-    logger.error("database.archive_lookup_failed", {
-      error: describeDbError(error),
-    });
-    throw new ArchiveUnavailableError("story lookup", error);
-  }
-}
+export const findArchivedStory = cachedRead(
+  "archive-story",
+  ARCHIVE_ROW_TTL_S,
+  async function findArchivedStoryUncached(
+    slug: string,
+  ): Promise<ArchivedStory | null> {
+    const db = getDb();
+    if (!db) return null;
+    try {
+      const idToken = idTokenFromSlug(slug);
+      const rows = await db
+        .select(archivedStoryColumns)
+        .from(storyArchive)
+        .where(
+          or(
+            eq(storyArchive.slug, slug),
+            // Bare cluster ids and re-titled old links resolve by the stable
+            // id token — same alias rules as the live dataset.
+            inArray(storyArchive.clusterId, [slug, idToken]),
+          ),
+        )
+        .limit(3);
+      if (rows.length === 0) return null;
+      const exact =
+        rows.find((r) => r.slug === slug) ?? rows.find((r) => r.clusterId === slug);
+      return rowToArchivedStory(exact ?? rows[0]);
+    } catch (error) {
+      logger.error("database.archive_lookup_failed", {
+        error: describeDbError(error),
+      });
+      throw new ArchiveUnavailableError("story lookup", error);
+    }
+  },
+);
 
 /**
  * Everything the story page needs from the archived row beyond the story
@@ -828,14 +887,17 @@ export async function findArchivedStory(slug: string): Promise<ArchivedStory | n
  * stored) and the all-time source union. Empty on ANY failure — no DB,
  * schema not migrated, unknown id, query error — never throws to callers.
  */
-export async function getStoryArchiveExtras(clusterId: string): Promise<{
-  history: StoryUpdateEvent[];
-  sources: ArchivedSourceRef[];
-}> {
-  const db = getDb();
-  if (!db || !clusterId) return { history: [], sources: [] };
-  try {
-    if (!(await ensureArchiveSchema())) return { history: [], sources: [] };
+const readStoryArchiveExtras = cachedRead(
+  "archive-extras",
+  ARCHIVE_ROW_TTL_S,
+  async (clusterId: string) => {
+    const db = getDb();
+    if (!db) return { history: [], sources: [] };
+    // Throw (uncached) rather than freeze empties while the schema is
+    // mid-migration; the caller degrades to empty for this render only.
+    if (!(await ensureArchiveSchema())) {
+      throw new Error("archive schema not migrated");
+    }
     const rows = await db
       .select({ history: storyArchive.history, sources: storyArchive.sources })
       .from(storyArchive)
@@ -846,6 +908,16 @@ export async function getStoryArchiveExtras(clusterId: string): Promise<{
       history: Array.isArray(row?.history) ? row.history : [],
       sources: Array.isArray(row?.sources) ? row.sources : [],
     };
+  },
+);
+
+export async function getStoryArchiveExtras(clusterId: string): Promise<{
+  history: StoryUpdateEvent[];
+  sources: ArchivedSourceRef[];
+}> {
+  if (!clusterId) return { history: [], sources: [] };
+  try {
+    return await readStoryArchiveExtras(clusterId);
   } catch (error) {
     logger.warn("database.story_history_failed", {
       error: error instanceof Error ? error.message : "unknown",
@@ -885,15 +957,39 @@ export async function findEarlierCoverage(
   story: { id: string; title: string; entities: string[]; firstPublishedAt: string },
   limit = 5,
 ): Promise<EarlierCoverageItem[]> {
-  const db = getDb();
   const specific = story.entities
     .map((entity) => entity.trim())
     .filter((entity) => entity.length > 0 && !isGenericEntity(entity));
   const before = new Date(story.firstPublishedAt);
-  if (!db || specific.length === 0 || limit <= 0 || Number.isNaN(before.getTime())) {
+  if (
+    !getDb() ||
+    specific.length === 0 ||
+    limit <= 0 ||
+    Number.isNaN(before.getTime())
+  ) {
     return [];
   }
   try {
+    return await readEarlierCoverage(story, specific, limit);
+  } catch (error) {
+    logger.warn("database.earlier_coverage_failed", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    return [];
+  }
+}
+
+const readEarlierCoverage = cachedRead(
+  "archive-earlier-coverage",
+  ARCHIVE_ROW_TTL_S,
+  async (
+    story: { id: string; title: string; entities: string[]; firstPublishedAt: string },
+    specific: string[],
+    limit: number,
+  ): Promise<EarlierCoverageItem[]> => {
+    const db = getDb();
+    if (!db) return [];
+    const before = new Date(story.firstPublishedAt);
     // Opportunistic: makes sure the entities gin index exists. The query
     // itself only touches columns present since the table shipped, so a
     // failed migration merely means an unindexed scan.
@@ -947,13 +1043,28 @@ export async function findEarlierCoverage(
       )
       .slice(0, limit)
       .map((candidate) => candidate.item);
-  } catch (error) {
-    logger.warn("database.earlier_coverage_failed", {
-      error: error instanceof Error ? error.message : "unknown",
-    });
-    return [];
-  }
-}
+  },
+);
+
+/** Cached inner read for getArchiveFirstSeen — first_seen_at is written
+ * once per cluster, so entries are immutable; the ids are sorted by the
+ * caller so re-ranked pages with the same id set share one cache entry. */
+const readFirstSeenEntries = cachedRead(
+  "archive-first-seen",
+  FIRST_SEEN_TTL_S,
+  async (clusterIds: string[]): Promise<[string, string][]> => {
+    const db = getDb();
+    if (!db) return [];
+    const rows = await db
+      .select({
+        clusterId: storyArchive.clusterId,
+        firstSeenAt: storyArchive.firstSeenAt,
+      })
+      .from(storyArchive)
+      .where(inArray(storyArchive.clusterId, clusterIds));
+    return rows.map((row) => [row.clusterId, new Date(row.firstSeenAt).toISOString()]);
+  },
+);
 
 /**
  * Batch lookup of first_seen_at for live clusters: our real publication
@@ -962,24 +1073,14 @@ export async function findEarlierCoverage(
 export async function getArchiveFirstSeen(
   clusterIds: string[],
 ): Promise<Map<string, string>> {
-  const map = new Map<string, string>();
-  const db = getDb();
-  if (!db || clusterIds.length === 0) return map;
+  if (!getDb() || clusterIds.length === 0) return new Map();
   try {
-    const rows = await db
-      .select({
-        clusterId: storyArchive.clusterId,
-        firstSeenAt: storyArchive.firstSeenAt,
-      })
-      .from(storyArchive)
-      .where(inArray(storyArchive.clusterId, clusterIds));
-    for (const row of rows) map.set(row.clusterId, row.firstSeenAt.toISOString());
-    return map;
+    return new Map(await readFirstSeenEntries([...clusterIds].sort()));
   } catch (error) {
     logger.error("database.archive_first_seen_failed", {
       error: describeDbError(error),
     });
-    return map;
+    return new Map();
   }
 }
 

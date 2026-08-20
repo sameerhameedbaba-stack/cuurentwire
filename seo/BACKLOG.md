@@ -39,13 +39,26 @@ set on the deployment and the database itself is not answering. A missing env
 var would have produced a 200 with an empty `<urlset>` instead. That narrows
 the owner's check to the Neon project, not to Vercel's environment settings.
 
-Owner action, about five minutes, no payment: open the Neon console, check
-whether the project is suspended, over its free-tier compute allowance, or
-otherwise stopped, and resume it. Nothing in this repository can restore it.
+**ROOT CAUSE CONFIRMED 2026-08-21 (live session, Vercel function logs):**
+every archive query fails with Postgres error `53000`: *"Your project has
+exceeded the data transfer quota. Upgrade your plan to increase limits."* The
+endpoint itself is up (a bad-password probe got a normal auth rejection) — Neon
+free plan's **5 GB/month egress allowance is exhausted**, and all reads are
+blocked until the allowance resets. "Resume the project" was the wrong advice:
+there is nothing to resume, and no owner click fixes quota exhaustion.
 
-Everything the *site* can do is already done: it emits retriable signals rather
-than permanent ones, so no crawler is being told a permanent URL is gone.
-Recovery needs no deploy — the surfaces re-populate once the database answers.
+Why it exhausted in ~5 days: story pages revalidate every 300 s, so crawlers
+(bingbot prominent in the logs) re-render up to 1,329 archived pages hundreds
+of times a day, each render reading the archive; plus archive-sitemap reads and
+the 30-minute cron. The durable fix is cutting archive egress (long-TTL data
+cache for immutable archived rows, lean sitemap query) — in progress the same
+day. Options to restore service sooner: wait for the monthly reset (~Sep 1,
+exact date TBC in Neon console) at $0, or the owner chooses to pay for a Neon
+plan (breaks the $0 constraint — owner's decision only).
+
+Everything the *site* can do signal-wise is already done: it emits retriable
+5xx, so no crawler is told a permanent URL is gone. But extended multi-week
+5xx does eventually drop URLs from the index, so the clock matters.
 
 ### 2. Story pages answer 500 during the outage; the sitemap route answers 503
 
