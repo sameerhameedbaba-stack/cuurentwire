@@ -105,7 +105,23 @@ for (let i = 0; i < entries.length; i += CONCURRENCY) {
   );
 }
 
-const dead = results.filter((r) => !r.ok);
+/**
+ * A 5xx is NOT a broken permanence guarantee.
+ *
+ * The invariant this probe defends is "a published URL never 404s". On
+ * 2026-08-21 the story archive went down and 1,322 URLs answered 404, which
+ * is exactly the violation it exists to catch. Those URLs now answer a
+ * retriable 5xx instead, and if the probe kept calling that "no longer
+ * resolves" it would stay red for the whole outage — hiding any REAL 404
+ * regression underneath a wall of expected noise, and teaching everyone to
+ * ignore the one gate that guards the site's central promise.
+ *
+ * So the two are counted separately: gone (4xx — the guarantee is broken,
+ * fail) and unavailable (5xx — the origin is having a bad day, report it
+ * loudly but do not claim the URL is lost).
+ */
+const gone = results.filter((r) => !r.ok && r.status >= 400 && r.status < 500);
+const unavailable = results.filter((r) => !r.ok && (r.status === 0 || r.status >= 500));
 const redirects = results.filter((r) => r.ok && r.status !== 200);
 for (const result of results) {
   if (result.ok) known.get(result.url).lastOk = now;
@@ -123,16 +139,29 @@ writeFileSync(LEDGER_PATH, `${JSON.stringify(kept, null, 2)}\n`);
 
 console.log(
   `[url-survival] ${now} base=${BASE} ledger=${kept.length} (+${added} new) ` +
-    `checked=${results.length} ok=${results.length - dead.length} ` +
-    `redirects=${redirects.length} DEAD=${dead.length}`,
+    `checked=${results.length} ok=${results.length - gone.length - unavailable.length} ` +
+    `redirects=${redirects.length} GONE=${gone.length} UNAVAILABLE=${unavailable.length}`,
 );
 for (const r of redirects.slice(0, 10)) console.log(`  redirect ${r.url} ${r.note}`);
-for (const r of dead) console.log(`  DEAD ${r.status} ${r.url} ${r.note ?? ""}`);
+for (const r of gone) console.log(`  GONE ${r.status} ${r.url} ${r.note ?? ""}`);
+for (const r of unavailable.slice(0, 10)) {
+  console.log(`  unavailable ${r.status} ${r.url} ${r.note ?? ""}`);
+}
 
-if (dead.length > 0) {
+if (unavailable.length > 0) {
+  // Not a pass, but not a broken promise either — say which it is.
   console.error(
-    `[url-survival] FAIL: ${dead.length} previously published URL(s) no longer resolve`,
+    `[url-survival] ${unavailable.length} URL(s) answered 5xx — the origin or its ` +
+      `archive is down. These URLs are NOT lost; they are retriable and crawlers ` +
+      `will come back. Restore the backing store, then re-run.`,
+  );
+}
+if (gone.length > 0) {
+  console.error(
+    `[url-survival] FAIL: ${gone.length} previously published URL(s) return 4xx — ` +
+      `the "published URLs never 404" guarantee is broken`,
   );
   process.exit(1);
 }
+if (unavailable.length > 0) process.exit(1);
 console.log("[url-survival] PASS: every previously published URL still resolves");
