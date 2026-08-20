@@ -33,17 +33,23 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     title: siteConfig.seo.defaultTitle,
     description: siteConfig.seo.defaultDescription,
-    // The root app/opengraph-image.tsx exists but this Next build does not
-    // inject it on non-story routes (audit F3) — reference it explicitly.
+    // Static card cut from the logo kit by scripts/generate-brand-assets.mjs,
+    // served from public/ and referenced explicitly because this Next build
+    // does not inject app/ og-image files on non-story routes (audit F3).
     // Resolved against metadataBase.
     images: [
-      { url: "/opengraph-image", width: 1200, height: 630, alt: siteConfig.name },
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: siteConfig.name,
+      },
     ],
   },
   twitter: {
     card: "summary_large_image",
     site: siteConfig.seo.twitterHandle,
-    images: ["/opengraph-image"],
+    images: ["/opengraph-image.png"],
   },
   alternates: {
     types: { "application/rss+xml": [{ url: "/rss", title: siteConfig.name }] },

@@ -32,8 +32,11 @@ and the run will prepare the tagline, gallery images and launch text.
 - **SaaSHub re-verification** — the badge expires quarterly. Next due ~2026-11.
   When SaaSHub offers an "Experts" nomination in exchange for voting on an
   unrelated product list, skip it.
-- **Logo + screenshots for SaaSHub** — the only gaps left on that listing. Needs
-  real image files; do it whenever there's a logo to upload.
+- **Logo + screenshots for SaaSHub** — the logo now exists (2026-08-21, "Pulse"
+  mark from the logo kit). Upload `https://currentwire.us/icon-512.png` (dark
+  square — best fit for SaaSHub's logo slot; light variant at
+  `/icon-512-light.png`). Screenshots: still needed — the Thursday run can cut
+  them from the live site whenever the owner has 5 min to upload.
 
 ## Later (when you have time)
 

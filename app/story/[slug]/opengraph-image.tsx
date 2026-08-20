@@ -58,9 +58,12 @@ export default async function OpenGraphImage({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 5 }}>
-            <div style={{ width: 12, height: 56, backgroundColor: "#C91920" }} />
-            <div style={{ width: 12, height: 36, backgroundColor: "#C91920" }} />
+          {/* Pulse mark, dark-ground palette (2026-08 logo kit): 20u bars on
+              13u gutters, heights 74/46/60, red terminal — scaled 0.72. */}
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 9 }}>
+            <div style={{ width: 14, height: 53, backgroundColor: "#F7F7F5" }} />
+            <div style={{ width: 14, height: 33, backgroundColor: "#F7F7F5" }} />
+            <div style={{ width: 14, height: 43, backgroundColor: "#E0343B" }} />
           </div>
           <div
             style={{
@@ -71,12 +74,12 @@ export default async function OpenGraphImage({
               display: "flex",
             }}
           >
-            Current<span style={{ color: "#C91920" }}>Wire</span>
+            Current<span style={{ color: "#E0343B" }}>Wire</span>
           </div>
           <div
             style={{
               fontSize: 26,
-              color: "#C91920",
+              color: "#E0343B",
               letterSpacing: 5,
               textTransform: "uppercase",
               marginLeft: "auto",

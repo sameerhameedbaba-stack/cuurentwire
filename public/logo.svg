@@ -1,5 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 96" role="img" aria-label="CurrentWire">
-  <rect x="8" y="12" width="10" height="72" fill="#C91920"/>
-  <rect x="24" y="40" width="10" height="44" fill="#C91920"/>
-  <text x="48" y="72" font-family="Archivo, Arial, sans-serif" font-size="64" font-weight="800" letter-spacing="-2" fill="#090909">Current<tspan fill="#C91920">Wire</tspan></text>
+  <g transform="translate(-3.4 4) scale(0.88)">
+    <rect x="13" y="13" width="20" height="74" fill="#111111"/>
+    <rect x="46" y="41" width="20" height="46" fill="#111111"/>
+    <rect x="79" y="27" width="20" height="60" fill="#C91920"/>
+  </g>
+  <text x="106" y="72" font-family="Archivo, Arial, sans-serif" font-size="64" font-weight="800" letter-spacing="-2" fill="#111111">Current<tspan fill="#C91920">Wire</tspan></text>
 </svg>

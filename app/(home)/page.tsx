@@ -42,7 +42,12 @@ export const metadata: Metadata = {
     // Restated like the fields above: this openGraph replaces the layout's
     // wholesale, images included (audit F3).
     images: [
-      { url: "/opengraph-image", width: 1200, height: 630, alt: siteConfig.name },
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: siteConfig.name,
+      },
     ],
   },
 };

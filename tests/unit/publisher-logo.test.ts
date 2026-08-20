@@ -5,7 +5,7 @@ import { PUBLISHER_LOGO } from "@/lib/seo/structured-data";
 
 /**
  * The publisher logo's width/height in JSON-LD are typed by hand:
- * scripts/generate-logo.mjs rewrites public/logo-600.png but cannot edit
+ * scripts/generate-brand-assets.mjs rewrites public/logo-600.png but cannot edit
  * lib/seo/structured-data.tsx. A regenerated logo with a different aspect
  * ratio would leave Google reading dimensions that do not match the image.
  * Read the PNG's IHDR chunk (bytes 16-23 of a PNG file) and compare.

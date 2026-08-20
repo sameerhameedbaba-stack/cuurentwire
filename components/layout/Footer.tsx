@@ -19,12 +19,16 @@ const COLUMNS: { heading: string; links: readonly { label: string; href: string 
 ];
 
 export function Footer() {
+  // Literal ground: bg-ink-deep flips to white in dark mode, which would
+  // white-out the footer's fixed text-white content and the wordmark.
   return (
-    <footer className="mt-16 bg-ink-deep text-white dark:border-t dark:border-rule">
+    <footer className="mt-16 bg-[#090909] text-white dark:border-t dark:border-rule">
       <div className="mx-auto max-w-[1360px] px-4 py-12 sm:px-6">
         <div className="flex flex-col gap-10 lg:flex-row lg:justify-between">
           <div className="max-w-sm">
-            <div className="invert dark:invert-0">
+            {/* Dark-ground lockup: retint via tokens — a filter invert would
+                turn the brand red teal. */}
+            <div className="[--brand:#e0343b] [--ink-deep:#ffffff]">
               <Wordmark className="h-8" />
             </div>
             <p className="mt-3 text-sm leading-relaxed text-white/70">
