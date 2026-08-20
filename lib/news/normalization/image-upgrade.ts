@@ -84,11 +84,35 @@ export function upgradeImageUrl(url: string): string | undefined {
 
   // BBC: /ace/standard/<width>/... and /news/<width>/... accept the standard
   // recipe widths (240/480/624/800/976/1024...). Upgrade small renditions.
+  //
+  // The two recipes are NOT interchangeable, and which is cheaper depends
+  // entirely on the source format. Measured 2026-08-21 at width 976, on 10
+  // live assets, comparing bytes AND decoded pixels:
+  //
+  //   .png  ace/standard keeps PNG   140-929 KB  ->  news re-encodes to JPEG
+  //                                                   28-106 KB, -80% to -92%
+  //                                                   on 6 of 6, same pixels
+  //   .jpg  ace/standard already JPEG 39-137 KB  ->  news is LARGER, +14% to
+  //                                                   +19% on 4 of 4
+  //
+  // So the recipe swap is applied to PNG only. A blanket switch would have
+  // been a 15% regression on the JPEGs that are the overwhelming majority of
+  // BBC's feed images — the same trap as forcing our width over The Hill's
+  // own `?w=900`. Photographic PNGs are the whole problem here: a 976px BBC
+  // PNG was the single image that failed the health check on 2026-08-21 at
+  // 683 KB, which is more than the entire rest of /top-100 put together.
   if (parsed.hostname === "ichef.bbci.co.uk") {
+    const isPng = /\.png(?:$|[?#])/i.test(parsed.pathname);
     return url.replace(
-      /\/(ace\/standard|news)\/(\d{2,3})\//,
-      (match, prefix, width) =>
-        Number(width) < TARGET_WIDTH ? `/${prefix}/${TARGET_WIDTH}/` : match,
+      /\/(ace\/standard|news)\/(\d{2,4})\//,
+      (match, prefix: string, width: string) => {
+        const nextPrefix = isPng ? "news" : prefix;
+        // An existing width at or above the target is BBC's own rendition
+        // choice; only fill the gap when they picked a smaller one.
+        const nextWidth = Math.max(Number(width), TARGET_WIDTH);
+        if (nextPrefix === prefix && nextWidth === Number(width)) return match;
+        return `/${nextPrefix}/${nextWidth}/`;
+      },
     );
   }
 

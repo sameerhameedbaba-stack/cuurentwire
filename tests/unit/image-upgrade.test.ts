@@ -25,6 +25,50 @@ describe("upgradeImageUrl", () => {
     expect(upgradeImageUrl(large)).toBe(large);
   });
 
+  // BBC's two recipes are not interchangeable and the cheaper one depends
+  // on the source format. Measured live 2026-08-21 at width 976 on 10
+  // assets, bytes AND decoded pixels, ace/standard -> news:
+  //   PNG  6 of 6 shrink:  447->92, 433->36, 667->81, 371->55, 929->106,
+  //                        140->28 KB  (-80% to -92%, identical pixels;
+  //                        the news recipe re-encodes PNG as JPEG)
+  //   JPEG 4 of 4 GROW:    39->45, 137->157, 72->83, 53->63 KB (+14-19%)
+  it("routes BBC PNGs through the news recipe, which re-encodes them", () => {
+    expect(
+      upgradeImageUrl(
+        "https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/f685/live/690551d0.png",
+      ),
+    ).toBe("https://ichef.bbci.co.uk/news/976/cpsprodpb/f685/live/690551d0.png");
+  });
+
+  it("upgrades width and swaps the recipe together for a small BBC PNG", () => {
+    expect(
+      upgradeImageUrl(
+        "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/318d/live/26da4630.png",
+      ),
+    ).toBe("https://ichef.bbci.co.uk/news/976/cpsprodpb/318d/live/26da4630.png");
+  });
+
+  it("keeps a BBC PNG already wider than the target at its own width", () => {
+    // BBC picked 1024; only the recipe changes. Forcing 976 would fetch a
+    // different rendition than the publisher chose for no byte saving.
+    expect(
+      upgradeImageUrl(
+        "https://ichef.bbci.co.uk/ace/standard/1024/cpsprodpb/abc.png",
+      ),
+    ).toBe("https://ichef.bbci.co.uk/news/1024/cpsprodpb/abc.png");
+  });
+
+  it("leaves BBC JPEGs on ace/standard — the news recipe is 14-19% LARGER", () => {
+    const jpeg =
+      "https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/e405/live/b1ef1300.jpg";
+    expect(upgradeImageUrl(jpeg)).toBe(jpeg);
+  });
+
+  it("does not touch a BBC PNG on an unrecognised path shape", () => {
+    const odd = "https://ichef.bbci.co.uk/images/ic/credit/abc.png";
+    expect(upgradeImageUrl(odd)).toBe(odd);
+  });
+
   it("rewrites CBS 60x60 signed thumbnails to a width-capped original", () => {
     // Live-verified 2026-08-18: swapping the size 404s (the 32-hex segment
     // signs one rendition), but dropping /thumbnail/<size>/<hex>/ serves the
