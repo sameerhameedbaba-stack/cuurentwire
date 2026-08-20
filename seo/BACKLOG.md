@@ -170,6 +170,116 @@ publisher and technical inboxes and no takedown channel. *Prose about a page is
 a claim about that page — check it against the page.*
 
 
+## Shipped 2026-08-21 (daily loop) — verified live after deploy
+
+The daily and weekly loops ran on the same tick again (see
+`MEMORY/2026-08-18-daily-and-weekly-loops-collide.md`) and found the same
+outage independently. Split by file held: the daily loop owned
+`lib/database/archive.ts`, `lib/news/story-resolution.ts`,
+`app/story/[slug]/page.tsx`, `app/archive-sitemap.xml/route.ts`,
+`lib/news/normalization/image-upgrade.ts`, `scripts/url-survival.mjs` and
+`reports/2026-08-21.md`; the weekly run owned the audit, `llms.txt`,
+`cwv-check.mjs` and the Open section above. One conflict, on
+`data/url-ledger.json`, resolved as a union (earliest `firstSeen`, latest
+`lastOk`) rather than by picking a side.
+
+### An archive outage no longer emits permanent "gone" signals — SHIPPED (d060817)
+
+The outage itself is item 1 above and is the owner's to end. What was the
+daily loop's to fix is the **site's response to it**, which was actively
+destructive and was code.
+
+Every archive read caught its own failure and returned empty, so "the query
+blew up" and "no such story" reached the callers as the same value. The
+callers turned them into the two most permanent signals HTTP has:
+
+| Surface | Before | After |
+|---|---|---|
+| `/archive-sitemap.xml` | `200` + empty `<urlset>` — a valid, cacheable claim of **zero** permanent story URLs where 2,793 were advertised the day before | `503` + `Retry-After: 3600` + `no-store` |
+| Published `/story/` URL | **hard 404** on 1,322 of 1,329 | retriable `5xx` |
+| `/story/<junk>` | 404 | **404, unchanged** |
+| Non-story garbage URL | 404 | **404, unchanged** |
+| Live `/story/` URL | 200 | **200, unchanged** |
+
+Reads that decide *whether a URL exists* now throw `ArchiveUnavailableError`
+instead of returning empty. Reads that merely *enrich* a page (first-seen
+dates, update history, earlier coverage) still degrade quietly — a missing
+byline must never take a page down, and that is why live stories were
+unaffected throughout.
+
+Three decisions worth carrying forward:
+
+- **"No `DATABASE_URL`" is deliberately NOT this error.** A deployment that
+  never promised permanence should still 404. That is what makes the status
+  code a *diagnosis*: `503` means the archive is configured and failing,
+  `200`-empty means the env var is missing. It is how item 1 above can point
+  the owner at Neon rather than at Vercel's environment settings, and it was
+  confirmed by the deploy itself flipping the route to 503.
+- **Junk paths still 404 during an outage.** A slug with no well-formed
+  cluster-id token (`c` + 12 hex — verified against all 1,660 ledger URLs,
+  1,660 of 1,660 matching) was never a story URL whatever the database says.
+  Without this, an outage would answer 5xx to every scanner probe.
+- **`getArchiveBrowse` deliberately does NOT throw.** `/archive` is
+  prerendered at build time (`○` in the route table), so throwing there
+  would fail `next build` exactly when the database is down — that is, when
+  the deploy carrying this fix has to succeed. An empty browse page for an
+  hour is a thin page; a build that cannot ship is an outage nobody can end.
+  **A fix that cannot deploy during the failure it fixes is not a fix.**
+
+Verified against the production build locally with an unreachable
+`DATABASE_URL` before pushing (live story 200, published-looking slug 500,
+junk slug 404, garbage URL 404, `/archive` 200, news-sitemap 200), then live
+after deploy. Guards: `tests/unit/archive-outage.test.ts` (12 tests).
+
+One existing test asserted the old behaviour in as many words — "swallows
+query failures and returns null". Its premise was corrected in place with the
+reason recorded next to it, not weakened.
+
+### `url-survival` must not call a 5xx a lost URL — SHIPPED (8278520)
+
+The probe defends "a published URL never 404s". With every rotated-out story
+answering 5xx it reported them as "no longer resolve", which would have kept
+it red for the whole outage and buried any **real** 404 regression under
+1,555 lines of expected noise. Counted separately now: `GONE` (4xx, the
+guarantee is broken) and `UNAVAILABLE` (5xx, the origin is having a bad day).
+Both still exit non-zero; only one means a promise was broken.
+
+Measured against production right after the fix deployed:
+`GONE=0  UNAVAILABLE=1555  ok=350  redirects=15`. The same probe reported
+**1,322 hard 404s** that morning.
+
+### BBC PNGs routed through the `news` recipe — SHIPPED (4e14f29)
+
+The one remaining health-check failure was a single **683 KB** BBC image —
+more than the rest of `/top-100` put together. BBC's two delivery recipes are
+not interchangeable and which is cheaper depends on the source format.
+Measured live at width 976 on 10 assets, bytes **and** decoded pixels:
+
+| Source format | `ace/standard` | `news` | Verdict |
+|---|---|---|---|
+| `.png` (6 of 6) | 140–929 KB, PNG | 28–106 KB, re-encoded JPEG, identical pixels | **-80% to -92%** |
+| `.jpg` (4 of 4) | 39–137 KB | 45–157 KB | **+14% to +19% — worse** |
+
+So the swap is PNG-only. A blanket switch would have been a ~15% regression
+on the JPEGs that are the overwhelming majority of BBC's feed images — the
+same trap as forcing our 976 over The Hill's own `?w=900`. An existing width
+at or above the target is still BBC's rendition choice and is kept; only the
+recipe changes.
+
+Verified live after the next ingest cycle: the same asset went **699,730 →
+58,325 bytes at an unchanged 976x547**, and `publisher image weight` went from
+failing to `15 images, 1026 KB total, median 63 KB, max 144 KB`.
+Guards: 5 new tests in `tests/unit/image-upgrade.test.ts`, including the JPEG
+case asserting we leave it alone.
+
+### Health-check result this run
+
+`node scripts/seo-health.mjs` against production: **4 failures → 1**. The one
+remaining is `archive-sitemap unavailable`, which is item 1 — the outage
+itself, reported with the action that ends it. `story canonical`,
+`story NewsArticle` and `publisher image weight` all cleared.
+
+
 ## Known and accepted — not work, but do not "fix" these
 
 - **The operator identity line on `/about`** is deliberately deferred. It is a
