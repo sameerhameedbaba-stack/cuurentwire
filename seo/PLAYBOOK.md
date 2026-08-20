@@ -16,6 +16,34 @@ learn something. See `BACKLOG.md` for prioritized work and `reports/` for run lo
 - **Automation-first.** The owner does not operate this. Anything recurring must run
   by itself (Vercel cron, GitHub Actions, scheduled tasks) or be dropped.
 
+## North star (owner goal, set 2026-08-21)
+
+The owner's target is the "Amazing / Elite" tier of a month-3 news-site
+benchmark: **50,000+ clicks/month, 1M+ impressions, 5%+ CTR** — typically
+reached via Google News placement or Discover.
+
+Measured baseline the day the goal was set (GSC, last 28 days, real fetch):
+**12 clicks, 1,080 impressions, 1.1% CTR, avg position 21.3.** The site is
+~1 month old. That gap is closed by compounding, not by a single change, so
+runs work toward the *current milestone* and report progress against it with
+real GSC numbers — never claim a tier without data:
+
+1. **M1: 100+ clicks/28d** ← current milestone
+2. M2: 1,000+ clicks/28d
+3. M3: "Good" tier — 3,000+ clicks/28d
+4. M4: "Great" tier — 10,000+ clicks/28d
+5. M5: "Elite" — 50,000+ clicks/28d, 5%+ CTR
+
+Biggest levers, in order of expected impact right now: (1) **uptime** — zero
+archive outages and alert delivery that actually reaches the owner (an outage
+like 2026-08-21's takes 99% of story URLs off the air); (2) indexing
+coverage — get crawled-not-indexed pages indexed (internal-link rail, content
+depth); (3) **Discover eligibility** — CWV "good" (LCP < 2.5s), large images,
+strong headlines; Discover is the only realistic route to Elite-tier volume
+for a young aggregator; (4) thin-page content depth; (5) backlinks via the
+off-page track; (6) publishing volume and time. Speed is a standing owner
+concern: never ship anything that measurably regresses CWV.
+
 ## What this site is (context for every run)
 
 - News aggregator: ranks a Top 100 for US/Canada, publishes summary story pages at
