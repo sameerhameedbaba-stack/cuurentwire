@@ -19,6 +19,7 @@ import {
   describeCoverageReport,
   getCoverageReport,
   loadWeekRows,
+  publicationsEver,
   type WeekRow,
 } from "@/lib/reports/coverage-report";
 
@@ -368,6 +369,64 @@ function fakeDb(result: () => Promise<unknown>) {
 
 const NOW_W34 = new Date("2026-08-22T15:00:00.000Z");
 const NOW_W35 = new Date("2026-08-26T15:00:00.000Z");
+
+describe("publicationsEver — the permanent publication count", () => {
+  it("is the stored active count when nothing else recorded more", () => {
+    expect(publicationsEver(row({ slug: "a", sourceCount: 1 }))).toBe(1);
+    expect(publicationsEver(row({ slug: "b", sourceCount: 3 }))).toBe(3);
+  });
+
+  it("rises to the permanent source union when the active count shrank back to 1", () => {
+    // The W33 pattern measured on 2026-08-22: feeds rotated the story out,
+    // the last archive write stored source_count = 1, but the union kept
+    // every publication that ever covered it.
+    const shrunk = row({
+      slug: "shrunk",
+      sourceCount: 1,
+      sources: [src("Reuters"), src("AP News"), src("CBC News")],
+    });
+    expect(publicationsEver(shrunk)).toBe(3);
+  });
+
+  it("rises to the peak recorded coverage_change when the union is shorter", () => {
+    const peaked = row({
+      slug: "peaked",
+      sourceCount: 1,
+      sources: [src("Reuters")],
+      history: [change(30, 1, 4), change(90, 4, 1)],
+    });
+    expect(publicationsEver(peaked)).toBe(4);
+  });
+
+  it("ignores blank and duplicate publication names in the union", () => {
+    const messy = row({
+      slug: "messy",
+      sourceCount: 1,
+      sources: [src("Reuters"), src(" Reuters "), src("  ")],
+    });
+    expect(publicationsEver(messy)).toBe(1);
+  });
+
+  it("drives concentration, multi-source joins and the most-covered table", () => {
+    const rows = [
+      row({ slug: "solo", sourceCount: 1 }),
+      row({
+        slug: "shrunk",
+        sourceCount: 1,
+        sources: [src("Reuters"), src("AP News")],
+        history: [change(10, 1, 2), change(200, 2, 1)],
+      }),
+    ];
+    const report = aggregateCoverageWeek(rows, null, "2026-W34");
+    expect(report.concentration.multiSourcePct).toBe(50);
+    expect(report.concentration.singleSourcePct).toBe(50);
+    expect(report.mostCovered[0]).toMatchObject({ slug: "shrunk", independentPublications: 2 });
+    expect(report.publishersMultiSourceJoins).toEqual([
+      { name: "AP News", stories: 1 },
+      { name: "Reuters", stories: 1 },
+    ]);
+  });
+});
 
 describe("getCoverageReport / loadWeekRows", () => {
   beforeEach(() => {

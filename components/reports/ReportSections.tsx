@@ -525,10 +525,13 @@ export function MethodologyNote() {
         </p>
         <p>
           <strong>Independent publications</strong> is the number of distinct
-          publications CurrentWire had grouped into a story at its most recent
-          refresh — the same figure every story page shows. It counts only the
-          publications CurrentWire tracks, so it is a floor, not a census of the
-          press.
+          publications CurrentWire has recorded on a story at any point — its
+          permanent coverage record, or the highest count recorded in its update
+          history, whichever is higher. Publisher feeds rotate a story out of
+          their windows within hours, so the count at the most recent refresh is
+          often smaller than the count the story actually reached; the report
+          uses the higher, permanent figure. It counts only the publications
+          CurrentWire tracks, so it is a floor, not a census of the press.
         </p>
         <p>
           <strong>Press releases</strong> are detected, labelled and excluded from

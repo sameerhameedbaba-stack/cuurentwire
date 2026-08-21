@@ -65,10 +65,13 @@ export interface StoryRef {
 export interface MostCoveredEntry extends StoryRef {
   category: string;
   /**
-   * source_count: the number of distinct publications CurrentWire had grouped
-   * into the story at its most recent refresh — the same number every story
-   * page shows. NOT the permanent sources[] union (which can be larger: feeds
-   * rotate a story out while the story is still the same story).
+   * Publications ever recorded on the story (publicationsEver): the stored
+   * active source_count, the distinct names in the permanent sources[] union
+   * or the peak count in its coverage_change history, whichever is highest.
+   * NOT the bare active count: feeds rotate a story out of their windows
+   * within hours, so by the time a story leaves the live dataset its active
+   * count has usually shrunk back to 1 — the 2026-08-22 audit of W33 found
+   * 30 of its 31 multi-publication stories stored with source_count = 1.
    */
   independentPublications: number;
   /** first_seen_at, ISO. */
@@ -175,12 +178,41 @@ function pct(count: number, total: number): number {
 }
 
 /**
- * A story counts as multi-source when its recorded source_count is ≥2 —
- * the same definition as the concentration shares, so "multi-source joins"
- * and "2+ publications" always describe the same set of stories.
+ * Publications ever recorded on a story — the figure every statistic in this
+ * report uses for "independent publications":
+ *
+ *   max(source_count, distinct names in sources[], peak coverage_change count)
+ *
+ * source_count is the ACTIVE count at the last archive write. Publisher feeds
+ * rotate a story out of their windows within hours, so the active list
+ * shrinks back towards 1 while the story is still the same story; the
+ * permanent sources[] union and the coverage_change history keep what the
+ * story actually reached. Measured 2026-08-22 against production
+ * (scripts/audit-archive-unions.mjs): W33 had 1 of 1,005 stories with
+ * source_count >= 2 but 31 with >= 2 publications in the union — the bare
+ * active count under-reported multi-publication coverage ~30×; W34-to-date
+ * 46 vs 119 (1.5% vs 3.9%). Rows archived before the union shipped
+ * (2026-08-15) carry only their last active list, so for them this is still
+ * a floor.
+ */
+export function publicationsEver(row: WeekRow): number {
+  let peak = Math.max(0, row.sourceCount);
+  const union = publisherNames(row).length;
+  if (union > peak) peak = union;
+  for (const event of coverageChanges(row.history)) {
+    if (event.to > peak) peak = event.to;
+    if (event.from > peak) peak = event.from;
+  }
+  return peak;
+}
+
+/**
+ * A story counts as multi-source when publicationsEver is ≥2 — the same
+ * definition as the concentration shares, so "multi-source joins" and
+ * "2+ publications" always describe the same set of stories.
  */
 function isMultiSource(row: WeekRow): boolean {
-  return row.sourceCount >= 2;
+  return publicationsEver(row) >= 2;
 }
 
 /**
@@ -280,7 +312,7 @@ function toMostCoveredEntry(row: WeekRow): MostCoveredEntry {
     slug: row.slug,
     title: row.title,
     category: row.category,
-    independentPublications: row.sourceCount,
+    independentPublications: publicationsEver(row),
     firstSeen: row.firstSeenAt,
     coverageGrowth:
       changes.length > 0
@@ -291,10 +323,10 @@ function toMostCoveredEntry(row: WeekRow): MostCoveredEntry {
   };
 }
 
-/** source_count desc, then ranking score desc, then earliest first seen, then slug. */
+/** publicationsEver desc, then ranking score desc, then earliest first seen, then slug. */
 function compareMostCovered(a: WeekRow, b: WeekRow): number {
   return (
-    b.sourceCount - a.sourceCount ||
+    publicationsEver(b) - publicationsEver(a) ||
     (b.rankingScore ?? 0) - (a.rankingScore ?? 0) ||
     a.firstSeenAt.localeCompare(b.firstSeenAt) ||
     a.slug.localeCompare(b.slug)
@@ -364,7 +396,7 @@ function median(sorted: number[]): number {
 
 function concentrationOf(rows: WeekRow[]): Concentration {
   const total = rows.length;
-  const counts = rows.map((row) => row.sourceCount).sort((a, b) => a - b);
+  const counts = rows.map(publicationsEver).sort((a, b) => a - b);
   const count = (predicate: (n: number) => boolean) => counts.filter(predicate).length;
   const sum = counts.reduce((acc, n) => acc + n, 0);
   return {
