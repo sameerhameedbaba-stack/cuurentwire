@@ -100,7 +100,7 @@ async function fetchFeed(
   });
   if (!response.ok) throw new Error(`Feed ${parsed.hostname} responded ${response.status}`);
 
-  const xml = await response.text();
+  const xml = await readFeedBody(response, feed.timeoutMs ?? DEFAULT_FEED_TIMEOUT_MS);
   const channelTitle =
     firstTag(xml.split(/<item[\s>]/i)[0] ?? "", "title") ?? parsed.hostname;
 
@@ -132,6 +132,48 @@ async function fetchFeed(
     }),
     skipped,
   };
+}
+
+/**
+ * Read the feed body as a stream and stop at the document's closing tag.
+ * Some publishers (CBC, measured 2026-08-21 from both Vercel and local)
+ * send the complete feed and then never close the connection, so
+ * `response.text()` waits for an end that never comes and the feed times
+ * out on every run. Stopping at `</rss>` / `</feed>` / `</rdf:RDF>` is
+ * correct for every well-formed feed and rescues those. If the deadline
+ * hits first, whatever arrived is returned — the item parser skips a
+ * truncated trailing item and keeps the complete ones.
+ */
+async function readFeedBody(response: Response, budgetMs: number): Promise<string> {
+  if (!response.body) return response.text();
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  const deadline = Date.now() + budgetMs;
+  let text = "";
+  try {
+    for (;;) {
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) break;
+      const chunk = await Promise.race([
+        reader.read(),
+        new Promise<{ done: true; value: undefined }>((resolve) =>
+          setTimeout(() => resolve({ done: true, value: undefined }), remaining),
+        ),
+      ]);
+      if (chunk.done) break;
+      text += decoder.decode(chunk.value, { stream: true });
+      if (/<\/(?:rss|feed|rdf:RDF)>\s*$/i.test(text.slice(-64))) break;
+    }
+  } catch {
+    // Aborted mid-body: keep what we have.
+  } finally {
+    try {
+      await reader.cancel();
+    } catch {
+      // The stream may already be closed/errored.
+    }
+  }
+  return text + decoder.decode();
 }
 
 interface ParsedItem {
