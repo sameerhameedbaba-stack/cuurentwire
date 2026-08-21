@@ -5,10 +5,20 @@ name: GSC template report
 # scripts/gsc-report.mjs groups 28 days of Search Analytics by page template
 # (story, top-10, briefing, topic, source, sections, hubs, ...) for the web,
 # news and discover surfaces, and computes early-discovery and
-# single-vs-multi-source KPIs by joining story URLs with the news sitemap
-# and /api/stats/coverage. Results land in data/gsc-report.json (latest),
-# data/gsc-history.json (60 runs) and data/gsc-story-dates.json (the
-# publication-date ledger the early-discovery KPI needs).
+# single-vs-multi-source KPIs by joining story URLs with the news sitemap,
+# /api/stats/coverage (live publication counts) and
+# /api/stats/archive-sources (publications ever recorded for stories the
+# live window no longer holds; 1 / 2 / 3 / 4+ plus cumulative 2+ / 3+
+# buckets). Every template and bucket carries a minimum-sample flag (100
+# impressions); rows below it print as "early" and are not comparable.
+# Results land in data/gsc-report.json (latest), data/gsc-history.json (60
+# runs), data/gsc-story-dates.json (the publication-date ledger the
+# early-discovery KPI needs) and data/gsc-url-signals.json (cluster id →
+# [impressions, clicks] over web + news for every story with >= 1
+# impression). The `git add data/gsc-*.json` glob below already covers the
+# signals file. NOTE: the app imports data/gsc-url-signals.json statically,
+# so the weekly gsc-bot commit of it triggers a Vercel deploy — that is
+# intended (it is how fresh search signals reach production).
 #
 # Needs ONE owner step: the GSC_SERVICE_ACCOUNT_JSON repository secret (a
 # Google service-account key added as a restricted user of the Search

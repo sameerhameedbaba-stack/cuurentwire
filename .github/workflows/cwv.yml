@@ -13,10 +13,12 @@ name: Core Web Vitals check
 # real traffic volume the site does not have yet, which is why the keyless
 # path is the default rather than a fallback.
 #
-# The same weekly run also audits Discover image eligibility
-# (scripts/image-eligibility.mjs): og:image width, pixel count and aspect
-# ratio sampled from the newest news-sitemap stories. Both results are
-# committed to data/ as dated history.
+# The same weekly run also audits Discover images
+# (scripts/image-eligibility.mjs) on the newest news-sitemap stories: width,
+# pixel count and aspect ratio of both the og:image (OG image technical
+# eligibility — the generated 1200x630 card) and the story hero image (the
+# publisher image actually rendered on the page, or placeholder/none). Both
+# results are committed to data/ as dated history.
 
 on:
   schedule:

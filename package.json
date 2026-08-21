@@ -26,7 +26,8 @@
     "shadow:cluster": "vitest run tests/shadow/shadow-cluster.test.ts",
     "feeds:probe": "node scripts/probe-feeds.mjs",
     "images:audit": "node scripts/image-eligibility.mjs",
-    "gsc:report": "node scripts/gsc-report.mjs"
+    "gsc:report": "node scripts/gsc-report.mjs",
+    "archive:audit": "node scripts/audit-archive-unions.mjs"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",

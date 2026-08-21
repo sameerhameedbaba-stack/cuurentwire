@@ -14,6 +14,11 @@ import {
   type ArchiveSitemapEntry,
 } from "@/lib/seo/archive-sitemap";
 import {
+  gscProtectedStoryIds,
+  gscSignalsAvailable,
+  gscSignalsVersion,
+} from "@/lib/seo/gsc-signals";
+import {
   archiveSitemapIndexableSql,
   THIN_STORY_NOINDEX_ENABLED,
 } from "@/lib/seo/story-indexing";
@@ -22,10 +27,10 @@ import { logger } from "@/lib/utils/logger";
 export const dynamic = "force-dynamic";
 
 /**
- * One hour, not the archive's 6h row TTL: a story crosses the 72h freshness
- * boundary every refresh, and this TTL (plus the 1h CDN max-age below) is
- * the longest a URL that now answers noindex can stay advertised here. One
- * query per hour is nothing against Neon's transfer quota.
+ * One hour, not the archive's 6h row TTL: stories cross the 336h evaluation
+ * window boundary every refresh, and this TTL (plus the 1h CDN max-age
+ * below) is the longest a URL that now answers noindex can stay advertised
+ * here. One query per hour is nothing against Neon's transfer quota.
  */
 const INDEXABLE_SITEMAP_TTL_S = 3_600;
 
@@ -63,9 +68,16 @@ function cachedRead<Args extends unknown[], Result>(
  * approximation documented next to storyIndexDecision in
  * lib/seo/story-indexing.ts):
  *
- *   first_seen_at > now() - interval '72 hours'
+ *   first_seen_at > now() - interval '336 hours'
  *   OR source_count >= 2
+ *   OR jsonb_array_length(sources) >= 2
  *   OR jsonb_array_length(history) > 0
+ *   OR cluster_id = any(<Search Console protected ids>)
+ *
+ * `signalsVersion` is the committed Search Console report's generatedAt
+ * (gscSignalsVersion()): it is an argument only so the Data Cache key
+ * changes when a new weekly report deploys — the protected ids themselves
+ * are read inside, never passed (thousands of ids make a poor cache key).
  *
  * Same outage contract as listArchivedStoriesForSitemap: no DB configured
  * is an empty list (that deployment has no archive); a FAILED query — or a
@@ -77,6 +89,7 @@ const listIndexableArchivedStories = cachedRead(
   "archive-sitemap-indexable",
   INDEXABLE_SITEMAP_TTL_S,
   async function listIndexableArchivedStoriesUncached(
+    signalsVersion: string,
     limit: number = ARCHIVE_SITEMAP_MAX_ENTRIES,
   ): Promise<ArchiveSitemapEntry[]> {
     const db = getDb();
@@ -91,7 +104,12 @@ const listIndexableArchivedStories = cachedRead(
           lastModifiedAt: storyArchive.lastModifiedAt,
         })
         .from(storyArchive)
-        .where(and(isNull(storyArchive.mergedIntoClusterId), archiveSitemapIndexableSql()))
+        .where(
+          and(
+            isNull(storyArchive.mergedIntoClusterId),
+            archiveSitemapIndexableSql(gscProtectedStoryIds()),
+          ),
+        )
         .orderBy(desc(storyArchive.firstSeenAt))
         .limit(limit);
       return rows.map((row) => ({
@@ -104,6 +122,7 @@ const listIndexableArchivedStories = cachedRead(
     } catch (error) {
       logger.error("database.archive_sitemap_query_failed", {
         error: describeDbError(error),
+        signalsVersion,
       });
       throw new ArchiveUnavailableError("archive sitemap query", error);
     }
@@ -111,12 +130,15 @@ const listIndexableArchivedStories = cachedRead(
 );
 
 /**
- * THIN_STORY_NOINDEX=off restores the pre-policy listing: every non-merged
- * archived story, exactly as the story pages then answer indexable.
+ * The filtered listing only applies when the policy can actually noindex a
+ * page: the switch is on AND a fresh Search Console report exists. With the
+ * switch off (THIN_STORY_NOINDEX=off) or without a fresh report every story
+ * page answers indexable (the policy never noindexes without Google data),
+ * so the sitemap lists every non-merged archived story to match.
  */
 function listSitemapEntries(): Promise<ArchiveSitemapEntry[]> {
-  return THIN_STORY_NOINDEX_ENABLED
-    ? listIndexableArchivedStories()
+  return THIN_STORY_NOINDEX_ENABLED && gscSignalsAvailable()
+    ? listIndexableArchivedStories(gscSignalsVersion())
     : listArchivedStoriesForSitemap();
 }
 

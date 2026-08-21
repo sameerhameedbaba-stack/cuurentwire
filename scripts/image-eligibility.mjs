@@ -1,22 +1,40 @@
 #!/usr/bin/env node
 /**
- * Discover image-eligibility audit (weekly — runs after the CWV check in
+ * Discover image audit (weekly — runs after the CWV check in
  * .github/workflows/cwv.yml, also `npm run images:audit`).
  *
  * Google Discover favours pages whose main image is large — at least 1200 px
  * wide — and wide-landscape cards get the big preview. This script samples
- * the newest story URLs advertised in the news sitemap, reads each page's
- * og:image, fetches only the first 64 KB of that image and decodes its
- * dimensions straight from the container header (JPEG SOFn, PNG IHDR, WebP
- * VP8/VP8L/VP8X, GIF), then reports what share of stories qualify.
+ * the newest story URLs advertised in the news sitemap and measures TWO
+ * images per page, because they are not the same thing:
  *
- * Per URL it records: hasImage (og:image present on a 2xx page), width1200
- * (width >= 1200), pixels300k (width x height > 300,000), wide16x9 (aspect
- * within the wide-landscape band) and broken (page or image fetch failed,
- * non-2xx, or undecodable image bytes).
+ *   og     OG image technical eligibility — the page's og:image. On this site
+ *          that is the generated 1200x630 opengraph-image card, so this
+ *          number says whether the share card clears Google's size bar, NOT
+ *          whether the story has a real photograph. It is the metric this
+ *          script reported alone before 2026-08-22, so history continues it.
+ *   hero   Story hero image — the image actually rendered at the top of the
+ *          story page: the <img fetchpriority="high"> that StoryImage emits
+ *          for `cluster.imageUrl`. kind tells what was there:
+ *            publisher   remote publisher URL — fetched and measured
+ *            placeholder local src (starts with "/") — placeholder art, not
+ *                        fetched; counts as not-eligible in every flag
+ *            none        no fetchpriority=high <img> at all — the category
+ *                        placeholder branch renders art without an <img>
+ *            unknown     page failed, or the src was not a URL we handle
+ *          A /_next/image?url=... src is unwrapped to the URL it optimises.
+ *
+ * For each image only the first 64 KB is fetched and the dimensions are read
+ * straight from the container header (JPEG SOFn, PNG IHDR, WebP
+ * VP8/VP8L/VP8X, GIF). Flags per image: width1200 (width >= 1200),
+ * pixels300k (width x height > 300,000), wide16x9 (aspect within the
+ * wide-landscape band) and broken (page or image fetch failed, non-2xx, or
+ * undecodable image bytes). Hero percentages are over ALL sampled rows, so a
+ * placeholder or missing hero counts as not-width1200; the one exception,
+ * pctWidth1200OfPublisher, is among publisher images only.
  *
  * Output:
- *   - a per-URL table and one summary line on stdout
+ *   - a per-URL table and one SUMMARY line on stdout
  *   - data/image-eligibility.json          latest run, with per-URL rows
  *   - data/image-eligibility-history.json  one summary row per run, capped
  *
@@ -37,7 +55,7 @@ const arg = (flag, fallback) => {
 };
 const BASE = arg("--base", "https://currentwire.us").replace(/\/$/, "");
 const SAMPLE_SIZE = Number.parseInt(arg("--sample", "120"), 10) || 120;
-/** 8 parallel fetches: fast enough for 120 pages, gentle on the origin. */
+/** 8 parallel pages (each fetching up to two images): gentle on the origin. */
 const CONCURRENCY = 8;
 const TIMEOUT_MS = 15_000;
 /** Enough header for every PNG/GIF/WebP and for all but metadata-heavy JPEGs. */
@@ -121,6 +139,59 @@ export function extractOgImage(html, pageUrl) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Classify one hero src. `depth` stops a /_next/image that wraps another
+ * /_next/image from recursing forever.
+ */
+function classifyHeroSrc(src, pageUrl, depth = 0) {
+  if (!src) return { src: null, kind: "unknown" };
+
+  // The optimizer URL is not the image — unwrap the `url` it optimises. Both
+  // the relative "/_next/image?url=..." and an absolute same-origin form.
+  let resolved;
+  try {
+    resolved = new URL(src, pageUrl);
+  } catch {
+    return { src, kind: "unknown" };
+  }
+  if (resolved.pathname === "/_next/image") {
+    const inner = resolved.searchParams.get("url");
+    if (!inner || depth > 2) return { src, kind: "unknown" };
+    return classifyHeroSrc(inner, pageUrl, depth + 1);
+  }
+
+  // Local src: StoryImage's plain <img> branch for placeholder art. Kept as
+  // the path it was written as; never fetched.
+  if (src.startsWith("/") && !src.startsWith("//")) {
+    return { src, kind: "placeholder" };
+  }
+  if (resolved.protocol === "http:" || resolved.protocol === "https:") {
+    return { src: resolved.toString(), kind: "publisher" };
+  }
+  return { src, kind: "unknown" }; // data: URIs and the like
+}
+
+/**
+ * The story hero: the first <img> carrying fetchpriority="high" (React
+ * serialises the prop as `fetchPriority`, so the match is case-insensitive).
+ * Returns { src, kind } with kind one of "publisher" | "placeholder" |
+ * "none" | "unknown" — see the header comment.
+ */
+export function extractHeroImage(html, pageUrl) {
+  for (const tag of html.matchAll(/<img\b[^>]*>/gi)) {
+    if (!/\bfetchpriority\s*=\s*["']?high["']?/i.test(tag[0])) continue;
+    // `(?<![\w-])` keeps srcset= and data-src= out.
+    const srcMatch = tag[0].match(
+      /(?<![\w-])src\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i,
+    );
+    const raw = decodeEntities(
+      srcMatch?.[1] ?? srcMatch?.[2] ?? srcMatch?.[3] ?? "",
+    ).trim();
+    return classifyHeroSrc(raw, pageUrl);
+  }
+  return { src: null, kind: "none" };
 }
 
 // ---------------------------------------------------------------------------
@@ -249,10 +320,10 @@ function fetchWithTimeout(url, init = {}) {
 
 /**
  * Fetch enough of an image to read its header. A Range request keeps the
- * weekly run cheap (120 images x 64 KB instead of full files). Servers that
- * ignore Range answer 200 with the whole body, which is used as is; a 416
- * (range not satisfiable — typically a file smaller than the range) retries
- * without the header. `full` forces a plain GET.
+ * weekly run cheap (up to 240 images x 64 KB instead of full files).
+ * Servers that ignore Range answer 200 with the whole body, which is used as
+ * is; a 416 (range not satisfiable — typically a file smaller than the
+ * range) retries without the header. `full` forces a plain GET.
  */
 async function fetchImageBytes(url, { full = false } = {}) {
   let res = await fetchWithTimeout(
@@ -266,18 +337,15 @@ async function fetchImageBytes(url, { full = false } = {}) {
   return { status: res.status, contentType, bytes, partial: res.status === 206 };
 }
 
-function emptyRow(url) {
+/** The measurement fields shared by the og and hero sub-objects. */
+function emptyMeasurement() {
   return {
-    url,
-    pageStatus: null,
-    imageUrl: null,
-    imageStatus: null,
+    status: null,
     contentType: null,
     format: null,
     width: null,
     height: null,
     aspect: null,
-    hasImage: false,
     width1200: false,
     pixels300k: false,
     wide16x9: false,
@@ -286,7 +354,53 @@ function emptyRow(url) {
   };
 }
 
-/** One story: page -> og:image -> image header -> flags. Never throws. */
+function emptyRow(url) {
+  return {
+    url,
+    pageStatus: null,
+    og: { src: null, hasImage: false, ...emptyMeasurement() },
+    hero: { src: null, kind: "unknown", ...emptyMeasurement() },
+  };
+}
+
+/**
+ * Fetch one image's header and fill `target` (an og or hero sub-object) with
+ * status, dimensions and flags. Never throws.
+ */
+async function measureImage(target, imageUrl) {
+  try {
+    let image = await fetchImageBytes(imageUrl);
+    target.status = image.status;
+    target.contentType = image.contentType;
+    if (!image.bytes) {
+      target.broken = true;
+      target.note = `image HTTP ${image.status}`;
+      return;
+    }
+    let dims = imageDimensions(image.bytes);
+    if (!dims && image.partial) {
+      // A JPEG with a large embedded ICC profile or EXIF thumbnail can push
+      // its SOF marker past the first 64 KB. One full GET settles it.
+      image = await fetchImageBytes(imageUrl, { full: true });
+      target.status = image.status;
+      dims = image.bytes ? imageDimensions(image.bytes) : null;
+    }
+    if (!dims) {
+      target.broken = true;
+      target.note = `undecodable image bytes (content-type ${image.contentType ?? "unknown"})`;
+      return;
+    }
+    target.format = dims.format;
+    target.width = dims.width;
+    target.height = dims.height;
+    Object.assign(target, classifyDimensions(dims.width, dims.height));
+  } catch (error) {
+    target.broken = true;
+    target.note = `image fetch failed: ${message(error)}`;
+  }
+}
+
+/** One story: page -> og:image + hero <img> -> image headers -> flags. Never throws. */
 async function auditStory(url) {
   const row = emptyRow(url);
 
@@ -295,55 +409,46 @@ async function auditStory(url) {
     const res = await fetchWithTimeout(url);
     row.pageStatus = res.status;
     if (!res.ok) {
-      row.broken = true;
-      row.note = `page HTTP ${res.status}`;
+      row.og.broken = row.hero.broken = true;
+      row.og.note = row.hero.note = `page HTTP ${res.status}`;
       return row;
     }
     html = await res.text();
   } catch (error) {
-    row.broken = true;
-    row.note = `page fetch failed: ${message(error)}`;
+    row.og.broken = row.hero.broken = true;
+    row.og.note = row.hero.note = `page fetch failed: ${message(error)}`;
     return row;
   }
 
-  const imageUrl = extractOgImage(html, url);
-  if (!imageUrl) {
-    row.note = "no og:image";
-    return row;
-  }
-  row.imageUrl = imageUrl;
-  row.hasImage = true;
+  const work = [];
 
-  try {
-    let image = await fetchImageBytes(imageUrl);
-    row.imageStatus = image.status;
-    row.contentType = image.contentType;
-    if (!image.bytes) {
-      row.broken = true;
-      row.note = `image HTTP ${image.status}`;
-      return row;
-    }
-    let dims = imageDimensions(image.bytes);
-    if (!dims && image.partial) {
-      // A JPEG with a large embedded ICC profile or EXIF thumbnail can push
-      // its SOF marker past the first 64 KB. One full GET settles it.
-      image = await fetchImageBytes(imageUrl, { full: true });
-      row.imageStatus = image.status;
-      dims = image.bytes ? imageDimensions(image.bytes) : null;
-    }
-    if (!dims) {
-      row.broken = true;
-      row.note = `undecodable image bytes (content-type ${image.contentType ?? "unknown"})`;
-      return row;
-    }
-    row.format = dims.format;
-    row.width = dims.width;
-    row.height = dims.height;
-    Object.assign(row, classifyDimensions(dims.width, dims.height));
-  } catch (error) {
-    row.broken = true;
-    row.note = `image fetch failed: ${message(error)}`;
+  const ogUrl = extractOgImage(html, url);
+  if (ogUrl) {
+    row.og.src = ogUrl;
+    row.og.hasImage = true;
+    work.push(measureImage(row.og, ogUrl));
+  } else {
+    row.og.note = "no og:image";
   }
+
+  const hero = extractHeroImage(html, url);
+  row.hero.src = hero.src;
+  row.hero.kind = hero.kind;
+  switch (hero.kind) {
+    case "publisher":
+      work.push(measureImage(row.hero, hero.src));
+      break;
+    case "placeholder":
+      row.hero.note = "local placeholder art (not fetched)";
+      break;
+    case "none":
+      row.hero.note = "no hero <img>: category placeholder art, no publisher image";
+      break;
+    default:
+      row.hero.note = `hero <img> src not recognised (${hero.src ?? "missing"})`;
+  }
+
+  await Promise.all(work);
   return row;
 }
 
@@ -367,56 +472,117 @@ async function mapConcurrent(items, limit, fn) {
 // Reporting
 // ---------------------------------------------------------------------------
 
-/** Percentages over every sampled row; median width over decoded rows only. */
-export function summarize(rows) {
-  const n = rows.length;
-  const pct = (count) => (n === 0 ? 0 : Math.round((count / n) * 1000) / 10);
-  const widths = rows
-    .map((r) => r.width)
+function medianWidth(images) {
+  const widths = images
+    .map((img) => img.width)
     .filter((w) => typeof w === "number")
     .sort((a, b) => a - b);
-  let medianWidth = null;
-  if (widths.length > 0) {
-    const mid = Math.floor(widths.length / 2);
-    medianWidth =
-      widths.length % 2 === 1
-        ? widths[mid]
-        : Math.round((widths[mid - 1] + widths[mid]) / 2);
-  }
+  if (widths.length === 0) return null;
+  const mid = Math.floor(widths.length / 2);
+  return widths.length % 2 === 1
+    ? widths[mid]
+    : Math.round((widths[mid - 1] + widths[mid]) / 2);
+}
+
+/**
+ * { sampled, og, hero }. Every percentage is over ALL sampled rows — a hero
+ * that is placeholder art or missing counts as not-width1200 — except
+ * hero.pctWidth1200OfPublisher, which is among publisher hero images only
+ * (null when the sample has none). Median widths are over decoded images.
+ */
+export function summarize(rows) {
+  const n = rows.length;
+  const ratio = (count, total) =>
+    total === 0 ? 0 : Math.round((count / total) * 1000) / 10;
+  const pct = (count) => ratio(count, n);
+  const ogs = rows.map((r) => r.og ?? {});
+  const heroes = rows.map((r) => r.hero ?? {});
+  const publisher = heroes.filter((h) => h.kind === "publisher");
   return {
     sampled: n,
-    pctWithImage: pct(rows.filter((r) => r.hasImage).length),
-    pctWidth1200: pct(rows.filter((r) => r.width1200).length),
-    pctPixels300k: pct(rows.filter((r) => r.pixels300k).length),
-    pctWide16x9: pct(rows.filter((r) => r.wide16x9).length),
-    pctBroken: pct(rows.filter((r) => r.broken).length),
-    medianWidth,
+    og: {
+      pctWithImage: pct(ogs.filter((o) => o.hasImage).length),
+      pctWidth1200: pct(ogs.filter((o) => o.width1200).length),
+      pctPixels300k: pct(ogs.filter((o) => o.pixels300k).length),
+      pctWide16x9: pct(ogs.filter((o) => o.wide16x9).length),
+      pctBroken: pct(ogs.filter((o) => o.broken).length),
+      medianWidth: medianWidth(ogs),
+    },
+    hero: {
+      pctPublisherImage: pct(publisher.length),
+      pctPlaceholder: pct(heroes.filter((h) => h.kind === "placeholder").length),
+      pctNone: pct(heroes.filter((h) => h.kind === "none").length),
+      pctWidth1200: pct(heroes.filter((h) => h.width1200).length),
+      pctPixels300k: pct(heroes.filter((h) => h.pixels300k).length),
+      pctWide16x9: pct(heroes.filter((h) => h.wide16x9).length),
+      pctBroken: pct(heroes.filter((h) => h.broken).length),
+      medianWidth: medianWidth(heroes),
+      pctWidth1200OfPublisher:
+        publisher.length === 0
+          ? null
+          : ratio(publisher.filter((h) => h.width1200).length, publisher.length),
+    },
   };
 }
 
+/**
+ * History rows written before 2026-08-22 were flat and measured only the
+ * og:image. Lift them into the current { og, hero } shape so the file stays
+ * uniform; hero is null there because that run never measured it.
+ */
+export function upgradeHistoryRow(row) {
+  if (!row || typeof row !== "object" || row.og) return row;
+  const {
+    date,
+    sampled,
+    pctWithImage,
+    pctWidth1200,
+    pctPixels300k,
+    pctWide16x9,
+    pctBroken,
+    medianWidth,
+  } = row;
+  if (typeof pctWithImage !== "number") return row;
+  return {
+    date,
+    sampled,
+    og: { pctWithImage, pctWidth1200, pctPixels300k, pctWide16x9, pctBroken, medianWidth },
+    hero: null,
+  };
+}
+
+const KIND_LETTER = { publisher: "p", placeholder: "l", none: "n", unknown: "?" };
+
 function printTable(rows) {
-  const flags = (r) =>
-    (r.hasImage ? "I" : "-") +
-    (r.width1200 ? "W" : "-") +
-    (r.pixels300k ? "P" : "-") +
-    (r.wide16x9 ? "A" : "-") +
-    (r.broken ? "X" : "-");
+  const measureFlags = (img) =>
+    (img.width1200 ? "W" : "-") +
+    (img.pixels300k ? "P" : "-") +
+    (img.wide16x9 ? "A" : "-") +
+    (img.broken ? "X" : "-");
+  const size = (img) => (img.width ? `${img.width}x${img.height}` : "-");
   console.log(
-    "flags: I=has og:image  W=width>=1200  P=pixels>300k  A=aspect " +
+    "og flags:   I=has og:image  W=width>=1200  P=pixels>300k  A=aspect " +
       `${THRESHOLDS.aspectMin}-${THRESHOLDS.aspectMax}  X=broken`,
   );
   console.log(
-    `${"#".padStart(3)}  ${"page".padEnd(4)}  ${"img".padEnd(4)}  ${"fmt".padEnd(4)}  ` +
-      `${"size".padEnd(10)}  flags  path`,
+    "hero flags: kind (p=publisher image  l=local placeholder  n=no hero <img>  ?=unknown) then W P A X as above",
+  );
+  console.log(
+    `${"#".padStart(3)}  ${"page".padEnd(4)}  ${"og".padEnd(4)}  ${"og-size".padEnd(10)}  og     ` +
+      `${"hero".padEnd(4)}  ${"hero-size".padEnd(10)}  hero   path`,
   );
   rows.forEach((r, i) => {
-    const size = r.width ? `${r.width}x${r.height}` : "-";
     const path = r.url.replace(/^https?:\/\/[^/]+/, "");
-    const note = r.note ? `  (${r.note})` : "";
+    const notes = [r.og.note && `og: ${r.og.note}`, r.hero.note && `hero: ${r.hero.note}`]
+      .filter(Boolean)
+      .join("; ");
     console.log(
       `${String(i + 1).padStart(3)}  ${String(r.pageStatus ?? "ERR").padEnd(4)}  ` +
-        `${String(r.imageStatus ?? "-").padEnd(4)}  ${(r.format ?? "-").padEnd(4)}  ` +
-        `${size.padEnd(10)}  ${flags(r)}  ${path}${note}`,
+        `${String(r.og.status ?? "-").padEnd(4)}  ${size(r.og).padEnd(10)}  ` +
+        `${r.og.hasImage ? "I" : "-"}${measureFlags(r.og)}  ` +
+        `${String(r.hero.status ?? "-").padEnd(4)}  ${size(r.hero).padEnd(10)}  ` +
+        `${KIND_LETTER[r.hero.kind] ?? "?"}${measureFlags(r.hero)}  ${path}` +
+        (notes ? `  (${notes})` : ""),
     );
   });
 }
@@ -467,16 +633,24 @@ async function main() {
     auditStory(entry.url),
   );
   const summary = summarize(rows);
+  const { og, hero } = summary;
+  const wide = `wide(${THRESHOLDS.aspectMin}-${THRESHOLDS.aspectMax})`;
 
   printTable(rows);
   console.log(
-    `[image-eligibility] SUMMARY ${date} sampled=${summary.sampled} ` +
-      `withImage=${summary.pctWithImage}% width>=1200=${summary.pctWidth1200}% ` +
-      `pixels>300k=${summary.pctPixels300k}% wide(${THRESHOLDS.aspectMin}-${THRESHOLDS.aspectMax})=${summary.pctWide16x9}% ` +
-      `broken=${summary.pctBroken}% medianWidth=${summary.medianWidth ?? "-"}`,
+    `[image-eligibility] SUMMARY ${date} sampled=${summary.sampled} | ` +
+      "OG image technical eligibility (generated 1200x630 card): " +
+      `withImage=${og.pctWithImage}% width>=1200=${og.pctWidth1200}% ` +
+      `pixels>300k=${og.pctPixels300k}% ${wide}=${og.pctWide16x9}% ` +
+      `broken=${og.pctBroken}% medianWidth=${og.medianWidth ?? "-"} | ` +
+      "story hero image (publisher image rendered on the page): " +
+      `publisher=${hero.pctPublisherImage}% placeholder=${hero.pctPlaceholder}% none=${hero.pctNone}% ` +
+      `width>=1200=${hero.pctWidth1200}% (of publisher images ${hero.pctWidth1200OfPublisher ?? "-"}%) ` +
+      `pixels>300k=${hero.pctPixels300k}% ${wide}=${hero.pctWide16x9}% ` +
+      `broken=${hero.pctBroken}% medianWidth=${hero.medianWidth ?? "-"}`,
   );
 
-  let history = readJsonArray(HISTORY_PATH);
+  let history = readJsonArray(HISTORY_PATH).map(upgradeHistoryRow);
   history.push({ date, ...summary });
   if (history.length > HISTORY_CAP) history = history.slice(-HISTORY_CAP);
   writeJson(HISTORY_PATH, history);

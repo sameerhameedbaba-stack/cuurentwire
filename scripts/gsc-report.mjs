@@ -20,13 +20,36 @@
  *   (the sitemap only lists the last 48 h and GSC lags 2–3 days, so a
  *   run-time sitemap alone would never overlap with the data);
  * - single-source vs multi-source: story URLs joined on their cluster id
- *   with /api/stats/coverage (live publication counts) and the ledger above,
- *   reported as impressions/clicks per URL for 1 / 2 / 3+ publications.
+ *   and bucketed by the publications ever recorded for the story (live
+ *   count, or the archive's stored count / permanent source union / peak
+ *   recorded coverage, whichever is highest), reported as impressions /
+ *   clicks / CTR / average position per bucket for exactly 1 / 2 / 3 / 4+
+ *   publications plus the cumulative 2+ / 3+ rows (they overlap the exact
+ *   rows on purpose) and "unknown". Live counts come from
+ *   /api/stats/coverage; every story id the live window no longer holds is
+ *   looked up in /api/stats/archive-sources?ids=… (200 ids per request,
+ *   aggregate counts only — a failing archive endpoint is a warning, not a
+ *   failure, and the story-date ledger's remembered live count still counts).
+ *   Before the archive join the live window covered a day or two of
+ *   stories, so almost every URL with 28-day impressions fell into
+ *   "unknown".
+ *
+ * Minimum-sample rule: every template and publication-count bucket carries
+ * `sufficientSample` (impressions >= MIN_SAMPLE_IMPRESSIONS, 100). Rows
+ * below it print as "early" and must not be read as one template
+ * outperforming another; minSampleImpressions is recorded in the report.
  *
  * Writes data/gsc-report.json (latest, full), appends a dated summary to
- * data/gsc-history.json (capped at 60 entries) and prints a markdown table.
+ * data/gsc-history.json (capped at 60 entries), refreshes the story-date
+ * ledger data/gsc-story-dates.json, writes data/gsc-url-signals.json (cluster
+ * id → [impressions, clicks] over web + news for every story with ≥1
+ * impression, highest first, capped at 20000 — the app imports this file
+ * statically, so the weekly commit of it triggers a Vercel deploy on purpose;
+ * it is left untouched when the web surface query fails so a GSC outage
+ * cannot blank the signals) and prints a markdown table.
  * Run weekly by .github/workflows/gsc.yml. No npm dependencies: fetch plus a
- * minimal RS256 JWT signer from node:crypto for the service account.
+ * minimal RS256 JWT signer from node:crypto for the service account. The
+ * pure helpers live in scripts/gsc-report-lib.mjs (unit-tested).
  *
  * Without GSC_SERVICE_ACCOUNT_JSON the script prints
  * "skipped: GSC_SERVICE_ACCOUNT_JSON not set" and exits 0, so the workflow
@@ -56,6 +79,35 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  ARCHIVE_IDS_PER_REQUEST,
+  EARLY_WINDOW_DAYS,
+  MIN_SAMPLE_IMPRESSIONS,
+  SIGNALS_CAP,
+  SIGNALS_MIN_IMPRESSIONS,
+  SIGNALS_SURFACES,
+  TEMPLATE_ORDER,
+  aggregateByTemplate,
+  buildStorySignals,
+  chunk,
+  computeBySourceCount,
+  computeEarlyDiscovery,
+  daysAgo,
+  fmtPct,
+  indexArchiveRows,
+  isoDay,
+  markdownTable,
+  mergeLedger,
+  missingStoryIds,
+  pathnameOf,
+  sampleLabel,
+  storyIdOf,
+} from "./gsc-report-lib.mjs";
+
+// MIN_SAMPLE_IMPRESSIONS (= 100) is defined once in scripts/gsc-report-lib.mjs
+// next to finishBucket(), which stamps `sufficientSample` on every bucket;
+// it is imported here for the report JSON and the closing stdout note.
+
 const argValue = (flag) =>
   process.argv.includes(flag) ? process.argv[process.argv.indexOf(flag) + 1] : undefined;
 
@@ -63,39 +115,20 @@ const BASE = argValue("--base") ?? "https://currentwire.us";
 // `||`, not `??`: the workflow passes an UNSET repository variable as "".
 const SITE = argValue("--site") || process.env.GSC_SITE_URL || "sc-domain:currentwire.us";
 const WINDOW_DAYS = 28;
-/** Page+date window for the early-discovery KPI. */
-const EARLY_WINDOW_DAYS = 14;
-/** GSC publishes a day's data 2–3 days later; younger stories cannot be judged. */
-const MIN_STORY_AGE_HOURS = 72;
 const ROW_LIMIT = 25_000;
 /** Pagination guard — the site has a few thousand URLs, not 200k. */
 const MAX_PAGES = 8;
 const HISTORY_CAP = 60;
-/** Story-date ledger: plenty for a 14-day KPI window at ~400 stories/day. */
-const LEDGER_MAX_AGE_DAYS = 45;
-const LEDGER_CAP = 20_000;
 
 const DATA_DIR = fileURLToPath(new URL("../data/", import.meta.url));
 const REPORT_PATH = `${DATA_DIR}gsc-report.json`;
 const HISTORY_PATH = `${DATA_DIR}gsc-history.json`;
 const LEDGER_PATH = `${DATA_DIR}gsc-story-dates.json`;
+const SIGNALS_PATH = `${DATA_DIR}gsc-url-signals.json`;
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
 const SURFACES = ["web", "news", "discover"];
-
-const SECTIONS = new Set([
-  "politics", "business", "technology", "world", "climate",
-  "health", "science", "culture", "sports",
-]);
-const HUBS = new Set([
-  "ai", "elections", "immigration", "courts", "crime", "education", "housing",
-  "jobs", "money", "weather", "energy", "space", "autos", "travel", "obituaries",
-]);
-const TEMPLATE_ORDER = [
-  "home", "story", "top-10", "top-100", "briefing", "topic", "source", "reports",
-  "archive", "section", "hub", "most-covered", "latest", "country", "index", "other",
-];
 
 // ── 0. Secret gate ──────────────────────────────────────────────────────────
 const serviceAccountJson = process.env.GSC_SERVICE_ACCOUNT_JSON;
@@ -156,14 +189,6 @@ async function fetchAccessToken(account) {
 }
 
 // ── 2. Search Analytics queries ─────────────────────────────────────────────
-function isoDay(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function daysAgo(days, from = new Date()) {
-  return new Date(from.getTime() - days * 86_400_000);
-}
-
 /** All rows for one query body, following startRow pagination. */
 async function searchAnalytics(token, body) {
   const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(SITE)}/searchAnalytics/query`;
@@ -188,105 +213,7 @@ async function searchAnalytics(token, body) {
   return rows;
 }
 
-// ── 3. URL → template classification ────────────────────────────────────────
-function pathnameOf(pageUrl) {
-  try {
-    const pathname = new URL(pageUrl).pathname;
-    return pathname.length > 1 ? pathname.replace(/\/+$/, "") : "/";
-  } catch {
-    return "/__unparseable__";
-  }
-}
-
-function classifyPath(pathname) {
-  if (pathname === "/") return "home";
-  const first = pathname.split("/")[1] ?? "";
-  if (first === "story") return "story";
-  if (first === "top-10") return "top-10";
-  if (first === "top-100") return "top-100";
-  if (first === "briefing") return "briefing";
-  if (first === "topic") return "topic";
-  if (first === "source") return "source";
-  if (first === "reports") return "reports";
-  if (first === "archive") return "archive";
-  if (first === "most-covered") return "most-covered";
-  if (first === "latest") return "latest";
-  if (first === "us" || first === "canada") return "country";
-  if (first === "topics" || first === "sources" || first === "search") return "index";
-  // Sections and hubs are single-segment paths; deeper paths under them
-  // (e.g. /politics/page/2 if it ever exists) still belong to the template.
-  if (SECTIONS.has(first)) return "section";
-  if (HUBS.has(first)) return "hub";
-  return "other";
-}
-
-/**
- * Trailing cluster id of a /story/<slug>-<id> path, or null. Cluster ids are
- * "c" + 12 hex (lib/news/clustering/cluster.ts; live example
- * …-cc5823ef92e20) and survive headline re-slugging, so they are the join
- * key between GSC page URLs, the sitemap and /api/stats/coverage.
- */
-function storyIdOf(pathname) {
-  if (!pathname.startsWith("/story/")) return null;
-  const match = pathname.match(/-(c[0-9a-f]{12})$/);
-  return match ? match[1] : null;
-}
-
-// ── 4. Aggregation ──────────────────────────────────────────────────────────
-function newBucket() {
-  return { urls: new Set(), impressions: 0, clicks: 0, positionWeight: 0 };
-}
-
-function addRow(bucket, pageUrl, row) {
-  bucket.urls.add(pageUrl);
-  bucket.impressions += row.impressions ?? 0;
-  bucket.clicks += row.clicks ?? 0;
-  // Impression-weighted, like GSC's own average position over a group.
-  bucket.positionWeight += (row.position ?? 0) * (row.impressions ?? 0);
-}
-
-function finishBucket(bucket) {
-  const urls = bucket.urls.size;
-  const round = (n, places) => Math.round(n * 10 ** places) / 10 ** places;
-  return {
-    urls,
-    impressions: bucket.impressions,
-    clicks: bucket.clicks,
-    ctr: bucket.impressions ? round(bucket.clicks / bucket.impressions, 4) : 0,
-    avgPosition: bucket.impressions ? round(bucket.positionWeight / bucket.impressions, 1) : null,
-    impressionsPerUrl: urls ? round(bucket.impressions / urls, 2) : 0,
-    clicksPerUrl: urls ? round(bucket.clicks / urls, 2) : 0,
-  };
-}
-
-/** Per-template (and per-section / per-hub detail) aggregates for one surface. */
-function aggregateByTemplate(rows) {
-  const templates = new Map(TEMPLATE_ORDER.map((t) => [t, newBucket()]));
-  const detail = new Map();
-  const total = newBucket();
-  for (const row of rows) {
-    const pageUrl = row.keys?.[0];
-    if (!pageUrl) continue;
-    const pathname = pathnameOf(pageUrl);
-    const template = classifyPath(pathname);
-    addRow(templates.get(template), pageUrl, row);
-    addRow(total, pageUrl, row);
-    if (template === "section" || template === "hub") {
-      const key = `/${pathname.split("/")[1]}`;
-      if (!detail.has(key)) detail.set(key, newBucket());
-      addRow(detail.get(key), pageUrl, row);
-    }
-  }
-  return {
-    total: finishBucket(total),
-    templates: Object.fromEntries([...templates].map(([t, b]) => [t, finishBucket(b)])),
-    detail: Object.fromEntries(
-      [...detail].sort((a, b) => b[1].impressions - a[1].impressions).map(([k, b]) => [k, finishBucket(b)]),
-    ),
-  };
-}
-
-// ── 5. Story-date ledger (news sitemap, accumulated) ────────────────────────
+// ── 3. Site-side inputs ─────────────────────────────────────────────────────
 function readJson(path, fallback) {
   try {
     return existsSync(path) ? JSON.parse(readFileSync(path, "utf-8")) : fallback;
@@ -332,113 +259,35 @@ async function fetchStorySources() {
 }
 
 /**
- * Merge this run's sitemap stories and live publication counts into the
- * ledger: earliest publishedAt wins, publication count keeps its maximum
- * (a story's count only grows while it is live). Pruned by age and capped.
+ * Archive publication counts for story ids the live window no longer holds:
+ * GET /api/stats/archive-sources?ids=… in chunks of 200 (aggregate counts
+ * only, no article URLs). A failing chunk is recorded, never fatal — the
+ * ids it covered simply stay "unknown" unless the ledger remembers them.
  */
-function mergeLedger(existing, sitemapStories, sourceCountById, now) {
+async function fetchArchiveSources(ids) {
   const byId = new Map();
-  for (const entry of Array.isArray(existing) ? existing : []) {
-    if (entry?.id && entry.publishedAt) byId.set(entry.id, { ...entry });
+  const chunks = chunk(ids, ARCHIVE_IDS_PER_REQUEST);
+  const failures = [];
+  let truncatedChunks = 0;
+  for (const [index, part] of chunks.entries()) {
+    try {
+      const response = await fetch(`${BASE}/api/stats/archive-sources?ids=${part.join(",")}`, {
+        redirect: "follow",
+      });
+      const json = await response.json().catch(() => null);
+      if (!response.ok || !json || !Array.isArray(json.rows)) {
+        throw new Error(`${response.status}${json?.error ? ` ${json.error}` : ""}`);
+      }
+      for (const [id, counts] of indexArchiveRows(json.rows)) byId.set(id, counts);
+      if (json.truncated) truncatedChunks++;
+    } catch (error) {
+      failures.push(`chunk ${index + 1}/${chunks.length}: ${error.message}`);
+    }
   }
-  for (const [id, story] of sitemapStories) {
-    const current = byId.get(id);
-    if (!current) byId.set(id, { id, slug: story.slug, publishedAt: story.publishedAt });
-    else if (story.publishedAt < current.publishedAt) current.publishedAt = story.publishedAt;
-  }
-  for (const [id, sourceCount] of sourceCountById) {
-    const current = byId.get(id);
-    if (current) current.sourceCount = Math.max(current.sourceCount ?? 0, sourceCount);
-  }
-  const cutoff = daysAgo(LEDGER_MAX_AGE_DAYS, now).toISOString();
-  return [...byId.values()]
-    .filter((e) => e.publishedAt >= cutoff)
-    .sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1))
-    .slice(0, LEDGER_CAP);
+  return { byId, requested: ids.length, chunks: chunks.length, failures, truncatedChunks };
 }
 
-// ── 6. KPIs ─────────────────────────────────────────────────────────────────
-function median(values) {
-  if (values.length === 0) return null;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
-/**
- * Early discovery over ledger stories old enough to have GSC data.
- * hoursToFirst = end of the first impression day (UTC) − publishedAt: the
- * latest moment the impression can have happened, so every "within N h"
- * claim is one the day-granular data actually supports.
- */
-function computeEarlyDiscovery(ledger, pageDateRows, now) {
-  const firstImpressionDayById = new Map();
-  for (const row of pageDateRows) {
-    const [pageUrl, day] = row.keys ?? [];
-    if (!pageUrl || !day || !(row.impressions > 0)) continue;
-    const id = storyIdOf(pathnameOf(pageUrl));
-    if (!id) continue;
-    const current = firstImpressionDayById.get(id);
-    if (!current || day < current) firstImpressionDayById.set(id, day);
-  }
-  const windowStart = daysAgo(EARLY_WINDOW_DAYS, now).toISOString();
-  const youngest = new Date(now.getTime() - MIN_STORY_AGE_HOURS * 3_600_000).toISOString();
-  const eligible = ledger.filter((e) => e.publishedAt >= windowStart && e.publishedAt <= youngest);
-  const hours = [];
-  let within24 = 0;
-  let within48 = 0;
-  let within72 = 0;
-  for (const story of eligible) {
-    const day = firstImpressionDayById.get(story.id);
-    if (!day) continue;
-    const endOfDay = Date.parse(`${day}T00:00:00.000Z`) + 86_400_000;
-    const h = Math.max(0, (endOfDay - Date.parse(story.publishedAt)) / 3_600_000);
-    hours.push(h);
-    if (h <= 24) within24++;
-    if (h <= 48) within48++;
-    if (h <= 72) within72++;
-  }
-  const pct = (n) => (eligible.length ? Math.round((n / eligible.length) * 1000) / 10 : null);
-  return {
-    method: "day-granular GSC data; hours = end of first impression day (UTC) minus publishedAt (upper bound)",
-    windowDays: EARLY_WINDOW_DAYS,
-    minStoryAgeHours: MIN_STORY_AGE_HOURS,
-    eligibleStories: eligible.length,
-    discoveredStories: hours.length,
-    discoveredPct: pct(hours.length),
-    within24hPct: pct(within24),
-    within48hPct: pct(within48),
-    within72hPct: pct(within72),
-    medianHoursToFirstImpression: hours.length ? Math.round(median(hours)) : null,
-  };
-}
-
-/** Story URLs (web) bucketed by publication count: 1 / 2 / 3+ / unknown. */
-function computeBySourceCount(webRows, sourceCountById, ledger) {
-  const ledgerCount = new Map(ledger.filter((e) => e.sourceCount).map((e) => [e.id, e.sourceCount]));
-  const buckets = { "1": newBucket(), "2": newBucket(), "3+": newBucket(), unknown: newBucket() };
-  for (const row of webRows) {
-    const pageUrl = row.keys?.[0];
-    if (!pageUrl) continue;
-    const id = storyIdOf(pathnameOf(pageUrl));
-    if (!id) continue;
-    const count = sourceCountById.get(id) ?? ledgerCount.get(id);
-    const key = count === undefined ? "unknown" : count <= 1 ? "1" : count === 2 ? "2" : "3+";
-    addRow(buckets[key], pageUrl, row);
-  }
-  return Object.fromEntries(Object.entries(buckets).map(([k, b]) => [k, finishBucket(b)]));
-}
-
-// ── 7. Output ───────────────────────────────────────────────────────────────
-function markdownTable(header, rows) {
-  const line = (cells) => `| ${cells.join(" | ")} |`;
-  return [line(header), line(header.map(() => "---")), ...rows.map(line)].join("\n");
-}
-
-function fmtPct(value) {
-  return value === null || value === undefined ? "—" : `${value}%`;
-}
-
+// ── 4. Main ─────────────────────────────────────────────────────────────────
 async function main() {
   const now = new Date();
   const endDate = isoDay(now);
@@ -483,8 +332,10 @@ async function main() {
     pageDateError = error.message;
   }
 
-  // Site-side inputs: news sitemap (publication dates) and the stats
-  // endpoint (publication counts). Either may be down; the report says so.
+  // Site-side inputs: news sitemap (publication dates), the live stats
+  // endpoint (publication counts) and the archive counts for every story id
+  // the live window no longer holds. Any of them may be down; the report
+  // says so.
   const warnings = [];
   let sitemapStories = new Map();
   try {
@@ -500,20 +351,58 @@ async function main() {
   }
   if (pageDateError) warnings.push(`page+date query failed: ${pageDateError}`);
 
+  const archiveIds = missingStoryIds([rowsBySurface.web ?? [], rowsBySurface.news ?? []], storySources.byId);
+  const archive = await fetchArchiveSources(archiveIds);
+  if (archive.failures.length) {
+    warnings.push(
+      `archive-sources unavailable for ${archive.failures.length} of ${archive.chunks} chunks (${archive.failures[0]})`,
+    );
+  }
+  if (archive.truncatedChunks) warnings.push(`archive-sources truncated ${archive.truncatedChunks} chunk(s)`);
+
   const ledger = mergeLedger(readJson(LEDGER_PATH, []), sitemapStories, storySources.byId, now);
   writeJson(LEDGER_PATH, ledger);
 
   const earlyDiscovery = computeEarlyDiscovery(ledger, pageDateRows, now);
-  const storiesBySourceCount = computeBySourceCount(rowsBySurface.web ?? [], storySources.byId, ledger);
+  const storiesBySourceCount = computeBySourceCount(rowsBySurface.web ?? [], storySources.byId, archive.byId, ledger);
+
+  // Per-URL signals for the app. Skipped (previous file kept) when the web
+  // surface query failed: an empty signals file would deploy "no story has
+  // search signals" for a week because of a GSC outage.
+  const signals = buildStorySignals(rowsBySurface.web ?? [], rowsBySurface.news ?? [], {
+    cap: SIGNALS_CAP,
+    minImpressions: SIGNALS_MIN_IMPRESSIONS,
+  });
+  let signalsWritten = false;
+  if (surfaces.web?.error) {
+    warnings.push(`url signals not updated: web surface query failed (${surfaces.web.error})`);
+  } else {
+    writeJson(SIGNALS_PATH, {
+      generatedAt: now.toISOString(),
+      window: { startDate, endDate, days: WINDOW_DAYS },
+      surfaces: SIGNALS_SURFACES,
+      minImpressions: SIGNALS_MIN_IMPRESSIONS,
+      stories: signals.stories,
+    });
+    signalsWritten = true;
+  }
 
   const report = {
     generatedAt: now.toISOString(),
     site: SITE,
     base: BASE,
     window: { startDate, endDate, days: WINDOW_DAYS },
+    minSampleImpressions: MIN_SAMPLE_IMPRESSIONS,
     surfaces,
     earlyDiscovery,
     storiesBySourceCount,
+    archiveSources: {
+      requestedIds: archive.requested,
+      matchedIds: archive.byId.size,
+      chunks: archive.chunks,
+      failedChunks: archive.failures.length,
+    },
+    urlSignals: { stories: signals.storyCount, truncated: signals.truncated, written: signalsWritten },
     liveCoverage: storySources.coverage,
     liveDatasetVersion: storySources.datasetVersion,
     ledgerStories: ledger.length,
@@ -560,10 +449,10 @@ async function main() {
     console.log("\n### Web by template\n");
     console.log(
       markdownTable(
-        ["Template", "URLs", "Impr", "Clicks", "CTR", "Avg pos", "Impr/URL", "Clicks/URL"],
+        ["Template", "URLs", "Impr", "Clicks", "CTR", "Avg pos", "Impr/URL", "Clicks/URL", "Sample"],
         TEMPLATE_ORDER.map((t) => {
           const b = surfaces.web.templates[t];
-          return [t, b.urls, b.impressions, b.clicks, `${(b.ctr * 100).toFixed(2)}%`, b.avgPosition ?? "—", b.impressionsPerUrl, b.clicksPerUrl];
+          return [t, b.urls, b.impressions, b.clicks, `${(b.ctr * 100).toFixed(2)}%`, b.avgPosition ?? "—", b.impressionsPerUrl, b.clicksPerUrl, sampleLabel(b)];
         }),
       ),
     );
@@ -582,15 +471,24 @@ async function main() {
       ]],
     ),
   );
-  console.log("\n### Story URLs by publication count (web)\n");
+  console.log("\n### Story URLs by publications ever recorded (web; 2+ and 3+ overlap the exact rows)\n");
   console.log(
     markdownTable(
-      ["Publications", "URLs", "Impr", "Clicks", "Impr/URL", "Clicks/URL"],
-      Object.entries(storiesBySourceCount).map(([k, b]) => [k, b.urls, b.impressions, b.clicks, b.impressionsPerUrl, b.clicksPerUrl]),
+      ["Publications", "URLs", "Impr", "Clicks", "CTR", "Avg pos", "Impr/URL", "Clicks/URL", "Sample"],
+      Object.entries(storiesBySourceCount).map(([k, b]) => [
+        k, b.urls, b.impressions, b.clicks, `${(b.ctr * 100).toFixed(2)}%`, b.avgPosition ?? "—", b.impressionsPerUrl, b.clicksPerUrl, sampleLabel(b),
+      ]),
     ),
   );
   for (const warning of warnings) console.warn(`[gsc-report] WARN: ${warning}`);
-  console.log(`\n[gsc-report] wrote ${REPORT_PATH} and ${HISTORY_PATH} (history=${history.length}, ledger=${ledger.length})`);
+  const written = [REPORT_PATH, HISTORY_PATH, LEDGER_PATH, ...(signalsWritten ? [SIGNALS_PATH] : [])];
+  console.log(
+    `\n[gsc-report] wrote ${written.join(", ")} ` +
+      `(history=${history.length}, ledger=${ledger.length}, archiveIds=${archive.byId.size}/${archive.requested}, signals=${signals.storyCount})`,
+  );
+  console.log(
+    `Template rows marked early are below the ${MIN_SAMPLE_IMPRESSIONS}-impression minimum sample and must not be read as one template outperforming another.`,
+  );
 }
 
 main().catch((error) => {

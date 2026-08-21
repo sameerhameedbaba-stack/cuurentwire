@@ -36,6 +36,7 @@ import { isTopicEligible, topicKey } from "@/lib/news/topics";
 import { COUNTRY_LABELS, type StoryCluster } from "@/lib/news/types";
 import { metaDescription } from "@/lib/utils/text";
 import { fullTimestamp, hoursSince } from "@/lib/utils/time";
+import { gscSignalsAvailable, gscStorySignal } from "@/lib/seo/gsc-signals";
 import {
   applyStoryIndexDecision,
   countStoryValueEvents,
@@ -227,6 +228,13 @@ export async function generateMetadata({
     corroboratedDetails: corroboratedDetails(cluster).length,
     relatedCoverage: related.length + earlierCoverage.length,
     hasSummary: Boolean(cluster.summary),
+    // Committed Search Console report (lib/seo/gsc-signals.ts): a URL
+    // Google showed to anyone is protected; absence from a fresh report
+    // is zero impressions; no fresh report means the policy never noindexes.
+    gsc: {
+      available: gscSignalsAvailable(),
+      ...(gscStorySignal(cluster.id) ?? { impressions: 0, clicks: 0 }),
+    },
   });
   return applyStoryIndexDecision(
     {

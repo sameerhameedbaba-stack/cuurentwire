@@ -10,70 +10,134 @@ import {
   briefingMetaDescription,
   briefingMetaTitle,
   countStoryValueEvents,
-  FRESH_STORY_HOURS,
+  EVALUATION_WINDOW_HOURS,
   readThinStoryNoindexSwitch,
   storyIndexDecision,
   type StoryIndexInput,
 } from "@/lib/seo/story-indexing";
 
-/** A mature single report with nothing CurrentWire adds — the noindex case. */
-const THIN_80H: StoryIndexInput = {
-  ageHours: 80,
+/**
+ * A 20-day-old single report with nothing CurrentWire adds, that a FRESH
+ * Search Console report showed to nobody — the only noindex case.
+ */
+const THIN_20D: StoryIndexInput = {
+  ageHours: 20 * 24,
   independentPublications: 1,
   historyEvents: 0,
   corroboratedDetails: 0,
   relatedCoverage: 0,
   hasSummary: true,
+  gsc: { available: true, impressions: 0, clicks: 0 },
 };
 
 describe("storyIndexDecision", () => {
-  it("indexes a fresh single-source story regardless of depth", () => {
-    const decision = storyIndexDecision({ ...THIN_80H, ageHours: 5 }, { enabled: true });
+  it("uses a 14-day (336h) evaluation window", () => {
+    expect(EVALUATION_WINDOW_HOURS).toBe(336);
+  });
+
+  it("indexes a single-source story inside the evaluation window regardless of depth", () => {
+    const decision = storyIndexDecision({ ...THIN_20D, ageHours: 5 }, { enabled: true });
     expect(decision.index).toBe(true);
-    expect(decision.reason).toContain("fresh");
+    expect(decision.reason).toContain("evaluation window");
+    // 80h — the old 72h policy's noindex case — is now well inside the window.
+    expect(storyIndexDecision({ ...THIN_20D, ageHours: 80 }, { enabled: true }).index).toBe(true);
   });
 
-  it("treats exactly 72h as still fresh", () => {
+  it("treats exactly 336h as still inside the window, and 337h as past it", () => {
     expect(
-      storyIndexDecision({ ...THIN_80H, ageHours: FRESH_STORY_HOURS }, { enabled: true }).index,
+      storyIndexDecision({ ...THIN_20D, ageHours: EVALUATION_WINDOW_HOURS }, { enabled: true })
+        .index,
     ).toBe(true);
+    expect(
+      storyIndexDecision(
+        { ...THIN_20D, ageHours: EVALUATION_WINDOW_HOURS + 1 },
+        { enabled: true },
+      ).index,
+    ).toBe(false);
   });
 
-  it("never noindexes on an unknown age (NaN from a bad timestamp counts as fresh)", () => {
-    const decision = storyIndexDecision({ ...THIN_80H, ageHours: Number.NaN }, { enabled: true });
+  it("never noindexes on an unknown age (NaN from a bad timestamp counts as inside the window)", () => {
+    const decision = storyIndexDecision({ ...THIN_20D, ageHours: Number.NaN }, { enabled: true });
     expect(decision.index).toBe(true);
     expect(decision.reason).toContain("unknown");
   });
 
-  it("noindexes an 80h single-source story with no CurrentWire-specific value", () => {
-    const decision = storyIndexDecision(THIN_80H, { enabled: true });
+  it("noindexes a 20-day single-source story with no value and 0 impressions in a fresh report", () => {
+    const decision = storyIndexDecision(THIN_20D, { enabled: true });
     expect(decision.index).toBe(false);
     expect(decision.reason).toContain("single-source");
+    expect(decision.reason).toContain("0 Search Console impressions");
   });
 
-  it("keeps an 80h story indexed with two independent publications", () => {
+  it("records a missing summary in the noindex reason without changing the decision", () => {
+    const decision = storyIndexDecision({ ...THIN_20D, hasSummary: false }, { enabled: true });
+    expect(decision.index).toBe(false);
+    expect(decision.reason).toContain("no summary");
+  });
+
+  it("keeps the same story indexed with a single Search Console impression", () => {
+    const decision = storyIndexDecision(
+      { ...THIN_20D, gsc: { available: true, impressions: 1, clicks: 0 } },
+      { enabled: true },
+    );
+    expect(decision.index).toBe(true);
+    expect(decision.reason).toContain("1 Search Console impression");
+  });
+
+  it("keeps the same story indexed with a click even if impressions were not recorded", () => {
+    const decision = storyIndexDecision(
+      { ...THIN_20D, gsc: { available: true, impressions: 0, clicks: 1 } },
+      { enabled: true },
+    );
+    expect(decision.index).toBe(true);
+    expect(decision.reason).toContain("click");
+  });
+
+  it("never noindexes when no fresh Search Console report exists", () => {
+    const decision = storyIndexDecision(
+      { ...THIN_20D, gsc: { available: false, impressions: 0, clicks: 0 } },
+      { enabled: true },
+    );
+    expect(decision.index).toBe(true);
+    expect(decision.reason).toContain("no fresh Search Console data");
+  });
+
+  it("keeps a mature story indexed with two independent publications", () => {
     expect(
-      storyIndexDecision({ ...THIN_80H, independentPublications: 2 }, { enabled: true }).index,
+      storyIndexDecision({ ...THIN_20D, independentPublications: 2 }, { enabled: true }).index,
     ).toBe(true);
   });
 
-  it("keeps an 80h story indexed with one headline update in its history", () => {
-    expect(storyIndexDecision({ ...THIN_80H, historyEvents: 1 }, { enabled: true }).index).toBe(
+  it("keeps a mature story indexed with one headline update in its history", () => {
+    expect(storyIndexDecision({ ...THIN_20D, historyEvents: 1 }, { enabled: true }).index).toBe(
       true,
     );
   });
 
-  it("keeps an 80h story indexed with a corroborated detail or related coverage", () => {
+  it("keeps a mature story indexed with a corroborated detail or related coverage", () => {
     expect(
-      storyIndexDecision({ ...THIN_80H, corroboratedDetails: 1 }, { enabled: true }).index,
+      storyIndexDecision({ ...THIN_20D, corroboratedDetails: 1 }, { enabled: true }).index,
     ).toBe(true);
-    expect(storyIndexDecision({ ...THIN_80H, relatedCoverage: 1 }, { enabled: true }).index).toBe(
+    expect(storyIndexDecision({ ...THIN_20D, relatedCoverage: 1 }, { enabled: true }).index).toBe(
       true,
     );
+  });
+
+  it("checks CurrentWire value before Search Console data (reason names the earlier signal)", () => {
+    const decision = storyIndexDecision(
+      {
+        ...THIN_20D,
+        independentPublications: 3,
+        gsc: { available: true, impressions: 50, clicks: 2 },
+      },
+      { enabled: true },
+    );
+    expect(decision.index).toBe(true);
+    expect(decision.reason).toContain("3 independent publications");
   });
 
   it("always indexes when the switch is off", () => {
-    const decision = storyIndexDecision(THIN_80H, { enabled: false });
+    const decision = storyIndexDecision(THIN_20D, { enabled: false });
     expect(decision.index).toBe(true);
     expect(decision.reason).toContain("THIN_STORY_NOINDEX=off");
   });
@@ -120,13 +184,24 @@ describe("applyStoryIndexDecision", () => {
 });
 
 describe("archiveSitemapIndexableSql", () => {
-  it("renders the documented predicate: fresh OR source_count >= 2 OR history non-empty", () => {
-    const { sql, params } = new PgDialect().sqlToQuery(archiveSitemapIndexableSql());
-    expect(sql).toContain(`"first_seen_at" > now() - interval '${FRESH_STORY_HOURS} hours'`);
+  it("renders the documented predicate: window OR source_count OR sources OR history OR protected", () => {
+    const protectedIds = ["c0123456789ab", "cfedcba987654"];
+    const { sql, params } = new PgDialect().sqlToQuery(archiveSitemapIndexableSql(protectedIds));
+    expect(sql).toContain(`"first_seen_at" > now() - interval '336 hours'`);
+    expect(sql).toContain(`interval '${EVALUATION_WINDOW_HOURS} hours'`);
     expect(sql).toContain(`"source_count" >= 2`);
+    expect(sql).toMatch(/jsonb_array_length\("[a-z_".]*sources"\) >= 2/);
     expect(sql).toMatch(/jsonb_array_length\("[a-z_".]*history"\) > 0/);
-    // A pure predicate — no bound parameters, so it is safe to compose.
-    expect(params).toEqual([]);
+    // The protected set is ONE text[] parameter, never inlined.
+    expect(sql).toMatch(/"cluster_id" = any\(\$1::text\[\]\)/);
+    expect(params).toEqual([protectedIds]);
+    for (const id of protectedIds) expect(sql).not.toContain(id);
+  });
+
+  it("still renders valid SQL with an empty protected set", () => {
+    const { sql, params } = new PgDialect().sqlToQuery(archiveSitemapIndexableSql([]));
+    expect(sql).toMatch(/= any\(\$1::text\[\]\)/);
+    expect(params).toEqual([[]]);
   });
 });
 

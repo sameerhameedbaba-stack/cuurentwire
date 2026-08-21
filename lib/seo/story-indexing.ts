@@ -2,36 +2,76 @@ import type { Metadata } from "next";
 import { sql, type SQL } from "drizzle-orm";
 import { storyArchive } from "@/lib/database/schema";
 import type { StoryUpdateEvent } from "@/lib/news/story-updates";
+import { GSC_PROTECT_MIN_IMPRESSIONS } from "@/lib/seo/gsc-signals";
 import { NOINDEX_FOLLOW } from "@/lib/seo/indexing";
 import { truncate } from "@/lib/utils/text";
 
 /**
- * Thin single-source story lifecycle (ChatGPT audit §7).
+ * Thin single-source story lifecycle (ChatGPT audit §7, revised after the
+ * reviewer's "do not noindex merely because a page is single-source after
+ * 48–72 hours" note).
  *
  * ~755 story clusters enter the archive per refresh and most of them are
  * one publisher's report that nothing ever corroborates. Once such a page is
- * past the news window it has no CurrentWire-specific value for a searcher:
- * the summary restates one article, the coverage list names one outlet, and
- * the only thing the URL adds to the index is a duplicate of the publisher's
- * own page. The policy below keeps those pages OUT of the index while
- * leaving them online and crawlable (noindex,follow) — never a 404, never a
- * deletion, because the URL may have been linked and the archive is a
- * permanent record.
+ * past its news window and has earned nothing, it adds only a duplicate of
+ * the publisher's own page to the index, so the policy keeps it OUT of the
+ * index while leaving it online and crawlable (noindex,follow) — never a
+ * 404, never a deletion, because the URL may have been linked and the
+ * archive is a permanent record.
+ *
+ * What "earned nothing" means here — a page is PROTECTED (indexable) when
+ * ANY of these holds, checked in this order:
+ *
+ *   1. the policy switch is off (THIN_STORY_NOINDEX=off);
+ *   2. its age is unknown (a bad timestamp never costs a page its standing);
+ *   3. it is inside the EVALUATION WINDOW — 14 days, not 72 hours:
+ *      CurrentWire is young and Google has only just started evaluating
+ *      these URLs, so every story keeps its index standing for two weeks
+ *      no matter how thin it is;
+ *   4. two or more independent publications cover it;
+ *   5. it has a recorded update history (headline, coverage or source
+ *      events — see countStoryValueEvents);
+ *   6. it has corroborated details;
+ *   7. it links related or earlier coverage;
+ *   8. Google Search Console recorded >= 1 click for it in the last 28-day
+ *      report;
+ *   9. Search Console recorded >= GSC_PROTECT_MIN_IMPRESSIONS impressions
+ *      (web + news) for it in that report;
+ *  10. there is NO fresh Search Console report at all (placeholder file or
+ *      a report older than GSC_SIGNALS_MAX_AGE_DAYS) — the policy never
+ *      noindexes without Google data.
+ *
+ * Only a mature single-source story with no recorded value that a FRESH
+ * report shows with zero impressions answers noindex,follow. Absence from a
+ * fresh report is itself data: Google showed the URL to nobody in 28 days.
+ *
+ * Backlinks are NOT a signal, by necessity rather than choice: there is no
+ * backlink data source — the Search Console API has no links endpoint and
+ * the project has no paid link index — so the policy cannot tell a linked
+ * page from an unlinked one and therefore errs toward index at every step
+ * above (wide window, any Google visibility at all, and index whenever the
+ * Google data is missing).
+ *
+ * The Search Console data is the committed data/gsc-url-signals.json,
+ * written weekly by scripts/gsc-report.mjs and read through
+ * lib/seo/gsc-signals.ts (the weekly commit triggers a deploy, so every
+ * page and the archive sitemap see the same report).
  *
  * Everything here is pure. The page decides per request with the signals it
- * already computes; the archive sitemap approximates the same rule in SQL
- * (see archiveSitemapIndexableSql) so it never advertises a URL that
- * answers noindex.
+ * already computes plus the story's Search Console row; the archive sitemap
+ * approximates the same rule in SQL (see archiveSitemapIndexableSql) so it
+ * never advertises a URL that answers noindex.
  */
 
 /**
- * A story is FRESH — indexable regardless of depth — while it is younger
- * than this. 72h is the live dataset's own window: every story is a live
- * page for that long, and a single report can still attract corroboration
- * inside it (live: coverage grows 1→3 within hours on the stories that
- * grow at all).
+ * Every story is indexable — regardless of depth or Search Console data —
+ * while it is at most this old. Age runs from first coverage (archive
+ * first_seen_at when known, else the first publisher time). Two weeks: the
+ * 28-day GSC window is published 2–3 days late, so a story needs well over
+ * 72 hours before "zero impressions" can mean anything, and a young site's
+ * URLs are still being evaluated long after their news window closes.
  */
-export const FRESH_STORY_HOURS = 72;
+export const EVALUATION_WINDOW_HOURS = 14 * 24;
 
 /**
  * Env switch for the policy. `THIN_STORY_NOINDEX=off` disables it (every
@@ -47,6 +87,16 @@ export const THIN_STORY_NOINDEX_ENABLED = readThinStoryNoindexSwitch(
   process.env.THIN_STORY_NOINDEX,
 );
 
+/** The story's row in the committed Search Console report (lib/seo/gsc-signals.ts). */
+export interface StoryGscInput {
+  /** True when a fresh report exists (see gscSignalsAvailable). */
+  available: boolean;
+  /** Web + news impressions in the report's 28-day window; 0 when the URL is absent. */
+  impressions: number;
+  /** Web + news clicks in the report's 28-day window; 0 when the URL is absent. */
+  clicks: number;
+}
+
 export interface StoryIndexInput {
   /** Hours since first coverage (archive first_seen_at when known, else first publisher time). */
   ageHours: number;
@@ -58,7 +108,9 @@ export interface StoryIndexInput {
   corroboratedDetails: number;
   /** Related live clusters plus earlier archive coverage linked from the page. */
   relatedCoverage: number;
+  /** Informational only (recorded in the noindex reason); never changes the decision. */
   hasSummary: boolean;
+  gsc: StoryGscInput;
 }
 
 export interface StoryIndexDecision {
@@ -68,12 +120,11 @@ export interface StoryIndexDecision {
 }
 
 /**
- * Index a story page while it is fresh; after that only when the page adds
- * something a single publisher page does not — independent corroboration,
- * a recorded update history, corroborated details or links to related
- * coverage. The SQL approximation in archiveSitemapIndexableSql mirrors the
- * first three signals (it cannot see corroborated details or related
- * coverage, both computed at render time).
+ * Decide a story page's index standing. See the module comment for the
+ * ordered rules; the SQL approximation in archiveSitemapIndexableSql
+ * mirrors the window, the publication count, the history and the
+ * Search Console protection (it cannot see corroborated details or
+ * related coverage, both computed at render time).
  */
 export function storyIndexDecision(
   input: StoryIndexInput,
@@ -84,12 +135,15 @@ export function storyIndexDecision(
     return { index: true, reason: "thin-story noindex disabled (THIN_STORY_NOINDEX=off)" };
   }
   // An unparseable first-coverage time must never cost a page its index
-  // standing: unknown age is treated as fresh.
+  // standing: unknown age is treated as inside the window.
   if (!Number.isFinite(input.ageHours)) {
-    return { index: true, reason: "age unknown — treated as fresh" };
+    return { index: true, reason: "age unknown — treated as inside the evaluation window" };
   }
-  if (input.ageHours <= FRESH_STORY_HOURS) {
-    return { index: true, reason: `fresh story (${Math.floor(input.ageHours)}h <= ${FRESH_STORY_HOURS}h)` };
+  if (input.ageHours <= EVALUATION_WINDOW_HOURS) {
+    return {
+      index: true,
+      reason: `inside the evaluation window (${Math.floor(input.ageHours)}h <= ${EVALUATION_WINDOW_HOURS}h)`,
+    };
   }
   if (input.independentPublications >= 2) {
     return { index: true, reason: `${input.independentPublications} independent publications` };
@@ -103,11 +157,29 @@ export function storyIndexDecision(
   if (input.relatedCoverage >= 1) {
     return { index: true, reason: `${input.relatedCoverage} related coverage link(s)` };
   }
+  if (input.gsc.clicks >= 1) {
+    return {
+      index: true,
+      reason: `${input.gsc.clicks} Search Console click(s) in the last 28-day report`,
+    };
+  }
+  if (input.gsc.impressions >= GSC_PROTECT_MIN_IMPRESSIONS) {
+    return {
+      index: true,
+      reason: `${input.gsc.impressions} Search Console impression(s) in the last 28-day report`,
+    };
+  }
+  if (!input.gsc.available) {
+    return {
+      index: true,
+      reason: "no fresh Search Console data — never noindex without Google data",
+    };
+  }
   return {
     index: false,
-    reason: input.hasSummary
-      ? "mature single-source story with no CurrentWire-specific value"
-      : "mature single-source story with no CurrentWire-specific value and no summary",
+    reason:
+      "mature single-source story, no recorded value, 0 Search Console impressions in the last 28-day report" +
+      (input.hasSummary ? "" : "; no summary"),
   };
 }
 
@@ -148,24 +220,35 @@ export function applyStoryIndexDecision(
 /**
  * SQL approximation of storyIndexDecision for the archive sitemap:
  *
- *   first_seen_at > now() - interval '72 hours'   -- FRESH
- *   OR source_count >= 2                           -- independent publications
- *   OR jsonb_array_length(history) > 0             -- recorded update events
+ *   first_seen_at > now() - interval '336 hours'   -- evaluation window
+ *   OR source_count >= 2                            -- active publications
+ *   OR jsonb_array_length(sources) >= 2             -- all-time source union
+ *   OR jsonb_array_length(history) > 0              -- recorded update events
+ *   OR cluster_id = any($1::text[])                 -- Search Console protected
  *
- * Differences from the TS predicate, accepted on purpose: source_count is
- * the stored ACTIVE publication count (the page counts the all-time union,
- * which is never smaller, and a count that dropped leaves a coverage_change
- * event behind, so the history clause catches it); the history clause also
- * counts category_changed events the page ignores (over-inclusion of a URL
- * that answers noindex — rare, and harmless to a crawler); corroborated
- * details and related coverage are render-time signals with no column, so
- * a page indexable only through them is simply not advertised (still
- * crawlable through the links that make it indexable). Composed with the
+ * `protectedIds` is the report's protected set (gscProtectedStoryIds()) —
+ * the caller only uses this predicate when that report is fresh; without a
+ * fresh report the sitemap lists every non-merged story, exactly as the
+ * pages then answer. It is bound as ONE text[] parameter (node-postgres
+ * serializes a JS array as a Postgres array literal), so an empty set is
+ * still valid SQL (`= any('{}')` is simply false).
+ *
+ * Differences from the TS predicate, accepted on purpose: an archived page
+ * counts independent publications over the all-time sources union
+ * (archivedStoryToCluster builds its articles from `sources`), so both the
+ * stored ACTIVE count and the union length are tested; the union may hold
+ * a press release the page does not count, and the history clause counts
+ * category_changed events the page ignores — over-inclusion of a URL that
+ * answers noindex, rare and harmless to a crawler. Corroborated details and
+ * related coverage are render-time signals with no column, so a page
+ * indexable only through them is simply not advertised (still crawlable
+ * through the links that make it indexable). Composed with the
  * merged_into_cluster_id IS NULL filter by the route.
  */
-export function archiveSitemapIndexableSql(): SQL {
-  const freshInterval = sql.raw(`interval '${FRESH_STORY_HOURS} hours'`);
-  return sql`(${storyArchive.firstSeenAt} > now() - ${freshInterval} or ${storyArchive.sourceCount} >= 2 or jsonb_array_length(${storyArchive.history}) > 0)`;
+export function archiveSitemapIndexableSql(protectedIds: readonly string[]): SQL {
+  const evaluationWindow = sql.raw(`interval '${EVALUATION_WINDOW_HOURS} hours'`);
+  const protectedIdsParam = sql.param<string[], string[]>([...protectedIds]);
+  return sql`(${storyArchive.firstSeenAt} > now() - ${evaluationWindow} or ${storyArchive.sourceCount} >= 2 or jsonb_array_length(${storyArchive.sources}) >= 2 or jsonb_array_length(${storyArchive.history}) > 0 or ${storyArchive.clusterId} = any(${protectedIdsParam}::text[]))`;
 }
 
 /* ------------------------------------------------------------------------ *

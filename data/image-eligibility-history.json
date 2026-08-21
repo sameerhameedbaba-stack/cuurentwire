@@ -2,11 +2,37 @@
   {
     "date": "2026-08-21T20:41:32.993Z",
     "sampled": 120,
-    "pctWithImage": 98.3,
-    "pctWidth1200": 98.3,
-    "pctPixels300k": 98.3,
-    "pctWide16x9": 98.3,
-    "pctBroken": 1.7,
-    "medianWidth": 1200
+    "og": {
+      "pctWithImage": 98.3,
+      "pctWidth1200": 98.3,
+      "pctPixels300k": 98.3,
+      "pctWide16x9": 98.3,
+      "pctBroken": 1.7,
+      "medianWidth": 1200
+    },
+    "hero": null
+  },
+  {
+    "date": "2026-08-21T22:00:30.087Z",
+    "sampled": 120,
+    "og": {
+      "pctWithImage": 99.2,
+      "pctWidth1200": 99.2,
+      "pctPixels300k": 99.2,
+      "pctWide16x9": 99.2,
+      "pctBroken": 0.8,
+      "medianWidth": 1200
+    },
+    "hero": {
+      "pctPublisherImage": 69.2,
+      "pctPlaceholder": 0,
+      "pctNone": 30,
+      "pctWidth1200": 32.5,
+      "pctPixels300k": 57.5,
+      "pctWide16x9": 45.8,
+      "pctBroken": 6.7,
+      "medianWidth": 1222,
+      "pctWidth1200OfPublisher": 47
+    }
   }
 ]
