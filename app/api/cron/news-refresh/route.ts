@@ -107,6 +107,7 @@ export async function GET(request: NextRequest) {
     let persisted = false;
     let archivedStories = 0;
     let indexNowSubmitted = 0;
+    let briefingStored = false;
     if (isDatabaseConfigured()) {
       persisted = await persistDataset(dataset);
       // Which stories are brand new? Must be answered before the archive
@@ -120,7 +121,7 @@ export async function GET(request: NextRequest) {
       // failures), so a broken archive write never breaks the cron response.
       archivedStories = await archiveDataset(dataset);
       // Daily briefing row for today (ET): best-effort, skips mock data.
-      await upsertDailyBriefing(dataset);
+      briefingStored = await upsertDailyBriefing(dataset);
       // Tell IndexNow about genuinely new story URLs — production only, so
       // localhost URLs are never submitted. Best-effort: never throws.
       if (env.isProduction && archivedStories > 0 && newIds.length > 0) {
@@ -147,6 +148,7 @@ export async function GET(request: NextRequest) {
       })),
       persistedToDatabase: persisted,
       archivedStories,
+      briefingStored,
       indexNowSubmitted,
     });
   } catch (error) {
