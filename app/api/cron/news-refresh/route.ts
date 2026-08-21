@@ -17,6 +17,7 @@ import { env } from "@/lib/env";
 import { compactDataset } from "@/lib/news/compact";
 import type { NewsDataset } from "@/lib/news/types";
 import { pingIndexNow } from "@/lib/seo/indexnow";
+import { warmHomepageHero } from "@/lib/seo/warm-hero";
 import { logger } from "@/lib/utils/logger";
 import { secureCompare } from "@/lib/utils/secure-compare";
 
@@ -162,6 +163,11 @@ export async function GET(request: NextRequest) {
       releaseCronBurst();
     }
     revalidateIsrSurfaces();
+    // Warm the homepage hero's optimized image variants so the first reader
+    // (or a PageSpeed lab run) after a hero change gets an optimizer cache
+    // HIT instead of paying the 1-3s transform — lib/seo/warm-hero.ts.
+    // Production only, best-effort, network wait only.
+    const heroWarmed = env.isProduction ? await warmHomepageHero(siteConfig.url) : 0;
     let persisted = false;
     let archivedStories = 0;
     let indexNowSubmitted = 0;
@@ -232,6 +238,7 @@ export async function GET(request: NextRequest) {
       persistedToDatabase: persisted,
       archivedStories,
       briefingStored,
+      heroWarmed,
       indexNowSubmitted,
       // True when database work was intentionally skipped this run (the
       // batch cadence), distinguishing a deliberate skip from a failure.
