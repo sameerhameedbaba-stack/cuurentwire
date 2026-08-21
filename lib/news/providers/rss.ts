@@ -1,6 +1,7 @@
 import { feedCategoryPrior } from "@/config/categories";
 import {
   DEFAULT_FEED_ITEM_CAP,
+  DEFAULT_FEED_TIMEOUT_MS,
   configuredFeeds,
   type FeedDefinition,
 } from "@/config/feeds";
@@ -89,8 +90,11 @@ async function fetchFeed(
     throw new Error(`Unsupported feed protocol: ${parsed.protocol}`);
   }
 
+  // 8s: feeds are fetched in parallel, so the slowest one sets the wall
+  // time of every refresh; a publisher that cannot answer in 8s is stale
+  // for this cycle and simply rejoins on the next one.
   const response = await fetch(feedUrl, {
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(feed.timeoutMs ?? DEFAULT_FEED_TIMEOUT_MS),
     cache: "no-store",
     headers: { "User-Agent": "CurrentWire/1.0 (news aggregator)" },
   });

@@ -32,7 +32,11 @@ export interface FeedDefinition {
   country?: "US" | "CA";
   /** Per-feed item cap (default DEFAULT_FEED_ITEM_CAP) — floods never dominate. */
   maxItems?: number;
+  /** Per-feed fetch timeout (default DEFAULT_FEED_TIMEOUT_MS). */
+  timeoutMs?: number;
 }
+
+export const DEFAULT_FEED_TIMEOUT_MS = 8_000;
 
 export const DEFAULT_FEED_ITEM_CAP = 25;
 

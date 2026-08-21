@@ -88,7 +88,7 @@ See [.env.example](.env.example) for the full annotated list.
 | `NEXT_PUBLIC_SITE_URL` | prod | Canonical site URL (SEO, RSS, OG) |
 | `NEWS_DATA_MODE` | no | `mock` / `live`; unset = auto |
 | `NEWS_REFRESH_MINUTES` | no | Legacy overall refresh interval (default 5; also the GNews fallback) |
-| `RSS_REFRESH_MINUTES` | no | RSS fast-lane refresh interval (default 10; the cron skips work when the dataset is younger) |
+| `RSS_REFRESH_MINUTES` | no | RSS fast-lane refresh interval (default 15; the cron skips work when the dataset is younger — ~2.5s CPU per refresh keeps the Hobby CPU allowance safe) |
 | `GNEWS_REFRESH_MINUTES` | no | GNews refresh interval (default `NEWS_REFRESH_MINUTES` or 30; keep ≥30 on the free tier) |
 | `GNEWS_API_KEY` | live mode | [gnews.io](https://gnews.io) API key |
 | `NEWS_API_KEY` | live mode | [newsapi.org](https://newsapi.org) key (their free tier is dev-only) |

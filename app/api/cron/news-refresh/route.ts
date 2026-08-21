@@ -219,6 +219,16 @@ export async function GET(request: NextRequest) {
         durationMs: p.durationMs,
       })),
       ingestionDurationMs: dataset.ingestion.durationMs,
+      // Feed-level health at a glance: the slowest three set the refresh
+      // wall time; failures are per-feed (one dead feed never fails a run).
+      slowestFeeds: (dataset.ingestion.providers.find((p) => p.provider === "rss")?.feeds ?? [])
+        .slice()
+        .sort((a, b) => b.durationMs - a.durationMs)
+        .slice(0, 3)
+        .map((f) => ({ url: f.url, ms: f.durationMs, ok: f.ok })),
+      failedFeeds: (dataset.ingestion.providers.find((p) => p.provider === "rss")?.feeds ?? [])
+        .filter((f) => !f.ok)
+        .map((f) => f.url),
       persistedToDatabase: persisted,
       archivedStories,
       briefingStored,
