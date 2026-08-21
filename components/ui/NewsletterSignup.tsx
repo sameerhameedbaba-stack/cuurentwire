@@ -7,7 +7,9 @@ export function NewsletterSignup() {
   return (
     <section
       aria-labelledby="brief-heading"
-      className="bg-ink-deep px-6 py-8 text-white dark:border dark:border-rule sm:px-8"
+      // Literal ground: bg-ink-deep flips to white in dark mode, which
+      // would white-out this panel's fixed text-white content.
+      className="bg-[#090909] px-6 py-8 text-white dark:border dark:border-rule sm:px-8"
     >
       <h2 id="brief-heading" className="headline text-2xl text-white">
         The CurrentWire Brief
