@@ -34,6 +34,12 @@ export interface FeedDefinition {
   maxItems?: number;
   /** Per-feed fetch timeout (default DEFAULT_FEED_TIMEOUT_MS). */
   timeoutMs?: number;
+  /**
+   * User-Agent override. undefined = the default CurrentWire UA; null = send
+   * no UA header (CBC tarpits product-style bot UAs; its feeds are public
+   * syndication and answer instantly without one).
+   */
+  userAgent?: string | null;
 }
 
 export const DEFAULT_FEED_TIMEOUT_MS = 8_000;
@@ -96,9 +102,9 @@ export const CURATED_FEEDS: FeedDefinition[] = [
   { url: "http://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml", publisher: "BBC News" },
   { url: "https://www.theguardian.com/us-news/rss", publisher: "The Guardian", country: "US", maxItems: 25 },
   // ── Canada ───────────────────────────────────────────────────────────
-  { url: "https://www.cbc.ca/webfeed/rss/rss-topstories", publisher: "CBC News" },
-  { url: "https://www.cbc.ca/webfeed/rss/rss-canada", publisher: "CBC News", country: "CA" },
-  { url: "https://www.cbc.ca/webfeed/rss/rss-politics", publisher: "CBC News", category: "politics", country: "CA" },
+  { url: "https://www.cbc.ca/webfeed/rss/rss-topstories", publisher: "CBC News", userAgent: null },
+  { url: "https://www.cbc.ca/webfeed/rss/rss-canada", publisher: "CBC News", country: "CA", userAgent: null },
+  { url: "https://www.cbc.ca/webfeed/rss/rss-politics", publisher: "CBC News", category: "politics", country: "CA", userAgent: null },
   { url: "https://globalnews.ca/canada/feed/", publisher: "Global News", country: "CA" },
   { url: "https://globalnews.ca/politics/feed/", publisher: "Global News", category: "politics", country: "CA" },
   { url: "https://globalnews.ca/money/feed/", publisher: "Global News", category: "business", country: "CA" },

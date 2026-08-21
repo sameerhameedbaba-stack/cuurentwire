@@ -93,10 +93,20 @@ async function fetchFeed(
   // 8s: feeds are fetched in parallel, so the slowest one sets the wall
   // time of every refresh; a publisher that cannot answer in 8s is stale
   // for this cycle and simply rejoins on the next one.
+  // Identify ourselves by default. A feed may override the UA, or opt out
+  // (`userAgent: null`) — CBC's WAF tarpits any product-style bot UA
+  // (measured 2026-08-21: "CurrentWire/1.0 (…)" hangs until timeout; no UA
+  // header answers 200 in <0.5s), and the feed is public syndication.
+  const headers: Record<string, string> = {};
+  if (feed.userAgent === undefined) {
+    headers["User-Agent"] = "CurrentWire/1.0 (news aggregator)";
+  } else if (feed.userAgent !== null) {
+    headers["User-Agent"] = feed.userAgent;
+  }
   const response = await fetch(feedUrl, {
     signal: AbortSignal.timeout(feed.timeoutMs ?? DEFAULT_FEED_TIMEOUT_MS),
     cache: "no-store",
-    headers: { "User-Agent": "CurrentWire/1.0 (news aggregator)" },
+    headers,
   });
   if (!response.ok) throw new Error(`Feed ${parsed.hostname} responded ${response.status}`);
 
