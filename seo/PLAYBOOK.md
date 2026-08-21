@@ -6,9 +6,13 @@ learn something. See `BACKLOG.md` for prioritized work and `reports/` for run lo
 
 ## Hard constraints
 
-- **$0/month, forever.** Free tools and free keyless API tiers only. Never enter
-  billing details, never sign up for trials that convert, never upgrade. If a free
-  tier runs out, stop using it and log it in BACKLOG.md.
+- **$0/month, with ONE owner-approved exception.** Free tools and free keyless
+  API tiers only. Never enter billing details, never sign up for trials that
+  convert, never upgrade. If a free tier runs out, stop using it and log it in
+  BACKLOG.md. Exception (owner-approved 2026-08-21, in person): the Neon
+  database runs on the paid usage-based Launch plan to end the egress-quota
+  outage. Runs must never add other paid services, and never upgrade anything
+  further — a new quota wall gets logged for the owner, not paid past.
 - **White-hat only.** No cloaking, no fabricated schema/authors/dates/reviews, no
   link schemes. Excerpts stay short and attributed — publisher copyright is respected.
 - **No fabricated metrics.** Every number in a report comes from a real fetch, API

@@ -12,9 +12,18 @@ value a fix creates per unit of risk.
 
 ## Open — ranked
 
-### 1. The permanent story archive is unreachable — BLOCKED(owner)
+### 1. The permanent story archive is unreachable — CLOSED 2026-08-21
 
-**This is the whole story of the week, and the only owner action on this file.**
+**RESOLVED, verified live 2026-08-21:** the owner approved upgrading Neon to
+the paid usage-based Launch plan (billed via Vercel; the ONE exception to the
+$0 rule — see PLAYBOOK hard constraints). Recovery was instant, no deploy:
+`/archive-sitemap.xml` 200 with 2,849 URLs, previously-5xx story pages and
+`/archive/<date>` all 200. The egress fix (commit aeceeae) stays in place so
+this cannot recur; next runs should confirm briefing rows accumulate and
+IndexNow pings resume, and around ~Sep the owner MAY downgrade back to Free
+if measured egress stays low (owner decision — log it, don't push it).
+
+Original diagnosis below, kept for the record.
 
 The Neon Postgres archive stopped answering some time after 2026-08-19 22:20
 UTC. Measured 2026-08-20 22:0x UTC:
