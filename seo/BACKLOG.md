@@ -1,16 +1,60 @@
 # SEO Backlog
 
-**Status 2026-08-21 (weekly deep run): five open items, one of them the only
-thing on this list the owner can act on.** The backlog was empty on 2026-08-20.
-It is not empty now, and nothing on it was invented to fill space — every item
-below names the command or fetch that found it during the 2026-08-21 weekly run
-(`reports/2026-08-21-weekly.md`).
+**Status 2026-08-22 (daily run): three open items, none of them owner work.**
+The day's finding was not on this list when the run started — brand-new story
+URLs were 404ing straight out of `/news-sitemap.xml` — and it is fixed and
+verified live (item A below). Items 1 and 3 are now closed against fresh
+fetches; items 2, 4 and 5 were re-measured and still stand. Nothing here was
+invented to fill space — every item names the command or fetch that found it.
 
 Statuses: OPEN / SHIPPED / CLOSED / BLOCKED(user). Verify a fix live before
 flipping it to SHIPPED. Ranking rule: how much indexable, crawlable, citable
 value a fix creates per unit of risk.
 
 ## Open — ranked
+
+### A. Brand-new story URLs 404ed out of the news sitemap — SHIPPED 2026-08-22
+
+**Found by this run's crawl sample, not by any existing check.** A URL taken
+from `/news-sitemap.xml` answered **404**. Full probe of the sitemap:
+**2 of 743** URLs 404, and **2 of the 40 newest** — the entries Google News
+actually fetches. Both served `x-vercel-cache: HIT` with a rising `age`, and
+`/story/<id-token>` for the same clusters answered **307 pointing at the very
+slug that was 404ing**, which proves the cluster was live and only the answer
+was wrong. Both URLs served 200 once the ISR entry expired ~5 minutes later.
+
+Cause: `/news-sitemap.xml` is force-dynamic and advertises a cluster the
+moment it enters the live dataset, while database writes have been batched to
+a ~25-30 minute cadence since 2026-08-21 (`lib/database/persist-gate.ts`). A
+story page rendering from a slightly older dataset generation missed the live
+lookup AND the archive, and answered a 404 that ISR then stored for its full
+300 s window. This is a side effect of the cost-control batching, and it did
+not exist while writes were immediate.
+
+Fixed in `f757bba`: `resolveStoryRequest` answers `unavailable` (retriable
+5xx, which ISR does not store) instead of 404 when the archive answers "no
+such story" about a slug carrying a well-formed cluster-id token. Two bounds
+keep the status code a diagnosis — junk paths without the token still 404,
+and a deployment with no database attached still 404s.
+
+Verified live after deploy:
+
+| Probe | Before | After |
+|---|---|---|
+| Whole `/news-sitemap.xml` | 2 of 743 answered 404 | **741 of 741 answer 200, zero 404** |
+| `/story/no-such-headline-c0123456789ab` | 404 | **500** (retriable) |
+| `/story/c0123456789ab` (bare id form) | 404 | **500** |
+| `/story/definitely-not-a-story` | 404 | 404 (unchanged) |
+| `/wp-login.php`, `/zz-definitely-not-a-page-zz` | 404 | 404 (unchanged) |
+| A live story page | 200 | 200 (unchanged) |
+| `node scripts/seo-health.mjs` | ALL CHECKS PASSED | ALL CHECKS PASSED |
+
+Guards: `tests/unit/archive-outage.test.ts` (14 tests). The case that asserted
+the old behaviour was corrected in place, not weakened — its premise was true
+only while writes were immediate.
+
+Follow-up, NOT yet work: this makes item 2 below (500 vs 503) worth more than
+it was, because a 5xx is now the answer to a slightly wider set of URLs.
 
 ### 0. Neon cost hard-cap + console access — mostly SHIPPED 2026-08-21
 
@@ -129,7 +173,24 @@ unavailability, and 500 is the one that reads as a broken page. The two routes
 should agree. This is a refinement of a fix that is already correct on the
 decisive point — rank it accordingly, and do not let it delay item 1.
 
-### 3. Nothing routes a red monitor to a human
+### 3. Nothing routes a red monitor to a human — CLOSED 2026-08-22
+
+**Closed against a fresh fetch.** `.github/workflows/uptime.yml` now exists
+alongside `seo-health.yml` and `url-survival.yml`, and both scheduled loops
+check for open `[auto-alert]` issues before doing anything else. Verified this
+run: `https://api.github.com/repos/sameerhameedbaba-stack/cuurentwire/issues?state=open`
+returned **0 open issues**, and production answered 200 on `/`,
+`/news-sitemap.xml`, `/archive-sitemap.xml` and `/rss` — the quiet state the
+alerting is supposed to produce, read from the same endpoint the alerting
+writes to. `gh` itself is still unauthenticated here (HTTP 401 on the GraphQL
+API), so the runs keep reading the issues REST endpoint and re-running
+`scripts/seo-health.mjs` locally rather than trusting the Actions UI.
+
+Honest limit, unchanged: this routes an outage to the owner's **email**, and
+detection is bounded by the 30-minute uptime probe, not by minutes. Original
+finding kept below.
+
+### 3a. Original finding (2026-08-21)
 
 `seo-health.yml` failed at **2026-08-20T07:27:37Z** and `url-survival.yml` at
 **2026-08-20T07:09:02Z** (`gh run list`). Both fired correctly, on the first
@@ -148,7 +209,7 @@ route differently from Actions notifications; or accept the agent loops as the
 delivery mechanism and state the detection latency honestly (up to about 24
 hours) instead of implying it is minutes.
 
-### 4. `/news-desk` is the one masthead page with no JSON-LD
+### 4. `/news-desk` is the one masthead page with no JSON-LD — RE-VERIFIED 2026-08-22, still open
 
 Verified live: `curl -s https://currentwire.us/news-desk | grep -c
 'application/ld+json'` returns **0**, against **1** for `/about`. The
@@ -161,12 +222,17 @@ miss. It is otherwise healthy: 200, 312 words, indexable, with
 
 `/privacy`, `/terms` and `/copyright` also carry none. Lower value, same fix.
 
-### 5. Seven of twelve sampled story pages have no outbound topic links
+### 5. Story pages have no outbound topic links — RE-MEASURED 2026-08-22, still open
 
 Measured this run across 12 live story pages sampled from `/news-sitemap.xml`:
 outbound `/story/` links are **median 4, and zero on none of them**. The
 2026-08-19 "More in {Category}" rail is holding, and that was the single
 biggest finding of the 2026-08-18 weekly run, when 39 of 40 pages had zero.
+
+Re-measured 2026-08-22 on 5 fresh news-sitemap stories: outbound `/story/`
+links **4, 5, 4, 4, 4** (the rail is holding), outbound `/topic/` links
+**0, 0, 0, 2, 1** — still median 0, still absent on 3 of 5. Unchanged, so it
+keeps its rank.
 
 Outbound `/topic/` links are **median 0, absent on 7 of 12**. Topic hubs are
 exactly the surface that needs inbound links: 24 of them sit in `sitemap.xml`,
@@ -175,6 +241,18 @@ link equity would have to come from. Same defect class as the story-link dead
 end, one hop up, and a smaller job than that fix was.
 
 ## Watching, not yet work
+
+- **`/archive-sitemap.xml` is shrinking, and that is the thin-story policy
+  working, not a regression.** 2,793 URLs on 2026-08-20, 2,849 after the Neon
+  recovery on 2026-08-21, **2,169 on 2026-08-22**. The route lists only
+  archived stories the thin-story policy keeps indexable
+  (`archiveSitemapIndexableSql`: first seen within 72 h, OR 2+ sources, OR a
+  history event), so single-source stories drop out as they age past 72 h —
+  shipped in `baa7668`, hours before the first drop. Checked rather than
+  assumed, because a falling count of permanent URLs is exactly what a real
+  regression would also look like. What to watch: the dropped URLs must keep
+  answering **200 with noindex**, never 404 — the daily probe covers this, and
+  120 sampled archive-sitemap URLs answered 118×200 / 2×307 this run.
 
 - **`/most-covered` is running 5 items** (ItemList and rendered links both 5;
   it was 12 on 2026-08-19). Not a defect — coverage breadth on this site is
