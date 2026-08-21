@@ -134,6 +134,9 @@ async function fetchFeed(
         source: channelTitle,
         sourceDomain,
         provider: "rss",
+        // Which configured feed delivered the item — the per-feed value
+        // statistics (lib/news/stats.ts) attribute accepted articles by it.
+        feedUrl,
         ...(prior
           ? { providerCategory: prior, providerCategoryIsPrior: true }
           : {}),

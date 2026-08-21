@@ -8,6 +8,7 @@ import { getTop100 } from "@/lib/news/queries";
 import { COUNTRY_LABELS, type Country } from "@/lib/news/types";
 import { newsDayET } from "@/lib/utils/news-day";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { briefingMetaDescription, briefingMetaTitle } from "@/lib/seo/story-indexing";
 import { ItemListJsonLd } from "@/lib/seo/structured-data";
 
 export const revalidate = 300;
@@ -16,12 +17,23 @@ const TITLE = "Daily News Briefing";
 const DESCRIPTION =
   "Today's news in five minutes: the stories that matter most across the United States and Canada, ranked and summarized in one place — updated all day, archived every evening.";
 
-export const metadata: Metadata = pageMetadata({
-  title: `${TITLE} — Today's News in 5 Minutes`,
-  description: DESCRIPTION,
-  path: "/briefing",
-  rssPath: "/rss",
-});
+/**
+ * Title names the region and today's ET news day; the description quotes
+ * the live top headlines (same cached dataset the page renders, no extra
+ * read) so the snippet changes with the news instead of repeating the
+ * standing sentence every day. The standing sentence remains the fallback
+ * for an empty dataset.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const { stories } = await getTop100({});
+  const description = briefingMetaDescription(stories.slice(0, 10)) || DESCRIPTION;
+  return pageMetadata({
+    title: briefingMetaTitle(dayLabel(newsDayET())),
+    description,
+    path: "/briefing",
+    rssPath: "/rss",
+  });
+}
 
 /** "August 21, 2026" for a YYYY-MM-DD day string. */
 function dayLabel(day: string): string {

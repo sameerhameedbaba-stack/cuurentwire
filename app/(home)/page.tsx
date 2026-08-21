@@ -92,7 +92,7 @@ export default async function HomePage() {
       <meta name="cw-dataset-version" content={data.dataset.datasetVersion} />
       {/* The hero is the LCP element and lives on a publisher CDN — open the
           connection before the parser reaches it. */}
-      <ImageOriginPreconnect src={data.hero.imageUrl} />
+      <ImageOriginPreconnect src={data.hero.imageUrl} optimized />
       <OrganizationJsonLd />
       <WebSiteJsonLd />
       <ItemListJsonLd

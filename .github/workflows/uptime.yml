@@ -1,12 +1,21 @@
 name: Uptime probe
 
-# Every 30 minutes: is production actually up? Probes the homepage, the
-# archive sitemap (the surface that exposed the 2026-08-19 Neon outage) and
-# the news sitemap. On failure it opens ONE "[auto-alert]" GitHub issue —
-# issue creation emails the repo owner, which is the delivery channel the
-# daily 06:47 checks lacked (three outages were detected but nobody was
-# told for hours). On recovery it comments and closes the issue, so an open
-# auto-alert issue always means "broken right now". $0, no external services.
+# Every 30 minutes: is production actually up AND serving real, fresh news?
+# Probes the homepage, the archive sitemap (the surface that exposed the
+# 2026-08-19 Neon outage), the news sitemap and /briefing for HTTP 200, then
+# checks the homepage content itself: no demo-mode banner, a dataset version
+# stamped within the last 45 minutes (three missed 15-minute refreshes), and
+# a news sitemap that still lists at least 50 stories. A site can answer 200
+# on every URL while showing mock data or a day-old dataset — the 2026-08
+# outages were exactly that kind of quiet failure.
+#
+# On failure it opens ONE "[auto-alert]" GitHub issue — issue creation
+# emails the repo owner, which is the delivery channel the daily 06:47
+# checks lacked (three outages were detected but nobody was told for
+# hours). On recovery it comments and closes the issue, so an open
+# auto-alert issue always means "broken right now". $0, no external
+# services, and nothing but bash + curl + grep/sed/date so the probe itself
+# can never be broken by a dependency install.
 
 on:
   schedule:
@@ -22,11 +31,19 @@ jobs:
     steps:
       - name: Probe production
         id: probe
+        # Every check appends one line to the `details` output so the alert
+        # issue body says exactly which check failed, not just "red".
         run: |
           fail=0
+          home_html=$(mktemp)
+          news_xml=$(mktemp)
           {
             echo "details<<DETAILS_EOF"
-            for url in "https://currentwire.us/" "https://currentwire.us/archive-sitemap.xml" "https://currentwire.us/news-sitemap.xml"; do
+
+            # 1. Status codes. /briefing is the Daily News Briefing page
+            #    (shipped 2026-08-21) — it renders from the same dataset plus
+            #    the database, so a non-200 there is a real outage.
+            for url in "https://currentwire.us/" "https://currentwire.us/archive-sitemap.xml" "https://currentwire.us/news-sitemap.xml" "https://currentwire.us/briefing"; do
               code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || echo 000)
               echo "$url -> HTTP $code"
               case "$code" in
@@ -34,6 +51,63 @@ jobs:
                 *) fail=1 ;;
               esac
             done
+
+            # 2. Homepage content — one fetch, two checks.
+            home_code=$(curl -s -o "$home_html" -w "%{http_code}" --max-time 30 "https://currentwire.us/" || echo 000)
+            if [ "$home_code" != "200" ]; then
+              echo "homepage content checks -> SKIPPED (homepage fetch returned HTTP $home_code)"
+              fail=1
+            else
+              # (a) Demo mode. components/layout/DemoBanner.tsx renders
+              #     aria-label="Demo data notice" whenever the data mode is
+              #     "mock". That attribute is the most stable marker: the
+              #     visible copy is only uppercased by CSS and contains an em
+              #     dash. Mock data in production means the real provider is
+              #     down or misconfigured — invisible to a plain 200 check.
+              if grep -qF 'Demo data notice' "$home_html"; then
+                echo "demo-mode marker -> PRESENT (production is serving mock data)"
+                fail=1
+              else
+                echo "demo-mode marker -> absent (ok)"
+              fi
+
+              # (b) Dataset freshness. Every list surface stamps
+              #     <meta name="cw-dataset-version" content="YYYYMMDDTHHMMSSZ-hash">.
+              #     The refresh cron runs every 15 minutes, so a stamp older
+              #     than 45 minutes means three consecutive refreshes were
+              #     missed (cron dead, provider quota exhausted, dataset not
+              #     writing) while every page still returns 200.
+              version=$(grep -o '<meta[^>]*name="cw-dataset-version"[^>]*>' "$home_html" | head -n 1 | sed -n 's/.*content="\([^"]*\)".*/\1/p' || true)
+              stamp=$(printf '%s' "$version" | sed -n 's/^\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)T\([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)Z.*/\1-\2-\3 \4:\5:\6/p' || true)
+              if [ -z "$stamp" ]; then
+                echo "dataset version -> MISSING or unparseable (meta content: '${version:-none}')"
+                fail=1
+              else
+                now_s=$(date -u +%s)
+                then_s=$(date -u -d "$stamp UTC" +%s || echo 0)
+                age_min=$(( (now_s - then_s) / 60 ))
+                if [ "$age_min" -gt 45 ]; then
+                  echo "dataset version -> $version is ${age_min} min old (limit 45 min = three missed 15-min refreshes)"
+                  fail=1
+                else
+                  echo "dataset version -> $version (${age_min} min old, ok)"
+                fi
+              fi
+            fi
+
+            # 3. The news sitemap must actually list stories. ~755 clusters per
+            #    refresh is normal; fewer than 50 means an empty dataset or a
+            #    sitemap route rendering from an empty fallback.
+            news_code=$(curl -s -o "$news_xml" -w "%{http_code}" --max-time 30 "https://currentwire.us/news-sitemap.xml" || echo 000)
+            news_count=$(grep -o '<url>' "$news_xml" | wc -l || true)
+            news_count=$((news_count + 0))
+            if [ "$news_code" != "200" ] || [ "$news_count" -lt 50 ]; then
+              echo "news sitemap -> HTTP $news_code with $news_count <url> entries (minimum 50)"
+              fail=1
+            else
+              echo "news sitemap -> $news_count <url> entries (ok)"
+            fi
+
             echo "DETAILS_EOF"
           } >> "$GITHUB_OUTPUT"
           exit "$fail"
@@ -80,7 +154,8 @@ jobs:
             if (existing) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner, repo: context.repo.repo,
-                issue_number: existing.number, body: "Recovered — all probed URLs answer 200 again. Closing.",
+                issue_number: existing.number,
+                body: "Recovered — every probed URL answers 200, no demo-mode banner, the dataset version is fresh and the news sitemap is populated again. Closing.",
               });
               await github.rest.issues.update({
                 owner: context.repo.owner, repo: context.repo.repo,

@@ -11,10 +11,18 @@ function storyHref(cluster: StoryCluster): string {
 export function HeroStory({
   cluster,
   headingLevel = "h1",
+  optimize = false,
 }: {
   cluster: StoryCluster;
   /** Pages that render their own h1 (country/category) demote the hero to h2. */
   headingLevel?: "h1" | "h2";
+  /**
+   * Route the hero through the image optimizer (allowlisted hosts only).
+   * ONLY the homepage passes this: the optimizer quota (5,000/month) is
+   * budgeted for one hero — see next.config.ts. Section/country heroes and
+   * story pages keep the raw publisher image.
+   */
+  optimize?: boolean;
 }) {
   const Heading = headingLevel;
   return (
@@ -27,6 +35,7 @@ export function HeroStory({
           aspect="16/9"
           sizes="(max-width: 1024px) 100vw, 58vw"
           priority
+          optimize={optimize}
         />
       </Link>
       <div className="mt-4 flex items-center gap-3">

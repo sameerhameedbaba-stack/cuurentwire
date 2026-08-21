@@ -62,6 +62,30 @@ export default async function AdminStatusPage({
   const rssFeedHealth =
     stats.providers.find((p) => p.provider === "rss")?.feeds ?? [];
 
+  // Measurement rows (lib/news/stats.ts). Both are optional on the dataset:
+  // a snapshot written before they existed renders the page without them.
+  const coverage = stats.coverage;
+  const coverageRows: [string, string | number][] = coverage
+    ? [
+        ["Single publication", coverage.singleSource],
+        ["Two publications", coverage.twoSource],
+        ["Three publications", coverage.threeSource],
+        ["Four or more publications", coverage.fourPlus],
+        ["Multi-publication share", `${coverage.multiSourcePct}%`],
+        ["Three-plus share", `${coverage.threePlusPct}%`],
+        ["Four-plus share", `${coverage.fourPlusPct}%`],
+        ["Median publications per story", coverage.medianIndependentPublications],
+        ["Mean publications per story", coverage.meanIndependentPublications],
+        ["Press-release share", `${coverage.pressReleasePct}%`],
+        ["Opinion share", `${coverage.opinionPct}%`],
+        ["General-category share", `${coverage.generalCategoryPct}%`],
+      ]
+    : [];
+  const feedValueRows = [...(stats.feedStats ?? [])].sort(
+    (a, b) => b.accepted - a.accepted,
+  );
+  const ratePct = (value: number) => `${Math.round(value * 100)}%`;
+
   const rows: [string, string | number][] = [
     ["Data mode", getDataMode()],
     ["Dataset version", dataset.datasetVersion],
@@ -182,6 +206,71 @@ export default async function AdminStatusPage({
                     <td className="py-2 pr-4 tabular-nums">{feed.itemsSkipped}</td>
                     <td className="py-2 pr-4 tabular-nums">{feed.durationMs} ms</td>
                     <td className="py-2 text-muted">{feed.error ?? ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {coverage && (
+        <section aria-label="Coverage distribution" className="mt-8">
+          <h2 className="headline text-xl">Coverage distribution</h2>
+          <p className="mt-1 text-xs text-muted">
+            Distinct publications per story across all {coverage.clusters}{" "}
+            clusters of the last run. A higher multi-publication share means
+            more of the front is corroborated by independent reports.
+          </p>
+          <dl className="mt-3 divide-y divide-rule border-y border-rule text-sm">
+            {coverageRows.map(([label, value]) => (
+              <div key={label} className="flex justify-between gap-4 py-2">
+                <dt className="font-semibold">{label}</dt>
+                <dd className="text-right tabular-nums text-muted">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      {feedValueRows.length > 0 && (
+        <section aria-label="Feed value" className="mt-8">
+          <h2 className="headline text-xl">Feed value (last run)</h2>
+          <p className="mt-1 text-xs text-muted">
+            One row per configured feed, most accepted articles first.
+            Singleton = share of this feed&rsquo;s stories no other
+            publication covered; join = share it shares with at least one other
+            publication; first = share of its articles that were the earliest
+            report in a multi-publication story; noise = (rejected + press
+            releases) / received.
+          </p>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full border-y border-rule text-left text-sm">
+              <thead>
+                <tr className="border-b border-rule text-xs uppercase tracking-wider text-muted">
+                  <th className="py-2 pr-4">Feed</th>
+                  <th className="py-2 pr-4">Accepted</th>
+                  <th className="py-2 pr-4">Singleton</th>
+                  <th className="py-2 pr-4">Join</th>
+                  <th className="py-2 pr-4">First</th>
+                  <th className="py-2 pr-4">Noise</th>
+                  <th className="py-2 pr-4">OK</th>
+                  <th className="py-2">ms</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-rule">
+                {feedValueRows.map((feed) => (
+                  <tr key={feed.url}>
+                    <td className="max-w-80 truncate py-2 pr-4" title={feed.url}>
+                      {feed.url}
+                    </td>
+                    <td className="py-2 pr-4 tabular-nums">{feed.accepted}</td>
+                    <td className="py-2 pr-4 tabular-nums">{ratePct(feed.singletonRate)}</td>
+                    <td className="py-2 pr-4 tabular-nums">{ratePct(feed.joinRate)}</td>
+                    <td className="py-2 pr-4 tabular-nums">{ratePct(feed.firstObservedRate)}</td>
+                    <td className="py-2 pr-4 tabular-nums">{ratePct(feed.noiseRate)}</td>
+                    <td className="py-2 pr-4">{feed.ok ? "ok" : "failed"}</td>
+                    <td className="py-2 tabular-nums">{feed.durationMs}</td>
                   </tr>
                 ))}
               </tbody>

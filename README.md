@@ -97,6 +97,7 @@ See [.env.example](.env.example) for the full annotated list.
 | `CRON_SECRET` | prod | Bearer token protecting `/api/cron/news-refresh` |
 | `ADMIN_SECRET` | prod | Admin diagnostics key — visit `/admin/auth?key=...` once per browser to set the access cookie |
 | `RSS_CURATED_FEEDS` | no | `off` = only your RSS_FEEDS; `on` = curated list (config/feeds.ts) even without RSS_FEEDS; unset = curated joins whenever RSS_FEEDS is set |
+| `THIN_STORY_NOINDEX` | no | `off` = index every story; default = mature (>72h) single-source stories with no added value answer noindex,follow |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | no | Google Analytics 4 ID (`G-…`); unset = no analytics loaded |
 | `CONTACT_EMAIL` etc. | no | Contact addresses shown on the site |
 
@@ -144,6 +145,8 @@ npm run lint         # ESLint
 npm test             # Vitest unit + integration (64 tests)
 npm run test:e2e     # Playwright e2e (desktop + mobile projects)
 ```
+
+GitHub Actions secrets: `PSI_API_KEY` (weekly Core Web Vitals), `GSC_SERVICE_ACCOUNT_JSON` (weekly Search Console template/discovery report — a Google Cloud service account with the Search Console API enabled, added as a restricted user on the GSC property). Both workflows stay green and skip when the secret is absent.
 
 First-time Playwright setup: `npx playwright install chromium`.
 

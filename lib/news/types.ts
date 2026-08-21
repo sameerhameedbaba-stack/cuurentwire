@@ -47,6 +47,12 @@ export interface RawArticle {
   providerCountry?: string;
   provider: string;
   isMock?: boolean;
+  /**
+   * Configured feed URL this item came from (RSS provider only). Drives the
+   * per-feed value statistics (lib/news/stats.ts); never copied onto Article,
+   * which is persisted and compacted.
+   */
+  feedUrl?: string;
 }
 
 /** Normalized, validated, classified article. */
@@ -183,6 +189,77 @@ export interface IngestionStats {
   classificationWarnings: number;
   /** First 10 warning descriptions, for the admin status page. */
   classificationWarningSamples: string[];
+  /**
+   * Multi-source coverage KPIs over every cluster of this run
+   * (lib/news/stats.ts). Optional: snapshots written before 2026-08-22
+   * carry none, and the endpoint/admin page render without it.
+   */
+  coverage?: CoverageDistribution;
+  /** Per-feed value statistics for this run (one row per configured feed). */
+  feedStats?: FeedValueStat[];
+}
+
+/**
+ * How much of the run's story set is independently corroborated. Source
+ * counts are DISTINCT publications per cluster (StoryCluster.sourceCount);
+ * percentages are 0–100 with one decimal, ratios of `clusters`.
+ */
+export interface CoverageDistribution {
+  clusters: number;
+  singleSource: number;
+  twoSource: number;
+  threeSource: number;
+  fourPlus: number;
+  /** Clusters with ≥2 publications, as a percentage of all clusters. */
+  multiSourcePct: number;
+  threePlusPct: number;
+  fourPlusPct: number;
+  /** Median of sourceCount across clusters (mean of the middle pair when even). */
+  medianIndependentPublications: number;
+  meanIndependentPublications: number;
+  /** Clusters whose cluster-level content type is press_release / opinion. */
+  pressReleasePct: number;
+  opinionPct: number;
+  /** Clusters in the internal low-confidence "general" bucket. */
+  generalCategoryPct: number;
+}
+
+/**
+ * What one configured feed contributed to a run. Counts are articles unless
+ * the name says clusters; rates are 0–1 with three decimals, 0 when the
+ * denominator is 0. Attribution is first-occurrence: an item two feeds both
+ * deliver (NPR 1003 and 1014 often overlap) is credited to the feed the
+ * pipeline saw first, matching exact-duplicate removal.
+ */
+export interface FeedValueStat {
+  url: string;
+  /** Hostname of the feed URL. */
+  publisher: string;
+  /** Raw items the feed produced (FeedHealth.itemsParsed). */
+  received: number;
+  /** Items that survived normalization, the age window, the cap and dedupe. */
+  accepted: number;
+  rejected: number;
+  /** Distinct clusters this feed's accepted articles belong to. */
+  clustersJoined: number;
+  /** Of those, clusters with exactly one publication. */
+  singletonClusters: number;
+  /** Of those, clusters with two or more publications. */
+  multiSourceJoins: number;
+  /** Accepted articles that are the earliest publishedAt in a ≥2-publication cluster. */
+  firstObserved: number;
+  /** Accepted articles classified press_release. */
+  pressReleases: number;
+  ok: boolean;
+  durationMs: number;
+  /** singletonClusters / clustersJoined */
+  singletonRate: number;
+  /** multiSourceJoins / clustersJoined */
+  joinRate: number;
+  /** firstObserved / accepted */
+  firstObservedRate: number;
+  /** (rejected + pressReleases) / received */
+  noiseRate: number;
 }
 
 export interface ProviderRunStat {

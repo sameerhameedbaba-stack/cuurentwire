@@ -63,6 +63,7 @@ export const siteConfig = {
         { label: "Top 10 Today", href: "/top-10" },
         { label: "Top 100", href: "/top-100" },
         { label: "Most Covered", href: "/most-covered" },
+        { label: "Media Coverage Report", href: "/reports/media-coverage" },
         { label: "Topics", href: "/topics" },
         { label: "Sources", href: "/sources" },
         { label: "Search", href: "/search" },

@@ -26,7 +26,7 @@ export function TopStoriesSection({
       </div>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
         <div className="lg:col-span-7 xl:col-span-8">
-          <HeroStory cluster={hero} />
+          <HeroStory cluster={hero} optimize />
         </div>
         <div className="lg:col-span-5 xl:col-span-4">
           <SectionHeader title="More top stories" />

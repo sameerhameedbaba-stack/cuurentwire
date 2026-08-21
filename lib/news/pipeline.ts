@@ -5,6 +5,7 @@ import { dedupeExact, normalizeArticle } from "@/lib/news/normalization/normaliz
 import { activeProviders } from "@/lib/news/providers";
 import { getLastFeedHealth } from "@/lib/news/providers/rss";
 import { isCuratedEligible, rankClusters } from "@/lib/news/ranking/score";
+import { computeCoverageDistribution, computeFeedValueStats } from "@/lib/news/stats";
 import { deriveTrending } from "@/lib/news/trending";
 import type {
   Article,
@@ -168,6 +169,18 @@ export async function runPipeline(now: Date = new Date()): Promise<NewsDataset> 
     .map((a) => now.getTime() - new Date(a.publishedAt).getTime())
     .sort((a, b) => a - b);
 
+  // Measurement (lib/news/stats.ts): multi-source coverage KPIs and what
+  // each configured feed contributed. Pure, single-pass, rides in the
+  // dataset's ingestion stats (~98 small rows) for /api/stats/coverage and
+  // the admin status page.
+  const coverage = computeCoverageDistribution(clusters);
+  const feedStats = computeFeedValueStats({
+    rawByArticleId,
+    articles: unique,
+    clusters,
+    feedHealth: providerStats.find((p) => p.provider === "rss")?.feeds ?? [],
+  });
+
   const finishedAt = new Date();
   const ingestion: IngestionStats = {
     startedAt: startedAt.toISOString(),
@@ -186,6 +199,8 @@ export async function runPipeline(now: Date = new Date()): Promise<NewsDataset> 
     nearBreakingCount: clusters.filter((c) => c.rankingScore >= 75).length,
     classificationWarnings: classificationWarnings.length,
     classificationWarningSamples: classificationWarnings.slice(0, 10),
+    coverage,
+    feedStats,
   };
 
   if (classificationWarnings.length > 0) {

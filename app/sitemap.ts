@@ -3,9 +3,11 @@ import { CATEGORIES, PUBLIC_CATEGORY_IDS } from "@/config/categories";
 import { HUB_IDS } from "@/config/hubs";
 import { siteConfig } from "@/config/site";
 import { getDataset } from "@/lib/cache/store";
+import { listBriefingDates } from "@/lib/database/briefing";
 import { hubCounts } from "@/lib/news/hubs";
 import { listActiveSources } from "@/lib/news/queries";
 import { deriveTrending } from "@/lib/news/trending";
+import { reportWeekIds, weekRangeET } from "@/lib/reports/weeks";
 import { shouldIndexCollection } from "@/lib/seo/indexing";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +20,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // sitemap fetch. They are all one link from /archive (listed below), and
   // every story they link to is already in archive-sitemap.xml.
   const staticPaths = [
-    "", "/latest", "/top-10", "/top-100", "/briefing", "/most-covered", "/us", "/canada", "/topics",
+    "", "/latest", "/top-10", "/top-100", "/briefing", "/most-covered",
+    "/reports/media-coverage", "/us", "/canada", "/topics",
     "/sources", "/archive", "/about", "/news-desk", "/methodology",
     // Evergreen reference pages. Nested under /methodology so the URL
     // hierarchy matches the BreadcrumbList they emit.
@@ -46,6 +49,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           ? 0.9
           : 0.6,
   }));
+
+  // Weekly Media Coverage Reports: permanent data pages, one per completed
+  // ET week (pure date math — no database read for the sitemap).
+  for (const weekId of reportWeekIds()) {
+    entries.push({
+      url: `${base}/reports/media-coverage/${weekId}`,
+      lastModified: weekRangeET(weekId)?.endUtcISO,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    });
+  }
+
+  // Dated Daily Briefing pages are deliberate long-tail landing pages
+  // ("news on <date>"), so unlike archive day ledgers they ARE advertised.
+  // listBriefingDates is a cached read (1,800s) — one small query per TTL,
+  // not per crawl — and fail-soft (empty without a database).
+  for (const date of await listBriefingDates()) {
+    entries.push({
+      url: `${base}/briefing/${date}`,
+      lastModified: `${date}T23:59:00.000Z`,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    });
+  }
 
   // Internal buckets (general) are excluded — only browsable sections.
   for (const id of PUBLIC_CATEGORY_IDS) {

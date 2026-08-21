@@ -6,6 +6,11 @@ name: Surface coherence probe
 # collected story page twice ~30s apart, fail on any same-version
 # disagreement, archive-vs-live split, category flap or extraction
 # blindness, and commit the report.
+#
+# On failure it opens/updates ONE "[auto-alert]" issue — issue creation
+# emails the repo owner, and a plain red workflow run proved too quiet
+# during the 2026-08 outages — and comments + closes it on the next green
+# run, mirroring .github/workflows/uptime.yml. The probe itself is unchanged.
 
 on:
   schedule:
@@ -14,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  issues: write # open/close the [auto-alert] issue below
 
 jobs:
   probe:
@@ -24,9 +30,73 @@ jobs:
         with:
           node-version: 22
       - name: Run coherence probe
-        run: npm run coherence:check
+        id: probe
         env:
           BASE_URL: https://currentwire.us
+        # The probe's output is teed into a log so the alert issue can quote
+        # its tail (which surfaces disagreed) instead of only linking the
+        # run. pipefail keeps the probe's own exit code through the tee.
+        run: |
+          set -o pipefail
+          status=0
+          npm run coherence:check 2>&1 | tee probe.log || status=$?
+          {
+            echo "details<<DETAILS_EOF"
+            tail -n 60 probe.log
+            echo "DETAILS_EOF"
+          } >> "$GITHUB_OUTPUT"
+          exit "$status"
+      - name: Open or update the alert issue
+        if: failure()
+        uses: actions/github-script@v7
+        env:
+          DETAILS: ${{ steps.probe.outputs.details }}
+        with:
+          script: |
+            const title = "[auto-alert] public surfaces disagree (coherence probe failed)";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `The daily surface coherence probe failed — two public surfaces showed the same story differently under one dataset version, or a surface could not be read.`,
+              "```",
+              process.env.DETAILS || "(no details captured)",
+              "```",
+              `Run: ${runUrl}`,
+            ].join("\n");
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find((i) => i.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body: `Still failing.\n${body}`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title, body,
+              });
+            }
+      - name: Close the alert issue on recovery
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "[auto-alert] public surfaces disagree (coherence probe failed)";
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find((i) => i.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number,
+                body: "Recovered — the coherence probe passed; every surface agrees again. Closing.",
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, state: "closed",
+              });
+            }
       - name: Commit updated report
         if: always()
         run: |

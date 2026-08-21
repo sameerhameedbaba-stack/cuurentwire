@@ -1,14 +1,16 @@
 import ReactDOM from "react-dom";
+import { isOptimizableImageHost } from "@/config/image-hosts";
 import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
 
 /**
  * Opens the TCP+TLS connection to the origin serving the page's LCP image
  * before the parser reaches the <img>.
  *
- * Publisher imagery is served from the publisher's own CDN and
- * `next.config.ts` sets `images.unoptimized`, so the largest element on a
- * ranked page is always a third-party request that cannot start until DNS,
- * TCP and TLS have completed against a host the browser has never seen.
+ * Publisher imagery is served raw from the publisher's own CDN on every
+ * page except the homepage hero (which `next.config.ts` routes through the
+ * optimizer for allowlisted hosts), so the largest element on a ranked page
+ * is usually a third-party request that cannot start until DNS, TCP and TLS
+ * have completed against a host the browser has never seen.
  * Measured 2026-08-19 (`data/cwv-history.json`, keyless probe under
  * Lighthouse mobile throttling): homepage LCP 3,632 ms against 1,628 ms on
  * /top-100 and 1,588 ms on a story page, with the hero a 71 KB JPEG on
@@ -22,10 +24,19 @@ import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
  */
 export function ImageOriginPreconnect({
   src,
+  optimized = false,
 }: {
   src: string | null | undefined;
+  /**
+   * The page routes this image through the optimizer (homepage hero, see
+   * next.config.ts): the browser then fetches same-origin /_next/image and
+   * a preconnect to the publisher's CDN would open a connection nothing
+   * uses. Hosts outside the allowlist still load raw, so preconnect then.
+   */
+  optimized?: boolean;
 }) {
   if (!src || !isSafeExternalUrl(src)) return null;
+  if (optimized && isOptimizableImageHost(src)) return null;
   let origin: string;
   try {
     origin = new URL(src).origin;

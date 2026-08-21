@@ -6,6 +6,7 @@ import { getBriefing } from "@/lib/database/briefing";
 import { COUNTRY_LABELS, type Country } from "@/lib/news/types";
 import { isValidDayString, newsDayET } from "@/lib/utils/news-day";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { briefingMetaDescription, briefingMetaTitle } from "@/lib/seo/story-indexing";
 import { BreadcrumbJsonLd, LinkListJsonLd } from "@/lib/seo/structured-data";
 
 // ISR: a past briefing never changes once its day has rolled over.
@@ -60,9 +61,17 @@ export async function generateMetadata({
   // notFound() here (before streaming starts) so the response is a real 404.
   if (!parseBriefingDay(date)) notFound();
   const label = dayLabel(date);
+  // The stored items (cached read, the same one the page makes) drive the
+  // description; today's date redirects to /briefing in the body, so it is
+  // not read here. A day with no row falls back to the standing sentence —
+  // the body then answers the real 404.
+  const briefing = date === newsDayET() ? null : await getBriefing(date);
+  const description =
+    briefingMetaDescription(briefing?.items ?? [], { dayLabel: label }) ||
+    `The top news stories of ${label} across the United States and Canada, ranked and summarized — CurrentWire's permanent briefing for the day.`;
   return pageMetadata({
-    title: `Daily News Briefing — ${label}`,
-    description: `The top news stories of ${label} across the United States and Canada, ranked and summarized — CurrentWire's permanent briefing for the day.`,
+    title: briefingMetaTitle(label),
+    description,
     path: `/briefing/${date}`,
   });
 }

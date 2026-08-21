@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { OPTIMIZED_IMAGE_HOSTS } from "./config/image-hosts";
 
 // 'unsafe-inline' for scripts/styles is required because Next.js emits inline
 // bootstrap scripts and the theme pre-paint script in app/layout.tsx is inline
@@ -111,19 +112,68 @@ const NON_CANONICAL_LIST_REQUEST = [
   { type: "query" as const, key: "sort" },
 ];
 
+// The image optimizer's allowlist. Exact hosts only: Next's config schema caps images.remotePatterns at 50
+// entries ("Array must contain at most 50 element(s)" — measured at build,
+// 2026-08-21), so there is no room for `**.host` companions. The helper
+// (config/image-hosts.ts) matches exactly for the same reason; the list
+// gains a new CDN hostname whenever live imagery shows one.
+const optimizedImageRemotePatterns = OPTIMIZED_IMAGE_HOSTS.map((hostname) => ({
+  protocol: "https" as const,
+  hostname,
+}));
+
 const nextConfig: NextConfig = {
   // Self-contained server bundle for Docker/generic Node hosting.
   // Vercel's build pipeline conflicts with standalone output, so skip it there.
   output: process.env.VERCEL ? undefined : "standalone",
   images: {
-    // Serve images as-is (2026-08 audit): the Vercel image optimizer's free
-    // tier is ~5K transformations/month — a news homepage full of publisher
-    // imagery burns through that — and the wildcard remotePatterns the
-    // optimizer needed made /_next/image an open proxy for arbitrary https
-    // URLs. Unoptimized kills both; publisher CDNs already serve sized,
-    // compressed variants. remotePatterns removed: it is inert (and
-    // misleading) once the optimizer is off.
-    unoptimized: true,
+    // The Vercel image optimizer is ON for the allowlisted LCP hero only.
+    //
+    // It went OFF in the 2026-08 audit for two measured reasons: Hobby's
+    // quota is 5,000 transformations/month — billed per cache MISS, keyed by
+    // source URL + width + quality + format (vercel.com/docs/
+    // image-optimization/limits-and-pricing) — against a measured 5k-21k for
+    // ALL publisher imagery; and the wildcard remotePatterns it ran under
+    // made /_next/image an open proxy for arbitrary https URLs.
+    //
+    // Hero-only is a different sum. The hero srcset carries at most the two
+    // deviceSizes below (its sizes attribute, "(max-width: 1024px) 100vw,
+    // 58vw", filters every imageSizes entry out — get-img-props.js
+    // getWidths), and the homepage hero changes roughly 30-60 times a day,
+    // so the worst case is ~1,800-3,600 transformations/month: under 5,000.
+    // Every other image stays raw, and the 2026-08-18 mobile probe put the
+    // homepage LCP at 4,502 ms on a 150-800 KB publisher hero that WebP at
+    // these widths brings down to ~60-120 KB.
+    //
+    // `unoptimized` MUST stay false here: a true value forces EVERY <Image>
+    // raw regardless of its own prop (node_modules/next/dist/shared/lib/
+    // get-img-props.js, `if (config.unoptimized) unoptimized = true`). The
+    // per-image contract is therefore the inverse: every <Image> passes
+    // unoptimized={true} except the hero whose host passes
+    // isOptimizableImageHost() (components/news/RemoteImage.tsx). When the
+    // quota is exhausted the optimizer answers 402 for NEW images only;
+    // RemoteImage degrades that hero to its raw src client-side, never to a
+    // broken frame.
+    //
+    // remotePatterns is that same allowlist — each host and its subdomains,
+    // never a wildcard-only entry — which is what closes the open-proxy hole:
+    // any other URL gets 400 from /_next/image before the optimizer fetches
+    // anything.
+    unoptimized: false,
+    remotePatterns: optimizedImageRemotePatterns,
+    // Two hero widths and no more: 640 covers every phone at 100vw, 1080 the
+    // 58vw desktop column on a 2x display. imageSizes only matter if a caller
+    // ever opts a thumbnail in; they sit below deviceSizes[0] as the docs
+    // require.
+    deviceSizes: [640, 1080],
+    imageSizes: [96, 128, 256],
+    // One-day floor; the optimizer keeps the longer of this and the upstream
+    // max-age. Hero URLs are content-addressed on every publisher CDN in the
+    // allowlist, so a long TTL never serves a stale picture.
+    minimumCacheTTL: 86400,
+    // WebP only: AVIF would double the cache entries — and the transformations
+    // — per hero for a marginal byte saving on photographic news imagery.
+    formats: ["image/webp"],
   },
   headers: async () => [
     { source: "/(.*)", headers: securityHeaders },

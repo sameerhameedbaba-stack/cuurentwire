@@ -12,6 +12,11 @@ name: Core Web Vitals check
 # PageSpeed Insights instead, which adds CrUX field data on top. That needs
 # real traffic volume the site does not have yet, which is why the keyless
 # path is the default rather than a fallback.
+#
+# The same weekly run also audits Discover image eligibility
+# (scripts/image-eligibility.mjs): og:image width, pixel count and aspect
+# ratio sampled from the newest news-sitemap stories. Both results are
+# committed to data/ as dated history.
 
 on:
   schedule:
@@ -39,13 +44,22 @@ jobs:
         env:
           PSI_API_KEY: ${{ secrets.PSI_API_KEY }}
         run: node scripts/cwv-check.mjs
+      - name: Run image eligibility audit
+        # Measurement only: the script exits 0 on every per-URL failure and
+        # only fails when the news sitemap itself cannot be fetched. It is
+        # independent of the CWV step, so it still runs when that one failed.
+        if: always()
+        run: node scripts/image-eligibility.mjs
       - name: Commit updated history
         if: always()
         run: |
-          if [ -f data/cwv-history.json ]; then
-            git config user.name "cwv-bot"
-            git config user.email "actions@users.noreply.github.com"
-            git add data/cwv-history.json
-            git diff --cached --quiet || git commit -m "chore: cwv history $(date -u +%F)"
-            git push
-          fi
+          git config user.name "cwv-bot"
+          git config user.email "actions@users.noreply.github.com"
+          # Add each file only if its step produced it: git add on a missing
+          # path is a hard error, and either step can fail before writing
+          # while the other succeeds.
+          for f in data/cwv-history.json data/image-eligibility*.json; do
+            if [ -f "$f" ]; then git add "$f"; fi
+          done
+          git diff --cached --quiet || git commit -m "chore: cwv history + image eligibility $(date -u +%F)"
+          git push

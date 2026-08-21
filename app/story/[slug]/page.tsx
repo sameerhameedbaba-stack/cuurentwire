@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect, redirect } from "next/navigation";
+import { cache } from "react";
 import { ExternalLink } from "lucide-react";
 import { CATEGORIES } from "@/config/categories";
 import { CategoryLabel, ContentTypeBadge, CountryBadge, SourceLine, StatusBadge, BreakingLabel } from "@/components/news/atoms";
@@ -20,6 +21,8 @@ import {
   getArchiveFirstSeen,
   getStoryArchiveExtras,
 } from "@/lib/database/archive";
+import { corroboratedDetails } from "@/lib/news/coverage-analysis";
+import { coverageCounts, coverageGlance } from "@/lib/news/coverage-glance";
 import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
 import {
   getClusterBySlugWithVersion,
@@ -31,7 +34,12 @@ import { resolveStoryRequest, type StoryResolution } from "@/lib/news/story-reso
 import { isTopicEligible, topicKey } from "@/lib/news/topics";
 import { COUNTRY_LABELS, type StoryCluster } from "@/lib/news/types";
 import { metaDescription } from "@/lib/utils/text";
-import { fullTimestamp } from "@/lib/utils/time";
+import { fullTimestamp, hoursSince } from "@/lib/utils/time";
+import {
+  applyStoryIndexDecision,
+  countStoryValueEvents,
+  storyIndexDecision,
+} from "@/lib/seo/story-indexing";
 import {
   BreadcrumbJsonLd,
   StoryJsonLd,
@@ -73,8 +81,13 @@ interface StoryRequest {
  * when neither knows the URL. The live lookup also captures the snapshot's
  * datasetVersion so the page can stamp cw-dataset-version from the exact
  * data it renders.
+ *
+ * React cache(): generateMetadata and the page body run in the same request
+ * (in parallel since streaming metadata) and both resolve the slug — the
+ * memo makes that one lookup, and hands both the SAME request object so the
+ * cache()d loaders below (keyed by object identity) dedupe too.
  */
-async function resolveStory(slug: string): Promise<StoryRequest> {
+const resolveStory = cache(async function resolveStory(slug: string): Promise<StoryRequest> {
   let liveDatasetVersion: string | null = null;
   const resolution = await resolveStoryRequest(slug, {
     getLive: async (slugOrId) => {
@@ -85,7 +98,7 @@ async function resolveStory(slug: string): Promise<StoryRequest> {
     getArchived: findArchivedStory,
   });
   return { resolution, liveDatasetVersion };
-}
+});
 
 interface StoryView {
   cluster: StoryCluster;
@@ -100,7 +113,9 @@ interface StoryView {
   datasetVersion: string;
 }
 
-async function buildStoryView(request: StoryRequest): Promise<StoryView | null> {
+const buildStoryView = cache(async function buildStoryView(
+  request: StoryRequest,
+): Promise<StoryView | null> {
   const { resolution } = request;
   if (resolution.kind === "live") {
     const cluster = resolution.cluster;
@@ -121,7 +136,33 @@ async function buildStoryView(request: StoryRequest): Promise<StoryView | null> 
     };
   }
   return null;
-}
+});
+
+/**
+ * Depth signals the page already loads for its body modules — related live
+ * coverage (entity overlap in the cached dataset), the archive extras
+ * (update history + all-time source union) and earlier archive coverage —
+ * shared with generateMetadata, which reads the same three values for the
+ * index decision. One cache() entry per cluster object, so the two callers
+ * issue each (already cached) read once per request. Archived stories can
+ * still surface related live coverage via entities; the archive reads are
+ * best-effort (empty without a database).
+ */
+const loadStoryDepth = cache(async function loadStoryDepth(cluster: StoryCluster) {
+  const [related, archiveExtras, earlierCoverage] = await Promise.all([
+    getRelatedClusters(cluster),
+    getStoryArchiveExtras(cluster.id),
+    findEarlierCoverage({
+      id: cluster.id,
+      title: cluster.title,
+      entities: cluster.entities,
+      // Earliest coverage of THIS story — the bar an archived story has to
+      // be older than to count as earlier coverage.
+      firstPublishedAt: cluster.firstPublishedAt,
+    }),
+  ]);
+  return { related, archiveExtras, earlierCoverage };
+});
 
 
 /**
@@ -172,30 +213,46 @@ export async function generateMetadata({
     ? metaDescription(cluster.summary)
     : `Coverage of "${cluster.title}" from ${cluster.sourceNames.slice(0, 3).join(", ")}.`;
   const canonical = new URL(`/story/${cluster.slug}`, siteConfig.url).toString();
-  return {
-    // Long headlines are kept truthful and whole, so the " | CurrentWire"
-    // suffix is what gets dropped: it costs 14 characters of SERP width that
-    // the headline itself needs. Short headlines keep the brand.
-    title:
-      cluster.title.length > TITLE_SUFFIX_BUDGET
-        ? { absolute: cluster.title }
-        : cluster.title,
-    description,
-    alternates: { canonical },
-    openGraph: {
-      title: cluster.title,
+  // Thin single-source lifecycle (lib/seo/story-indexing.ts): the same depth
+  // signals the body renders decide whether this URL stays in the index.
+  // Age runs from first coverage — our archive first-seen time when known,
+  // else the earliest publisher time — never from this render.
+  const { related, archiveExtras, earlierCoverage } = await loadStoryDepth(cluster);
+  const indexDecision = storyIndexDecision({
+    ageHours: hoursSince(publishedByUsAt ?? cluster.firstPublishedAt),
+    independentPublications: coverageCounts(cluster.articles).independentPublications,
+    historyEvents: countStoryValueEvents(archiveExtras.history),
+    corroboratedDetails: corroboratedDetails(cluster).length,
+    relatedCoverage: related.length + earlierCoverage.length,
+    hasSummary: Boolean(cluster.summary),
+  });
+  return applyStoryIndexDecision(
+    {
+      // Long headlines are kept truthful and whole, so the " | CurrentWire"
+      // suffix is what gets dropped: it costs 14 characters of SERP width that
+      // the headline itself needs. Short headlines keep the brand.
+      title:
+        cluster.title.length > TITLE_SUFFIX_BUDGET
+          ? { absolute: cluster.title }
+          : cluster.title,
       description,
-      url: canonical,
-      siteName: siteConfig.name,
-      type: "article",
-      publishedTime: publishedByUsAt ?? cluster.firstPublishedAt,
-      modifiedTime: clampDateModified(
-        publishedByUsAt ?? cluster.firstPublishedAt,
-        cluster.lastPublishedAt,
-      ),
+      alternates: { canonical },
+      openGraph: {
+        title: cluster.title,
+        description,
+        url: canonical,
+        siteName: siteConfig.name,
+        type: "article",
+        publishedTime: publishedByUsAt ?? cluster.firstPublishedAt,
+        modifiedTime: clampDateModified(
+          publishedByUsAt ?? cluster.firstPublishedAt,
+          cluster.lastPublishedAt,
+        ),
+      },
+      twitter: { card: "summary_large_image", title: cluster.title, description },
     },
-    twitter: { card: "summary_large_image", title: cluster.title, description },
-  };
+    indexDecision,
+  );
 }
 
 export default async function StoryPage({
@@ -216,20 +273,10 @@ export default async function StoryPage({
   if (!view) notFound();
   const { cluster, isArchived, publishedByUsAt } = view;
 
-  // Archived stories can still surface related live coverage via entities;
-  // the archive extras (update log + all-time source union) and earlier
-  // coverage are best-effort (empty without a database).
-  const [related, archiveExtras, earlierCoverage, topicIndex] = await Promise.all([
-    getRelatedClusters(cluster),
-    getStoryArchiveExtras(cluster.id),
-    findEarlierCoverage({
-      id: cluster.id,
-      title: cluster.title,
-      entities: cluster.entities,
-      // Earliest coverage of THIS story — the bar an archived story has to
-      // be older than to count as earlier coverage.
-      firstPublishedAt: cluster.firstPublishedAt,
-    }),
+  // Depth signals are shared with generateMetadata (see loadStoryDepth); the
+  // topic index is body-only.
+  const [{ related, archiveExtras, earlierCoverage }, topicIndex] = await Promise.all([
+    loadStoryDepth(cluster),
     getTopicIndex(),
   ]);
   // Excludes what Related coverage already shows, so it waits for `related` —
@@ -265,6 +312,13 @@ export default async function StoryPage({
     topicChips.push({ slug: entry.slug, display: entry.display });
   }
   const history = archiveExtras.history;
+  // "Coverage at a glance": deterministic lines from the members, the
+  // stored history and our first-seen time; empty for a single report.
+  const glance = coverageGlance({
+    articles: cluster.articles,
+    history,
+    firstSeenAt: publishedByUsAt,
+  });
   const lead = cluster.lead;
   const categoryDef = CATEGORIES[cluster.category];
   const storyUrl = new URL(`/story/${cluster.slug}`, siteConfig.url).toString();
@@ -403,6 +457,30 @@ export default async function StoryPage({
               </p>
             )}
           </div>
+
+          {/* Coverage at a glance — lib/news/coverage-glance.ts decides the
+              lines; nothing renders for a single report. "First observed" is
+              the earliest publisher timestamp we hold, never "broke the
+              story"; counts say "publications"/"reports", never "N sources"
+              (a production probe regex-anchors that string). */}
+          {glance.length > 0 ? (
+            <section
+              aria-label="Coverage at a glance"
+              className="mt-3 border-l-2 border-rule-strong bg-surface px-3 py-2 text-xs leading-relaxed text-muted"
+            >
+              <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
+                Coverage at a glance
+              </h2>
+              <ul className="mt-1 space-y-0.5">
+                {glance.map((line) => (
+                  <li key={line.kind}>
+                    <span className="font-semibold text-ink">{line.label}:</span>{" "}
+                    {line.value}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
           <div className="mt-6">
             <StoryImage
