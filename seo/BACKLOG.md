@@ -12,6 +12,25 @@ value a fix creates per unit of risk.
 
 ## Open — ranked
 
+### 0. Neon cost hard-cap + console access — OPEN (added 2026-08-21)
+
+The owner capped database spend at **$30/month** (see PLAYBOOK hard
+constraints for the enforcement rules the runs follow). Two pieces remain:
+
+1. **Hard ceiling**: set the Neon endpoint's autoscaling maximum to 0.25 CU
+   (guarantees compute ≤ ~$19/mo even if it never suspends). Blocked: the
+   Neon console is unreachable — Vercel's "Open in Neon" SSO loops on a
+   verify-email wall because a manually-created support@currentwire.us
+   account squatted the SSO identity's email. Fix path: Neon support
+   (free — the "Neon Support" button on the Vercel integration page),
+   ask them to verify/link the Vercel SSO identity for that email.
+2. **Cost floor**: the Hostinger cron hits news-refresh every 5 min and each
+   run does archive DB work, likely keeping compute awake 24/7 (~$19/mo
+   floor). Batching archive/briefing writes to a 30-minute cadence would let
+   the endpoint suspend between bursts (~$5-7/mo). Spawned as its own task
+   2026-08-21; whoever picks it up must keep IndexNow pings and archive
+   latency ≤30 min.
+
 ### 1. The permanent story archive is unreachable — CLOSED 2026-08-21
 
 **RESOLVED, verified live 2026-08-21:** the owner approved upgrading Neon to

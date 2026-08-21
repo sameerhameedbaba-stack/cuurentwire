@@ -13,6 +13,17 @@ learn something. See `BACKLOG.md` for prioritized work and `reports/` for run lo
   database runs on the paid usage-based Launch plan to end the egress-quota
   outage. Runs must never add other paid services, and never upgrade anything
   further — a new quota wall gets logged for the owner, not paid past.
+- **Database spend cap: $30/month, owner-set 2026-08-21.** Vercel Hobby has no
+  native spend limit (that is a Pro feature — do not buy Pro for this).
+  Enforcement: (1) the Monday deep run checks month-to-date cost at
+  vercel.com → Integrations → Neon → Invoices/Usage (via the owner's Chrome
+  when available) and puts the number in its report — if it exceeds $15,
+  flag it loudly as an owner item that week; (2) realistic worst case is
+  ~$19/mo (0.25 CU compute that never sleeps + <1 GB storage), so a reading
+  above that means something is actually wrong (runaway autoscaling or
+  egress) — investigate, don't just report; (3) the true hard ceiling
+  (autoscaling max 0.25 CU in the Neon console) is BACKLOG item — console
+  access is blocked by a Neon SSO account mixup, fix via Neon support.
 - **White-hat only.** No cloaking, no fabricated schema/authors/dates/reviews, no
   link schemes. Excerpts stay short and attributed — publisher copyright is respected.
 - **No fabricated metrics.** Every number in a report comes from a real fetch, API
