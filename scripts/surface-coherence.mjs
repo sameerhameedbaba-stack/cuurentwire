@@ -38,7 +38,7 @@ const REPORT_PATH = new URL("../data/coherence-report.json", import.meta.url).pa
 const CONCURRENCY = 10;
 const REPEAT_GAP_MS = 30_000;
 const MIN_COVERAGE = 0.5;
-const LIST_PAGES = ["/", "/top-10", "/top-100", "/us", "/canada", "/latest", "/politics", "/business"];
+const LIST_PAGES = ["/", "/top-10", "/top-100", "/us", "/canada", "/latest", "/politics", "/business", "/ai", "/elections"];
 const FIELDS = ["category", "country", "sources"];
 
 // --- Extraction. Regexes are derived from the actual rendered markup of

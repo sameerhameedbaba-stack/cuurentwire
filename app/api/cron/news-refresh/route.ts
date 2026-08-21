@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import { siteConfig } from "@/config/site";
-import { forceRefresh } from "@/lib/cache/store";
+import { forceRefresh, getDataset } from "@/lib/cache/store";
 import { upsertDailyBriefing } from "@/lib/database/briefing";
 import { isDatabaseConfigured } from "@/lib/database/client";
 import { persistDataset } from "@/lib/database/persist";
@@ -14,6 +14,7 @@ import {
   shouldPersistNow,
 } from "@/lib/database/persist-gate";
 import { env } from "@/lib/env";
+import { compactDataset } from "@/lib/news/compact";
 import type { NewsDataset } from "@/lib/news/types";
 import { pingIndexNow } from "@/lib/seo/indexnow";
 import { logger } from "@/lib/utils/logger";
@@ -88,6 +89,15 @@ function revalidateIsrSurfaces(): void {
  * `persistenceDeferred: true` with the persistence fields at their idle
  * values, so a false `persistedToDatabase` still means what it always did.
  */
+/** Diagnostics only — a measurement failure must never fail the refresh. */
+function safeCacheEntryBytes(dataset: NewsDataset): number | undefined {
+  try {
+    return JSON.stringify(compactDataset(dataset)).length;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const secret = env.cronSecret;
   if (!secret) {
@@ -115,6 +125,30 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Cadence guard: the scheduler may ping more often than the refresh
+    // interval (RSS_REFRESH_MINUTES, default 10). A dataset younger than
+    // the interval is served as-is — each real refresh costs ~1s of
+    // function CPU with ~100 feeds, and the Hobby CPU allowance is the
+    // budget that keeps this site free. `?force=1` bypasses the guard.
+    const force = request.nextUrl.searchParams.get("force") === "1";
+    if (!force) {
+      const current = await getDataset();
+      const ageMs = Date.now() - new Date(current.generatedAt).getTime();
+      const intervalMs = env.rssRefreshMinutes * 60_000;
+      // One-minute slack so a scheduler that fires a few seconds early
+      // still refreshes on its intended tick.
+      if (Number.isFinite(ageMs) && ageMs < intervalMs - 60_000) {
+        return NextResponse.json({
+          ok: true,
+          skipped: "fresh",
+          dataMode: current.dataMode,
+          datasetVersion: current.datasetVersion,
+          generatedAt: current.generatedAt,
+          ageSeconds: Math.round(ageMs / 1000),
+          refreshIntervalMinutes: env.rssRefreshMinutes,
+        });
+      }
+    }
     // Decide the write burst BEFORE forceRefresh, and claim it so the
     // shared-cache producer leaves the archive upsert to this route (the
     // producer runs inside forceRefresh; if it archived first, the
@@ -170,12 +204,21 @@ export async function GET(request: NextRequest) {
       generatedAt: dataset.generatedAt,
       articles: dataset.articles.length,
       clusters: dataset.clusters.length,
+      // Serialized size of the shared cache entry / snapshot row (the
+      // compact wire form, lib/news/compact.ts) — the Data Cache refuses
+      // items over 2 MB, so this is the number to watch as feeds grow.
+      cacheEntryBytes: safeCacheEntryBytes(dataset),
       duplicatesRemoved: dataset.ingestion.duplicatesRemoved,
       providers: dataset.ingestion.providers.map((p) => ({
         provider: p.provider,
         ok: p.ok,
         articles: p.articleCount,
+        // Fetch+parse wall time; the gap to ingestion.durationMs is the
+        // CPU-bound normalize/cluster/rank work — the number that drives
+        // the function-CPU budget.
+        durationMs: p.durationMs,
       })),
+      ingestionDurationMs: dataset.ingestion.durationMs,
       persistedToDatabase: persisted,
       archivedStories,
       briefingStored,

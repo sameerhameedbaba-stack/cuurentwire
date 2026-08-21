@@ -1,4 +1,9 @@
 import { eq } from "drizzle-orm";
+import {
+  compactDataset,
+  expandIfCompact,
+  type CompactDataset,
+} from "@/lib/news/compact";
 import type { NewsDataset } from "@/lib/news/types";
 import { logger } from "@/lib/utils/logger";
 import { getDb } from "./client";
@@ -36,7 +41,7 @@ export async function saveDatasetSnapshot(dataset: NewsDataset): Promise<boolean
         generatedAt: new Date(dataset.generatedAt),
         articleCount: dataset.articles.length,
         clusterCount: dataset.clusters.length,
-        data: dataset,
+        data: compactDataset(dataset),
         updatedAt: now,
       })
       .onConflictDoUpdate({
@@ -46,7 +51,7 @@ export async function saveDatasetSnapshot(dataset: NewsDataset): Promise<boolean
           generatedAt: new Date(dataset.generatedAt),
           articleCount: dataset.articles.length,
           clusterCount: dataset.clusters.length,
-          data: dataset,
+          data: compactDataset(dataset),
           updatedAt: now,
         },
       });
@@ -78,7 +83,7 @@ export async function loadDatasetSnapshot(
       .limit(1);
     const row = rows[0];
     if (!row) return null;
-    const dataset = row.data as NewsDataset;
+    const dataset = expandIfCompact(row.data as NewsDataset | CompactDataset);
     if (
       !dataset ||
       !Array.isArray(dataset.articles) ||

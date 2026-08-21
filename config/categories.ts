@@ -35,6 +35,11 @@ export interface CategoryDefinition {
   path: string;
   description: string;
   /**
+   * Search-phrased <title> for the section page when "<Label> News" is not
+   * how people search it (culture → "Entertainment & Culture News").
+   */
+  seoTitle?: string;
+  /**
    * Lower-cased keywords/phrases scored against title + description.
    * Matched on word boundaries with an optional plural "s" — "app" never
    * fires inside "kidnapped", while "market" still matches "markets".
@@ -251,6 +256,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     id: "culture",
     label: "Culture",
     path: "/culture",
+    seoTitle: "Entertainment & Culture News",
     description: "Film, television, music, books, media and society.",
     keywords: [
       "film", "movie", "box office", "television", "tv series", "streaming series",
@@ -452,6 +458,24 @@ export const FEED_CATEGORY_PRIORS: Record<string, CategoryId> = {
   "wired.com": "technology",
   "politico.com": "politics",
   "thehill.com": "politics",
+  // Single-section publishers from the 2026-08 curated feed expansion.
+  "sportsnet.ca": "sports",
+  "cbssports.com": "sports",
+  "variety.com": "culture",
+  "deadline.com": "culture",
+  "billboard.com": "culture",
+  "hollywoodreporter.com": "culture",
+  "engadget.com": "technology",
+  "technologyreview.com": "technology",
+  "venturebeat.com": "technology",
+  "space.com": "science",
+  "nasa.gov": "science",
+  "phys.org": "science",
+  "statnews.com": "health",
+  "kffhealthnews.org": "health",
+  "insideclimatenews.org": "climate",
+  "grist.org": "climate",
+  "housingwire.com": "business",
 };
 
 /** Prior for a domain, matching exact domains and their subdomains. */

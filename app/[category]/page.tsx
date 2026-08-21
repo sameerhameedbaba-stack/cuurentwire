@@ -7,6 +7,7 @@ import {
   PUBLIC_CATEGORY_IDS,
   isCategoryId,
 } from "@/config/categories";
+import { hubsForCategory } from "@/config/hubs";
 import { ArticleRow, HeroStory, StandardStory, HeadlineStory } from "@/components/news/cards";
 import { LastUpdated } from "@/components/news/LastUpdated";
 import { SectionHeader } from "@/components/news/SectionHeader";
@@ -37,7 +38,9 @@ export async function generateMetadata({
   // sitemap and feeds — see PUBLIC_CATEGORY_IDS).
   const isPublic = (PUBLIC_CATEGORY_IDS as readonly string[]).includes(category);
   return pageMetadata({
-    title: def.label,
+    // "Politics News" is how people search the section; the nav label and
+    // on-page h1 stay the plain section name.
+    title: def.seoTitle ?? `${def.label} News`,
     description: def.description,
     path: def.path,
     noIndex: !isPublic,
@@ -120,6 +123,22 @@ export default async function CategoryPage({
             </Link>
           </div>
         </div>
+        {hubsForCategory(category).length > 0 ? (
+          <nav aria-label="Related topic hubs" className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+              Topics
+            </span>
+            {hubsForCategory(category).map((hub) => (
+              <Link
+                key={hub.id}
+                href={`/${hub.id}`}
+                className="rounded-full border border-rule bg-surface px-3 py-1 text-xs font-semibold text-ink transition-colors hover:border-brand hover:text-brand-ink"
+              >
+                {hub.label}
+              </Link>
+            ))}
+          </nav>
+        ) : null}
       </header>
 
       <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12">

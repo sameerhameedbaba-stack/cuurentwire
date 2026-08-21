@@ -1,5 +1,9 @@
 import { feedCategoryPrior } from "@/config/categories";
-import { env } from "@/lib/env";
+import {
+  DEFAULT_FEED_ITEM_CAP,
+  configuredFeeds,
+  type FeedDefinition,
+} from "@/config/feeds";
 import type { FeedHealth, NewsProvider, RawArticle } from "@/lib/news/types";
 import { logger } from "@/lib/utils/logger";
 
@@ -24,11 +28,11 @@ export const rssProvider: NewsProvider = {
   name: "rss",
 
   isConfigured() {
-    return env.rssFeeds.length > 0;
+    return configuredFeeds().length > 0;
   },
 
   async fetchLatest(): Promise<RawArticle[]> {
-    const feeds = env.rssFeeds;
+    const feeds = configuredFeeds();
     if (feeds.length === 0) {
       lastFeedHealth = [];
       return [];
@@ -37,10 +41,11 @@ export const rssProvider: NewsProvider = {
     // One health row per configured feed, in configured order.
     const health: FeedHealth[] = new Array(feeds.length);
     const results = await Promise.allSettled(
-      feeds.map(async (feedUrl, index) => {
+      feeds.map(async (feed, index) => {
+        const feedUrl = feed.url;
         const started = Date.now();
         try {
-          const result = await fetchFeed(feedUrl);
+          const result = await fetchFeed(feed);
           health[index] = {
             url: feedUrl,
             ok: true,
@@ -76,8 +81,9 @@ export const rssProvider: NewsProvider = {
 };
 
 async function fetchFeed(
-  feedUrl: string,
+  feed: FeedDefinition,
 ): Promise<{ articles: RawArticle[]; skipped: number }> {
+  const feedUrl = feed.url;
   const parsed = new URL(feedUrl);
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
     throw new Error(`Unsupported feed protocol: ${parsed.protocol}`);
@@ -94,14 +100,21 @@ async function fetchFeed(
   const channelTitle =
     firstTag(xml.split(/<item[\s>]/i)[0] ?? "", "title") ?? parsed.hostname;
 
-  const { items, skipped } = parseItemsWithStats(xml);
+  const { items, skipped } = parseItemsWithStats(
+    xml,
+    feed.maxItems ?? DEFAULT_FEED_ITEM_CAP,
+  );
   return {
     articles: items.map((item) => {
       const sourceDomain = item.url ? hostnameOf(item.url) : parsed.hostname;
-      // Feed-section prior (espn.com → sports etc.) — a weak classifier
-      // nudge carried as providerCategory with the prior flag set.
+      // Feed-section prior — a weak classifier nudge carried as
+      // providerCategory with the prior flag set. A curated single-section
+      // feed (CBS Politics, NPR Health) declares its section; otherwise the
+      // publisher-level domain prior (espn.com → sports) applies.
       const prior =
-        feedCategoryPrior(sourceDomain) ?? feedCategoryPrior(parsed.hostname);
+        feed.category ??
+        feedCategoryPrior(sourceDomain) ??
+        feedCategoryPrior(parsed.hostname);
       return {
         ...item,
         source: channelTitle,
@@ -110,6 +123,7 @@ async function fetchFeed(
         ...(prior
           ? { providerCategory: prior, providerCategoryIsPrior: true }
           : {}),
+        ...(feed.country ? { providerCountry: feed.country } : {}),
       };
     }),
     skipped,
@@ -134,7 +148,10 @@ export function parseItems(xml: string): ParsedItem[] {
  * title/link/date, unparseable date, or anything that throws) is skipped and
  * counted — one bad item can never reject the rest of the feed.
  */
-export function parseItemsWithStats(xml: string): {
+export function parseItemsWithStats(
+  xml: string,
+  maxItems = 100,
+): {
   items: ParsedItem[];
   skipped: number;
 } {
@@ -145,7 +162,7 @@ export function parseItemsWithStats(xml: string): {
     xml.match(/<entry[\s>][\s\S]*?<\/entry>/gi) ??
     [];
 
-  for (const block of blocks.slice(0, 100)) {
+  for (const block of blocks.slice(0, maxItems)) {
     try {
       const title = firstTag(block, "title");
       const link =

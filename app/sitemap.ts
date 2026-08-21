@@ -1,7 +1,9 @@
 import type { MetadataRoute } from "next";
 import { CATEGORIES, PUBLIC_CATEGORY_IDS } from "@/config/categories";
+import { HUB_IDS } from "@/config/hubs";
 import { siteConfig } from "@/config/site";
 import { getDataset } from "@/lib/cache/store";
+import { hubCounts } from "@/lib/news/hubs";
 import { listActiveSources } from "@/lib/news/queries";
 import { deriveTrending } from "@/lib/news/trending";
 import { shouldIndexCollection } from "@/lib/seo/indexing";
@@ -64,6 +66,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const dataset = await getDataset();
+    // Topic hubs (config/hubs.ts): permanent URLs, listed only while they
+    // clear the thin-collection bar — below it they answer noindex,follow.
+    const counts = hubCounts(dataset);
+    for (const id of HUB_IDS) {
+      if (!shouldIndexCollection(counts[id])) continue;
+      entries.push({
+        url: `${base}/${id}`,
+        changeFrequency: "hourly",
+        priority: 0.8,
+      });
+    }
     for (const cluster of dataset.clusters.slice(0, 200)) {
       entries.push({
         url: `${base}/story/${cluster.slug}`,

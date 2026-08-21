@@ -19,6 +19,31 @@ import { stableId } from "@/lib/utils/text";
 
 const MAX_ARTICLE_AGE_HOURS = 72;
 
+/**
+ * Upper bound on articles per refresh (2026-08 measurement: 1,410 articles
+ * cost ~1.6s CPU and a 2.6 MB cache entry; ~1,000 keeps both inside the
+ * Vercel Hobby budget with the compact wire form).
+ */
+export const MAX_PIPELINE_ARTICLES = 950;
+
+/** The newest `limit` articles by publishedAt, in their original order. */
+export function capNewest<T extends { id: string; publishedAt: string }>(
+  articles: T[],
+  limit: number,
+): T[] {
+  if (articles.length <= limit) return articles;
+  const keep = new Set(
+    [...articles]
+      .sort(
+        (a, b) =>
+          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+      )
+      .slice(0, limit)
+      .map((a) => a.id),
+  );
+  return articles.filter((a) => keep.has(a.id));
+}
+
 /** Nearest-rank percentile of a pre-sorted ascending array; 0 when empty. */
 function percentile(sortedValues: number[], fraction: number): number {
   if (sortedValues.length === 0) return 0;
@@ -105,7 +130,20 @@ export async function runPipeline(now: Date = new Date()): Promise<NewsDataset> 
     if (!rawByArticleId.has(article.id)) rawByArticleId.set(article.id, rawArticle);
   }
 
-  const { unique, removed } = dedupeExact(normalized);
+  // Volume valve: with ~100 curated feeds a heavy news day can exceed what
+  // one refresh should carry (function CPU is ~linear in articles; the
+  // shared cache entry must stay under 2 MB — see lib/news/compact.ts).
+  // Keep the newest MAX_PIPELINE_ARTICLES, preserving provider order.
+  const capped = capNewest(normalized, MAX_PIPELINE_ARTICLES);
+  if (capped.length < normalized.length) {
+    logger.warn("ingestion.article_cap_applied", {
+      received: normalized.length,
+      kept: capped.length,
+      cap: MAX_PIPELINE_ARTICLES,
+    });
+  }
+
+  const { unique, removed } = dedupeExact(capped);
   const classificationWarnings = collectClassificationWarnings(unique, rawByArticleId);
   const clusters = rankClusters(clusterArticles(unique, now), now);
   // Trending is a curated module: a syndicated press release must not push

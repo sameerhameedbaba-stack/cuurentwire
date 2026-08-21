@@ -275,15 +275,21 @@ describe("parseItemsWithStats robustness", () => {
 
 describe("rssProvider feed health", () => {
   const originalFeeds = process.env.RSS_FEEDS;
+  const originalCurated = process.env.RSS_CURATED_FEEDS;
 
   afterEach(() => {
     if (originalFeeds === undefined) delete process.env.RSS_FEEDS;
     else process.env.RSS_FEEDS = originalFeeds;
+    if (originalCurated === undefined) delete process.env.RSS_CURATED_FEEDS;
+    else process.env.RSS_CURATED_FEEDS = originalCurated;
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
   it("records per-feed counters and isolates a failing feed", async () => {
+    // Exactly the two test feeds: the curated list (config/feeds.ts) would
+    // otherwise join automatically whenever RSS_FEEDS is set.
+    process.env.RSS_CURATED_FEEDS = "off";
     process.env.RSS_FEEDS =
       "https://good.example.com/rss,https://down.example.com/rss";
     const badFeed = `<rss><channel>

@@ -88,7 +88,7 @@ See [.env.example](.env.example) for the full annotated list.
 | `NEXT_PUBLIC_SITE_URL` | prod | Canonical site URL (SEO, RSS, OG) |
 | `NEWS_DATA_MODE` | no | `mock` / `live`; unset = auto |
 | `NEWS_REFRESH_MINUTES` | no | Legacy overall refresh interval (default 5; also the GNews fallback) |
-| `RSS_REFRESH_MINUTES` | no | RSS fast-lane refresh interval (default 5) |
+| `RSS_REFRESH_MINUTES` | no | RSS fast-lane refresh interval (default 10; the cron skips work when the dataset is younger) |
 | `GNEWS_REFRESH_MINUTES` | no | GNews refresh interval (default `NEWS_REFRESH_MINUTES` or 30; keep ≥30 on the free tier) |
 | `GNEWS_API_KEY` | live mode | [gnews.io](https://gnews.io) API key |
 | `NEWS_API_KEY` | live mode | [newsapi.org](https://newsapi.org) key (their free tier is dev-only) |
@@ -96,6 +96,7 @@ See [.env.example](.env.example) for the full annotated list.
 | `DATABASE_URL` | no | PostgreSQL connection string |
 | `CRON_SECRET` | prod | Bearer token protecting `/api/cron/news-refresh` |
 | `ADMIN_SECRET` | prod | Admin diagnostics key — visit `/admin/auth?key=...` once per browser to set the access cookie |
+| `RSS_CURATED_FEEDS` | no | `off` = only your RSS_FEEDS; `on` = curated list (config/feeds.ts) even without RSS_FEEDS; unset = curated joins whenever RSS_FEEDS is set |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | no | Google Analytics 4 ID (`G-…`); unset = no analytics loaded |
 | `CONTACT_EMAIL` etc. | no | Contact addresses shown on the site |
 

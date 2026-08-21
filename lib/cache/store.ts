@@ -7,6 +7,12 @@ import {
 } from "@/lib/database/persist-gate";
 import { loadDatasetSnapshot, saveDatasetSnapshot } from "@/lib/database/snapshot";
 import { env, getDataMode } from "@/lib/env";
+import {
+  compactDataset,
+  expandIfCompact,
+  fitToCacheBudget,
+  type CompactDataset,
+} from "@/lib/news/compact";
 import { runPipeline } from "@/lib/news/pipeline";
 import { getPreviousDataset, setPreviousDataset } from "@/lib/news/previous";
 import type { NewsDataset } from "@/lib/news/types";
@@ -62,14 +68,30 @@ async function seedPreviousFromSnapshot(): Promise<void> {
   if (snapshot) setPreviousDataset(snapshot);
 }
 
-/** Shared-cache producer. Throws on empty results so they are not cached. */
+/**
+ * Shared-cache producer. Throws on empty results so they are not cached.
+ * Returns the COMPACT wire form (lib/news/compact.ts): the Data Cache
+ * refuses items over 2 MB, and the plain shape serializes every article
+ * ~3 times — an uncacheable dataset would re-run the pipeline per request.
+ */
 const fetchDatasetShared = unstable_cache(
-  async (): Promise<NewsDataset> => {
+  async (): Promise<CompactDataset> => {
     await seedPreviousFromSnapshot();
-    const dataset = await runPipeline();
-    if (dataset.articles.length === 0) {
+    const produced = await runPipeline();
+    if (produced.articles.length === 0) {
       throw new Error("Pipeline produced an empty dataset");
     }
+    // Last line of defence for the 2 MB Data Cache ceiling: trim the tail
+    // of the ranking rather than lose cacheability for the whole fleet.
+    const fit = fitToCacheBudget(produced);
+    if (fit.droppedClusters > 0) {
+      logger.warn("cache.dataset_trimmed_to_budget", {
+        bytes: fit.bytes,
+        droppedClusters: fit.droppedClusters,
+        droppedArticles: fit.droppedArticles,
+      });
+    }
+    const dataset = fit.dataset;
     // Every public generation is recorded in the persist-gate registry, so
     // a cluster id born in a mid-window regeneration can never miss the
     // permanent archive even though writes are batched: if it vanishes
@@ -91,7 +113,7 @@ const fetchDatasetShared = unstable_cache(
         await archivePublicDataset(dataset);
       }
     }
-    return dataset;
+    return compactDataset(dataset);
   },
   ["news-dataset-v1"],
   {
@@ -109,9 +131,13 @@ let inFlightShared: Promise<NewsDataset> | null = null;
 let inFlightDirect: Promise<NewsDataset> | null = null;
 
 function fetchDatasetSharedCoalesced(): Promise<NewsDataset> {
-  inFlightShared ??= fetchDatasetShared().finally(() => {
-    inFlightShared = null;
-  });
+  // Entries written before the compact form are plain datasets; either
+  // shape expands to the same in-memory dataset.
+  inFlightShared ??= fetchDatasetShared()
+    .then((stored) => expandIfCompact(stored))
+    .finally(() => {
+      inFlightShared = null;
+    });
   return inFlightShared;
 }
 

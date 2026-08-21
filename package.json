@@ -23,7 +23,8 @@
     "benchmark:export": "node scripts/benchmark-export.mjs",
     "benchmark:evaluate": "vitest run tests/shadow/shadow-category.test.ts",
     "shadow:category": "vitest run tests/shadow/shadow-category.test.ts",
-    "shadow:cluster": "vitest run tests/shadow/shadow-cluster.test.ts"
+    "shadow:cluster": "vitest run tests/shadow/shadow-cluster.test.ts",
+    "feeds:probe": "node scripts/probe-feeds.mjs"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",

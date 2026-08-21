@@ -26,8 +26,12 @@ const dataset = {
 } as unknown as NewsDataset;
 
 const forceRefreshMock = vi.fn(async () => dataset);
+// The cadence guard reads the current dataset first; the fixture is hours
+// old, so by default the guard lets the refresh proceed.
+const getDatasetMock = vi.fn(async () => dataset);
 vi.mock("@/lib/cache/store", () => ({
   forceRefresh: () => forceRefreshMock(),
+  getDataset: () => getDatasetMock(),
 }));
 
 const dbConfiguredMock = vi.fn(() => true);
@@ -74,6 +78,7 @@ function cronRequest(): NextRequest {
 beforeEach(() => {
   vi.clearAllMocks();
   forceRefreshMock.mockResolvedValue(dataset);
+  getDatasetMock.mockResolvedValue(dataset);
   dbConfiguredMock.mockReturnValue(true);
   persistDatasetMock.mockResolvedValue(true);
   upsertBriefingMock.mockResolvedValue(true);
@@ -145,5 +150,25 @@ describe("cron news-refresh route — batched persistence wiring", () => {
     expect(drainPendingMock).toHaveBeenCalledTimes(1);
     expect(pingIndexNowMock).not.toHaveBeenCalled();
     expect(body.indexNowSubmitted).toBe(0);
+  });
+});
+
+describe("cron news-refresh route — cadence guard", () => {
+  it("skips the refresh when the dataset is younger than the interval", async () => {
+    getDatasetMock.mockResolvedValue({ ...dataset, generatedAt: new Date().toISOString() });
+    const res = await GET(cronRequest());
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.skipped).toBe("fresh");
+    expect(forceRefreshMock).not.toHaveBeenCalled();
+    expect(persistDatasetMock).not.toHaveBeenCalled();
+  });
+
+  it("?force=1 bypasses the guard", async () => {
+    getDatasetMock.mockResolvedValue({ ...dataset, generatedAt: new Date().toISOString() });
+    const res = await GET(new NextRequest("http://localhost:3000/api/cron/news-refresh?force=1"));
+    const body = await res.json();
+    expect(body.skipped).toBeUndefined();
+    expect(forceRefreshMock).toHaveBeenCalledTimes(1);
   });
 });

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LastUpdated } from "@/components/news/LastUpdated";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { HUBS, HUB_IDS } from "@/config/hubs";
 import { getDataset } from "@/lib/cache/store";
+import { hubCounts } from "@/lib/news/hubs";
 import { deriveTrending } from "@/lib/news/trending";
 import { shouldIndexCollection } from "@/lib/seo/indexing";
 import { pageMetadata } from "@/lib/seo/metadata";
@@ -34,6 +36,7 @@ export default async function TopicsPage() {
   const indexableTopics = topics.filter((topic) =>
     shouldIndexCollection(topic.clusterCount),
   );
+  const counts = hubCounts(dataset);
 
   return (
     <div className="mx-auto max-w-[900px] px-4 py-8 sm:px-6">
@@ -56,6 +59,32 @@ export default async function TopicsPage() {
           <LastUpdated generatedAt={dataset.generatedAt} />
         </div>
       </header>
+
+      {/* Permanent topic hubs (config/hubs.ts): always linked — a hub with
+          few stories today is crawlable but noindex until it fills. */}
+      <section aria-labelledby="topic-hubs-heading" className="mt-6">
+        <h2 id="topic-hubs-heading" className="font-display text-lg font-bold">
+          Browse by topic
+        </h2>
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {HUB_IDS.map((id) => (
+            <li key={id}>
+              <Link
+                href={`/${id}`}
+                className="block rounded-full border border-rule bg-surface px-3 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-brand hover:text-brand-ink"
+              >
+                {HUBS[id].label}
+                {counts[id] > 0 ? (
+                  <span className="ml-1.5 text-xs font-normal text-muted">
+                    {counts[id]}
+                  </span>
+                ) : null}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <h2 className="mt-8 font-display text-lg font-bold">In the news now</h2>
+      </section>
 
       {topics.length === 0 ? (
         <div className="mt-8">

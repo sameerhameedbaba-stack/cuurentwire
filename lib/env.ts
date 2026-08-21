@@ -52,8 +52,8 @@ export const env = {
   },
   /** RSS fast lane: dataset + RSS refresh cadence in minutes (default 5). */
   get rssRefreshMinutes(): number {
-    const minutes = Number(process.env.RSS_REFRESH_MINUTES ?? "5");
-    return Number.isFinite(minutes) && minutes > 0 ? minutes : 5;
+    const minutes = Number(process.env.RSS_REFRESH_MINUTES ?? "10");
+    return Number.isFinite(minutes) && minutes > 0 ? minutes : 10;
   },
   /**
    * GNews refresh cadence in minutes. Defaults to NEWS_REFRESH_MINUTES when

@@ -55,6 +55,8 @@ export const siteConfig = {
         { label: "Business", href: "/business" },
         { label: "Technology", href: "/technology" },
         { label: "World", href: "/world" },
+        { label: "AI", href: "/ai" },
+        { label: "Elections 2026", href: "/elections" },
       ],
       explore: [
         { label: "Daily Briefing", href: "/briefing" },
