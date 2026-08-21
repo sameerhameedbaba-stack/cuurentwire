@@ -15,9 +15,13 @@ import type { StoryCluster } from "@/lib/news/types";
  *      another 308-redirects to the survivor (merge → redirect, NEVER
  *      deletion, never a chain: pointers are flattened at write time);
  *   3. story archive in Postgres, when configured;
- *   4. 404 only when none of the above knows the URL — and only when the
- *      archive actually answered. An archive that is configured but
- *      unreachable yields "unavailable" (a retriable 5xx), never 404.
+ *   4. 404 only for a slug that carries no well-formed cluster-id token —
+ *      i.e. one we could never have published. A published-LOOKING slug that
+ *      nothing knows yields "unavailable" (a retriable 5xx) instead, whether
+ *      the archive failed or answered "no such story": since database writes
+ *      are batched (lib/database/persist-gate.ts), "the archive has not heard
+ *      of it" no longer means "it was never published". See the note at the
+ *      not-found branch below for the production measurement behind this.
  *
  * A hit under a non-canonical slug becomes a redirect to the canonical one.
  * Pure orchestration over injected lookups so the fallback logic is
@@ -63,6 +67,16 @@ export type StoryResolution =
 export interface StoryLookups {
   getLive: (slugOrId: string) => Promise<StoryCluster | null>;
   getArchived: (slugOrId: string) => Promise<ArchivedStory | null>;
+  /**
+   * Is a permanent archive attached to this deployment? Only a deployment
+   * that HAS one can be in the "published but not yet written" window that
+   * the not-found branch below refuses to 404. A deployment without a
+   * database never promised permanence, so an unknown slug there is simply
+   * unknown — it keeps answering 404, which also keeps the status code a
+   * diagnosis (500/503 = configured and failing). Defaults to true so
+   * existing callers and tests describe the deployed shape.
+   */
+  hasArchive?: () => boolean;
 }
 
 export async function resolveStoryRequest(
@@ -92,7 +106,40 @@ export async function resolveStoryRequest(
       ? { kind: "unavailable" }
       : { kind: "not-found" };
   }
-  if (!archived) return { kind: "not-found" };
+  if (!archived) {
+    // The archive ANSWERED "no such story" — and until 2026-08-21 that was
+    // conclusive, because every 5-minute refresh wrote the dataset straight
+    // through to Postgres, so a published cluster was archived within one
+    // cycle. Batching the writes to a ~25-30 minute cadence for Neon compute
+    // cost (lib/database/persist-gate.ts) broke that premise: there is now a
+    // window up to half an hour wide in which a cluster is live, already
+    // advertised in /news-sitemap.xml, and genuinely absent from the archive.
+    //
+    // Measured on production 2026-08-22, before this guard: 2 of the 40
+    // newest news-sitemap entries answered 404, served from the CDN with a
+    // rising `age`, while `/story/<id-token>` for the SAME clusters answered
+    // 307 pointing at the very slug that was 404ing. The clusters were live;
+    // only the answer was wrong. Both URLs served 200 once the ISR entry
+    // expired ~5 minutes later — and Google News fetches a news sitemap
+    // within minutes of publication, so that window lands on the one crawl
+    // that decides whether a story enters Google News at all.
+    //
+    // A 404 is the one answer that cannot be taken back: it is cached for
+    // the full ISR window and it tells a crawler the URL is gone. "Unknown"
+    // is the honest state, so we answer the retriable 5xx that already
+    // exists for it. Errors are not stored by ISR, so a URL that resolves on
+    // the next request stops being wrong on the next request.
+    //
+    // Junk paths are unaffected: this needs a well-formed cluster-id token
+    // (`c` + 12 hex), which nothing but our own published URLs carries. And
+    // a deployment with no archive at all is unaffected too — it was never
+    // in the batched-write window and never promised permanence, so its
+    // unknown slugs keep answering a plain 404 (hasArchive, above).
+    const archiveAttached = lookups.hasArchive?.() ?? true;
+    return archiveAttached && looksLikePublishedStorySlug(slug)
+      ? { kind: "unavailable" }
+      : { kind: "not-found" };
+  }
 
   if (archived.mergedIntoClusterId) {
     // The survivor may be live (usual case) or itself archived.

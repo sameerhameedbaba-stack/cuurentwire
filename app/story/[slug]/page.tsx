@@ -21,6 +21,7 @@ import {
   getArchiveFirstSeen,
   getStoryArchiveExtras,
 } from "@/lib/database/archive";
+import { getDb } from "@/lib/database/client";
 import { corroboratedDetails } from "@/lib/news/coverage-analysis";
 import { coverageCounts, coverageGlance } from "@/lib/news/coverage-glance";
 import { isSafeExternalUrl } from "@/lib/news/normalization/canonicalize";
@@ -96,6 +97,7 @@ const resolveStory = cache(async function resolveStory(slug: string): Promise<St
       return cluster;
     },
     getArchived: findArchivedStory,
+    hasArchive: () => getDb() !== null,
   });
   return { resolution, liveDatasetVersion };
 });

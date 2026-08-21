@@ -169,10 +169,38 @@ describe("resolveStoryRequest during an archive outage", () => {
     expect(getArchived).not.toHaveBeenCalled();
   });
 
-  it("an archive that ANSWERS 'no such story' still 404s a published-looking slug", async () => {
-    // The outage guard must not turn every unknown story id into a 5xx
-    // once the database is healthy again.
+  it("an archive that ANSWERS 'no such story' ALSO refuses to 404 a published-looking slug", async () => {
+    // Premise change, 2026-08-22. This case asserted "not-found" while every
+    // 5-minute refresh wrote straight through to Postgres, so an archive that
+    // answered "no" had genuinely never been told about the story. Database
+    // writes are now batched to ~25-30 minutes (lib/database/persist-gate.ts),
+    // which opens a window where a cluster is live, already listed in
+    // /news-sitemap.xml, and absent from the archive. Production on 2026-08-22
+    // showed 2 of the 40 newest news-sitemap entries answering a CDN-cached
+    // 404 while /story/<id-token> resolved to the same slug.
+    //
+    // The old expectation is not weakened here, it is wrong: the archive's
+    // "no" stopped being conclusive when the writes stopped being immediate.
     const resolution = await resolveStoryRequest(PUBLISHED, lookups());
+    expect(resolution.kind).toBe("unavailable");
+  });
+
+  it("404s a published-looking slug when NO archive is attached at all", async () => {
+    // The bound that keeps the status code a diagnosis: a deployment without
+    // a database never promised permanence and was never in the batched-write
+    // window, so an unknown slug there is simply unknown. Only a deployment
+    // that HAS an archive gets the benefit of the doubt above.
+    const resolution = await resolveStoryRequest(PUBLISHED, {
+      ...lookups(),
+      hasArchive: () => false,
+    });
+    expect(resolution.kind).toBe("not-found");
+  });
+
+  it("still 404s a slug with no cluster-id token when the archive answers", async () => {
+    // The bound on the rule above: a 5xx is only ever offered to a slug we
+    // could have published. Scanner noise keeps getting a clean 404.
+    const resolution = await resolveStoryRequest("wp-login.php", lookups());
     expect(resolution.kind).toBe("not-found");
   });
 

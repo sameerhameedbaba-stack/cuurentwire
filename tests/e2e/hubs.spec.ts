@@ -24,7 +24,11 @@ test.describe("topic hubs", () => {
     await page.goto("/topics");
     const section = page.getByRole("heading", { name: "Browse by topic" });
     await expect(section).toBeVisible();
-    await expect(page.getByRole("link", { name: /^Elections 2026/ })).toBeVisible();
+    // Scoped to <main>: the footer links the same hubs, so an unscoped
+    // locator matches twice and fails strict mode on a page that is
+    // perfectly correct. What this test is about is the page's own list.
+    const main = page.getByRole("main");
+    await expect(main.getByRole("link", { name: /^Elections 2026/ })).toBeVisible();
   });
 
   test("section pages link their related hubs", async ({ page }) => {
