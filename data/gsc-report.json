@@ -1,0 +1,594 @@
+{
+  "generatedAt": "2026-08-21T21:21:47.458Z",
+  "site": "sc-domain:currentwire.us",
+  "base": "https://currentwire.us",
+  "window": {
+    "startDate": "2026-07-25",
+    "endDate": "2026-08-21",
+    "days": 28
+  },
+  "surfaces": {
+    "web": {
+      "rows": 515,
+      "total": {
+        "urls": 515,
+        "impressions": 1651,
+        "clicks": 35,
+        "ctr": 0.0212,
+        "avgPosition": 23.2,
+        "impressionsPerUrl": 3.21,
+        "clicksPerUrl": 0.07
+      },
+      "templates": {
+        "home": {
+          "urls": 1,
+          "impressions": 26,
+          "clicks": 4,
+          "ctr": 0.1538,
+          "avgPosition": 12.3,
+          "impressionsPerUrl": 26,
+          "clicksPerUrl": 4
+        },
+        "story": {
+          "urls": 483,
+          "impressions": 1503,
+          "clicks": 18,
+          "ctr": 0.012,
+          "avgPosition": 22.4,
+          "impressionsPerUrl": 3.11,
+          "clicksPerUrl": 0.04
+        },
+        "top-10": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "top-100": {
+          "urls": 3,
+          "impressions": 6,
+          "clicks": 1,
+          "ctr": 0.1667,
+          "avgPosition": 8.3,
+          "impressionsPerUrl": 2,
+          "clicksPerUrl": 0.33
+        },
+        "briefing": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "topic": {
+          "urls": 14,
+          "impressions": 36,
+          "clicks": 3,
+          "ctr": 0.0833,
+          "avgPosition": 23.4,
+          "impressionsPerUrl": 2.57,
+          "clicksPerUrl": 0.21
+        },
+        "source": {
+          "urls": 2,
+          "impressions": 5,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": 7.6,
+          "impressionsPerUrl": 2.5,
+          "clicksPerUrl": 0
+        },
+        "reports": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "archive": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "section": {
+          "urls": 4,
+          "impressions": 12,
+          "clicks": 2,
+          "ctr": 0.1667,
+          "avgPosition": 20.6,
+          "impressionsPerUrl": 3,
+          "clicksPerUrl": 0.5
+        },
+        "hub": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "most-covered": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "latest": {
+          "urls": 1,
+          "impressions": 34,
+          "clicks": 1,
+          "ctr": 0.0294,
+          "avgPosition": 67.7,
+          "impressionsPerUrl": 34,
+          "clicksPerUrl": 1
+        },
+        "country": {
+          "urls": 2,
+          "impressions": 6,
+          "clicks": 1,
+          "ctr": 0.1667,
+          "avgPosition": 5.8,
+          "impressionsPerUrl": 3,
+          "clicksPerUrl": 0.5
+        },
+        "index": {
+          "urls": 2,
+          "impressions": 16,
+          "clicks": 3,
+          "ctr": 0.1875,
+          "avgPosition": 44.1,
+          "impressionsPerUrl": 8,
+          "clicksPerUrl": 1.5
+        },
+        "other": {
+          "urls": 3,
+          "impressions": 7,
+          "clicks": 2,
+          "ctr": 0.2857,
+          "avgPosition": 18.7,
+          "impressionsPerUrl": 2.33,
+          "clicksPerUrl": 0.67
+        }
+      },
+      "detail": {
+        "/politics": {
+          "urls": 1,
+          "impressions": 5,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": 5.6,
+          "impressionsPerUrl": 5,
+          "clicksPerUrl": 0
+        },
+        "/technology": {
+          "urls": 1,
+          "impressions": 3,
+          "clicks": 1,
+          "ctr": 0.3333,
+          "avgPosition": 5,
+          "impressionsPerUrl": 3,
+          "clicksPerUrl": 1
+        },
+        "/business": {
+          "urls": 1,
+          "impressions": 2,
+          "clicks": 1,
+          "ctr": 0.5,
+          "avgPosition": 41,
+          "impressionsPerUrl": 2,
+          "clicksPerUrl": 1
+        },
+        "/climate": {
+          "urls": 1,
+          "impressions": 2,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": 61,
+          "impressionsPerUrl": 2,
+          "clicksPerUrl": 0
+        }
+      }
+    },
+    "news": {
+      "rows": 2,
+      "total": {
+        "urls": 2,
+        "impressions": 16,
+        "clicks": 0,
+        "ctr": 0,
+        "avgPosition": 5.3,
+        "impressionsPerUrl": 8,
+        "clicksPerUrl": 0
+      },
+      "templates": {
+        "home": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "story": {
+          "urls": 2,
+          "impressions": 16,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": 5.3,
+          "impressionsPerUrl": 8,
+          "clicksPerUrl": 0
+        },
+        "top-10": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "top-100": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "briefing": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "topic": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "source": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "reports": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "archive": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "section": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "hub": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "most-covered": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "latest": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "country": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "index": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "other": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        }
+      },
+      "detail": {}
+    },
+    "discover": {
+      "rows": 0,
+      "total": {
+        "urls": 0,
+        "impressions": 0,
+        "clicks": 0,
+        "ctr": 0,
+        "avgPosition": null,
+        "impressionsPerUrl": 0,
+        "clicksPerUrl": 0
+      },
+      "templates": {
+        "home": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "story": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "top-10": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "top-100": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "briefing": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "topic": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "source": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "reports": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "archive": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "section": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "hub": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "most-covered": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "latest": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "country": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "index": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        },
+        "other": {
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0
+        }
+      },
+      "detail": {}
+    }
+  },
+  "earlyDiscovery": {
+    "method": "day-granular GSC data; hours = end of first impression day (UTC) minus publishedAt (upper bound)",
+    "windowDays": 14,
+    "minStoryAgeHours": 72,
+    "eligibleStories": 0,
+    "discoveredStories": 0,
+    "discoveredPct": null,
+    "within24hPct": null,
+    "within48hPct": null,
+    "within72hPct": null,
+    "medianHoursToFirstImpression": null
+  },
+  "storiesBySourceCount": {
+    "1": {
+      "urls": 0,
+      "impressions": 0,
+      "clicks": 0,
+      "ctr": 0,
+      "avgPosition": null,
+      "impressionsPerUrl": 0,
+      "clicksPerUrl": 0
+    },
+    "2": {
+      "urls": 0,
+      "impressions": 0,
+      "clicks": 0,
+      "ctr": 0,
+      "avgPosition": null,
+      "impressionsPerUrl": 0,
+      "clicksPerUrl": 0
+    },
+    "3+": {
+      "urls": 0,
+      "impressions": 0,
+      "clicks": 0,
+      "ctr": 0,
+      "avgPosition": null,
+      "impressionsPerUrl": 0,
+      "clicksPerUrl": 0
+    },
+    "unknown": {
+      "urls": 480,
+      "impressions": 1499,
+      "clicks": 18,
+      "ctr": 0.012,
+      "avgPosition": 22.4,
+      "impressionsPerUrl": 3.12,
+      "clicksPerUrl": 0.04
+    }
+  },
+  "liveCoverage": {
+    "clusters": 745,
+    "singleSource": 707,
+    "twoSource": 25,
+    "threeSource": 9,
+    "fourPlus": 4,
+    "multiSourcePct": 5.1,
+    "threePlusPct": 1.7,
+    "fourPlusPct": 0.5,
+    "medianIndependentPublications": 1,
+    "meanIndependentPublications": 1.09,
+    "pressReleasePct": 0.8,
+    "opinionPct": 0.7,
+    "generalCategoryPct": 23.4
+  },
+  "liveDatasetVersion": "20260821T212038Z-79ebf2",
+  "ledgerStories": 743,
+  "warnings": []
+}
