@@ -12,7 +12,17 @@ value a fix creates per unit of risk.
 
 ## Open — ranked
 
-### 0. Neon cost hard-cap + console access — OPEN (added 2026-08-21)
+### 0. Neon cost hard-cap + console access — mostly SHIPPED 2026-08-21
+
+**Status:** piece 2 (30-min DB write batching) SHIPPED in 0dcb862 by the
+daily loop. Alert delivery SHIPPED the same day: .github/workflows/uptime.yml
+probes production every 30 min and opens/closes an [auto-alert] GitHub issue
+(issue creation emails the owner); seo-health.yml files the same issue on
+failure; both scheduled runs now check for open auto-alert issues first and
+push-notify the owner on a live outage. Remaining: piece 1 (autoscaling
+ceiling 0.25 CU) — support request sent to Neon from support@currentwire.us
+2026-08-21 (SSO mixup + CU cap, project misty-butterfly-35277269); follow up
+if no reply within a week.
 
 The owner capped database spend at **$30/month** (see PLAYBOOK hard
 constraints for the enforcement rules the runs follow). Two pieces remain:

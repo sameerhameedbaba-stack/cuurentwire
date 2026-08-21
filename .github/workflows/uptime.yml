@@ -1,0 +1,89 @@
+name: Uptime probe
+
+# Every 30 minutes: is production actually up? Probes the homepage, the
+# archive sitemap (the surface that exposed the 2026-08-19 Neon outage) and
+# the news sitemap. On failure it opens ONE "[auto-alert]" GitHub issue —
+# issue creation emails the repo owner, which is the delivery channel the
+# daily 06:47 checks lacked (three outages were detected but nobody was
+# told for hours). On recovery it comments and closes the issue, so an open
+# auto-alert issue always means "broken right now". $0, no external services.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe production
+        id: probe
+        run: |
+          fail=0
+          {
+            echo "details<<DETAILS_EOF"
+            for url in "https://currentwire.us/" "https://currentwire.us/archive-sitemap.xml" "https://currentwire.us/news-sitemap.xml"; do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || echo 000)
+              echo "$url -> HTTP $code"
+              case "$code" in
+                200) ;;
+                *) fail=1 ;;
+              esac
+            done
+            echo "DETAILS_EOF"
+          } >> "$GITHUB_OUTPUT"
+          exit "$fail"
+      - name: Open or update the alert issue
+        if: failure()
+        uses: actions/github-script@v7
+        env:
+          DETAILS: ${{ steps.probe.outputs.details }}
+        with:
+          script: |
+            const title = "[auto-alert] currentwire.us is failing its uptime probe";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `The 30-minute uptime probe failed.`,
+              "```",
+              process.env.DETAILS || "(no details captured)",
+              "```",
+              `Run: ${runUrl}`,
+            ].join("\n");
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find((i) => i.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body: `Still failing.\n${body}`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title, body,
+              });
+            }
+      - name: Close the alert issue on recovery
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "[auto-alert] currentwire.us is failing its uptime probe";
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find((i) => i.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body: "Recovered — all probed URLs answer 200 again. Closing.",
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, state: "closed",
+              });
+            }

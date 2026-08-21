@@ -1,9 +1,11 @@
 name: SEO health check
 
 # Daily deterministic SEO regression check against production. Fails loudly
-# (GitHub emails the repo owner) on any regression: broken sitemaps, stale
-# news-sitemap, missing feeds/llms.txt/IndexNow key, invalid story JSON-LD,
-# soft-404s, lost redirects. $0 — no keys, no external services.
+# on any regression: broken sitemaps, stale news-sitemap, missing
+# feeds/llms.txt/IndexNow key, invalid story JSON-LD, soft-404s, lost
+# redirects. On failure it also opens/updates an "[auto-alert]" issue so the
+# owner gets an email — plain workflow-failure emails proved too quiet
+# during the 2026-08 outages. $0 — no keys, no external services.
 
 on:
   schedule:
@@ -12,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   check:
@@ -23,3 +26,25 @@ jobs:
           node-version: 22
       - name: Run SEO health check
         run: node scripts/seo-health.mjs
+      - name: Open or update the alert issue
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "[auto-alert] daily SEO health check failing";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = `The daily SEO health check failed. Log: ${runUrl}`;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find((i) => i.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body: `Still failing.\n${body}`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title, body,
+              });
+            }
