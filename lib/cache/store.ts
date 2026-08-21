@@ -1,5 +1,10 @@
 import { revalidateTag, unstable_cache } from "next/cache";
-import { archiveDataset } from "@/lib/database/archive";
+import {
+  archivePublicDataset,
+  isCronBurstActive,
+  registerPublicClusters,
+  shouldPersistNow,
+} from "@/lib/database/persist-gate";
 import { loadDatasetSnapshot, saveDatasetSnapshot } from "@/lib/database/snapshot";
 import { env, getDataMode } from "@/lib/env";
 import { runPipeline } from "@/lib/news/pipeline";
@@ -65,15 +70,27 @@ const fetchDatasetShared = unstable_cache(
     if (dataset.articles.length === 0) {
       throw new Error("Pipeline produced an empty dataset");
     }
-    // Persist the new complete snapshot (best-effort) so every instance —
-    // and the next cold pipeline run — sees this exact reality.
-    await saveDatasetSnapshot(dataset);
-    // Archive EVERY generation that becomes public, not just cron-time
-    // ones: a cluster id born in a mid-window regeneration is advertised
-    // in sitemaps immediately, so it must enter the permanent archive
-    // immediately — otherwise a later membership change would 404 it (the
-    // URL-survival probe caught exactly this).
-    await archiveDataset(dataset);
+    // Every public generation is recorded in the persist-gate registry, so
+    // a cluster id born in a mid-window regeneration can never miss the
+    // permanent archive even though writes are batched: if it vanishes
+    // before the next burst, the burst carries it (the URL-survival probe
+    // once caught exactly this class of loss).
+    registerPublicClusters(dataset);
+    // Database writes are batched to a ~30-minute cadence so Neon compute
+    // can suspend between bursts (persist-gate.ts has the cost math).
+    // Snapshot + archive used to run here on every generation; the dataset
+    // itself still refreshes every cycle — only the writes are gated.
+    if (shouldPersistNow()) {
+      await saveDatasetSnapshot(dataset);
+      // During a cron-route burst the route archives right after this
+      // returns — with findNewClusterIds asked first, which is what lets
+      // the IndexNow ping see genuinely new ids. Outside a cron burst
+      // (traffic-triggered regeneration while the cron is down) this is
+      // the safety net that still archives on the batch cadence.
+      if (!isCronBurstActive()) {
+        await archivePublicDataset(dataset);
+      }
+    }
     return dataset;
   },
   ["news-dataset-v1"],

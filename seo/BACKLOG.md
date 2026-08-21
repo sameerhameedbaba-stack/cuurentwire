@@ -31,6 +31,24 @@ constraints for the enforcement rules the runs follow). Two pieces remain:
    2026-08-21; whoever picks it up must keep IndexNow pings and archive
    latency ≤30 min.
 
+   **Implemented 2026-08-21 (branch claude/gallant-robinson-4189cf), NOT yet
+   verified live.** `lib/database/persist-gate.ts` batches every periodic DB
+   write (dataset persist, snapshot, archive upsert, briefing) to a ~25-30
+   min cadence: module-state interval on the warm cron instance, first-five-
+   minutes-of-each-half-hour windows on cold instances, and a forced write
+   on the ET day's last cron tick so the frozen briefing row still captures
+   end-of-day state. A public-but-not-yet-archived registry carries clusters
+   that vanish mid-batch into the next burst, so no advertised story URL can
+   miss the permanent archive. Deferred cron runs answer
+   `persistenceDeferred: true`. Side effect worth knowing: the route's
+   IndexNow ping had been dead-on-arrival — the cache producer archived
+   every new cluster before `findNewClusterIds` ran, so `indexNowSubmitted`
+   could never be nonzero; the burst now claims the archive step for the
+   route, asks first, then archives. Verify after deploy: cron JSON shows
+   deferred runs between bursts, `indexNowSubmitted` > 0 on a burst with new
+   stories, briefing rows keep accumulating, and Neon compute-hours drop in
+   the Vercel usage view.
+
 ### 1. The permanent story archive is unreachable — CLOSED 2026-08-21
 
 **RESOLVED, verified live 2026-08-21:** the owner approved upgrading Neon to

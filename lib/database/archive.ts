@@ -458,13 +458,29 @@ async function computeArchiveUpdates(
  * Upsert every real cluster of the dataset into story_archive.
  * Best-effort: one try/catch, never throws into the cron flow. Returns the
  * number of clusters written (0 when no DB / mock mode / failure).
+ *
+ * `carryoverClusters` are clusters that became public in an earlier
+ * generation of the current write-batch window (persist-gate.ts) and have
+ * already vanished from the live dataset. Their URLs were advertised, so
+ * they must still reach the permanent archive — and because merge
+ * detection below treats "not in dataset.clusters" as vanished, a carried
+ * cluster whose articles live on elsewhere gets its merge pointer recorded
+ * in this same call, never rendering as a stale standalone copy.
  */
-export async function archiveDataset(dataset: NewsDataset): Promise<number> {
+export async function archiveDataset(
+  dataset: NewsDataset,
+  carryoverClusters: StoryCluster[] = [],
+): Promise<number> {
   const db = getDb();
   if (!db) return 0;
   // Demo data must never occupy permanent story URLs.
   if (dataset.dataMode === "mock") return 0;
-  const clusters = dataset.clusters.filter((c) => !c.isMock);
+  const current = dataset.clusters.filter((c) => !c.isMock);
+  const currentIds = new Set(current.map((c) => c.id));
+  const clusters = [
+    ...current,
+    ...carryoverClusters.filter((c) => !c.isMock && !currentIds.has(c.id)),
+  ];
   if (clusters.length === 0) return 0;
 
   const schemaReady = await ensureArchiveSchema();

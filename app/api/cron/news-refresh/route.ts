@@ -2,11 +2,19 @@ import { revalidatePath } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import { siteConfig } from "@/config/site";
 import { forceRefresh } from "@/lib/cache/store";
-import { archiveDataset, findNewClusterIds } from "@/lib/database/archive";
 import { upsertDailyBriefing } from "@/lib/database/briefing";
 import { isDatabaseConfigured } from "@/lib/database/client";
 import { persistDataset } from "@/lib/database/persist";
+import {
+  archivePublicDataset,
+  claimCronBurst,
+  drainPendingIndexNowIds,
+  markPersisted,
+  releaseCronBurst,
+  shouldPersistNow,
+} from "@/lib/database/persist-gate";
 import { env } from "@/lib/env";
+import type { NewsDataset } from "@/lib/news/types";
 import { pingIndexNow } from "@/lib/seo/indexnow";
 import { logger } from "@/lib/utils/logger";
 import { secureCompare } from "@/lib/utils/secure-compare";
@@ -72,8 +80,13 @@ function revalidateIsrSurfaces(): void {
 /**
  * Scheduled news refresh.
  * Protected by CRON_SECRET via `Authorization: Bearer <secret>` (Vercel Cron
- * convention) or an `x-cron-secret` header. Refreshes the in-process cache and
- * archives the dataset to PostgreSQL when configured.
+ * convention) or an `x-cron-secret` header. Refreshes the in-process cache on
+ * every run; the database work (dataset persist, archive upsert, briefing)
+ * runs only on the ~30-minute batch cadence decided by persist-gate.ts, so
+ * Neon compute can suspend between bursts instead of being kept awake by the
+ * 5-minute cron (owner's $30/mo cap — seo/PLAYBOOK.md). Deferred runs report
+ * `persistenceDeferred: true` with the persistence fields at their idle
+ * values, so a false `persistedToDatabase` still means what it always did.
  */
 export async function GET(request: NextRequest) {
   const secret = env.cronSecret;
@@ -102,35 +115,52 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const dataset = await forceRefresh();
+    // Decide the write burst BEFORE forceRefresh, and claim it so the
+    // shared-cache producer leaves the archive upsert to this route (the
+    // producer runs inside forceRefresh; if it archived first, the
+    // new-story check below could never see a new id).
+    const persistDue = shouldPersistNow();
+    if (persistDue) claimCronBurst();
+    let dataset: NewsDataset;
+    try {
+      dataset = await forceRefresh();
+    } finally {
+      releaseCronBurst();
+    }
     revalidateIsrSurfaces();
     let persisted = false;
     let archivedStories = 0;
     let indexNowSubmitted = 0;
     let briefingStored = false;
-    if (isDatabaseConfigured()) {
+    if (isDatabaseConfigured() && persistDue) {
       persisted = await persistDataset(dataset);
-      // Which stories are brand new? Must be answered before the archive
-      // upsert makes everything look old.
-      const liveClusters = dataset.clusters.filter((c) => !c.isMock);
-      const newIds =
-        dataset.dataMode === "mock"
-          ? []
-          : await findNewClusterIds(liveClusters.map((c) => c.id));
-      // Permanent story archive: best-effort (archiveDataset catches its own
-      // failures), so a broken archive write never breaks the cron response.
-      archivedStories = await archiveDataset(dataset);
+      // Permanent story archive (plus any clusters that went public and
+      // vanished since the last burst): best-effort, catches its own
+      // failures, so a broken archive write never breaks the cron response.
+      // It asks findNewClusterIds which ids are brand new BEFORE the
+      // upsert makes everything look old, and stashes them for the ping.
+      archivedStories = await archivePublicDataset(dataset);
       // Daily briefing row for today (ET): best-effort, skips mock data.
       briefingStored = await upsertDailyBriefing(dataset);
-      // Tell IndexNow about genuinely new story URLs — production only, so
-      // localhost URLs are never submitted. Best-effort: never throws.
-      if (env.isProduction && archivedStories > 0 && newIds.length > 0) {
-        const byId = new Map(liveClusters.map((c) => [c.id, c]));
-        const urls = newIds
-          .map((id) => byId.get(id))
-          .filter((c): c is NonNullable<typeof c> => Boolean(c))
-          .map((c) => `${siteConfig.url}/story/${c.slug}`);
-        if (await pingIndexNow(urls)) indexNowSubmitted = urls.length;
+      if (archivedStories > 0) {
+        // Only a successful archive advances the batch clock — a failed
+        // burst is retried on every tick until it lands.
+        markPersisted();
+        // Tell IndexNow about genuinely new story URLs — production only,
+        // so localhost URLs are never submitted. Best-effort: never throws.
+        const newIds = drainPendingIndexNowIds();
+        if (env.isProduction && newIds.length > 0) {
+          const byId = new Map(
+            dataset.clusters.filter((c) => !c.isMock).map((c) => [c.id, c]),
+          );
+          const urls = newIds
+            .map((id) => byId.get(id))
+            .filter((c): c is NonNullable<typeof c> => Boolean(c))
+            .map((c) => `${siteConfig.url}/story/${c.slug}`);
+          if (urls.length > 0 && (await pingIndexNow(urls))) {
+            indexNowSubmitted = urls.length;
+          }
+        }
       }
     }
     return NextResponse.json({
@@ -150,6 +180,9 @@ export async function GET(request: NextRequest) {
       archivedStories,
       briefingStored,
       indexNowSubmitted,
+      // True when database work was intentionally skipped this run (the
+      // batch cadence), distinguishing a deliberate skip from a failure.
+      persistenceDeferred: isDatabaseConfigured() && !persistDue,
     });
   } catch (error) {
     logger.error("cron.refresh_failed", {
