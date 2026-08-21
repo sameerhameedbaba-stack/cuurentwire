@@ -9,9 +9,11 @@ import { pageMetadata } from "@/lib/seo/metadata";
 export const revalidate = 300;
 
 export const metadata: Metadata = pageMetadata({
-  title: "Canada",
+  // Search-phrased: "Canada news today" is the query; "Canada" is only the
+  // nav label (the on-page h1 keeps it).
+  title: "Canada News Today",
   description:
-    "Politics, business, society and the developments shaping Canada.",
+    "Top Canada news today: politics, business, society and the developments shaping Canada, ranked and updated all day.",
   path: "/canada",
   rssPath: "/rss/canada",
 });

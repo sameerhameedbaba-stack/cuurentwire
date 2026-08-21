@@ -9,9 +9,11 @@ import { pageMetadata } from "@/lib/seo/metadata";
 export const revalidate = 300;
 
 export const metadata: Metadata = pageMetadata({
-  title: "United States",
+  // Search-phrased: "US news today" is the query; "United States" is only
+  // the nav label (the on-page h1 keeps it).
+  title: "US News Today — United States",
   description:
-    "Politics, business, technology, society and the stories shaping America.",
+    "Top US news today: politics, business, technology, society and the stories shaping America, ranked and updated all day.",
   path: "/us",
   rssPath: "/rss/us",
 });

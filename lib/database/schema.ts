@@ -216,6 +216,31 @@ export const datasetSnapshots = pgTable("dataset_snapshots", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** One stored item of a day's briefing — enough to render a compact row. */
+export interface BriefingItem {
+  rank: number;
+  slug: string;
+  title: string;
+  summary: string | null;
+  category: string;
+  country: string;
+  sourceCount: number;
+  leadSource: string;
+}
+
+/**
+ * One row per Eastern-time news day: the day's top stories as the cron saw
+ * them. Upserted on every refresh, so the row for a date freezes naturally
+ * when the date rolls over — a permanent record of what mattered that day,
+ * rendered at /briefing/<date>. The table is created at runtime by
+ * ensureBriefingSchema() (no manual migration path against Neon).
+ */
+export const dailyBriefings = pgTable("daily_briefings", {
+  briefingDate: varchar("briefing_date", { length: 10 }).primaryKey(),
+  items: jsonb("items").$type<BriefingItem[]>().notNull().default([]),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const ingestionRuns = pgTable(
   "ingestion_runs",
   {

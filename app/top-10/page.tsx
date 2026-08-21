@@ -93,6 +93,13 @@ export default async function Top10Page() {
               className="font-semibold underline hover:text-brand-ink"
             >
               See the Top 100 Right Now &rarr;
+            </Link>{" "}
+            &middot; In a hurry?{" "}
+            <Link
+              href="/briefing"
+              className="font-semibold underline hover:text-brand-ink"
+            >
+              Daily Briefing &rarr;
             </Link>
           </p>
         </>

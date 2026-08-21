@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { siteConfig } from "@/config/site";
 import { forceRefresh } from "@/lib/cache/store";
 import { archiveDataset, findNewClusterIds } from "@/lib/database/archive";
+import { upsertDailyBriefing } from "@/lib/database/briefing";
 import { isDatabaseConfigured } from "@/lib/database/client";
 import { persistDataset } from "@/lib/database/persist";
 import { env } from "@/lib/env";
@@ -118,6 +119,8 @@ export async function GET(request: NextRequest) {
       // Permanent story archive: best-effort (archiveDataset catches its own
       // failures), so a broken archive write never breaks the cron response.
       archivedStories = await archiveDataset(dataset);
+      // Daily briefing row for today (ET): best-effort, skips mock data.
+      await upsertDailyBriefing(dataset);
       // Tell IndexNow about genuinely new story URLs — production only, so
       // localhost URLs are never submitted. Best-effort: never throws.
       if (env.isProduction && archivedStories > 0 && newIds.length > 0) {
