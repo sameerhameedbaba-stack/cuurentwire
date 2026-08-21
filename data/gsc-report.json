@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T21:21:47.458Z",
+  "generatedAt": "2026-08-21T22:34:07.912Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
@@ -7,17 +7,19 @@
     "endDate": "2026-08-21",
     "days": 28
   },
+  "minSampleImpressions": 100,
   "surfaces": {
     "web": {
       "rows": 515,
       "total": {
         "urls": 515,
-        "impressions": 1651,
+        "impressions": 1653,
         "clicks": 35,
         "ctr": 0.0212,
-        "avgPosition": 23.2,
+        "avgPosition": 23.3,
         "impressionsPerUrl": 3.21,
-        "clicksPerUrl": 0.07
+        "clicksPerUrl": 0.07,
+        "sufficientSample": true
       },
       "templates": {
         "home": {
@@ -27,16 +29,18 @@
           "ctr": 0.1538,
           "avgPosition": 12.3,
           "impressionsPerUrl": 26,
-          "clicksPerUrl": 4
+          "clicksPerUrl": 4,
+          "sufficientSample": false
         },
         "story": {
           "urls": 483,
-          "impressions": 1503,
+          "impressions": 1505,
           "clicks": 18,
           "ctr": 0.012,
-          "avgPosition": 22.4,
-          "impressionsPerUrl": 3.11,
-          "clicksPerUrl": 0.04
+          "avgPosition": 22.5,
+          "impressionsPerUrl": 3.12,
+          "clicksPerUrl": 0.04,
+          "sufficientSample": true
         },
         "top-10": {
           "urls": 0,
@@ -45,7 +49,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "top-100": {
           "urls": 3,
@@ -54,7 +59,8 @@
           "ctr": 0.1667,
           "avgPosition": 8.3,
           "impressionsPerUrl": 2,
-          "clicksPerUrl": 0.33
+          "clicksPerUrl": 0.33,
+          "sufficientSample": false
         },
         "briefing": {
           "urls": 0,
@@ -63,7 +69,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "topic": {
           "urls": 14,
@@ -72,7 +79,8 @@
           "ctr": 0.0833,
           "avgPosition": 23.4,
           "impressionsPerUrl": 2.57,
-          "clicksPerUrl": 0.21
+          "clicksPerUrl": 0.21,
+          "sufficientSample": false
         },
         "source": {
           "urls": 2,
@@ -81,7 +89,8 @@
           "ctr": 0,
           "avgPosition": 7.6,
           "impressionsPerUrl": 2.5,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "reports": {
           "urls": 0,
@@ -90,7 +99,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "archive": {
           "urls": 0,
@@ -99,7 +109,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "section": {
           "urls": 4,
@@ -108,7 +119,8 @@
           "ctr": 0.1667,
           "avgPosition": 20.6,
           "impressionsPerUrl": 3,
-          "clicksPerUrl": 0.5
+          "clicksPerUrl": 0.5,
+          "sufficientSample": false
         },
         "hub": {
           "urls": 0,
@@ -117,7 +129,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "most-covered": {
           "urls": 0,
@@ -126,7 +139,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "latest": {
           "urls": 1,
@@ -135,7 +149,8 @@
           "ctr": 0.0294,
           "avgPosition": 67.7,
           "impressionsPerUrl": 34,
-          "clicksPerUrl": 1
+          "clicksPerUrl": 1,
+          "sufficientSample": false
         },
         "country": {
           "urls": 2,
@@ -144,7 +159,8 @@
           "ctr": 0.1667,
           "avgPosition": 5.8,
           "impressionsPerUrl": 3,
-          "clicksPerUrl": 0.5
+          "clicksPerUrl": 0.5,
+          "sufficientSample": false
         },
         "index": {
           "urls": 2,
@@ -153,7 +169,8 @@
           "ctr": 0.1875,
           "avgPosition": 44.1,
           "impressionsPerUrl": 8,
-          "clicksPerUrl": 1.5
+          "clicksPerUrl": 1.5,
+          "sufficientSample": false
         },
         "other": {
           "urls": 3,
@@ -162,7 +179,8 @@
           "ctr": 0.2857,
           "avgPosition": 18.7,
           "impressionsPerUrl": 2.33,
-          "clicksPerUrl": 0.67
+          "clicksPerUrl": 0.67,
+          "sufficientSample": false
         }
       },
       "detail": {
@@ -173,7 +191,8 @@
           "ctr": 0,
           "avgPosition": 5.6,
           "impressionsPerUrl": 5,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "/technology": {
           "urls": 1,
@@ -182,7 +201,8 @@
           "ctr": 0.3333,
           "avgPosition": 5,
           "impressionsPerUrl": 3,
-          "clicksPerUrl": 1
+          "clicksPerUrl": 1,
+          "sufficientSample": false
         },
         "/business": {
           "urls": 1,
@@ -191,7 +211,8 @@
           "ctr": 0.5,
           "avgPosition": 41,
           "impressionsPerUrl": 2,
-          "clicksPerUrl": 1
+          "clicksPerUrl": 1,
+          "sufficientSample": false
         },
         "/climate": {
           "urls": 1,
@@ -200,7 +221,8 @@
           "ctr": 0,
           "avgPosition": 61,
           "impressionsPerUrl": 2,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         }
       }
     },
@@ -213,7 +235,8 @@
         "ctr": 0,
         "avgPosition": 5.3,
         "impressionsPerUrl": 8,
-        "clicksPerUrl": 0
+        "clicksPerUrl": 0,
+        "sufficientSample": false
       },
       "templates": {
         "home": {
@@ -223,7 +246,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "story": {
           "urls": 2,
@@ -232,7 +256,8 @@
           "ctr": 0,
           "avgPosition": 5.3,
           "impressionsPerUrl": 8,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "top-10": {
           "urls": 0,
@@ -241,7 +266,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "top-100": {
           "urls": 0,
@@ -250,7 +276,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "briefing": {
           "urls": 0,
@@ -259,7 +286,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "topic": {
           "urls": 0,
@@ -268,7 +296,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "source": {
           "urls": 0,
@@ -277,7 +306,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "reports": {
           "urls": 0,
@@ -286,7 +316,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "archive": {
           "urls": 0,
@@ -295,7 +326,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "section": {
           "urls": 0,
@@ -304,7 +336,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "hub": {
           "urls": 0,
@@ -313,7 +346,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "most-covered": {
           "urls": 0,
@@ -322,7 +356,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "latest": {
           "urls": 0,
@@ -331,7 +366,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "country": {
           "urls": 0,
@@ -340,7 +376,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "index": {
           "urls": 0,
@@ -349,7 +386,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "other": {
           "urls": 0,
@@ -358,7 +396,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         }
       },
       "detail": {}
@@ -372,7 +411,8 @@
         "ctr": 0,
         "avgPosition": null,
         "impressionsPerUrl": 0,
-        "clicksPerUrl": 0
+        "clicksPerUrl": 0,
+        "sufficientSample": false
       },
       "templates": {
         "home": {
@@ -382,7 +422,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "story": {
           "urls": 0,
@@ -391,7 +432,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "top-10": {
           "urls": 0,
@@ -400,7 +442,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "top-100": {
           "urls": 0,
@@ -409,7 +452,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "briefing": {
           "urls": 0,
@@ -418,7 +462,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "topic": {
           "urls": 0,
@@ -427,7 +472,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "source": {
           "urls": 0,
@@ -436,7 +482,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "reports": {
           "urls": 0,
@@ -445,7 +492,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "archive": {
           "urls": 0,
@@ -454,7 +502,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "section": {
           "urls": 0,
@@ -463,7 +512,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "hub": {
           "urls": 0,
@@ -472,7 +522,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "most-covered": {
           "urls": 0,
@@ -481,7 +532,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "latest": {
           "urls": 0,
@@ -490,7 +542,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "country": {
           "urls": 0,
@@ -499,7 +552,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "index": {
           "urls": 0,
@@ -508,7 +562,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         },
         "other": {
           "urls": 0,
@@ -517,7 +572,8 @@
           "ctr": 0,
           "avgPosition": null,
           "impressionsPerUrl": 0,
-          "clicksPerUrl": 0
+          "clicksPerUrl": 0,
+          "sufficientSample": false
         }
       },
       "detail": {}
@@ -537,58 +593,103 @@
   },
   "storiesBySourceCount": {
     "1": {
-      "urls": 0,
-      "impressions": 0,
-      "clicks": 0,
-      "ctr": 0,
-      "avgPosition": null,
-      "impressionsPerUrl": 0,
-      "clicksPerUrl": 0
+      "urls": 424,
+      "impressions": 1319,
+      "clicks": 17,
+      "ctr": 0.0129,
+      "avgPosition": 19.8,
+      "impressionsPerUrl": 3.11,
+      "clicksPerUrl": 0.04,
+      "sufficientSample": true
     },
     "2": {
-      "urls": 0,
-      "impressions": 0,
+      "urls": 30,
+      "impressions": 79,
+      "clicks": 1,
+      "ctr": 0.0127,
+      "avgPosition": 36.9,
+      "impressionsPerUrl": 2.63,
+      "clicksPerUrl": 0.03,
+      "sufficientSample": false
+    },
+    "3": {
+      "urls": 14,
+      "impressions": 48,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": null,
-      "impressionsPerUrl": 0,
-      "clicksPerUrl": 0
+      "avgPosition": 40.9,
+      "impressionsPerUrl": 3.43,
+      "clicksPerUrl": 0,
+      "sufficientSample": false
+    },
+    "4+": {
+      "urls": 12,
+      "impressions": 55,
+      "clicks": 0,
+      "ctr": 0,
+      "avgPosition": 51.4,
+      "impressionsPerUrl": 4.58,
+      "clicksPerUrl": 0,
+      "sufficientSample": false
+    },
+    "2+": {
+      "urls": 56,
+      "impressions": 182,
+      "clicks": 1,
+      "ctr": 0.0055,
+      "avgPosition": 42.3,
+      "impressionsPerUrl": 3.25,
+      "clicksPerUrl": 0.02,
+      "sufficientSample": true
     },
     "3+": {
+      "urls": 26,
+      "impressions": 103,
+      "clicks": 0,
+      "ctr": 0,
+      "avgPosition": 46.5,
+      "impressionsPerUrl": 3.96,
+      "clicksPerUrl": 0,
+      "sufficientSample": true
+    },
+    "unknown": {
       "urls": 0,
       "impressions": 0,
       "clicks": 0,
       "ctr": 0,
       "avgPosition": null,
       "impressionsPerUrl": 0,
-      "clicksPerUrl": 0
-    },
-    "unknown": {
-      "urls": 480,
-      "impressions": 1499,
-      "clicks": 18,
-      "ctr": 0.012,
-      "avgPosition": 22.4,
-      "impressionsPerUrl": 3.12,
-      "clicksPerUrl": 0.04
+      "clicksPerUrl": 0,
+      "sufficientSample": false
     }
   },
+  "archiveSources": {
+    "requestedIds": 449,
+    "matchedIds": 449,
+    "chunks": 3,
+    "failedChunks": 0
+  },
+  "urlSignals": {
+    "stories": 449,
+    "truncated": false,
+    "written": true
+  },
   "liveCoverage": {
-    "clusters": 745,
-    "singleSource": 707,
-    "twoSource": 25,
-    "threeSource": 9,
-    "fourPlus": 4,
-    "multiSourcePct": 5.1,
+    "clusters": 744,
+    "singleSource": 703,
+    "twoSource": 28,
+    "threeSource": 7,
+    "fourPlus": 6,
+    "multiSourcePct": 5.5,
     "threePlusPct": 1.7,
-    "fourPlusPct": 0.5,
+    "fourPlusPct": 0.8,
     "medianIndependentPublications": 1,
-    "meanIndependentPublications": 1.09,
-    "pressReleasePct": 0.8,
+    "meanIndependentPublications": 1.1,
+    "pressReleasePct": 0.9,
     "opinionPct": 0.7,
     "generalCategoryPct": 23.4
   },
-  "liveDatasetVersion": "20260821T212038Z-79ebf2",
-  "ledgerStories": 743,
+  "liveDatasetVersion": "20260821T222008Z-851936",
+  "ledgerStories": 812,
   "warnings": []
 }
