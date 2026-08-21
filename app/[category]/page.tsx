@@ -87,6 +87,17 @@ export default async function CategoryPage({
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
           <LastUpdated generatedAt={data.dataset.generatedAt} />
           <div className="flex gap-2 text-xs font-semibold">
+            {(PUBLIC_CATEGORY_IDS as readonly string[]).includes(category) ? (
+              <>
+                <Link
+                  href={`/top-10/${category}`}
+                  className="text-muted underline-offset-2 hover:text-brand-ink hover:underline"
+                >
+                  Top 10 today
+                </Link>
+                <span aria-hidden className="text-rule-strong">|</span>
+              </>
+            ) : null}
             <Link
               href={`/top-100?category=${category}`}
               className="text-muted underline-offset-2 hover:text-brand-ink hover:underline"

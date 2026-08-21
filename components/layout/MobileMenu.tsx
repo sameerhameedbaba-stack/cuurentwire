@@ -83,6 +83,15 @@ export function MobileMenu() {
               ))}
               <li className="mt-2 border-t border-rule pt-2">
                 <Link
+                  href="/top-10"
+                  onClick={() => setOpen(false)}
+                  className="block rounded-news px-3 py-3 text-base font-bold text-brand-ink hover:bg-wash"
+                >
+                  Top 10 Today
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/top-100"
                   onClick={() => setOpen(false)}
                   className="block rounded-news px-3 py-3 text-base font-bold text-brand-ink hover:bg-wash"

@@ -16,7 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // sitemap fetch. They are all one link from /archive (listed below), and
   // every story they link to is already in archive-sitemap.xml.
   const staticPaths = [
-    "", "/latest", "/top-100", "/most-covered", "/us", "/canada", "/topics",
+    "", "/latest", "/top-10", "/top-100", "/most-covered", "/us", "/canada", "/topics",
     "/sources", "/archive", "/about", "/news-desk", "/methodology",
     // Evergreen reference pages. Nested under /methodology so the URL
     // hierarchy matches the BreadcrumbList they emit.
@@ -29,14 +29,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const entries: MetadataRoute.Sitemap = staticPaths.map((path) => ({
     url: `${base}${path}`,
-    changeFrequency: path === "" || path === "/latest" || path === "/top-100" ? "hourly" : "daily",
-    priority: path === "" ? 1 : path === "/top-100" ? 0.9 : 0.6,
+    changeFrequency:
+      path === "" || path === "/latest" || path === "/top-10" || path === "/top-100"
+        ? "hourly"
+        : "daily",
+    priority: path === "" ? 1 : path === "/top-10" || path === "/top-100" ? 0.9 : 0.6,
   }));
 
   // Internal buckets (general) are excluded — only browsable sections.
   for (const id of PUBLIC_CATEGORY_IDS) {
     entries.push({
       url: `${base}${CATEGORIES[id].path}`,
+      changeFrequency: "hourly",
+      priority: 0.8,
+    });
+    // Per-section Top 10 pages ("top political news today" queries). Thin
+    // sections answer noindex,follow themselves; the sitemap listing is
+    // harmless while the section fills back up.
+    entries.push({
+      url: `${base}/top-10/${id}`,
       changeFrequency: "hourly",
       priority: 0.8,
     });

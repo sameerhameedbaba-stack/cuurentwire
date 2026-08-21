@@ -57,6 +57,7 @@ export const siteConfig = {
         { label: "World", href: "/world" },
       ],
       explore: [
+        { label: "Top 10 Today", href: "/top-10" },
         { label: "Top 100", href: "/top-100" },
         { label: "Most Covered", href: "/most-covered" },
         { label: "Topics", href: "/topics" },

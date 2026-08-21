@@ -148,6 +148,10 @@ export default async function Top100Page({
           freshness, coverage breadth, source authority and momentum.{" "}
           <Link href="/methodology" className="underline hover:text-brand-ink">
             How ranking works
+          </Link>{" "}
+          &middot; Just the essentials?{" "}
+          <Link href="/top-10" className="underline hover:text-brand-ink">
+            Top 10 Today
           </Link>
         </p>
         <div className="mt-3">
