@@ -47,4 +47,5 @@ next-env.d.ts
 PROJECT_AUDIT.md
 IMPLEMENTATION_REPORT.md
 AUDIT_RESPONSE_*.md
+PROJECT_BRIEF*.md
 data/local/
