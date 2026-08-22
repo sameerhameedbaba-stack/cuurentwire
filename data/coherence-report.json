@@ -1,35 +1,40 @@
 {
-  "ranAt": "2026-08-20T07:26:35.391Z",
+  "ranAt": "2026-08-22T07:18:04.337Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
+    "/top-10",
     "/top-100",
     "/us",
     "/canada",
     "/latest",
     "/politics",
-    "/business"
+    "/business",
+    "/ai",
+    "/elections"
   ],
   "stats": {
-    "pagesFetched": 14,
+    "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 512,
-    "cardsWithId": 512,
-    "cardsWithCategory": 430,
-    "cardsWithCountry": 166,
-    "cardsWithSources": 22,
-    "storyPagesFetched": 222,
+    "cards": 688,
+    "cardsWithId": 688,
+    "cardsWithCategory": 606,
+    "cardsWithCountry": 288,
+    "cardsWithSources": 116,
+    "storyPagesFetched": 362,
     "storyErrors": [],
-    "uniqueClusters": 111
+    "uniqueClusters": 181
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.84,
-    "country": 0.324,
-    "sources": 0.043
+    "category": 0.881,
+    "country": 0.419,
+    "sources": 0.169
   },
   "versionsSeen": [
-    "20260820T072636Z-dd0998"
+    "20260822T071304Z-6a19bf",
+    "20260822T071214Z-e66d5e",
+    "20260822T071827Z-35f84b"
   ],
   "violations": [],
   "warningsTotal": 0,
