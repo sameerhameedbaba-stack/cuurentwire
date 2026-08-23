@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-08-22T07:18:04.337Z",
+  "ranAt": "2026-08-23T07:19:53.765Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,28 +16,44 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 688,
-    "cardsWithId": 688,
-    "cardsWithCategory": 606,
-    "cardsWithCountry": 288,
-    "cardsWithSources": 116,
-    "storyPagesFetched": 362,
+    "cards": 674,
+    "cardsWithId": 674,
+    "cardsWithCategory": 592,
+    "cardsWithCountry": 282,
+    "cardsWithSources": 82,
+    "storyPagesFetched": 360,
     "storyErrors": [],
-    "uniqueClusters": 181
+    "uniqueClusters": 180
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.881,
-    "country": 0.419,
-    "sources": 0.169
+    "category": 0.878,
+    "country": 0.418,
+    "sources": 0.122
   },
   "versionsSeen": [
-    "20260822T071304Z-6a19bf",
-    "20260822T071214Z-e66d5e",
-    "20260822T071827Z-35f84b"
+    "20260823T071719Z-0c3721",
+    "20260823T071628Z-dd5323",
+    "archive:2026-08-23T01:01:01.596Z",
+    "20260823T072012Z-12e9dc",
+    "20260823T072013Z-12e9dc",
+    "20260823T072014Z-12e9dc",
+    "20260823T072020Z-866d43",
+    "20260823T072025Z-a55389"
   ],
-  "violations": [],
+  "violations": [
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c0c6ab5aff87e",
+      "storySurface": "/story/dylan-cease-carries-no-hitter-into-7th-inning-as-blue-jays-hang-on-for-4-3-win-o-c0c6ab5aff87e (r1)",
+      "storyVersion": "archive:2026-08-23T01:01:01.596Z",
+      "listSurfaces": [
+        "/canada (r1)",
+        "/canada (r2)"
+      ]
+    }
+  ],
   "warningsTotal": 0,
   "warnings": [],
-  "result": "PASS"
+  "result": "FAIL"
 }
