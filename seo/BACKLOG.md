@@ -1,8 +1,9 @@
 # SEO Backlog
 
-**Status 2026-08-24 (weekly deep run): production is DOWN with a Vercel
-billing 402, which is owner work and item 0 below. Four other items open,
-none of them owner work.**
+**Status 2026-08-24, updated ~14:10 UTC: the 402 outage is RESOLVED — the
+owner approved the Vercel Pro upgrade in person and the site returned 200 on
+every probed surface at ~13:55 UTC after ~37 minutes dark. Item 0 below is
+CLOSED with the full record; item 0b is the phase-2 cost work.**
 
 Rebuilt from this week's evidence. Every item names the command or fetch that
 found it. Items closed this run were closed against a fresh measurement, not
@@ -15,7 +16,7 @@ value a fix creates per unit of risk.
 
 ## Open — ranked
 
-### 0. Production is returning 402 DEPLOYMENT_DISABLED — BLOCKED(user), OWNER ACTION
+### 0. Production returned 402 DEPLOYMENT_DISABLED — CLOSED (resolved 2026-08-24 ~13:55 UTC)
 
 **The whole site is off the air.** Measured 2026-08-24 13:18 UTC:
 
@@ -80,10 +81,21 @@ A TTL change alone may not hold, either: `/archive-sitemap.xml` went
 URLs a day. If crawler volume over archive pages is the cost driver, the
 driver is still growing.
 
-**What the owner has to do:** open vercel.com, look at the project's status
-and the account's usage page, and re-enable the deployment. Do NOT buy Pro to
-make this go away — the $0 rule stands, the code-side fix is already in
-flight, and no run may enter payment details (none has).
+**RESOLUTION (2026-08-24, ~13:55 UTC).** The paragraph that stood here said
+"Do NOT buy Pro — the $0 rule stands." That was this backlog's reading of the
+standing rule, and the owner overrode it the same day, in chat, with the
+options and prices in front of them: on the Hobby tier the blown 30-day usage
+window meant **~3-4 weeks dark** (Vercel docs: "you will have to wait until
+30 days have passed"), the hoped-for free 14-day Pro trial was not offered by
+the flow, and the owner chose Pro anyway. **Vercel Pro is now active — $20/mo,
+period 24 Aug-24 Sep 2026, card entered by the owner previously (Neon), no
+agent touched payment details.** Site verified back: `/`, `robots.txt` and
+all three sitemaps answered 200 at 13:55 UTC; total downtime ~37 minutes
+(13:18-13:55). The $0 rule now has TWO owner-approved exceptions: Neon
+(2026-08-21) and Vercel Pro (2026-08-24). Decision point: before **24 Sep**
+the owner decides stay-Pro vs downgrade (downgrading earlier re-pauses the
+site while the old usage window is still blown — do not suggest it before
+mid-September).
 
 **Consequence while it lasts.** This is worse than the 2026-08-20 archive
 outage, because `robots.txt` and all three sitemaps are also 402. A 402 is
@@ -96,6 +108,47 @@ else, so it will catch this on its next 30-minute run and open an
 `[auto-alert]` issue, which emails the owner. A desktop/phone push was
 attempted from this run and could not be delivered (Remote Control inactive),
 so the GitHub issue email is the live delivery path.
+
+### 0b. ISR cost, phase 2: decouple the story long tail from the dataset cache — OPEN
+
+**What shipped 2026-08-24 (phase 1, same session that closed item 0):**
+`vercel.json` ignoreCommand skipping builds for `seo/`, `docs/`, `data/`,
+`.github/` and root-`*.md`-only commits (report commits were deploying ~12×/day
+and every deploy wipes the whole ISR cache); the four dynamic-pattern
+`revalidatePath` nukes removed from the cron and replaced with per-slug
+revalidation of ≤150 live story paths, burst-gated to the ~30-min persist
+cadence; segment `revalidate` raised on 28 pages (story 30 d, hubs/lists 1 h,
+home/us/canada 15 min) with cost comments; the shared dataset entry's
+`revalidate` floored at 1,740 s in `lib/cache/store.ts`. Estimated cut:
+~5-10× on ISR writes and render CPU.
+
+**Why that is not the end:** two adversarially-verified mechanics (workflow
+run `wf_06774a4b-698`, this session) cap what TTLs can do:
+
+1. **Lowest-revalidate-wins composition.** Every page that reads
+   `getDataset()` inherits the dataset entry's 1,740 s revalidate — the
+   30-day story TTL is clamped to ~29 min in practice
+   (`node_modules/next/dist/server/web/spec-extension/unstable-cache.js`
+   lowers the prerender store's revalidate to the entry's).
+2. **Tag propagation.** `forceRefresh()` calls
+   `revalidateTag(NEWS_CACHE_TAG, "max")` every effective run, and pages
+   carrying the tag are invalidated wholesale — so every cached page still
+   ages out within ~30 min regardless of segment config.
+
+**The fix that makes Hobby-tier math work (needed if the owner ever
+downgrades, and it cuts the Pro bill too):** give `/story/[slug]` (the
+~3,600-URL long tail growing 450-700/day) a dataset read path with NO
+`NEWS_CACHE_TAG` and no sub-hour revalidate — archived stories read the
+archive tables (their `cachedRead` TTLs 1800/21600 need the same lift), live
+stories can read the in-process/snapshot layer directly. Verify with
+`x-nextjs-cache: HIT` surviving a cron cycle before trusting any quota
+projection. Secondary levers from the same verification: static OG cards
+(`/story/[slug]/opengraph-image` is a Satori render per crawler fetch —
+a real CPU hog), `dynamicParams = false` on closed param spaces
+(`/[category]`, `/top-10/[category]`) so junk probes 404 without a render,
+and `s-maxage` on sitemap/RSS responses. Measure the real post-phase-1 burn
+on the Vercel usage page after ~48 h (by 26-27 Aug) before deciding how much
+of phase 2 to build.
 
 ### 1. 214 published stories are permanently gone, and the site still serves them a 500
 

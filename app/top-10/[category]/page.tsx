@@ -18,7 +18,11 @@ import {
   ItemListJsonLd,
 } from "@/lib/seo/structured-data";
 
-export const revalidate = 300;
+// COST floor, not a freshness choice: every ISR re-render is billed
+// (Vercel Hobby-tier blowout, 2026-08-24 — ISR Writes 238%, CPU 307%).
+// Do not lower this to chase TTFB; the cron's targeted revalidation
+// keeps content fresh. Quota math lives in seo/PLAYBOOK.md.
+export const revalidate = 3600;
 
 /** Ranks 1–4 render above the fold: their thumbnails load eagerly. */
 const EAGER_THUMBNAILS = 4;

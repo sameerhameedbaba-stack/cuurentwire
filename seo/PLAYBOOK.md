@@ -6,13 +6,24 @@ learn something. See `BACKLOG.md` for prioritized work and `reports/` for run lo
 
 ## Hard constraints
 
-- **$0/month, with ONE owner-approved exception.** Free tools and free keyless
-  API tiers only. Never enter billing details, never sign up for trials that
-  convert, never upgrade. If a free tier runs out, stop using it and log it in
-  BACKLOG.md. Exception (owner-approved 2026-08-21, in person): the Neon
-  database runs on the paid usage-based Launch plan to end the egress-quota
-  outage. Runs must never add other paid services, and never upgrade anything
-  further — a new quota wall gets logged for the owner, not paid past.
+- **$0/month, with TWO owner-approved exceptions.** Free tools and free
+  keyless API tiers only. Never enter billing details, never sign up for
+  trials that convert, never upgrade. If a free tier runs out, stop using it
+  and log it in BACKLOG.md. Exceptions: (1) owner-approved 2026-08-21, in
+  person — the Neon database runs on the paid usage-based Launch plan;
+  (2) owner-approved 2026-08-24, in chat — **Vercel Pro at $20/mo**, bought
+  to end the Hobby-tier usage pause that took the whole site dark (BACKLOG
+  item 0). Runs must never add other paid services, and never upgrade
+  anything further — a new quota wall gets logged for the owner, not paid
+  past. Standing decision for the owner before **24 Sep 2026**: stay on Pro
+  or downgrade (do not recommend downgrading before mid-September — the
+  blown 30-day Hobby usage window would re-pause the site).
+- **ISR cost discipline (2026-08-24).** Every ISR page re-render is billed
+  (write units + CPU). The revalidate TTLs, the burst-gated cron
+  revalidation, the 1,740 s dataset-entry floor in lib/cache/store.ts, and
+  the vercel.json ignoreCommand are COST controls — a run that tightens any
+  of them to chase TTFB re-creates the 2026-08-24 outage. Weekly runs read
+  ISR Writes and Fluid Active CPU on the Vercel usage page and report them.
 - **Database spend cap: $30/month, owner-set 2026-08-21.** Vercel Hobby has no
   native spend limit (that is a Pro feature — do not buy Pro for this).
   Enforcement: (1) the Monday deep run checks month-to-date cost at

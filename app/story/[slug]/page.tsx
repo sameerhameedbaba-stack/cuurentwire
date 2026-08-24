@@ -52,7 +52,11 @@ import {
 // redirect() results share the same window, so a wrongly cached 404 or a
 // stale pre-merge page self-heals within 300s — and the cron refresh
 // revalidates /story/[slug] after every new dataset as a faster bound.
-export const revalidate = 300;
+// COST floor, not a freshness choice: every ISR re-render is billed
+// (Vercel Hobby-tier blowout, 2026-08-24 — ISR Writes 238%, CPU 307%).
+// Do not lower this to chase TTFB; the cron's targeted revalidation
+// keeps content fresh. Quota math lives in seo/PLAYBOOK.md.
+export const revalidate = 2592000;
 
 /**
  * ISR only engages for a dynamic segment when generateStaticParams returns an

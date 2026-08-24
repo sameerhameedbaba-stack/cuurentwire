@@ -9,7 +9,11 @@ import { LinkListJsonLd } from "@/lib/seo/structured-data";
 // ISR (audit F1): serve from the edge cache and re-render at most every
 // 5 minutes. The cron refresh calls revalidatePath() after each new
 // dataset so a fresh generation flips this page promptly.
-export const revalidate = 300;
+// COST floor, not a freshness choice: every ISR re-render is billed
+// (Vercel Hobby-tier blowout, 2026-08-24 — ISR Writes 238%, CPU 307%).
+// Do not lower this to chase TTFB; the cron's targeted revalidation
+// keeps content fresh. Quota math lives in seo/PLAYBOOK.md.
+export const revalidate = 3600;
 
 export const metadata: Metadata = pageMetadata({
   title: "Sources",

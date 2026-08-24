@@ -45,34 +45,60 @@ function rateLimited(): boolean {
 }
 
 /**
- * ISR'd public surfaces (audit F1): revalidated after every successful
- * refresh so a fresh dataset flips pages promptly instead of waiting out
- * their 5-minute window. Dynamic patterns invalidate lazily — each cached
- * story/topic/source page re-renders on its next visit. Literal paths for
- * static pages; `type: "page"` is required for patterns.
+ * ISR'd public surfaces, revalidated only on persist bursts (~30 min).
+ * COST constraint, 2026-08-24: the original audit-F1 version also nuked the
+ * four dynamic patterns (/story/[slug], /topic/[slug], /source/[slug],
+ * /[category]) on EVERY run, which invalidated every cached page site-wide
+ * and turned each bot crawl of ~3,600 archive story URLs into a billed ISR
+ * write + a billed render — 238% of the Hobby ISR-write tier and 307% of
+ * its CPU tier, which paused the whole account. Literal core pages stay;
+ * live-story freshness is handled per-slug by revalidateLiveStories below;
+ * everything else ages out on its segment revalidate. Do not add dynamic
+ * patterns back — the quota math lives in seo/PLAYBOOK.md.
  */
-const ISR_SURFACES: { path: string; type?: "page" }[] = [
-  { path: "/" },
-  { path: "/us" },
-  { path: "/canada" },
-  { path: "/topics" },
-  { path: "/sources" },
-  { path: "/most-covered" },
-  { path: "/[category]", type: "page" },
-  { path: "/story/[slug]", type: "page" },
-  { path: "/topic/[slug]", type: "page" },
-  { path: "/source/[slug]", type: "page" },
+const ISR_SURFACES: string[] = [
+  "/",
+  "/us",
+  "/canada",
+  "/topics",
+  "/sources",
+  "/most-covered",
 ];
 
 /** Best-effort: a revalidation failure must never fail the cron response. */
 function revalidateIsrSurfaces(): void {
-  for (const surface of ISR_SURFACES) {
+  for (const path of ISR_SURFACES) {
     try {
-      if (surface.type) revalidatePath(surface.path, surface.type);
-      else revalidatePath(surface.path);
+      revalidatePath(path);
     } catch (error) {
       logger.warn("cron.revalidate_path_failed", {
-        path: surface.path,
+        path,
+        error: error instanceof Error ? error.message : "unknown",
+      });
+    }
+  }
+}
+
+/**
+ * Targeted freshness for the stories that are actually live: mark each
+ * current (non-mock) cluster's story path for lazy re-render on its next
+ * visit. Bounded and burst-gated, so the write cost is capped at
+ * ~150 pages × ~48 bursts/day realized only when a page is visited —
+ * instead of the site-wide pattern nuke that blew the Hobby tier.
+ * Archived stories (the ~3,600-URL long tail) are intentionally NOT
+ * revalidated here; they change only via merge pointers and age out on
+ * the story route's own revalidate window.
+ */
+const LIVE_REVALIDATE_MAX = 150;
+
+function revalidateLiveStories(dataset: NewsDataset): void {
+  const live = dataset.clusters.filter((c) => !c.isMock);
+  for (const cluster of live.slice(0, LIVE_REVALIDATE_MAX)) {
+    try {
+      revalidatePath(`/story/${cluster.slug}`);
+    } catch (error) {
+      logger.warn("cron.revalidate_story_failed", {
+        slug: cluster.slug,
         error: error instanceof Error ? error.message : "unknown",
       });
     }
@@ -162,7 +188,13 @@ export async function GET(request: NextRequest) {
     } finally {
       releaseCronBurst();
     }
-    revalidateIsrSurfaces();
+    // Revalidation is burst-gated with the database writes: page caches are
+    // refreshed on the ~30-minute cadence, not on every 5-minute tick — the
+    // difference is billed ISR writes (see ISR_SURFACES comment).
+    if (persistDue) {
+      revalidateIsrSurfaces();
+      revalidateLiveStories(dataset);
+    }
     // Warm the homepage hero's optimized image variants so the first reader
     // (or a PageSpeed lab run) after a hero change gets an optimizer cache
     // HIT instead of paying the 1-3s transform — lib/seo/warm-hero.ts.

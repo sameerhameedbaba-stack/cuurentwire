@@ -118,10 +118,18 @@ const fetchDatasetShared = unstable_cache(
   ["news-dataset-v1"],
   {
     tags: [NEWS_CACHE_TAG],
-    // Seconds; RSS_REFRESH_MINUTES governs the dataset (fast lane) cadence.
+    // Seconds; RSS_REFRESH_MINUTES governs the dataset (fast lane) cadence,
+    // FLOORED at 29 minutes. This entry's revalidate becomes the effective
+    // ISR TTL of every page that reads the dataset (lowest revalidate wins
+    // across a route's data reads), so a shorter window here re-renders the
+    // whole site for every bot crawl that often. That is a COST constraint,
+    // not a freshness choice (Vercel Hobby-tier blowout 2026-08-24: ISR
+    // Writes 238%, Fluid CPU 307%): the ~30-minute external cron drives
+    // freshness by revalidating and repopulating this entry itself, so a
+    // fast traffic-driven lane buys almost nothing and bills every render.
     // GNews serves from its own slower cache entry (see providers/gnews.ts),
-    // so a fast dataset cadence never spends extra GNews quota.
-    revalidate: Math.max(60, env.rssRefreshMinutes * 60),
+    // so the dataset cadence never spends extra GNews quota.
+    revalidate: Math.max(1_740, env.rssRefreshMinutes * 60),
   },
 );
 
