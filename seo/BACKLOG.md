@@ -14,6 +14,21 @@ Statuses: OPEN / SHIPPED / CLOSED / BLOCKED(user). Verify a fix live before
 flipping it to SHIPPED. Ranking rule: how much indexable, crawlable, citable
 value a fix creates per unit of risk.
 
+**STRATEGY ADOPTED 2026-08-24: `seo/STRATEGY.md` is now the master plan**
+(full-spectrum: on-page, off-page, technical, competitors, keywords; 10-agent
+analysis + adversarial red-team). Daily runs execute the current sprint's
+[automated] items from its §3 roadmap — Sprint 1 runs Aug 24–Sep 6. Its §2
+guardrails override any older idea in this file. Already shipped from
+Sprint 1 (2026-08-24): GSC query instrumentation (scripts/gsc-report.mjs now
+pulls ["query"] web+news and ["page","query"] web → data/gsc-queries.json
+with the striking-distance inventory; first data lands on the next gsc.yml
+run). Remaining Sprint-1 items, in order: (1) news-sitemap integrity — the
+#1 item (resolve the story-render 500, emit only canonical 200 slugs, cron
+validation + alert); (2) retitle wave 1 (exact titles in STRATEGY §3 —
+every claim literally true); (3) ≥1200px self-generated story cards
+(publisher-photo hotlinking is an OWNER legal decision — default self-made);
+(4) internal-link rewire; (5) [owner ~15 min] Publisher Center claim.
+
 ## Open — ranked
 
 ### 0. Production returned 402 DEPLOYMENT_DISABLED — CLOSED (resolved 2026-08-24 ~13:55 UTC)

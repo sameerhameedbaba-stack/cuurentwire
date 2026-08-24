@@ -16,6 +16,8 @@ import {
   sampleLabel,
   sourceCountBucketKeys,
   storyIdOf,
+  summarizeQueries,
+  topUrlsByImpressions,
 } from "../../scripts/gsc-report-lib.mjs";
 
 const BASE = "https://currentwire.us";
@@ -261,5 +263,59 @@ describe("computeEarlyDiscovery", () => {
     expect(out.within72hPct).toBe(50);
     // end of 2026-08-12 UTC minus 2026-08-11T06:00 = 42 h
     expect(out.medianHoursToFirstImpression).toBe(42);
+  });
+});
+
+describe("summarizeQueries", () => {
+  const webQueryRows = [
+    { keys: ["ai news today"], impressions: 40, clicks: 2, position: 8.24 },
+    { keys: ["currentwire"], impressions: 90, clicks: 12, position: 1.1 },
+  ];
+  const newsQueryRows = [{ keys: ["elections"], impressions: 5, clicks: 0, position: 4 }];
+  const pageQueryRows = [
+    // In range, most impressions — first.
+    { keys: [`${BASE}/ai`, "ai news"], impressions: 30, clicks: 1, position: 12.34 },
+    // In range at the boundaries.
+    { keys: [`${BASE}/`, "top news today"], impressions: 10, clicks: 0, position: 5 },
+    { keys: [`${BASE}/politics`, "politics news"], impressions: 9, clicks: 0, position: 20 },
+    // Out of range both sides, and a null position — all excluded.
+    { keys: [`${BASE}/`, "currentwire"], impressions: 80, clicks: 10, position: 1.2 },
+    { keys: [`${BASE}/money`, "inflation"], impressions: 50, clicks: 0, position: 44 },
+    { keys: [`${BASE}/us`, "us news"], impressions: 7, clicks: 0, position: null },
+  ];
+
+  it("ranks queries by impressions and rounds positions", () => {
+    const out = summarizeQueries(webQueryRows, newsQueryRows, pageQueryRows);
+    expect(out.webQueries.map((q: { query: string }) => q.query)).toEqual(["currentwire", "ai news today"]);
+    expect(out.webQueries[1].position).toBe(8.2);
+    expect(out.newsQueries).toHaveLength(1);
+    expect(out.counts).toEqual({ webRows: 2, newsRows: 1, pageQueryRows: 6 });
+  });
+
+  it("keeps only position 5-20 rows in striking distance, page as pathname", () => {
+    const out = summarizeQueries([], [], pageQueryRows);
+    expect(out.strikingDistance.map((r: { query: string }) => r.query)).toEqual(["ai news", "top news today", "politics news"]);
+    expect(out.strikingDistance[0]).toEqual({ page: "/ai", query: "ai news", impressions: 30, clicks: 1, position: 12.3 });
+  });
+
+  it("tolerates missing row sets", () => {
+    const out = summarizeQueries(undefined, undefined, undefined);
+    expect(out.webQueries).toEqual([]);
+    expect(out.strikingDistance).toEqual([]);
+  });
+});
+
+describe("topUrlsByImpressions", () => {
+  it("keeps the full URL and ranks by impressions then clicks", () => {
+    const rows = [
+      { keys: [`${BASE}/story/a-${ID_A}`], impressions: 5, clicks: 2, position: 9.55 },
+      { keys: [`${BASE}/`], impressions: 20, clicks: 4, position: 12.3 },
+      { keys: [`${BASE}/ai`], impressions: 5, clicks: 3, position: null },
+    ];
+    const out = topUrlsByImpressions(rows, 2);
+    expect(out).toEqual([
+      { url: `${BASE}/`, impressions: 20, clicks: 4, position: 12.3 },
+      { url: `${BASE}/ai`, impressions: 5, clicks: 3, position: null },
+    ]);
   });
 });

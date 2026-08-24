@@ -42,11 +42,19 @@ learn something. See `BACKLOG.md` for prioritized work and `reports/` for run lo
 - **Automation-first.** The owner does not operate this. Anything recurring must run
   by itself (Vercel cron, GitHub Actions, scheduled tasks) or be dropped.
 
-## North star (owner goal, set 2026-08-21)
+## North star (owner goal, set 2026-08-21; strategy adopted 2026-08-24)
 
 The owner's target is the "Amazing / Elite" tier of a month-3 news-site
 benchmark: **50,000+ clicks/month, 1M+ impressions, 5%+ CTR** — typically
 reached via Google News placement or Discover.
+
+**The full-spectrum plan for getting there is `seo/STRATEGY.md`** (adopted
+2026-08-24 after a 10-agent competitor/keyword/on-page/off-page analysis +
+adversarial red-team). Runs execute the current sprint's [automated] items
+and report against its §4 measurement plan. Red-team calibration every run
+must respect: Elite is a 12-24 month conditional outcome — the honest 90-day
+ceiling is ~100-300 clicks/28d with repaired News plumbing, and reporting
+should treat that as on-trajectory, not behind.
 
 Measured baseline the day the goal was set (GSC, last 28 days, real fetch):
 **12 clicks, 1,080 impressions, 1.1% CTR, avg position 21.3.** The site is

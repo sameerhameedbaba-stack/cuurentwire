@@ -46,7 +46,11 @@
  * impression, highest first, capped at 20000 — the app imports this file
  * statically, so the weekly commit of it triggers a Vercel deploy on purpose;
  * it is left untouched when the web surface query fails so a GSC outage
- * cannot blank the signals) and prints a markdown table.
+ * cannot blank the signals), writes data/gsc-queries.json (the keyword
+ * engine, seo/STRATEGY.md §4: top web/news queries plus the
+ * striking-distance inventory — [page, query] rows at position 5–20 by
+ * impressions, feeding retitle priorities and the CTR-rescue job; same
+ * outage discipline as the signals file) and prints a markdown table.
  * Run weekly by .github/workflows/gsc.yml. No npm dependencies: fetch plus a
  * minimal RS256 JWT signer from node:crypto for the service account. The
  * pure helpers live in scripts/gsc-report-lib.mjs (unit-tested).
@@ -102,6 +106,8 @@ import {
   pathnameOf,
   sampleLabel,
   storyIdOf,
+  summarizeQueries,
+  topUrlsByImpressions,
 } from "./gsc-report-lib.mjs";
 
 // MIN_SAMPLE_IMPRESSIONS (= 100) is defined once in scripts/gsc-report-lib.mjs
@@ -125,6 +131,7 @@ const REPORT_PATH = `${DATA_DIR}gsc-report.json`;
 const HISTORY_PATH = `${DATA_DIR}gsc-history.json`;
 const LEDGER_PATH = `${DATA_DIR}gsc-story-dates.json`;
 const SIGNALS_PATH = `${DATA_DIR}gsc-url-signals.json`;
+const QUERIES_PATH = `${DATA_DIR}gsc-queries.json`;
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
@@ -332,6 +339,32 @@ async function main() {
     pageDateError = error.message;
   }
 
+  // (c) query dimension — the keyword engine (seo/STRATEGY.md §4, BET 1).
+  // ["query"] on web and news for the terms the site already surfaces for;
+  // ["page","query"] on web for the striking-distance inventory (position
+  // 5–20). The query dimension is not valid for the discover surface. Each
+  // pull fails to a warning, never fatally, matching the surface pulls.
+  const queryPulls = {
+    webQuery: { dimensions: ["query"], type: "web" },
+    newsQuery: { dimensions: ["query"], type: "news" },
+    pageQuery: { dimensions: ["page", "query"], type: "web" },
+  };
+  const queryRows = {};
+  const queryErrors = [];
+  for (const [name, pull] of Object.entries(queryPulls)) {
+    try {
+      queryRows[name] = await searchAnalytics(token, {
+        startDate,
+        endDate,
+        ...pull,
+        dataState: "all",
+      });
+    } catch (error) {
+      queryRows[name] = [];
+      queryErrors.push(`${name}: ${error.message}`);
+    }
+  }
+
   // Site-side inputs: news sitemap (publication dates), the live stats
   // endpoint (publication counts) and the archive counts for every story id
   // the live window no longer holds. Any of them may be down; the report
@@ -387,6 +420,27 @@ async function main() {
     signalsWritten = true;
   }
 
+  // Query summary: same outage discipline as the signals file — a failed
+  // web-query pull keeps the previous file so a GSC outage cannot blank the
+  // keyword inventory for a week.
+  for (const failure of queryErrors) warnings.push(`query pull failed: ${failure}`);
+  const querySummary = summarizeQueries(queryRows.webQuery, queryRows.newsQuery, queryRows.pageQuery);
+  let queriesWritten = false;
+  if (queryErrors.some((failure) => failure.startsWith("webQuery"))) {
+    warnings.push("gsc-queries.json not updated: web query pull failed");
+  } else {
+    writeJson(QUERIES_PATH, {
+      generatedAt: now.toISOString(),
+      window: { startDate, endDate, days: WINDOW_DAYS },
+      webQueries: querySummary.webQueries,
+      newsQueries: querySummary.newsQueries,
+      strikingDistance: querySummary.strikingDistance,
+      counts: querySummary.counts,
+    });
+    queriesWritten = true;
+  }
+  const topUrls = topUrlsByImpressions(rowsBySurface.web ?? []);
+
   const report = {
     generatedAt: now.toISOString(),
     site: SITE,
@@ -403,6 +457,8 @@ async function main() {
       failedChunks: archive.failures.length,
     },
     urlSignals: { stories: signals.storyCount, truncated: signals.truncated, written: signalsWritten },
+    topUrls,
+    queries: { written: queriesWritten, strikingDistance: querySummary.strikingDistance.length, ...querySummary.counts },
     liveCoverage: storySources.coverage,
     liveDatasetVersion: storySources.datasetVersion,
     ledgerStories: ledger.length,
@@ -480,8 +536,32 @@ async function main() {
       ]),
     ),
   );
+  if (querySummary.webQueries.length) {
+    console.log("\n### Top queries (web)\n");
+    console.log(
+      markdownTable(
+        ["Query", "Impr", "Clicks", "Avg pos"],
+        querySummary.webQueries.slice(0, 10).map((q) => [q.query, q.impressions, q.clicks, q.position ?? "—"]),
+      ),
+    );
+  }
+  if (querySummary.strikingDistance.length) {
+    console.log("\n### Striking distance (position 5–20, by impressions)\n");
+    console.log(
+      markdownTable(
+        ["Page", "Query", "Impr", "Clicks", "Pos"],
+        querySummary.strikingDistance.slice(0, 10).map((r) => [r.page, r.query, r.impressions, r.clicks, r.position]),
+      ),
+    );
+  }
   for (const warning of warnings) console.warn(`[gsc-report] WARN: ${warning}`);
-  const written = [REPORT_PATH, HISTORY_PATH, LEDGER_PATH, ...(signalsWritten ? [SIGNALS_PATH] : [])];
+  const written = [
+    REPORT_PATH,
+    HISTORY_PATH,
+    LEDGER_PATH,
+    ...(signalsWritten ? [SIGNALS_PATH] : []),
+    ...(queriesWritten ? [QUERIES_PATH] : []),
+  ];
   console.log(
     `\n[gsc-report] wrote ${written.join(", ")} ` +
       `(history=${history.length}, ledger=${ledger.length}, archiveIds=${archive.byId.size}/${archive.requested}, signals=${signals.storyCount})`,

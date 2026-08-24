@@ -369,6 +369,76 @@ export function chunk(items, size) {
   return parts;
 }
 
+// ── Query dimension (data/gsc-queries.json) ─────────────────────────────────
+export const QUERY_CAP = 500;
+export const STRIKING_CAP = 200;
+export const STRIKING_MIN_POSITION = 5;
+export const STRIKING_MAX_POSITION = 20;
+
+function queryEntry(row) {
+  return {
+    query: row.keys?.[0] ?? "",
+    impressions: row.impressions ?? 0,
+    clicks: row.clicks ?? 0,
+    position: row.position == null ? null : Number(row.position.toFixed(1)),
+  };
+}
+
+/**
+ * Query-dimension summary (seo/STRATEGY.md §4): the queries the site already
+ * surfaces for on web and news, plus the striking-distance inventory —
+ * [page, query] rows at position 5–20 sorted by impressions, the direct
+ * input to retitle priorities and the CTR-rescue job. keys order matches the
+ * request dimensions: ["query"] rows carry the query in keys[0];
+ * ["page","query"] rows carry page URL in keys[0], query in keys[1].
+ */
+export function summarizeQueries(webQueryRows, newsQueryRows, pageQueryRows) {
+  const byImpressions = (a, b) =>
+    b.impressions - a.impressions || b.clicks - a.clicks;
+  const strikingDistance = (pageQueryRows ?? [])
+    .filter(
+      (row) =>
+        row.position != null &&
+        row.position >= STRIKING_MIN_POSITION &&
+        row.position <= STRIKING_MAX_POSITION,
+    )
+    .map((row) => ({
+      page: pathnameOf(row.keys?.[0] ?? ""),
+      query: row.keys?.[1] ?? "",
+      impressions: row.impressions ?? 0,
+      clicks: row.clicks ?? 0,
+      position: Number((row.position ?? 0).toFixed(1)),
+    }))
+    .sort(byImpressions)
+    .slice(0, STRIKING_CAP);
+  return {
+    webQueries: (webQueryRows ?? []).map(queryEntry).sort(byImpressions).slice(0, QUERY_CAP),
+    newsQueries: (newsQueryRows ?? []).map(queryEntry).sort(byImpressions).slice(0, QUERY_CAP),
+    strikingDistance,
+    counts: {
+      webRows: (webQueryRows ?? []).length,
+      newsRows: (newsQueryRows ?? []).length,
+      pageQueryRows: (pageQueryRows ?? []).length,
+    },
+  };
+}
+
+/**
+ * Top page URLs by impressions, full URL kept — so a top earner is always
+ * resolvable even after its story leaves the live window and the ledger.
+ */
+export function topUrlsByImpressions(rows, cap = 50) {
+  return (rows ?? [])
+    .map((row) => ({
+      url: row.keys?.[0] ?? "",
+      impressions: row.impressions ?? 0,
+      clicks: row.clicks ?? 0,
+      position: row.position == null ? null : Number(row.position.toFixed(1)),
+    }))
+    .sort((a, b) => b.impressions - a.impressions || b.clicks - a.clicks)
+    .slice(0, cap);
+}
+
 // ── Output ──────────────────────────────────────────────────────────────────
 export function markdownTable(header, rows) {
   const line = (cells) => `| ${cells.join(" | ")} |`;
