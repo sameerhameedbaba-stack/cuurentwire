@@ -193,6 +193,18 @@ limit — a summarizer input-length question, not a formatter bug.
 
 ## Watching, not yet work
 
+- **A site-wide 4xx outage reads as a broken permanence promise.** Noted
+  while the 402 was live and not yet fixed. `url-survival` classifies any 4xx
+  as GONE, so during this outage it will report `GONE=<the whole ledger>` and
+  fail with *"the published URLs never 404 guarantee is broken"*. Failing is
+  correct — a site serving nothing must go red — but the message will point
+  the next reader at a permanence regression that did not happen. The LOST
+  path is unaffected (it only ever considers 5xx and network errors), so
+  nothing gets laundered. The fix, when someone touches this file next, is the
+  same shape as `RUN_HEALTHY_SHARE`: when essentially every URL returns the
+  same 4xx, say "the origin is refusing to serve" rather than naming the
+  guarantee.
+
 - **A one-off 500 on `/` during the Playwright suite.** The first full run
   this session failed one assertion — `security.spec.ts` got **500** from `/`.
   The same spec passed alone immediately after, and a full re-run went
