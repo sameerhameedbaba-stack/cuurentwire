@@ -93,6 +93,54 @@ rows at all, confirming Google News shows us essentially nothing. And
 "curren events" at 97.3 — real demand, we are nowhere, which validates the
 Sprint-3 `/current-events` build.
 
+**CTR/INDEXING FIX ROUND — 2026-08-25, adversarially reviewed before
+shipping (workflow wf_26d0393b-f8f, 6 agents).** The red team REFUTED the
+first design and materially corrected the diagnosis; both are recorded so
+no run re-litigates:
+
+- **Diagnosis correction.** "Four page-one queries, zero clicks" was
+  partly noise: excluding the position-1 query, P(0 clicks) ≈ 19% —
+  ordinary variance. /story/* aggregate CTR is actually 1.32% (22 clicks /
+  1,672 impressions, 490 URLs), and the single-source cohort out-CTRs the
+  multi-source cohort (1.46% at pos 23.7 vs 0.45% at pos 47.8). The real
+  , verified problem is narrower: our snippet is a COPY — clustering sets
+  summary = lead.description, so both our title AND description are the
+  publisher's own words next to the publisher's own result.
+- **KILLED: the title qualifier.** Arithmetically inert — it required
+  headline ≤48 chars + 2+ publications; the corpus median headline is
+  71–74 chars and ~6 of 1,885 stories qualify (0.32%), including ZERO of
+  the four measured queries. Do not resurrect an append-style title
+  qualifier; a PREFIX-style experiment ("N outlets: …") on a 20-30 story
+  subset is the only sanctioned variant, logged for a future run.
+- **SHIPPED instead (all red-team-approved):** (1) multi-source story
+  descriptions now lead with our coverage breadth ("N reports from M
+  publications, compared side by side" — "compared" gated on rendered
+  corroborated details, press-release clusters excluded, wording avoids
+  the probe-anchored word "sources"); reaches ~6% of story pages, framed
+  honestly as marginal. (2) Hub-line honesty fix: the pipeline admits
+  untracked publishers, so "N of the 69" could exceed 69 — hubStats now
+  splits trackedPublishers and the copy adapts. (3) Cap-honesty "Showing
+  the top 40" line on hubs past HUB_PAGE_LIMIT. (4) ItemList schema no
+  longer declares more items than it emits (top-100 declared 100, listed
+  30). (5) Story pages now link their topic HUBS in the "In this story"
+  rail — the crawl path from indexed pages into the hubs.
+- **Fix B reframe (per red team):** "Discovered — currently not indexed"
+  means Google has NOT FETCHED the page, so on-page content cannot flip it
+  directly; the hub coverage snapshots are quality hygiene on a 4-8 week
+  horizon. The actual constraint is CRAWL DEMAND on a young domain — hence
+  the story→hub links. **Scheduled decision (weekly run, ~Sep 22 = 4
+  weeks):** if hubs are still unfetched, consolidate the 15 hubs into the
+  strongest 6-8 and 301 the rest — 15 keyword-filter pages over one
+  ~750-cluster corpus is a doorway-adjacent shape Google may simply be
+  right about. MIN_CLUSTERS_FOR_INDEX=3 is too low a bar for "hub".
+- **Measurement (replaces the naive CTR bar):** the multi-source
+  description cohort (sourceCount≥2, identifiable retrospectively) is
+  compared against its own pre-2026-08-25 CTR at the 2- and 4-week marks;
+  hub progress is measured by URL-Inspection bucket transitions
+  (not-crawled → crawled → indexed) in data/gsc-indexation.json, run to
+  run. /story/* aggregate CTR is NOT a success metric — it was 1.32%
+  before the change.
+
 **360° checklist audit 2026-08-24** (`seo/CHECKLIST-360.md` is the verdict
 map — consult it before re-investigating any "have we considered X"): three
 queued adoptions — (a) Google Preferred Sources: owner checks whether

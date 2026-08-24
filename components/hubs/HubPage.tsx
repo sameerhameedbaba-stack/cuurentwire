@@ -113,8 +113,21 @@ export function createHubPage(id: HubId) {
           <p className="mt-5 border-l-2 border-brand pl-4 text-sm text-muted">
             In the current snapshot, {stats.total}{" "}
             {stats.total === 1 ? "story" : "stories"} in {hub.label} from{" "}
-            {stats.publishers} of the {TRACKED_PUBLISHER_COUNT} publications
-            CurrentWire tiers by authority.{" "}
+            {/* The pipeline also admits publishers outside config/sources.ts,
+                so the tracked subset is named separately — the bare publisher
+                count could otherwise exceed the denominator it cites. */}
+            {stats.publishers === stats.trackedPublishers ? (
+              <>
+                {stats.publishers} of the {TRACKED_PUBLISHER_COUNT} publications
+                CurrentWire tiers by authority.
+              </>
+            ) : (
+              <>
+                {stats.publishers} publications, {stats.trackedPublishers} of
+                them among the {TRACKED_PUBLISHER_COUNT} CurrentWire tiers by
+                authority.
+              </>
+            )}{" "}
             {stats.broadest ? (
               <>
                 {stats.total === 1 ? "It is" : "The most widely reported is"}{" "}
@@ -140,6 +153,11 @@ export function createHubPage(id: HubId) {
                   : "None is carried by more than one of those publications."}
               </>
             )}
+            {/* Cap honesty: the count above covers the whole hub, the list
+                below is capped — say so whenever they differ. */}
+            {stats.total > stories.length ? (
+              <> Showing the top {stories.length} below.</>
+            ) : null}
           </p>
         ) : null}
 

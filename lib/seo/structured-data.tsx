@@ -181,6 +181,10 @@ export function ItemListJsonLd({
   /** Rank of the first item — paginated lists continue the ranking. */
   startPosition?: number;
 }) {
+  // numberOfItems MUST equal the emitted elements, not the logical list
+  // size: declaring 100 while listing the 30-item payload cap was a schema
+  // claim the markup itself contradicted (red-team finding, 2026-08-25).
+  const emitted = clusters.slice(0, 30);
   return (
     <JsonLd
       data={{
@@ -188,8 +192,8 @@ export function ItemListJsonLd({
         "@type": "ItemList",
         name,
         url: `${siteConfig.url}${path}`,
-        numberOfItems: clusters.length,
-        itemListElement: clusters.slice(0, 30).map((cluster, index) => ({
+        numberOfItems: emitted.length,
+        itemListElement: emitted.map((cluster, index) => ({
           "@type": "ListItem",
           position: startPosition + index,
           name: cluster.title,
@@ -223,7 +227,8 @@ export function LinkListJsonLd({
         "@type": "ItemList",
         name,
         url: `${siteConfig.url}${path}`,
-        numberOfItems: items.length,
+        // Same rule as ItemListJsonLd: declare exactly what is emitted.
+        numberOfItems: Math.min(items.length, 30),
         itemListElement: items.slice(0, 30).map((item, index) => ({
           "@type": "ListItem",
           position: startPosition + index,

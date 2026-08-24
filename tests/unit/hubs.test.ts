@@ -157,7 +157,19 @@ describe("hubStats", () => {
       dataset([cluster("f", "Hurricane warning issued for the coast", ["NPR"])]),
       "ai",
     );
-    expect(stats).toEqual({ total: 0, publishers: 0, multiSource: 0, broadest: null });
+    expect(stats).toEqual({ total: 0, publishers: 0, trackedPublishers: 0, multiSource: 0, broadest: null });
+  });
+
+  it("splits tracked publishers from publishers the pipeline admitted untracked", () => {
+    const stats = hubStats(
+      dataset([
+        // NPR is in config/sources.ts; "Smalltown Gazette" is not.
+        cluster("t1", "AI lab announces new research center", ["NPR", "Smalltown Gazette"]),
+      ]),
+      "ai",
+    );
+    expect(stats.publishers).toBe(2);
+    expect(stats.trackedPublishers).toBe(1);
   });
 
   it("counts the full hub, not the page-capped slice", () => {

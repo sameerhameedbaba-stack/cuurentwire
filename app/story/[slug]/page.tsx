@@ -4,6 +4,7 @@ import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { cache } from "react";
 import { ExternalLink } from "lucide-react";
 import { CATEGORIES } from "@/config/categories";
+import { HUBS } from "@/config/hubs";
 import { CategoryLabel, ContentTypeBadge, CountryBadge, SourceLine, StatusBadge, BreakingLabel } from "@/components/news/atoms";
 import { CoverageIntelligence } from "@/components/news/CoverageIntelligence";
 import { CoverageSources, CoverageTimeline } from "@/components/news/CoverageSources";
@@ -32,6 +33,7 @@ import {
   getTopicIndex,
 } from "@/lib/news/queries";
 import { resolveStoryRequest, type StoryResolution } from "@/lib/news/story-resolution";
+import { hubsForStory } from "@/lib/news/hubs";
 import { isTopicEligible, topicKey } from "@/lib/news/topics";
 import { COUNTRY_LABELS, type StoryCluster } from "@/lib/news/types";
 import { metaDescription } from "@/lib/utils/text";
@@ -216,9 +218,33 @@ export async function generateMetadata({
   const view = await buildStoryView(request);
   if (!view) notFound();
   const { cluster, publishedByUsAt } = view;
+  // SERP differentiation (measured 2026-08-24: page-one rankings, zero
+  // clicks): the summary IS the lead publisher's own blurb (clustering sets
+  // summary = lead.description), so a bare summary makes our snippet a copy
+  // of the original result beside us. On genuinely multi-source stories the
+  // description leads with the one thing the publisher cannot say — coverage
+  // breadth — then the summary. Gates mirror coverageGlance: 2+ reports from
+  // 2+ publications, no press-release members (their counts would disagree
+  // with the rendered source list), and "compared" only when the page really
+  // renders corroborated details. Wording stays "reports"/"publications" —
+  // the coherence probe regex-anchors the word "sources" on story pages.
+  const metaCounts = coverageCounts(cluster.articles);
+  const metaCorroborated = corroboratedDetails(cluster).length;
+  const breadthClause =
+    cluster.articles.length >= 2 &&
+    metaCounts.independentPublications >= 2 &&
+    metaCounts.pressReleases === 0
+      ? `${metaCounts.reports} reports from ${metaCounts.independentPublications} publications${
+          metaCorroborated > 0 ? ", compared side by side" : ""
+        }. `
+      : "";
   const description = cluster.summary
-    ? metaDescription(cluster.summary)
-    : `Coverage of "${cluster.title}" from ${cluster.sourceNames.slice(0, 3).join(", ")}.`;
+    ? breadthClause
+      ? `${breadthClause}${metaDescription(cluster.summary, 160 - breadthClause.length)}`
+      : metaDescription(cluster.summary)
+    : breadthClause
+      ? `${breadthClause}Coverage of "${cluster.title}".`
+      : `Coverage of "${cluster.title}" from ${cluster.sourceNames.slice(0, 3).join(", ")}.`;
   const canonical = new URL(`/story/${cluster.slug}`, siteConfig.url).toString();
   // Thin single-source lifecycle (lib/seo/story-indexing.ts): the same depth
   // signals the body renders decide whether this URL stays in the index.
@@ -227,9 +253,9 @@ export async function generateMetadata({
   const { related, archiveExtras, earlierCoverage } = await loadStoryDepth(cluster);
   const indexDecision = storyIndexDecision({
     ageHours: hoursSince(publishedByUsAt ?? cluster.firstPublishedAt),
-    independentPublications: coverageCounts(cluster.articles).independentPublications,
+    independentPublications: metaCounts.independentPublications,
     historyEvents: countStoryValueEvents(archiveExtras.history),
-    corroboratedDetails: corroboratedDetails(cluster).length,
+    corroboratedDetails: metaCorroborated,
     relatedCoverage: related.length + earlierCoverage.length,
     hasSummary: Boolean(cluster.summary),
     // Committed Search Console report (lib/seo/gsc-signals.ts): a URL
@@ -325,6 +351,8 @@ export default async function StoryPage({
     chipKeys.add(entry.key);
     topicChips.push({ slug: entry.slug, display: entry.display });
   }
+  // Permanent hub memberships for this story (pure text matching).
+  const storyHubs = hubsForStory(cluster);
   const history = archiveExtras.history;
   // "Coverage at a glance": deterministic lines from the members, the
   // stored history and our first-seen time; empty for a single report.
@@ -526,13 +554,28 @@ export default async function StoryPage({
           </div>
 
           {/* Entities / topics — only chips whose /topic page has coverage
-              beyond this story (see topicChips above). */}
-          {topicChips.length > 0 ? (
+              beyond this story (see topicChips above). Permanent topic hubs
+              render first: story pages are the site's indexed, crawled
+              surface, and these links are the crawl path into the hubs the
+              2026-08-25 URL-Inspection sweep found Google not fetching —
+              crawl demand, not markup, is that constraint. hubsForStory is
+              pure text matching; no extra IO. */}
+          {topicChips.length > 0 || storyHubs.length > 0 ? (
             <div className="no-print mt-8">
               <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
                 In this story
               </h2>
               <ul className="mt-2 flex flex-wrap gap-1.5">
+                {storyHubs.map((id) => (
+                  <li key={`hub-${id}`}>
+                    <Link
+                      href={`/${id}`}
+                      className="block rounded-full border border-brand/40 bg-surface px-3 py-1 text-xs font-semibold transition-colors hover:border-brand hover:text-brand-ink"
+                    >
+                      {HUBS[id].label}
+                    </Link>
+                  </li>
+                ))}
                 {topicChips.map((chip) => (
                   <li key={chip.slug}>
                     <Link

@@ -1,4 +1,5 @@
 import { HUBS, HUB_IDS, type HubDefinition, type HubId } from "@/config/hubs";
+import { lookupSourceByName } from "@/config/sources";
 import { isTop100Eligible } from "@/lib/news/ranking/score";
 import type { NewsDataset, StoryCluster } from "@/lib/news/types";
 
@@ -154,12 +155,28 @@ export interface HubStats {
   total: number;
   /** Distinct publisher names across the hub's stories. */
   publishers: number;
+  /**
+   * The subset of `publishers` found in config/sources.ts. The pipeline
+   * admits publishers we do not track (normalize keeps the provider-supplied
+   * name, resolveTier defaults them to C), so `publishers` alone could
+   * EXCEED the tracked-publications denominator in rendered copy — the
+   * red-team catch of 2026-08-25. Any "N of the M we tier" sentence must
+   * use this field as N.
+   */
+  trackedPublishers: number;
   /** Stories carrying two or more publications. */
   multiSource: number;
   /** The most widely covered story, only when it has 2+ publications. */
   broadest: { title: string; slug: string; sourceCount: number } | null;
 }
 
+/**
+ * Counts use sourceNames/sourceCount deliberately: hub pages render LIVE
+ * dataset clusters whose story cards show the same sourceCount, so the
+ * snapshot line and the cards beneath it can never disagree on one page.
+ * (The documented sourceCount drift is an archive-rebuild phenomenon —
+ * lib/database/archive.ts — and archive clusters never enter this index.)
+ */
 export function hubStats(dataset: NewsDataset, hubId: HubId): HubStats {
   const stories = indexFor(dataset).get(hubId)!;
   const publishers = new Set<string>();
@@ -172,9 +189,14 @@ export function hubStats(dataset: NewsDataset, hubId: HubId): HubStats {
       if (!broadest || story.sourceCount > broadest.sourceCount) broadest = story;
     }
   }
+  let trackedPublishers = 0;
+  for (const name of publishers) {
+    if (lookupSourceByName(name)) trackedPublishers += 1;
+  }
   return {
     total: stories.length,
     publishers: publishers.size,
+    trackedPublishers,
     multiSource,
     broadest: broadest
       ? { title: broadest.title, slug: broadest.slug, sourceCount: broadest.sourceCount }
