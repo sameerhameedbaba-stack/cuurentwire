@@ -305,12 +305,25 @@ export function collectionPageSchema({
   name,
   description,
   items,
+  about,
 }: {
   path: string;
   name: string;
   description: string;
   /** Already filtered to indexable URLs by the caller. */
   items: { name: string; url: string }[];
+  /**
+   * The entity this page is ABOUT, when that is not CurrentWire — used by
+   * `/source/<slug>` to say "this page is about BBC News" (2026-08-25,
+   * seo/BACKLOG.md item 3). Deliberately `about`, never `publisher`: the
+   * publisher of the page is always CurrentWire, and claiming otherwise
+   * would be schema that misrepresents who wrote it.
+   *
+   * Carries name and url only. No bias, factuality or rating property is
+   * ever emitted here — CurrentWire publishes no such rating, and inventing
+   * one in markup would be exactly the fabricated schema the playbook bans.
+   */
+  about?: { name: string; url?: string };
 }) {
   const listed = items.slice(0, 30);
   return {
@@ -322,6 +335,15 @@ export function collectionPageSchema({
     inLanguage: "en",
     isPartOf: PART_OF_WEBSITE,
     publisher: PUBLISHER_ORGANIZATION,
+    ...(about
+      ? {
+          about: {
+            "@type": "Organization",
+            name: about.name,
+            ...(about.url ? { url: about.url } : {}),
+          },
+        }
+      : {}),
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: listed.length,
