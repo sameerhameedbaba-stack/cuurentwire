@@ -1,0 +1,317 @@
+{
+  "generatedAt": "2026-08-24T18:59:37.657Z",
+  "site": "sc-domain:currentwire.us",
+  "base": "https://currentwire.us",
+  "counts": {
+    "indexed": 12,
+    "not-crawled": 22
+  },
+  "rows": [
+    {
+      "path": "/",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-18T19:46:32Z",
+      "googleCanonical": "https://currentwire.us/"
+    },
+    {
+      "path": "/briefing",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/top-10",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/most-covered",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/latest",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-15T06:57:04Z",
+      "googleCanonical": "https://currentwire.us/latest"
+    },
+    {
+      "path": "/reports/media-coverage",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/topics",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-15T00:12:56Z",
+      "googleCanonical": "https://currentwire.us/topics"
+    },
+    {
+      "path": "/sources",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-16T06:09:18Z",
+      "googleCanonical": "https://currentwire.us/sources"
+    },
+    {
+      "path": "/us",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-15T11:06:31Z",
+      "googleCanonical": "https://currentwire.us/us"
+    },
+    {
+      "path": "/canada",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-15T02:53:43Z",
+      "googleCanonical": "https://currentwire.us/canada"
+    },
+    {
+      "path": "/politics",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-15T05:26:45Z",
+      "googleCanonical": "https://currentwire.us/politics"
+    },
+    {
+      "path": "/business",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-15T05:09:28Z",
+      "googleCanonical": "https://currentwire.us/business"
+    },
+    {
+      "path": "/technology",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-15T07:38:13Z",
+      "googleCanonical": "https://currentwire.us/technology"
+    },
+    {
+      "path": "/world",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/climate",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-15T08:02:03Z",
+      "googleCanonical": "https://currentwire.us/climate"
+    },
+    {
+      "path": "/health",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/science",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/culture",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-15T14:21:07Z",
+      "googleCanonical": "https://currentwire.us/culture"
+    },
+    {
+      "path": "/sports",
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-08-15T15:43:07Z",
+      "googleCanonical": "https://currentwire.us/sports"
+    },
+    {
+      "path": "/ai",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/elections",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/immigration",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/courts",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/crime",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/education",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/housing",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/jobs",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/money",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/weather",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/energy",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/space",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/autos",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/travel",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    },
+    {
+      "path": "/obituaries",
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
+    }
+  ]
+}
