@@ -2,10 +2,15 @@ import type { Metadata } from "next";
 import { ProsePage } from "@/components/layout/ProsePage";
 import { siteConfig } from "@/config/site";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { TrustPageJsonLd } from "@/lib/seo/structured-data";
+
+/** One string for <meta name="description"> and the WebPage JSON-LD. */
+const DESCRIPTION =
+  "How CurrentWire handles data: local storage, server logs, external links and your choices.";
 
 export const metadata: Metadata = pageMetadata({
   title: "Privacy",
-  description: "How CurrentWire handles data: local storage, server logs, external links and your choices.",
+  description: DESCRIPTION,
   path: "/privacy",
 });
 
@@ -92,6 +97,11 @@ export default function PrivacyPage() {
           with any privacy question.
         </li>
       </ul>
+      <TrustPageJsonLd
+        path="/privacy"
+        name="Privacy"
+        description={DESCRIPTION}
+      />
     </ProsePage>
   );
 }

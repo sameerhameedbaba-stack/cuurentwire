@@ -102,7 +102,16 @@ async function firstLiveStoryUrl() {
   for (const url of candidates) {
     let status = 0;
     try {
-      status = (await fetch(url, { redirect: "follow" })).status;
+      // redirect: "manual" on purpose. `follow` accepted a URL that 308s to
+      // its canonical slug, and every story-page number in the history was
+      // then measured with an extra round trip baked in — measured
+      // 2026-08-24 on the ledger's first entry, which 308s to
+      // .../trump-asks-supreme-court-to-let-white-house-ballroom-construction-continue-c2853d27437ed.
+      // Story slugs are rebuilt when pickLead() re-selects the lead, so the
+      // ledger accumulates retired addresses and this is the normal case,
+      // not an edge one. The target must be the canonical URL a reader
+      // actually lands on.
+      status = (await fetch(url, { redirect: "manual" })).status;
     } catch {
       status = 0;
     }
@@ -213,6 +222,37 @@ async function runPlaywrightProbe(urls) {
   const browser = await chromium.launch();
   const results = [];
   try {
+    // Warm the connection before anything is measured.
+    //
+    // Every URL gets a fresh BrowserContext, but Chromium's network service
+    // shares its DNS cache and socket pool across contexts, so only the
+    // FIRST navigation of a run pays DNS + TCP + TLS. Measured 2026-08-24
+    // under this exact throttle (150 ms emulated latency): `/` reported
+    // TTFB 2,844 ms while `/top-100`, two contexts later, reported 131 ms —
+    // and 131 ms is *below one emulated round trip*, which is only possible
+    // on a reused socket. The 2026-08-21 run reported 2,842 ms for `/` and
+    // the weekly report could not explain the twentyfold disagreement with
+    // curl (134-386 ms warm, X-Vercel-Cache: HIT). This is the explanation:
+    // whichever page runs first absorbs the whole connection setup, so the
+    // series measured page order as much as page speed.
+    //
+    // One throwaway navigation puts every measured page on the same footing.
+    // What the numbers mean afterwards: they compare pages to each other and
+    // weeks to each other, and they EXCLUDE first-connection setup — they are
+    // not a prediction of a cold field visit. CrUX would answer that, and it
+    // needs traffic this site does not have yet.
+    const warmup = await browser.newContext();
+    try {
+      await warmup
+        .newPage()
+        .then((page) => page.goto(urls[0], { waitUntil: "load", timeout: 120_000 }));
+    } catch {
+      // A failed warm-up is not a failed run: the first measured page simply
+      // pays the setup it used to pay. Never let this take the probe down.
+    } finally {
+      await warmup.close();
+    }
+
     for (const url of urls) {
       const context = await browser.newContext({
         viewport: { width: 412, height: 823 },
@@ -343,7 +383,20 @@ try {
 } catch {
   // first run — the file is created below
 }
-history.push({ date: now, base: BASE, strategy: "mobile", tool, pages: results });
+// `warmedConnection` marks the 2026-08-24 methodology change (see the
+// warm-up in runPlaywrightProbe). Entries without it measured their FIRST
+// page on a cold connection and the rest on a warm one, so the first page's
+// TTFB/LCP there is inflated by DNS+TCP+TLS and is NOT comparable to a later
+// entry. A reader of this series must split on this flag before drawing a
+// trend line — the drop across the boundary is the instrument, not the site.
+history.push({
+  date: now,
+  base: BASE,
+  strategy: "mobile",
+  tool,
+  warmedConnection: tool === "playwright-chromium",
+  pages: results,
+});
 if (history.length > HISTORY_CAP) history = history.slice(-HISTORY_CAP);
 mkdirSync(dirname(HISTORY_PATH), { recursive: true });
 writeFileSync(HISTORY_PATH, `${JSON.stringify(history, null, 2)}\n`);

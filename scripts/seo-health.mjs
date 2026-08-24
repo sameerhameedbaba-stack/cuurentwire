@@ -241,6 +241,13 @@ if (!homeCanonical || homeCanonical.replace(/\/$/, "") !== BASE.replace(/\/$/, "
 
 // 8c. E-E-A-T pages must be machine-readable, not merely crawlable. All six
 // shipped ZERO JSON-LD blocks until 2026-08-19.
+//
+// Extended 2026-08-24 by the weekly run, which measured four more pages
+// still shipping zero blocks. /news-desk is the worst of them: it is the URL
+// NewsMediaOrganization.masthead points at, so the Organization schema named
+// a page that did not identify itself. /archive is the HTML entry point to
+// every permanent story URL (5,891 of them that day) and had no schema while
+// the /archive/<date> pages beneath it have carried some since 2026-08-19.
 const TRUST_PAGES = {
   "/about": "AboutPage",
   "/methodology": "WebPage",
@@ -248,6 +255,11 @@ const TRUST_PAGES = {
   "/corrections": "WebPage",
   "/contact": "ContactPage",
   "/topics": "CollectionPage",
+  "/news-desk": "WebPage",
+  "/archive": "CollectionPage",
+  "/privacy": "WebPage",
+  "/terms": "WebPage",
+  "/copyright": "WebPage",
 };
 let trustOk = 0;
 for (const [path, expected] of Object.entries(TRUST_PAGES)) {

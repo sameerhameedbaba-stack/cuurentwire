@@ -3,11 +3,15 @@ import Link from "next/link";
 import { ProsePage } from "@/components/layout/ProsePage";
 import { siteConfig } from "@/config/site";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { TrustPageJsonLd } from "@/lib/seo/structured-data";
+
+/** One string for <meta name="description"> and the WebPage JSON-LD. */
+const DESCRIPTION =
+  "What the automated CurrentWire News Desk is: how stories are compiled from publisher metadata, what it does and does not do, and how to reach us.";
 
 export const metadata: Metadata = pageMetadata({
   title: "CurrentWire News Desk",
-  description:
-    "What the automated CurrentWire News Desk is: how stories are compiled from publisher metadata, what it does and does not do, and how to reach us.",
+  description: DESCRIPTION,
   path: "/news-desk",
 });
 
@@ -92,6 +96,19 @@ export default function NewsDeskPage() {
         Publishers with feed or attribution questions can reach{" "}
         <a href={`mailto:${siteConfig.publishersEmail}`}>{siteConfig.publishersEmail}</a>.
       </p>
+      {/*
+        This is the URL NewsMediaOrganization.masthead points at, and it was
+        the last masthead-linked page shipping no JSON-LD at all — the
+        2026-08-19 trust-page pass typed the other six and missed this one.
+        Typing it closes the E-E-A-T loop in both directions: the
+        Organization schema names this page, and this page now identifies
+        itself and names the Organization back.
+      */}
+      <TrustPageJsonLd
+        path="/news-desk"
+        name="The CurrentWire News Desk"
+        description={DESCRIPTION}
+      />
     </ProsePage>
   );
 }

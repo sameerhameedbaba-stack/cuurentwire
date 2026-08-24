@@ -3,10 +3,15 @@ import Link from "next/link";
 import { ProsePage } from "@/components/layout/ProsePage";
 import { siteConfig } from "@/config/site";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { TrustPageJsonLd } from "@/lib/seo/structured-data";
+
+/** One string for <meta name="description"> and the WebPage JSON-LD. */
+const DESCRIPTION =
+  "CurrentWire’s role as an aggregator and how publisher copyright is respected.";
 
 export const metadata: Metadata = pageMetadata({
   title: "Copyright",
-  description: "CurrentWire’s role as an aggregator and how publisher copyright is respected.",
+  description: DESCRIPTION,
   path: "/copyright",
 });
 
@@ -49,6 +54,11 @@ export default function CopyrightPage() {
         </a>
         . See also our <Link href="/editorial-standards">editorial standards</Link>.
       </p>
+      <TrustPageJsonLd
+        path="/copyright"
+        name="Copyright"
+        description={DESCRIPTION}
+      />
     </ProsePage>
   );
 }

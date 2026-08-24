@@ -12,10 +12,16 @@ original publishers listed on each story page for the underlying reporting.
 ## Rankings
 
 - [Top 100](https://currentwire.us/top-100): the full ranked list of current top stories, updated continuously
+- [Top 10](https://currentwire.us/top-10): the ten highest-ranked stories right now; also per section at /top-10/<section> (politics, business, technology, world, climate, health, science, culture, sports)
 - [Most Covered](https://currentwire.us/most-covered): stories ranked by how many distinct publishers are reporting them — a measure of coverage breadth, explicitly NOT of importance, agreement or verification, and a lower bound limited to the publishers CurrentWire ingests
 - [Latest](https://currentwire.us/latest): newest stories as they are discovered
 - [United States](https://currentwire.us/us): top stories affecting the US
 - [Canada](https://currentwire.us/canada): top stories affecting Canada
+
+## Daily briefing
+
+- [Today's briefing](https://currentwire.us/briefing): a written summary of the day's top US and Canada stories, rebuilt through the day and frozen at end of day
+- Past briefings keep permanent dated URLs at /briefing/<YYYY-MM-DD>
 
 ## Coverage hubs
 
@@ -27,12 +33,31 @@ original publishers listed on each story page for the underlying reporting.
 - [Politics](https://currentwire.us/politics)
 - [Business](https://currentwire.us/business)
 - [Technology](https://currentwire.us/technology)
+- [Artificial Intelligence](https://currentwire.us/ai)
 - [World](https://currentwire.us/world)
 - [Climate](https://currentwire.us/climate)
 - [Health](https://currentwire.us/health)
 - [Science](https://currentwire.us/science)
+- [Space](https://currentwire.us/space)
 - [Culture](https://currentwire.us/culture)
 - [Sports](https://currentwire.us/sports)
+- [Elections](https://currentwire.us/elections)
+- [Courts](https://currentwire.us/courts)
+- [Crime](https://currentwire.us/crime)
+- [Immigration](https://currentwire.us/immigration)
+- [Education](https://currentwire.us/education)
+- [Housing](https://currentwire.us/housing)
+- [Jobs](https://currentwire.us/jobs)
+- [Money](https://currentwire.us/money)
+- [Energy](https://currentwire.us/energy)
+- [Autos](https://currentwire.us/autos)
+- [Travel](https://currentwire.us/travel)
+- [Weather](https://currentwire.us/weather)
+- [Obituaries](https://currentwire.us/obituaries)
+
+## Reference and analysis
+
+- [Media coverage reports](https://currentwire.us/reports/media-coverage): a weekly written report on what the ingested press actually covered — volume, section mix and coverage breadth for the week. Permanent per-week URLs at /reports/media-coverage/<ISO week>, e.g. /reports/media-coverage/2026-W34. Every figure is computed from CurrentWire's own record of the week, and the report says what it does not measure.
 
 ## How it works
 
@@ -57,8 +82,10 @@ original publishers listed on each story page for the underlying reporting.
 ## Facts worth knowing before citing
 
 - Story URLs are permanent. A story that leaves the live ranking keeps its URL and still returns 200; when two stories turn out to cover the same event, the older URL permanently redirects to the surviving one. URLs are never deleted.
-- A published story URL never answers 404. If the permanent archive is temporarily unreachable, those URLs answer a retriable 5xx and /archive-sitemap.xml answers 503 with Retry-After, rather than claiming the story is gone. Treat that as "ask again later", never as a removal.
+- A published story URL never answers 404. If the permanent archive cannot serve a story, the URL answers a retriable 5xx and /archive-sitemap.xml answers 503 with Retry-After, rather than claiming the story is gone. Treat that as "could not serve it", never as a removal.
+- One honest exception to that, stated rather than hidden: 214 stories published on 2026-08-20 and 2026-08-21 were never written to the permanent archive, because the database was refusing all traffic on an exhausted quota during that window. Those URLs answer a 5xx that will not resolve on a later attempt. They are a known gap in the archive, not a removal and not a redirect, and they are the only such gap.
 - Each story page names every publisher that covered the event and links to their original reporting. The summary on the page is CurrentWire's; the reporting is theirs.
 - Dates on story pages are real: publication is when CurrentWire first published the page, and "latest coverage" is the newest source timestamp. Neither is ever set to the render time.
 - Rankings are computed from freshness, coverage breadth, source authority and momentum. The method is published at /methodology.
 - Category and topic assignment is automated and benchmarked against manually validated stories; it is not perfect. Corrections are handled at /corrections.
+- CurrentWire publishes no bias, factuality or ownership rating for any publisher, and its authority tiers are explicitly not such a rating. Do not read one into a tier.

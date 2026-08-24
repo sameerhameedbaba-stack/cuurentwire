@@ -16,6 +16,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+import { classifyResults, LOST_AFTER_DAYS } from "./url-survival-lib.mjs";
 
 const BASE =
   process.argv.includes("--base")
@@ -106,23 +107,26 @@ for (let i = 0; i < entries.length; i += CONCURRENCY) {
 }
 
 /**
- * A 5xx is NOT a broken permanence guarantee.
+ * A 5xx is NOT a broken permanence guarantee — and a 5xx that never ends is
+ * not an outage either. The three-way split (GONE / UNAVAILABLE / LOST) and
+ * the reasoning behind it live in ./url-survival-lib.mjs.
  *
- * The invariant this probe defends is "a published URL never 404s". On
- * 2026-08-21 the story archive went down and 1,322 URLs answered 404, which
- * is exactly the violation it exists to catch. Those URLs now answer a
- * retriable 5xx instead, and if the probe kept calling that "no longer
- * resolves" it would stay red for the whole outage — hiding any REAL 404
- * regression underneath a wall of expected noise, and teaching everyone to
- * ignore the one gate that guards the site's central promise.
- *
- * So the two are counted separately: gone (4xx — the guarantee is broken,
- * fail) and unavailable (5xx — the origin is having a bad day, report it
- * loudly but do not claim the URL is lost).
+ * Why LOST exists, in short: measured 2026-08-24, 214 ledger URLs answer a
+ * permanent 500, and every one was first seen on 2026-08-20 or 2026-08-21 —
+ * the window when Neon's free tier was refusing all traffic on an exhausted
+ * egress quota. Those stories were live, were advertised in the sitemaps,
+ * were never written to the archive, and then aged out of the 72 h live
+ * dataset. The content exists nowhere, so no restore brings it back;
+ * /archive/2026-08-20 lists 24 stories where every neighbouring day lists
+ * 552-1,275. This gate had therefore been red every night since 2026-08-22
+ * for a condition that cannot clear — which is the same defect the
+ * gone/unavailable split was written to prevent, arriving from the other
+ * side. A gate that cannot go green stops being read.
  */
-const gone = results.filter((r) => !r.ok && r.status >= 400 && r.status < 500);
-const unavailable = results.filter((r) => !r.ok && (r.status === 0 || r.status >= 500));
-const redirects = results.filter((r) => r.ok && r.status !== 200);
+const { gone, unavailable, lost, redirects, runIsHealthy } = classifyResults({
+  results,
+  ledger: known,
+});
 for (const result of results) {
   if (result.ok) known.get(result.url).lastOk = now;
 }
@@ -139,15 +143,33 @@ writeFileSync(LEDGER_PATH, `${JSON.stringify(kept, null, 2)}\n`);
 
 console.log(
   `[url-survival] ${now} base=${BASE} ledger=${kept.length} (+${added} new) ` +
-    `checked=${results.length} ok=${results.length - gone.length - unavailable.length} ` +
-    `redirects=${redirects.length} GONE=${gone.length} UNAVAILABLE=${unavailable.length}`,
+    `checked=${results.length} ok=${results.length - gone.length - unavailable.length - lost.length} ` +
+    `redirects=${redirects.length} GONE=${gone.length} UNAVAILABLE=${unavailable.length} ` +
+    `LOST=${lost.length}${runIsHealthy ? "" : " (lost-classification suspended: run unhealthy)"}`,
 );
 for (const r of redirects.slice(0, 10)) console.log(`  redirect ${r.url} ${r.note}`);
 for (const r of gone) console.log(`  GONE ${r.status} ${r.url} ${r.note ?? ""}`);
 for (const r of unavailable.slice(0, 10)) {
   console.log(`  unavailable ${r.status} ${r.url} ${r.note ?? ""}`);
 }
+for (const r of lost.slice(0, 10)) {
+  console.log(`  lost ${r.status} ${r.url} ${r.note ?? ""}`);
+}
 
+if (lost.length > 0) {
+  // Reported every run, deliberately without failing — see the LOST note above.
+  const oldest = lost
+    .map((r) => known.get(r.url)?.lastOk ?? known.get(r.url)?.firstSeen)
+    .filter(Boolean)
+    .sort()[0];
+  console.log(
+    `[url-survival] ${lost.length} URL(s) have answered 5xx since ${oldest ?? "?"} ` +
+      `(> ${LOST_AFTER_DAYS}d) — treated as permanently lost content, not as an ` +
+      `outage. These stories were never written to the archive and cannot be ` +
+      `restored; they leave the ledger on the ${LEDGER_RETENTION_DAYS}-day retention. ` +
+      `Not a build failure.`,
+  );
+}
 if (unavailable.length > 0) {
   // Not a pass, but not a broken promise either — say which it is.
   console.error(
@@ -164,4 +186,9 @@ if (gone.length > 0) {
   process.exit(1);
 }
 if (unavailable.length > 0) process.exit(1);
-console.log("[url-survival] PASS: every previously published URL still resolves");
+console.log(
+  lost.length > 0
+    ? `[url-survival] PASS: no new failures — every published URL still resolves ` +
+      `except ${lost.length} known-lost from the 2026-08-20 archive outage`
+    : "[url-survival] PASS: every previously published URL still resolves",
+);

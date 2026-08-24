@@ -3,10 +3,15 @@ import Link from "next/link";
 import { ProsePage } from "@/components/layout/ProsePage";
 import { siteConfig } from "@/config/site";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { TrustPageJsonLd } from "@/lib/seo/structured-data";
+
+/** One string for <meta name="description"> and the WebPage JSON-LD. */
+const DESCRIPTION =
+  "Terms governing use of the CurrentWire news discovery service.";
 
 export const metadata: Metadata = pageMetadata({
   title: "Terms of Use",
-  description: "Terms governing use of the CurrentWire news discovery service.",
+  description: DESCRIPTION,
   path: "/terms",
 });
 
@@ -79,6 +84,11 @@ export default function TermsPage() {
         Questions about these terms:{" "}
         <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>.
       </p>
+      <TrustPageJsonLd
+        path="/terms"
+        name="Terms of Use"
+        description={DESCRIPTION}
+      />
     </ProsePage>
   );
 }
