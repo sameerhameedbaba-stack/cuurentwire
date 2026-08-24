@@ -42,9 +42,23 @@ news-surface plumbing — in that order of speed.**
    page, methodology anchoring. It is simultaneously the ranking surface,
    the link magnet (every pitch leads with data, never "check out my
    aggregator"), and the thin-content fix. Path to M2 and beyond.
-3. **News-surface pipeline repair.** News-sitemap integrity (a listed URL
-   500s — the #1 item), ≥1200px images, Publisher Center claim, RSS images
-   then Flipboard, IndexNow (Bing-only benefit), beehiiv RSS-to-email.
+3. **Google News trust signals (P0).** There is NO switch to flip and no
+   application to file — since 2025 publishers are considered automatically,
+   so "unfreeze Google News" is the wrong mental model (reviewer correction,
+   2026-08-24). The correct frame: strengthen every discovery/eligibility/
+   trust/ranking signal Google's News systems read, and let consideration
+   happen. The signal checklist, with our status: crawl/indexation ✓,
+   permanent article URLs ✓, fresh news-sitemap limited to 48 h ✓
+   (NEWS_SITEMAP_WINDOW_HOURS = 48; integrity fix in flight is the #1 item),
+   NewsArticle schema ✓, visible publication + modified dates ✓, About/
+   ownership/editorial-standards/corrections/contact pages ✓, section pages
+   ✓, internal linking (Sprint 1), ≥1200px images (Sprint 1), Publisher
+   Center claim (owner), original value = BET 2. The known open trade-off:
+   author identity is the transparent automated "CurrentWire News Desk" +
+   /news-desk page — honest, but weaker than named human bylines; going
+   named is an OWNER decision tied to the deferred operator-identity call,
+   surfaced at the M2 gate, never made unilaterally by a run. Then: RSS
+   images → Flipboard, IndexNow (Bing-only benefit), beehiiv RSS-to-email.
    News pickup ramps weeks-to-months; Discover is a 6-month-plus outcome.
 
 ## 2. Guardrails — what NOT to do (all seven kept verbatim by red-team)
@@ -83,6 +97,15 @@ busters or need a named expert we don't have).
   dataState "all" → data/gsc-queries.json; per-URL position into
   gsc-url-signals.json; top-50-URLs-by-impressions into gsc-report.json.
   (SHIPPED 2026-08-24, this session.)
+- [automated] **Dead-template indexation check FIRST** (moved up from
+  Sprint 5, reviewer correction 2026-08-24): before judging any retitle,
+  URL-Inspection-API-check /briefing, /top-10, /most-covered, the hubs —
+  zero impressions can mean an INDEXING failure, which no title fixes.
+  Classify every zero-traffic page into one of six buckets before treatment:
+  indexing failure → fix indexing; demand failure → deprioritize; intent
+  mismatch → re-target; authority/content failure → BET 2 work; CTR
+  failure (impressions but no clicks) → and ONLY this bucket gets retitles.
+  The story-level CTR-rescue job carries the same gate.
 - [automated] **Retitle wave 1** — every claim literally true:
   homepage "Top News Today — US & Canada Headlines, Ranked";
   /briefing/[date] "News Summary Today: {Weekday}, {Month D, YYYY}";
@@ -156,6 +179,34 @@ brand/direct traffic if they personally want to; it is no longer an SEO plan
 item and nothing depends on it), Show HN, Reddit aging + r/dataisbeautiful,
 comparison pages, Qwoted/Help-a-B2B-Writer, /briefing/texas (parked until
 /briefing itself shows impressions).
+
+## 3b. Priority stack and the central question (review round, 2026-08-24)
+
+The owner's second reviewer (ChatGPT) audited this strategy; verdict 8.5/10,
+two corrections accepted (News-trust reframe in BET 3; failure
+classification before retitles in Sprint 1). Its priority stack, which our
+bets map onto — use this ordering whenever sprint items compete for a run's
+time:
+
+- **P0 — Google can trust/find/index the publisher** = BET 3 + the existing
+  technical base. Always outranks everything below.
+- **P1 — Stop being a commodity aggregator** = BET 2 (the coverage-data
+  moat). A pure feed-remix aggregator sits inside Google's scaled-content
+  spam definition; the proprietary-data layer is what keeps us outside it.
+- **P2 — Topical authority** = hubs/clusters; dominate chosen topics rather
+  than publishing everything shallowly.
+- **P3 — Improve existing URLs** = BET 1 (retitles, CTR, consolidation) —
+  only after classification, only the CTR/intent bucket.
+- **P4 — Authority** = the link plan (data-led, white-hat).
+- **P5 — Expansion surfaces** = Images, Discover, Preferred Sources,
+  AI-search citations.
+
+**The central question every run should be able to answer:** "Why should
+Google rank or cite CurrentWire instead of Reuters, AP, CNN, BBC, local
+publishers and a thousand other aggregators?" Our answer: because we publish
+the coverage-breadth data — who covered what, who was first, how stories
+rose and died — that none of them publish. Any work that does not
+strengthen that answer or a P0 signal is probably the wrong work.
 
 ## 4. Measurement (what runs must track — see PLAYBOOK cadence)
 

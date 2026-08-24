@@ -24,10 +24,15 @@ pulls ["query"] web+news and ["page","query"] web → data/gsc-queries.json
 with the striking-distance inventory; first data lands on the next gsc.yml
 run). Remaining Sprint-1 items, in order: (1) news-sitemap integrity — the
 #1 item (resolve the story-render 500, emit only canonical 200 slugs, cron
-validation + alert); (2) retitle wave 1 (exact titles in STRATEGY §3 —
-every claim literally true); (3) ≥1200px self-generated story cards
+validation + alert; IN FLIGHT in a separate session, 2026-08-24); (2)
+dead-template indexation check via URL Inspection API BEFORE retitles, with
+the six-bucket failure classification (STRATEGY §3 Sprint 1 — reviewer
+correction: a page with zero impressions may be an indexing failure no
+title can fix); (3) retitle wave 1 (exact titles in STRATEGY §3 — every
+claim literally true, applied only to pages classified as CTR/intent
+failures or matching vacant SERPs); (4) ≥1200px self-generated story cards
 (publisher-photo hotlinking is an OWNER legal decision — default self-made);
-(4) internal-link rewire; (5) [owner ~15 min] Publisher Center claim.
+(5) internal-link rewire; (6) [owner ~15 min] Publisher Center claim.
 
 **360° checklist audit 2026-08-24** (`seo/CHECKLIST-360.md` is the verdict
 map — consult it before re-investigating any "have we considered X"): three
