@@ -1062,23 +1062,32 @@ const readEarlierCoverage = cachedRead(
   },
 );
 
-/** Cached inner read for getArchiveFirstSeen — first_seen_at is written
- * once per cluster, so entries are immutable; the ids are sorted by the
- * caller so re-ranked pages with the same id set share one cache entry. */
+/** Cached inner read shared by getArchiveFirstSeen and the news-sitemap
+ * status: [clusterId, firstSeenAt, merged] per archived id. first_seen_at
+ * is written once per cluster and the merge pointer flips rarely, so the
+ * TTL staleness is harmless; the ids are sorted by the callers so re-ranked
+ * pages with the same id set share one cache entry — and any dataset change
+ * alters the id set, which is a NEW cache key, so a fresh generation is
+ * never blocked on the previous set's TTL. */
 const readFirstSeenEntries = cachedRead(
-  "archive-first-seen",
+  "archive-first-seen-v2",
   FIRST_SEEN_TTL_S,
-  async (clusterIds: string[]): Promise<[string, string][]> => {
+  async (clusterIds: string[]): Promise<[string, string, boolean][]> => {
     const db = getDb();
     if (!db) return [];
     const rows = await db
       .select({
         clusterId: storyArchive.clusterId,
         firstSeenAt: storyArchive.firstSeenAt,
+        mergedIntoClusterId: storyArchive.mergedIntoClusterId,
       })
       .from(storyArchive)
       .where(inArray(storyArchive.clusterId, clusterIds));
-    return rows.map((row) => [row.clusterId, new Date(row.firstSeenAt).toISOString()]);
+    return rows.map((row) => [
+      row.clusterId,
+      new Date(row.firstSeenAt).toISOString(),
+      row.mergedIntoClusterId !== null,
+    ]);
   },
 );
 
@@ -1091,12 +1100,48 @@ export async function getArchiveFirstSeen(
 ): Promise<Map<string, string>> {
   if (!getDb() || clusterIds.length === 0) return new Map();
   try {
-    return new Map(await readFirstSeenEntries([...clusterIds].sort()));
+    const entries = await readFirstSeenEntries([...clusterIds].sort());
+    return new Map(entries.map(([id, firstSeenAt]) => [id, firstSeenAt]));
   } catch (error) {
     logger.error("database.archive_first_seen_failed", {
       error: describeDbError(error),
     });
     return new Map();
+  }
+}
+
+/**
+ * Archive standing of live cluster ids, for the news sitemap's eligibility
+ * gate (lib/seo/news-sitemap.ts has the rule): which ids already have a
+ * permanent archive row (their URL survives falling out of the live
+ * dataset), and which currently carry a merge pointer (their URL is about
+ * to 308 away). One query, shared cache entry with getArchiveFirstSeen.
+ *
+ * Returns null when no database is configured OR the read fails. The
+ * caller must then render UNFILTERED, exactly as before this gate existed:
+ * a Neon hiccup emptying the news sitemap would be this site telling
+ * Google News it published nothing today — the same class of permanent
+ * signal ArchiveUnavailableError (above) exists to prevent.
+ */
+export async function getNewsSitemapArchiveStatus(clusterIds: string[]): Promise<{
+  firstSeenById: Map<string, string>;
+  mergedIds: Set<string>;
+} | null> {
+  if (!getDb() || clusterIds.length === 0) return null;
+  try {
+    const entries = await readFirstSeenEntries([...clusterIds].sort());
+    const firstSeenById = new Map<string, string>();
+    const mergedIds = new Set<string>();
+    for (const [id, firstSeenAt, merged] of entries) {
+      firstSeenById.set(id, firstSeenAt);
+      if (merged) mergedIds.add(id);
+    }
+    return { firstSeenById, mergedIds };
+  } catch (error) {
+    logger.error("database.news_sitemap_status_failed", {
+      error: describeDbError(error),
+    });
+    return null;
   }
 }
 
