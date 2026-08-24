@@ -129,3 +129,55 @@ export function hubCounts(dataset: NewsDataset): Record<HubId, number> {
     HUB_IDS.map((id) => [id, index.get(id)!.length]),
   ) as Record<HubId, number>;
 }
+
+/**
+ * Factual coverage stats for one hub, over the hub's FULL story set (not the
+ * page-capped slice), for the snapshot line the hub renders.
+ *
+ * Why this exists: on 2026-08-25 the first URL-Inspection sweep found all 15
+ * hubs "Discovered — currently not indexed" while being in the sitemap,
+ * index,follow, internally linked and 2,000+ words long. Nothing was broken —
+ * Google was declining index budget on pages that only re-list other
+ * publishers' headlines. These counts are the one thing on a hub page that is
+ * ours and exists nowhere else, so the page stops being a pure list
+ * (seo/STRATEGY.md BET 2). Every field is a plain count over data already in
+ * memory: no new IO, no added ISR cost.
+ *
+ * Honesty rules baked in: counts are lower bounds over the publishers this
+ * site tracks (never "all coverage"), `broadest` is null unless a story
+ * genuinely carries 2+ publications, and nothing here is sourced from
+ * dataset-wide ingestion figures — attributing a whole-run number to one hub
+ * would be a fabricated metric.
+ */
+export interface HubStats {
+  /** Stories in the hub before HUB_PAGE_LIMIT. */
+  total: number;
+  /** Distinct publisher names across the hub's stories. */
+  publishers: number;
+  /** Stories carrying two or more publications. */
+  multiSource: number;
+  /** The most widely covered story, only when it has 2+ publications. */
+  broadest: { title: string; slug: string; sourceCount: number } | null;
+}
+
+export function hubStats(dataset: NewsDataset, hubId: HubId): HubStats {
+  const stories = indexFor(dataset).get(hubId)!;
+  const publishers = new Set<string>();
+  let multiSource = 0;
+  let broadest: StoryCluster | null = null;
+  for (const story of stories) {
+    for (const name of story.sourceNames) publishers.add(name);
+    if (story.sourceCount >= 2) {
+      multiSource += 1;
+      if (!broadest || story.sourceCount > broadest.sourceCount) broadest = story;
+    }
+  }
+  return {
+    total: stories.length,
+    publishers: publishers.size,
+    multiSource,
+    broadest: broadest
+      ? { title: broadest.title, slug: broadest.slug, sourceCount: broadest.sourceCount }
+      : null,
+  };
+}

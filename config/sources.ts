@@ -146,6 +146,14 @@ const byName = new Map<string, SourceDefinition>(
  * npr.org, www.bbc.co.uk → bbc.co.uk, edition.cnn.com → cnn.com) so feed
  * CDNs and country editions resolve to the same canonical publisher.
  */
+/**
+ * Real publications CurrentWire tiers by authority (demo sources excluded).
+ * The honest denominator for any "N of M publishers" line on a public page:
+ * our counts are always a lower bound over the publications we track, never
+ * a claim about all coverage everywhere.
+ */
+export const TRACKED_PUBLISHER_COUNT = SOURCES.filter((source) => !source.demo).length;
+
 export function lookupSourceByDomain(domain: string): SourceDefinition | undefined {
   const labels = domain.trim().toLowerCase().split(".");
   for (let start = 0; start <= labels.length - 2; start++) {

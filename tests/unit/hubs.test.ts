@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { HUB_IDS, HUBS, hubsForCategory } from "@/config/hubs";
-import { hubScore, hubsForStory, matchesHub } from "@/lib/news/hubs";
+import { hubScore, hubStats, hubsForStory, matchesHub } from "@/lib/news/hubs";
+import type { NewsDataset, StoryCluster } from "@/lib/news/types";
 
 describe("topic hub matching", () => {
   it("one headline keyword is enough; one summary keyword is not", () => {
@@ -75,5 +76,96 @@ describe("topic hub matching", () => {
     }
     expect(hubsForCategory("technology").map((h) => h.id)).toContain("ai");
     expect(hubsForCategory("business").map((h) => h.id)).toContain("housing");
+  });
+});
+
+describe("hubStats", () => {
+  function cluster(
+    id: string,
+    title: string,
+    sourceNames: string[],
+    overrides: Partial<StoryCluster> = {},
+  ): StoryCluster {
+    return {
+      id,
+      slug: `story-${id}`,
+      title,
+      summary: null,
+      category: "technology",
+      country: "US",
+      articles: [],
+      lead: { source: sourceNames[0] },
+      sourceCount: sourceNames.length,
+      sourceNames,
+      entities: [],
+      firstPublishedAt: "2026-08-24T10:00:00.000Z",
+      lastPublishedAt: "2026-08-24T11:00:00.000Z",
+      rankingScore: 50,
+      isMock: false,
+      ...overrides,
+    } as unknown as StoryCluster;
+  }
+
+  function dataset(clusters: StoryCluster[]): NewsDataset {
+    return {
+      articles: [],
+      clusters,
+      trending: [],
+      generatedAt: "2026-08-24T12:00:00.000Z",
+      // Distinct version per call: indexFor() memoizes on datasetVersion.
+      datasetVersion: `v-${clusters.map((c) => c.id).join("-") || "empty"}`,
+      dataMode: "live",
+    } as unknown as NewsDataset;
+  }
+
+  it("counts stories, distinct publishers and multi-source stories", () => {
+    const stats = hubStats(
+      dataset([
+        cluster("a", "OpenAI releases a new model", ["Reuters", "AP"]),
+        cluster("b", "Nvidia chip demand climbs on AI orders", ["AP"]),
+        cluster("c", "Machine learning tool rolls out to hospitals", ["NPR", "CBS News", "AP"]),
+      ]),
+      "ai",
+    );
+    expect(stats.total).toBe(3);
+    // Reuters, AP, NPR, CBS News — AP appears in all three and counts once.
+    expect(stats.publishers).toBe(4);
+    expect(stats.multiSource).toBe(2);
+    expect(stats.broadest).toEqual({
+      title: "Machine learning tool rolls out to hospitals",
+      slug: "story-c",
+      sourceCount: 3,
+    });
+  });
+
+  it("returns a null broadest when nothing carries two publications", () => {
+    const stats = hubStats(
+      dataset([
+        cluster("d", "AI startup raises a funding round", ["The Verge"]),
+        cluster("e", "Chatbot rollout reaches more users", ["Axios"]),
+      ]),
+      "ai",
+    );
+    expect(stats.total).toBe(2);
+    expect(stats.publishers).toBe(2);
+    expect(stats.multiSource).toBe(0);
+    expect(stats.broadest).toBeNull();
+  });
+
+  it("is empty for a hub no story matches", () => {
+    const stats = hubStats(
+      dataset([cluster("f", "Hurricane warning issued for the coast", ["NPR"])]),
+      "ai",
+    );
+    expect(stats).toEqual({ total: 0, publishers: 0, multiSource: 0, broadest: null });
+  });
+
+  it("counts the full hub, not the page-capped slice", () => {
+    const many = Array.from({ length: 45 }, (_, i) =>
+      cluster(`m${i}`, `AI model update number ${i}`, [`Outlet ${i}`]),
+    );
+    const stats = hubStats(dataset(many), "ai");
+    expect(stats.total).toBe(45);
+    expect(stats.publishers).toBe(45);
   });
 });

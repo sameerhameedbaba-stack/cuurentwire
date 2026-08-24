@@ -3,7 +3,7 @@ import Link from "next/link";
 import { RankedStory } from "@/components/news/cards";
 import { LastUpdated } from "@/components/news/LastUpdated";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { SOURCES } from "@/config/sources";
+import { TRACKED_PUBLISHER_COUNT } from "@/config/sources";
 import {
   getMostCovered,
   MIN_COVERAGE_SOURCES,
@@ -45,7 +45,7 @@ const DESCRIPTION =
   "The current stories being reported by the most publishers at once — ranked by how many distinct outlets are covering each event, which is a measure of breadth, not of importance.";
 
 /** Publications CurrentWire recognizes and tiers by authority (config/sources.ts). */
-const TRACKED_PUBLISHERS = SOURCES.filter((source) => !source.demo).length;
+const TRACKED_PUBLISHERS = TRACKED_PUBLISHER_COUNT;
 
 export async function generateMetadata(): Promise<Metadata> {
   const { stories } = await getMostCovered();

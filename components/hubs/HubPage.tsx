@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CATEGORIES } from "@/config/categories";
 import { HUBS, HUB_IDS, type HubId } from "@/config/hubs";
+import { TRACKED_PUBLISHER_COUNT } from "@/config/sources";
 import { LastUpdated } from "@/components/news/LastUpdated";
 import { RankedStory } from "@/components/news/cards";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getDataset } from "@/lib/cache/store";
-import { hubStories } from "@/lib/news/hubs";
+import { hubStats, hubStories } from "@/lib/news/hubs";
 import { NOINDEX_FOLLOW, shouldIndexCollection } from "@/lib/seo/indexing";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { BreadcrumbJsonLd, ItemListJsonLd } from "@/lib/seo/structured-data";
@@ -47,6 +48,7 @@ export function createHubPage(id: HubId) {
   async function Page() {
     const dataset = await getDataset();
     const stories = hubStories(dataset, id);
+    const stats = hubStats(dataset, id);
     const h1 = heading(hub.title);
     const chip =
       "block whitespace-nowrap rounded-full border border-rule bg-surface px-3 py-1 text-xs font-semibold text-ink transition-colors hover:border-brand hover:text-brand-ink";
@@ -99,6 +101,47 @@ export function createHubPage(id: HubId) {
             </Link>
           ))}
         </nav>
+
+        {/* Coverage snapshot — the one thing on this page that is ours.
+            Added 2026-08-25 after the first URL-Inspection sweep found all 15
+            hubs "Discovered — currently not indexed" while being in the
+            sitemap, index,follow and internally linked: nothing was broken,
+            Google was declining index budget on pages that only re-list other
+            publishers' headlines (seo/BACKLOG.md, STRATEGY BET 2). Counts come
+            from hubStats() over the hub's full story set — no new IO. */}
+        {stats.total > 0 ? (
+          <p className="mt-5 border-l-2 border-brand pl-4 text-sm text-muted">
+            In the current snapshot, {stats.total}{" "}
+            {stats.total === 1 ? "story" : "stories"} in {hub.label} from{" "}
+            {stats.publishers} of the {TRACKED_PUBLISHER_COUNT} publications
+            CurrentWire tiers by authority.{" "}
+            {stats.broadest ? (
+              <>
+                {stats.total === 1 ? "It is" : "The most widely reported is"}{" "}
+                <Link
+                  href={`/story/${stats.broadest.slug}`}
+                  className="underline hover:text-brand-ink"
+                >
+                  {stats.broadest.title}
+                </Link>
+                , carried by {stats.broadest.sourceCount} of them.
+                {stats.total > 1 ? (
+                  <>
+                    {" "}
+                    {stats.multiSource} of the {stats.total} are carried by two
+                    or more.
+                  </>
+                ) : null}
+              </>
+            ) : (
+              <>
+                {stats.total === 1
+                  ? "It is carried by a single publication."
+                  : "None is carried by more than one of those publications."}
+              </>
+            )}
+          </p>
+        ) : null}
 
         {stories.length === 0 ? (
           <div className="mt-8">
