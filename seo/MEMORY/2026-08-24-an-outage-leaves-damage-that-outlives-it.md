@@ -88,6 +88,21 @@ could not account for.
 
 ## Also from this run
 
+- **An SEO win and a cost blowout can be the same commit.** The 402 was a
+  Vercel Hobby **free-tier overage** — ISR Writes 238%, Fluid Active CPU 307%
+  (read from the dashboard by a concurrent session; this run could not see it)
+  — triggered by `3e8397a`, the 2026-08-19 commit that enabled ISR on the
+  dynamic routes. That commit is recorded in `seo/BACKLOG.md` as one of the
+  month's biggest wins: warm story TTFB went from a 557 ms median to
+  110-125 ms. Caching a page is cheap per request and expensive per *write*,
+  and a crawler sweeping ~3,000 archive URLs writes constantly. **Before
+  celebrating a caching win, ask what it costs per crawl, not per visit** —
+  and when the mitigation lands, its TTLs are a cost constraint that a later
+  TTFB optimisation must not quietly tighten back. Same family as
+  [[2026-08-22-a-cost-fix-can-move-a-correctness-boundary]], reversed: there a
+  cost fix moved a correctness boundary, here a performance fix moved a cost
+  boundary.
+
 - **A 402 is a worse outage than a 5xx.** At 13:18 UTC production began
   answering `402 DEPLOYMENT_DISABLED` on every URL, `robots.txt` and all three
   sitemaps included, after Vercel disabled the deployment. The 2026-08-20
