@@ -135,7 +135,9 @@ const QUERIES_PATH = `${DATA_DIR}gsc-queries.json`;
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
-const SURFACES = ["web", "news", "discover"];
+// "image" added 2026-08-24 (360° checklist adoption): Google Images is a
+// real news-traffic surface and the per-surface pull is generic.
+const SURFACES = ["web", "news", "discover", "image"];
 
 // ── 0. Secret gate ──────────────────────────────────────────────────────────
 const serviceAccountJson = process.env.GSC_SERVICE_ACCOUNT_JSON;

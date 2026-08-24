@@ -29,6 +29,16 @@ every claim literally true); (3) ≥1200px self-generated story cards
 (publisher-photo hotlinking is an OWNER legal decision — default self-made);
 (4) internal-link rewire; (5) [owner ~15 min] Publisher Center claim.
 
+**360° checklist audit 2026-08-24** (`seo/CHECKLIST-360.md` is the verdict
+map — consult it before re-investigating any "have we considered X"): three
+queued adoptions — (a) Google Preferred Sources: owner checks whether
+currentwire.us can be selected (Google app/search settings), then the site
+adds the preferred-source button near the header/footer [owner ~5 min +
+automated]; (b) IndexNow pings for UPDATED and MERGED story URLs, not just
+new ones (pair with the cron's per-slug revalidation list); (c) image
+sitemap — deferred until the new GSC "image" surface (shipped) shows real
+Google Images impressions.
+
 ## Open — ranked
 
 ### 0. Production returned 402 DEPLOYMENT_DISABLED — CLOSED (resolved 2026-08-24 ~13:55 UTC)
