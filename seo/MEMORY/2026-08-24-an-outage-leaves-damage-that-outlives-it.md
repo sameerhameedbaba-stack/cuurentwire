@@ -105,13 +105,23 @@ could not account for.
 
 - **A 402 is a worse outage than a 5xx.** At 13:18 UTC production began
   answering `402 DEPLOYMENT_DISABLED` on every URL, `robots.txt` and all three
-  sitemaps included, after Vercel disabled the deployment. The 2026-08-20
-  incident at least kept `robots.txt` and the sitemaps up and answered stories
-  with a documented, retriable 503 + `Retry-After`. Nothing in the repository
-  can improve a 402, because nothing in the repository is being served — it is
-  purely owner/billing work. CI passing at 13:13 UTC is what proves it is not
-  the code. **Check CI's own conclusion before suspecting your own push when a
-  site goes down minutes after a deploy.**
+  sitemaps included. The 2026-08-20 incident at least kept `robots.txt` and the
+  sitemaps up and answered stories with a documented, retriable 503 +
+  `Retry-After`. A 402 is not a documented crawl signal at all, and nothing in
+  the repository can improve it while it lasts, because nothing in the
+  repository is being served.
+
+- **"Not the code" needed splitting, and the first version of this file got it
+  wrong.** CI passing at 13:13 UTC proved *this session's push* did not cause
+  the outage, and that inference was sound — **check CI's own conclusion before
+  suspecting your own push when a site goes down minutes after a deploy.** But
+  it was then over-generalised into "purely owner/billing work", which was
+  false: `3e8397a` caused the overage, five days earlier. The two questions are
+  separate and both have to be asked. *Which deploy broke it?* is answered by
+  CI and timestamps. *What consumed the budget?* is answered by usage metrics,
+  and a slow-burn resource leak has no correlation with the deploy that trips
+  it. Lifting the pause was the owner's; preventing the next one was always
+  code's.
 
 - **The push notification path is not reliable.** `PushNotification` returned
   "Mobile push not sent (Remote Control inactive)". The GitHub `[auto-alert]`
