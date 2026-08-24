@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-08-21T22:34:07.912Z",
+  "generatedAt": "2026-08-24T08:22:34.789Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-07-25",
-    "endDate": "2026-08-21",
+    "startDate": "2026-07-28",
+    "endDate": "2026-08-24",
     "days": 28
   },
   "minSampleImpressions": 100,
   "surfaces": {
     "web": {
-      "rows": 515,
+      "rows": 556,
       "total": {
-        "urls": 515,
-        "impressions": 1653,
-        "clicks": 35,
-        "ctr": 0.0212,
-        "avgPosition": 23.3,
-        "impressionsPerUrl": 3.21,
+        "urls": 556,
+        "impressions": 1806,
+        "clicks": 41,
+        "ctr": 0.0227,
+        "avgPosition": 26.6,
+        "impressionsPerUrl": 3.25,
         "clicksPerUrl": 0.07,
         "sufficientSample": true
       },
@@ -33,12 +33,12 @@
           "sufficientSample": false
         },
         "story": {
-          "urls": 483,
-          "impressions": 1505,
-          "clicks": 18,
-          "ctr": 0.012,
-          "avgPosition": 22.5,
-          "impressionsPerUrl": 3.12,
+          "urls": 521,
+          "impressions": 1641,
+          "clicks": 22,
+          "ctr": 0.0134,
+          "avgPosition": 26.3,
+          "impressionsPerUrl": 3.15,
           "clicksPerUrl": 0.04,
           "sufficientSample": true
         },
@@ -114,11 +114,11 @@
         },
         "section": {
           "urls": 4,
-          "impressions": 12,
+          "impressions": 13,
           "clicks": 2,
-          "ctr": 0.1667,
-          "avgPosition": 20.6,
-          "impressionsPerUrl": 3,
+          "ctr": 0.1538,
+          "avgPosition": 19.8,
+          "impressionsPerUrl": 3.25,
           "clicksPerUrl": 0.5,
           "sufficientSample": false
         },
@@ -144,11 +144,11 @@
         },
         "latest": {
           "urls": 1,
-          "impressions": 34,
+          "impressions": 37,
           "clicks": 1,
-          "ctr": 0.0294,
-          "avgPosition": 67.7,
-          "impressionsPerUrl": 34,
+          "ctr": 0.027,
+          "avgPosition": 67.5,
+          "impressionsPerUrl": 37,
           "clicksPerUrl": 1,
           "sufficientSample": false
         },
@@ -173,12 +173,12 @@
           "sufficientSample": false
         },
         "other": {
-          "urls": 3,
-          "impressions": 7,
-          "clicks": 2,
-          "ctr": 0.2857,
-          "avgPosition": 18.7,
-          "impressionsPerUrl": 2.33,
+          "urls": 6,
+          "impressions": 20,
+          "clicks": 4,
+          "ctr": 0.2,
+          "avgPosition": 9.6,
+          "impressionsPerUrl": 3.33,
           "clicksPerUrl": 0.67,
           "sufficientSample": false
         }
@@ -204,6 +204,16 @@
           "clicksPerUrl": 1,
           "sufficientSample": false
         },
+        "/climate": {
+          "urls": 1,
+          "impressions": 3,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": 44,
+          "impressionsPerUrl": 3,
+          "clicksPerUrl": 0,
+          "sufficientSample": false
+        },
         "/business": {
           "urls": 1,
           "impressions": 2,
@@ -212,16 +222,6 @@
           "avgPosition": 41,
           "impressionsPerUrl": 2,
           "clicksPerUrl": 1,
-          "sufficientSample": false
-        },
-        "/climate": {
-          "urls": 1,
-          "impressions": 2,
-          "clicks": 0,
-          "ctr": 0,
-          "avgPosition": 61,
-          "impressionsPerUrl": 2,
-          "clicksPerUrl": 0,
           "sufficientSample": false
         }
       }
@@ -593,62 +593,62 @@
   },
   "storiesBySourceCount": {
     "1": {
-      "urls": 424,
-      "impressions": 1319,
-      "clicks": 17,
-      "ctr": 0.0129,
-      "avgPosition": 19.8,
-      "impressionsPerUrl": 3.11,
-      "clicksPerUrl": 0.04,
+      "urls": 458,
+      "impressions": 1422,
+      "clicks": 21,
+      "ctr": 0.0148,
+      "avgPosition": 23.2,
+      "impressionsPerUrl": 3.1,
+      "clicksPerUrl": 0.05,
       "sufficientSample": true
     },
     "2": {
-      "urls": 30,
-      "impressions": 79,
+      "urls": 32,
+      "impressions": 95,
       "clicks": 1,
-      "ctr": 0.0127,
-      "avgPosition": 36.9,
-      "impressionsPerUrl": 2.63,
+      "ctr": 0.0105,
+      "avgPosition": 43.3,
+      "impressionsPerUrl": 2.97,
       "clicksPerUrl": 0.03,
       "sufficientSample": false
     },
     "3": {
-      "urls": 14,
-      "impressions": 48,
+      "urls": 16,
+      "impressions": 63,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": 40.9,
-      "impressionsPerUrl": 3.43,
+      "avgPosition": 48.4,
+      "impressionsPerUrl": 3.94,
       "clicksPerUrl": 0,
       "sufficientSample": false
     },
     "4+": {
       "urls": 12,
-      "impressions": 55,
+      "impressions": 57,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": 51.4,
-      "impressionsPerUrl": 4.58,
+      "avgPosition": 51.3,
+      "impressionsPerUrl": 4.75,
       "clicksPerUrl": 0,
       "sufficientSample": false
     },
     "2+": {
-      "urls": 56,
-      "impressions": 182,
+      "urls": 60,
+      "impressions": 215,
       "clicks": 1,
-      "ctr": 0.0055,
-      "avgPosition": 42.3,
-      "impressionsPerUrl": 3.25,
+      "ctr": 0.0047,
+      "avgPosition": 46.9,
+      "impressionsPerUrl": 3.58,
       "clicksPerUrl": 0.02,
       "sufficientSample": true
     },
     "3+": {
-      "urls": 26,
-      "impressions": 103,
+      "urls": 28,
+      "impressions": 120,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": 46.5,
-      "impressionsPerUrl": 3.96,
+      "avgPosition": 49.8,
+      "impressionsPerUrl": 4.29,
       "clicksPerUrl": 0,
       "sufficientSample": true
     },
@@ -664,32 +664,32 @@
     }
   },
   "archiveSources": {
-    "requestedIds": 449,
-    "matchedIds": 449,
+    "requestedIds": 485,
+    "matchedIds": 485,
     "chunks": 3,
     "failedChunks": 0
   },
   "urlSignals": {
-    "stories": 449,
+    "stories": 485,
     "truncated": false,
     "written": true
   },
   "liveCoverage": {
-    "clusters": 744,
-    "singleSource": 703,
-    "twoSource": 28,
-    "threeSource": 7,
-    "fourPlus": 6,
-    "multiSourcePct": 5.5,
-    "threePlusPct": 1.7,
-    "fourPlusPct": 0.8,
+    "clusters": 740,
+    "singleSource": 695,
+    "twoSource": 35,
+    "threeSource": 6,
+    "fourPlus": 4,
+    "multiSourcePct": 6.1,
+    "threePlusPct": 1.4,
+    "fourPlusPct": 0.5,
     "medianIndependentPublications": 1,
-    "meanIndependentPublications": 1.1,
-    "pressReleasePct": 0.9,
+    "meanIndependentPublications": 1.08,
+    "pressReleasePct": 1.1,
     "opinionPct": 0.7,
     "generalCategoryPct": 23.4
   },
-  "liveDatasetVersion": "20260821T222008Z-851936",
-  "ledgerStories": 812,
+  "liveDatasetVersion": "20260824T082241Z-ad1cbc",
+  "ledgerStories": 1419,
   "warnings": []
 }
