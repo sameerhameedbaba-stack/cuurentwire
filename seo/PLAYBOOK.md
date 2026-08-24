@@ -116,7 +116,7 @@ concern: never ship anything that measurably regresses CWV.
   competitor content-gap snapshot (free crawls + web search), llms.txt refresh,
   BACKLOG re-prioritization.
 
-## Search engine coverage map (verified 2026-08-21 — keep current)
+## Search engine coverage map (verified 2026-08-24 — keep current)
 
 How every engine gets CurrentWire's results. The owner's rule: results must
 reach ALL search engines, not just Google, at $0 and zero recurring effort.
@@ -134,14 +134,26 @@ reach ALL search engines, not just Google, at $0 and zero recurring effort.
 Maintenance: the daily seo-health check already verifies robots.txt, the three
 sitemaps, and the IndexNow key file — any regression here fails loudly.
 
-Re-verified 2026-08-21 by fetch: robots.txt 200 advertising all three sitemaps,
-`sitemap.xml` 200 (267 URLs), `news-sitemap.xml` 200 (333 entries, all in
-window), IndexNow key file 200, `llms.txt` 200. One exception, and it is the
-archive outage rather than a coverage-map regression: `archive-sitemap.xml`
-answers **503 with `Retry-After: 3600`** while the Neon archive is down. That
-is the correct answer — robots.txt keeps advertising it, and a 503 tells every
-engine to come back rather than to drop 2,793 permanent URLs. The map itself
-still holds; see BACKLOG.md item 1.
+Re-verified 2026-08-24 by fetch, before that day's outage: `robots.txt` 200
+advertising all three sitemaps with `User-Agent: *` / `Allow: /`,
+`sitemap.xml` 200 (340 URLs), `news-sitemap.xml` 200 (633 entries, oldest
+publication date 46.97 h against the 49 h grace), `archive-sitemap.xml` 200
+(5,891 permanent URLs, recovered and grown from 2,169 on 2026-08-22), the
+IndexNow key file 200 serving its own key, `llms.txt` 200, `/rss` and 11
+category feeds 200, and `www` 308 to the apex. `seo-health.mjs` passed all 20
+checks. Every row of the table above holds.
+
+**Standing caveat, added 2026-08-24.** This map describes how results are
+*designed* to reach each engine. It says nothing about whether the site is
+answering. At 13:18 UTC on 2026-08-24 every URL in the table above — including
+`robots.txt` and all three sitemaps — began answering **402
+`DEPLOYMENT_DISABLED`** because Vercel disabled the deployment. That is a
+strictly worse crawl signal than the 2026-08-20 archive outage, which kept
+`robots.txt` and the sitemaps up and answered story URLs with a documented,
+retriable 503 + `Retry-After`. A 402 is not a documented crawl signal at all,
+and no code change can improve it, because no code is being served. A run that
+finds this must treat it as an owner-blocking outage and say so at the top of
+its report — see `seo/BACKLOG.md` item 0.
 
 ## Owner time budget (standing rule, set 2026-08-19)
 

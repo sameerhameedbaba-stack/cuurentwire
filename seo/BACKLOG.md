@@ -1,11 +1,13 @@
 # SEO Backlog
 
-**Status 2026-08-22 (daily run): three open items, none of them owner work.**
-The day's finding was not on this list when the run started — brand-new story
-URLs were 404ing straight out of `/news-sitemap.xml` — and it is fixed and
-verified live (item A below). Items 1 and 3 are now closed against fresh
-fetches; items 2, 4 and 5 were re-measured and still stand. Nothing here was
-invented to fill space — every item names the command or fetch that found it.
+**Status 2026-08-24 (weekly deep run): production is DOWN with a Vercel
+billing 402, which is owner work and item 0 below. Four other items open,
+none of them owner work.**
+
+Rebuilt from this week's evidence. Every item names the command or fetch that
+found it. Items closed this run were closed against a fresh measurement, not
+against a write-up — except where the 402 outage cut live verification off,
+which is said explicitly wherever it applies.
 
 Statuses: OPEN / SHIPPED / CLOSED / BLOCKED(user). Verify a fix live before
 flipping it to SHIPPED. Ranking rule: how much indexable, crawlable, citable
@@ -13,819 +15,323 @@ value a fix creates per unit of risk.
 
 ## Open — ranked
 
-### A. Brand-new story URLs 404ed out of the news sitemap — SHIPPED 2026-08-22
+### 0. Production is returning 402 DEPLOYMENT_DISABLED — BLOCKED(user), OWNER ACTION
 
-**Found by this run's crawl sample, not by any existing check.** A URL taken
-from `/news-sitemap.xml` answered **404**. Full probe of the sitemap:
-**2 of 743** URLs 404, and **2 of the 40 newest** — the entries Google News
-actually fetches. Both served `x-vercel-cache: HIT` with a rising `age`, and
-`/story/<id-token>` for the same clusters answered **307 pointing at the very
-slug that was 404ing**, which proves the cluster was live and only the answer
-was wrong. Both URLs served 200 once the ISR entry expired ~5 minutes later.
+**The whole site is off the air.** Measured 2026-08-24 13:18 UTC:
 
-Cause: `/news-sitemap.xml` is force-dynamic and advertises a cluster the
-moment it enters the live dataset, while database writes have been batched to
-a ~25-30 minute cadence since 2026-08-21 (`lib/database/persist-gate.ts`). A
-story page rendering from a slightly older dataset generation missed the live
-lookup AND the archive, and answered a 404 that ISR then stored for its full
-300 s window. This is a side effect of the cost-control batching, and it did
-not exist while writes were immediate.
+```
+HTTP/1.1 402 Payment Required
+Server: Vercel
+X-Vercel-Error: DEPLOYMENT_DISABLED
+```
 
-Fixed in `f757bba`: `resolveStoryRequest` answers `unavailable` (retriable
-5xx, which ISR does not store) instead of 404 when the archive answers "no
-such story" about a slug carrying a well-formed cluster-id token. Two bounds
-keep the status code a diagnosis — junk paths without the token still 404,
-and a deployment with no database attached still 404s.
+Every URL, without exception: `/`, `/top-100`, `/latest`, `/politics`,
+`/about`, `/archive`, a live `/story/` page, **and `robots.txt`,
+`sitemap.xml`, `news-sitemap.xml`, `archive-sitemap.xml`, `/rss`,
+`/llms.txt`** — 13 of 13 probed surfaces answer 402. `www.currentwire.us`
+answers 402 too.
 
-Verified live after deploy:
+**Window.** The last green uptime probe ran **12:42 UTC** and passed. Every
+measurement in this run's report was taken before that, against a healthy
+site. First observed 402 at **13:18 UTC**.
 
-| Probe | Before | After |
+**It is not the code.** The CI workflow for this run's commit completed
+**success at 13:13 UTC**, and `DEPLOYMENT_DISABLED` is a Vercel
+account/project state, not a build result. The most likely cause is a Vercel
+spend or usage limit pausing the project — PLAYBOOK.md already records that
+Vercel Hobby has no native spend limit and that Neon's paid usage-based plan
+is billed through Vercel — but **that is inference and cannot be confirmed
+from outside the dashboard.** Only the owner can read the actual reason.
+
+**What the owner has to do:** open vercel.com, look at the project's status
+and the account's billing/usage page, and clear whatever is blocking it. No
+run may enter payment details, and none has.
+
+**Consequence while it lasts.** This is worse than the 2026-08-20 archive
+outage, because `robots.txt` and all three sitemaps are also 402. A 402 is
+not a documented crawl signal the way 503 + `Retry-After` is; crawlers will
+treat it as a generic failure. Nothing in the repository can improve the
+signal, because nothing in the repository is being served.
+
+**Alerting.** `uptime.yml` requires exactly HTTP 200 and fails on anything
+else, so it will catch this on its next 30-minute run and open an
+`[auto-alert]` issue, which emails the owner. A desktop/phone push was
+attempted from this run and could not be delivered (Remote Control inactive),
+so the GitHub issue email is the live delivery path.
+
+### 1. 214 published stories are permanently gone, and the site still serves them a 500
+
+**Found by probing all 2,015 local ledger URLs against production this run,
+while the site was still up.** Result: **1,610 answer 200, 191 redirect, 214
+answer 5xx.** Every one of the 214 was first seen on **2026-08-20 (174) or
+2026-08-21 (40)** and **none on any other day** — precisely the window when
+Neon's free tier was refusing all traffic on an exhausted egress quota.
+Corroborated on the site itself:
+
+| Archive day page | Stories listed |
+|---|---|
+| /archive/2026-08-18 | 659 |
+| /archive/2026-08-19 | 666 |
+| **/archive/2026-08-20** | **24** |
+| /archive/2026-08-21 | 1,000 (capped) |
+| /archive/2026-08-22 | 671 |
+| /archive/2026-08-23 | 657 |
+
+Those stories were live, were advertised in `/news-sitemap.xml`, were never
+written to `story_archive`, and then aged out of the ~72 h live dataset. The
+content exists nowhere. **No restore brings it back** — this is the durable
+cost of the 2026-08-20 outage, and it was not visible in any report until now.
+
+What was fixed this run: the *gate*. `url-survival` had been calling these
+UNAVAILABLE ("the origin is having a bad day, retry") and failing every night
+since 2026-08-22 for a condition that can never clear. See "Closed this run".
+
+What is still open is the **status code**. These URLs answer a permanent 500:
+
+- crawlers retry forever and eventually drop them anyway, so the 500 buys
+  nothing;
+- it costs crawl budget on a site whose indexing coverage is the
+  second-biggest lever in the playbook.
+
+The obvious fix — 404 or 410 them — is **not obviously right and must not be
+rushed**, because the guard that produces the 500 is the one that fixed the
+2026-08-22 Google News bug (`f757bba`): a published-looking slug absent from
+the archive answers 5xx precisely because the ~30-minute write batching means
+"the archive has not heard of it" no longer means "it never existed". Getting
+this wrong in the eager direction re-creates a 404 on brand-new stories, on
+the one crawl that decides Google News entry.
+
+The missing ingredient is a **bound**, and the slug does not carry one:
+`cluster.id` is `c` + `stableId("cluster:" + canonicalUrl)`, a content hash
+with no timestamp (`lib/news/clustering/cluster.ts:655`). Candidate bounds
+worth designing and reviewing before anything ships:
+
+- ask the archive for its newest `firstSeenAt` and treat "the archive is
+  demonstrably caught up" as licence to 404 an unknown slug;
+- have the persist-gate's public-but-not-yet-archived registry answer the
+  question directly, since it already exists to carry clusters across a batch.
+
+Contained in the meantime, and checked rather than assumed: **0 of the 214
+appear in `sitemap.xml`, `news-sitemap.xml` or `archive-sitemap.xml`.** The
+site is not asking anyone to fetch them.
+
+### 2. Surface coherence: a live story can serve a stale archived copy
+
+**Open `[auto-alert]` issue #2, failing since 2026-08-23. Reproduced this
+run.** `node scripts/surface-coherence.mjs`: 20 pages, 700 cards, 174
+clusters, 348 story-page fetches, **2 violations, 2 warnings**. Both
+violations are `archive-vs-live` — a `/story/` page rendered from the archive
+while list surfaces showed the same cluster as live:
+
+| Cluster | Story page rendered from | Listed live on |
 |---|---|---|
-| Whole `/news-sitemap.xml` | 2 of 743 answered 404 | **741 of 741 answer 200, zero 404** |
-| `/story/no-such-headline-c0123456789ab` | 404 | **500** (retriable) |
-| `/story/c0123456789ab` (bare id form) | 404 | **500** |
-| `/story/definitely-not-a-story` | 404 | 404 (unchanged) |
-| `/wp-login.php`, `/zz-definitely-not-a-page-zz` | 404 | 404 (unchanged) |
-| A live story page | 200 | 200 (unchanged) |
-| `node scripts/seo-health.mjs` | ALL CHECKS PASSED | ALL CHECKS PASSED |
+| `c5a7f5a95321f` | `archive:2026-08-24T12:30:13Z` | `/` |
+| `c0fc056bd72e8` | `archive:2026-08-22T07:03:24Z` | `/ai` |
 
-Guards: `tests/unit/archive-outage.test.ts` (14 tests). The case that asserted
-the old behaviour was corrected in place, not weakened — its premise was true
-only while writes were immediate.
+`resolveStoryRequest` checks the live dataset first, so this means the story
+page's live read missed a cluster its list surfaces had — cache skew between
+surfaces, held by ISR until revalidation.
 
-Follow-up, NOT yet work: this makes item 2 below (500 vs 503) worth more than
-it was, because a 5xx is now the answer to a slightly wider set of URLs.
+**Severity measured, not assumed.** The second URL, fetched live: **200**,
+self-referential canonical, valid `NewsArticle`, 406 words, honest dates. The
+cost is staleness, not a broken signal — `dateModified` is frozen at 08-22 and
+`isBasedOn` shows 1 source, so a story that has since gained coverage
+under-reports it and never bumps its modified date.
 
-### 0. Neon cost hard-cap + console access — mostly SHIPPED 2026-08-21
+Deliberately **not** fixed this run. This is the story-resolution and ISR
+path, which produced both of the last two incidents (`d060817`, `f757bba`); a
+rushed change there costs more than two stale pages. It needs a design and a
+review.
 
-**Status:** piece 2 (30-min DB write batching) SHIPPED in 0dcb862 by the
-daily loop. Alert delivery SHIPPED the same day: .github/workflows/uptime.yml
-probes production every 30 min and opens/closes an [auto-alert] GitHub issue
-(issue creation emails the owner); seo-health.yml files the same issue on
-failure; both scheduled runs now check for open auto-alert issues first and
-push-notify the owner on a live outage. Remaining: piece 1 (autoscaling
-ceiling 0.25 CU) — support request sent to Neon from support@currentwire.us
-2026-08-21 (SSO mixup + CU cap, project misty-butterfly-35277269); follow up
-if no reply within a week.
+### 3. `/source/<slug>` hubs carry no durable per-publisher facts
 
-The owner capped database spend at **$30/month** (see PLAYBOOK hard
-constraints for the enforcement rules the runs follow). Two pieces remain:
+**The clearest competitor gap this run found, and it is measurable on both
+sides.** `/source/bbc-news` is 200, indexable, `BreadcrumbList` + `ItemList`,
+737 words — and essentially all 737 are headline text from 35 story links. The
+title is "BBC News — Latest stories". There is no prose about the publisher and
+no `Organization`/`Periodical` schema for the publisher itself. `/source/espn`
+is 310 words, 13 stories.
 
-1. **Hard ceiling**: set the Neon endpoint's autoscaling maximum to 0.25 CU
-   (guarantees compute ≤ ~$19/mo even if it never suspends). Blocked: the
-   Neon console is unreachable — Vercel's "Open in Neon" SSO loops on a
-   verify-email wall because a manually-created support@currentwire.us
-   account squatted the SSO identity's email. Fix path: Neon support
-   (free — the "Neon Support" button on the Vercel integration page),
-   ask them to verify/link the Vercel SSO identity for that email.
-2. **Cost floor**: the Hostinger cron hits news-refresh every 5 min and each
-   run does archive DB work, likely keeping compute awake 24/7 (~$19/mo
-   floor). Batching archive/briefing writes to a 30-minute cadence would let
-   the endpoint suspend between bursts (~$5-7/mo). Spawned as its own task
-   2026-08-21; whoever picks it up must keep IndexNow pings and archive
-   latency ≤30 min.
+Against that: AllSides publishes bias ratings for **1,400+ outlets** as
+dedicated per-outlet reference pages, and Ground News source pages carry bias,
+factuality and ownership per outlet (both verified by crawl and search this
+run — see the report). Those pages rank for "&lt;outlet&gt; bias" and
+"&lt;outlet&gt; media bias" queries, which are durable, non-news, evergreen
+demand.
 
-   **Implemented 2026-08-21 (branch claude/gallant-robinson-4189cf), NOT yet
-   verified live.** `lib/database/persist-gate.ts` batches every periodic DB
-   write (dataset persist, snapshot, archive upsert, briefing) to a ~25-30
-   min cadence: module-state interval on the warm cron instance, first-five-
-   minutes-of-each-half-hour windows on cold instances, and a forced write
-   on the ET day's last cron tick so the frozen briefing row still captures
-   end-of-day state. A public-but-not-yet-archived registry carries clusters
-   that vanish mid-batch into the next burst, so no advertised story URL can
-   miss the permanent archive. Deferred cron runs answer
-   `persistenceDeferred: true`. Side effect worth knowing: the route's
-   IndexNow ping had been dead-on-arrival — the cache producer archived
-   every new cluster before `findNewClusterIds` ran, so `indexNowSubmitted`
-   could never be nonzero; the burst now claims the archive step for the
-   route, asks first, then archives. Verify after deploy: cron JSON shows
-   deferred runs between bursts, `indexNowSubmitted` > 0 on a burst with new
-   stories, briefing rows keep accumulating, and Neon compute-hours drop in
-   the Vercel usage view.
+CurrentWire deliberately publishes **no** bias or factuality rating and its
+authority tiers are explicitly not one — that is a standing editorial position
+and this item does not propose changing it. The gap is that the source hubs
+publish *nothing durable at all*, so they compete only for the publisher's own
+brand name, where the publisher always wins.
 
-### 1. The permanent story archive is unreachable — CLOSED 2026-08-21
+Every input already exists and is already computed: tier and its rationale,
+cadence, category mix, first seen, story count, share of multi-source stories.
+Same shape as the `/methodology/*` pages, whose figures are computed at render
+from production functions so they cannot drift from the code.
 
-**RESOLVED, verified live 2026-08-21:** the owner approved upgrading Neon to
-the paid usage-based Launch plan (billed via Vercel; the ONE exception to the
-$0 rule — see PLAYBOOK hard constraints). Recovery was instant, no deploy:
-`/archive-sitemap.xml` 200 with 2,849 URLs, previously-5xx story pages and
-`/archive/<date>` all 200. The egress fix (commit aeceeae) stays in place so
-this cannot recur; next runs should confirm briefing rows accumulate and
-IndexNow pings resume, and around ~Sep the owner MAY downgrade back to Free
-if measured egress stays low (owner decision — log it, don't push it).
+Carried from last week's top 5, where it was ranked 4 and described as "the
+largest content gap on the board". Unchanged since, now with competitor
+evidence attached.
 
-Original diagnosis below, kept for the record.
+### 4. Story pages have no outbound topic links — RE-MEASURED 2026-08-24, still open
 
-The Neon Postgres archive stopped answering some time after 2026-08-19 22:20
-UTC. Measured 2026-08-20 22:0x UTC:
+Measured on 12 live stories sampled across `/news-sitemap.xml`: outbound
+`/story/` links **median 4, zero on none of them** (the 2026-08-19 "More in
+{Category}" rail is holding — it was zero on 39 of 40 on 2026-08-18). Outbound
+`/topic/` links are **median 0, absent on 9 of 12**.
 
-| Surface | Healthy (2026-08-20) | Now |
-|---|---|---|
-| `/archive-sitemap.xml` | 2,793 permanent story URLs | **503**, `Retry-After: 3600` |
-| Published `/story/` URLs | 1,329 live, 0 dead | **1,322 of 1,329 answering 5xx** |
-| `/archive/<date>` | `/archive/2026-08-18` = 623 story links | 404 |
-| `/archive` | day-bucket browse | 42 words, no JSON-LD |
-| Live `sitemap.xml` story URLs | 200 of 200 | **195 of 200; 5 answer 500** |
+Unchanged for a third week, so it keeps its rank. Topic hubs are exactly the
+surface that needs inbound links: 40 sit in `sitemap.xml` and they flip
+indexable as they accumulate stories.
 
-The 5 failures in the *live* sitemap are the part that grows. `sitemap.xml` is
-rendered from a dataset snapshot, and every refresh rotates more stories out of
-the live window and into an archive that cannot answer — so the share of URLs
-the site actively advertises and cannot serve increases for as long as the
-outage lasts.
-
-**The status code is now the diagnosis** (shipped in `d060817` by the daily
-loop): a 503 means the archive is configured and failing, so `DATABASE_URL` is
-set on the deployment and the database itself is not answering. A missing env
-var would have produced a 200 with an empty `<urlset>` instead. That narrows
-the owner's check to the Neon project, not to Vercel's environment settings.
-
-**ROOT CAUSE CONFIRMED 2026-08-21 (live session, Vercel function logs):**
-every archive query fails with Postgres error `53000`: *"Your project has
-exceeded the data transfer quota. Upgrade your plan to increase limits."* The
-endpoint itself is up (a bad-password probe got a normal auth rejection) — Neon
-free plan's **5 GB/month egress allowance is exhausted**, and all reads are
-blocked until the allowance resets. "Resume the project" was the wrong advice:
-there is nothing to resume, and no owner click fixes quota exhaustion.
-
-Why it exhausted in ~5 days: story pages revalidate every 300 s, so crawlers
-(bingbot prominent in the logs) re-render up to 1,329 archived pages hundreds
-of times a day, each render reading the archive; plus archive-sitemap reads and
-the 30-minute cron. The durable fix is cutting archive egress (long-TTL data
-cache for immutable archived rows, lean sitemap query) — in progress the same
-day. Options to restore service sooner: wait for the monthly reset (~Sep 1,
-exact date TBC in Neon console) at $0, or the owner chooses to pay for a Neon
-plan (breaks the $0 constraint — owner's decision only).
-
-Everything the *site* can do signal-wise is already done: it emits retriable
-5xx, so no crawler is told a permanent URL is gone. But extended multi-week
-5xx does eventually drop URLs from the index, so the clock matters.
-
-### 2. Story pages answer 500 during the outage; the sitemap route answers 503
-
-`app/archive-sitemap.xml/route.ts` returns `503` with `Retry-After: 3600` and
-`Cache-Control: no-store`. A published `/story/` URL in the same outage returns
-a bare **500** — verified on five live-sitemap URLs and six ledger URLs, all
-500, plus one 504 from the edge.
-
-Both are retriable and neither says "gone", so the property that matters holds.
-But 503 with `Retry-After` is the signal Google documents for temporary
-unavailability, and 500 is the one that reads as a broken page. The two routes
-should agree. This is a refinement of a fix that is already correct on the
-decisive point — rank it accordingly, and do not let it delay item 1.
-
-### 3. Nothing routes a red monitor to a human — CLOSED 2026-08-22
-
-**Closed against a fresh fetch.** `.github/workflows/uptime.yml` now exists
-alongside `seo-health.yml` and `url-survival.yml`, and both scheduled loops
-check for open `[auto-alert]` issues before doing anything else. Verified this
-run: `https://api.github.com/repos/sameerhameedbaba-stack/cuurentwire/issues?state=open`
-returned **0 open issues**, and production answered 200 on `/`,
-`/news-sitemap.xml`, `/archive-sitemap.xml` and `/rss` — the quiet state the
-alerting is supposed to produce, read from the same endpoint the alerting
-writes to. `gh` itself is still unauthenticated here (HTTP 401 on the GraphQL
-API), so the runs keep reading the issues REST endpoint and re-running
-`scripts/seo-health.mjs` locally rather than trusting the Actions UI.
-
-Honest limit, unchanged: this routes an outage to the owner's **email**, and
-detection is bounded by the 30-minute uptime probe, not by minutes. Original
-finding kept below.
-
-### 3a. Original finding (2026-08-21)
-
-`seo-health.yml` failed at **2026-08-20T07:27:37Z** and `url-survival.yml` at
-**2026-08-20T07:09:02Z** (`gh run list`). Both fired correctly, on the first
-morning of the outage. Nothing acted on either for roughly **15 hours**, until
-the daily agent loop ran and found the outage independently.
-
-This is the third occurrence of the same failure: 2026-08-17 and 2026-08-18
-also failed silently for two days (`reports/2026-08-18-weekly.md`). The alarms
-work. The delivery does not — and `gh` cannot read this repo's Actions logs
-(HTTP 403, admin rights required), so the loops reproduce the checks locally.
-
-Free options worth evaluating, in preference order: confirm whether GitHub's
-default scheduled-workflow-failure email already reaches the owner's address;
-add a step that opens a GitHub issue on failure, since issue notifications
-route differently from Actions notifications; or accept the agent loops as the
-delivery mechanism and state the detection latency honestly (up to about 24
-hours) instead of implying it is minutes.
-
-### 4. `/news-desk` is the one masthead page with no JSON-LD — RE-VERIFIED 2026-08-22, still open
-
-Verified live: `curl -s https://currentwire.us/news-desk | grep -c
-'application/ld+json'` returns **0**, against **1** for `/about`. The
-2026-08-19 clear-out typed six trust pages (`/about` AboutPage; `/methodology`,
-`/editorial-standards`, `/corrections` WebPage; `/contact` ContactPage;
-`/topics` CollectionPage) and missed this one — and `/news-desk` is the page
-`NewsMediaOrganization.masthead` points at, which makes it the worst one to
-miss. It is otherwise healthy: 200, 312 words, indexable, with
-`max-image-preview:large` present.
-
-`/privacy`, `/terms` and `/copyright` also carry none. Lower value, same fix.
-
-### 5. Story pages have no outbound topic links — RE-MEASURED 2026-08-22, still open
-
-Measured this run across 12 live story pages sampled from `/news-sitemap.xml`:
-outbound `/story/` links are **median 4, and zero on none of them**. The
-2026-08-19 "More in {Category}" rail is holding, and that was the single
-biggest finding of the 2026-08-18 weekly run, when 39 of 40 pages had zero.
-
-Re-measured 2026-08-22 on 5 fresh news-sitemap stories: outbound `/story/`
-links **4, 5, 4, 4, 4** (the rail is holding), outbound `/topic/` links
-**0, 0, 0, 2, 1** — still median 0, still absent on 3 of 5. Unchanged, so it
-keeps its rank.
-
-Outbound `/topic/` links are **median 0, absent on 7 of 12**. Topic hubs are
-exactly the surface that needs inbound links: 24 of them sit in `sitemap.xml`,
-they flip indexable as they accumulate stories, and story pages are where their
-link equity would have to come from. Same defect class as the story-link dead
-end, one hop up, and a smaller job than that fix was.
+Two smaller story-template defects measured alongside it, same sample:
+**9 of 12 titles exceed 60 characters** and **4 of 12 meta descriptions still
+end mid-sentence** (53% on 08-18, 23% after the formatter fix, 25% on 08-22).
+The description residue is summaries whose first sentence alone exceeds the
+limit — a summarizer input-length question, not a formatter bug.
 
 ## Watching, not yet work
 
-- **`/archive-sitemap.xml` is shrinking, and that is the thin-story policy
-  working, not a regression.** 2,793 URLs on 2026-08-20, 2,849 after the Neon
-  recovery on 2026-08-21, **2,169 on 2026-08-22**. The route lists only
-  archived stories the thin-story policy keeps indexable
-  (`archiveSitemapIndexableSql`: first seen within 72 h, OR 2+ sources, OR a
-  history event), so single-source stories drop out as they age past 72 h —
-  shipped in `baa7668`, hours before the first drop. Checked rather than
-  assumed, because a falling count of permanent URLs is exactly what a real
-  regression would also look like. What to watch: the dropped URLs must keep
-  answering **200 with noindex**, never 404 — the daily probe covers this, and
-  120 sampled archive-sitemap URLs answered 118×200 / 2×307 this run.
+- **A one-off 500 on `/` during the Playwright suite.** The first full run
+  this session failed one assertion — `security.spec.ts` got **500** from `/`.
+  The same spec passed alone immediately after, and a full re-run went
+  107/107. Recorded rather than dismissed: an intermittent 500 on the homepage
+  would matter, and `MEMORY/2026-08-18-daily-and-weekly-loops-collide.md` says
+  to diagnose with a control run before believing a Playwright failure —
+  which is what was done. If it recurs, it is real.
+- **`/archive-sitemap.xml` grew 2,169 -> 5,891** in two days while the ledger
+  gained ~450-700 URLs/day. Consistent with the feed-list expansion (98 feeds)
+  plus the thin-story policy's 72 h/2-source/history rule admitting more
+  stories, but the arithmetic was not reconciled this run. The health check
+  fails above 45,000, ~5,000 short of the 50,000 cap, so the ceiling is
+  guarded. Re-measure next week; a count that keeps doubling needs an
+  explanation, not a shrug.
+- **Publisher image weight drifted up.** `seo-health` passes: 15 images,
+  1,503 KB, median 52 KB, **max 448 KB** — against median 79 KB / max 144 KB
+  on 2026-08-21. The median improved and the max tripled, so one host is
+  serving something large. Becomes work if the max crosses 500 KB (which fails
+  the check for capped hosts).
+- **`/most-covered` is at 25 items**, up from 5 on 2026-08-22 and 12 on
+  2026-08-19. The feed expansion fixed the thinness that was logged here for
+  two weeks. Keep watching that it does not fall back.
+- **1 duplicate normalized title in 643** news-sitemap entries, 0 duplicate
+  slugs. Inside the designed precision-over-recall contract. Not filed.
 
-- **`/most-covered` is running 5 items** (ItemList and rendered links both 5;
-  it was 12 on 2026-08-19). Not a defect — coverage breadth on this site is
-  limited by the ingest feed list, and the page states that on itself. It does
-  mean the site's most differentiated page is thin on any given day.
-  Re-measure weekly; it becomes work if it stays at 5 while the feed list grows.
-- **Thin category pages**: `/climate` 3 items / 133 words, `/culture` 3 / 137,
-  `/science` 5 / 152, against `/politics` 13 / 639. Same cause. Do not pad them.
-- **One dedup recall miss**, recorded rather than filed:
-  `fbi-raids-eric-swalwells-home-amid-sexual-assault-claims-inquiry-report-c13c03e2081a1`
-  (General) and
-  `fbi-raided-swalwells-home-seized-devices-as-part-of-chinese-spy-probe-c9b2a99f3b09b`
-  (Politics) are one event across two clusters, published 70 minutes apart, one
-  source each. This is **inside the designed contract** — precision ≥ 0.98 is
-  held far above recall ≥ 0.80 because a wrong merge corrupts a story page
-  while a missed merge only leaves two pages where there should be one. Note
-  that the low-confidence half landed in `/general`, which is noindexed, so
-  Google sees one of the two. Do not re-tune clustering from one observation.
-- **25% of sampled story descriptions still end mid-sentence** (3 of 12; it was
-  53%, then 23% after the 2026-08-18 formatter fix). The residue is summaries
-  whose first sentence alone exceeds the meta-description limit — a summarizer
-  input-length question, not a formatter bug.
+## Closed this run
 
-## Shipped 2026-08-21 (weekly deep run) — verified live
+Everything below passed the full gate set (887 unit tests, tsc, eslint, build
+with an unchanged route table, 107 Playwright tests) and is pushed to `main`
+as `c124d70`. **Live verification of the four page-level items was cut off by
+the 402 outage** — the deploy could not be served — so they are marked SHIPPED
+on build-and-test evidence and must be re-checked live once the site is back.
+Two of the five were verified by running the changed script against production
+before the outage, and those say so.
 
-### `cwv-check.mjs` was recording an error page's Core Web Vitals — SHIPPED
+### The URL-survival gate could not go green — SHIPPED, verified live
 
-`firstStoryUrl()` took the **first** `/story/` entry in `data/url-ledger.json`
-with no liveness check. During this outage that entry answered **500** with a
-9,353-byte error page, and the probe measured it and wrote `LCP 1,172 ms` into
-`data/cwv-history.json` as a story-page vital. Nothing downstream could tell
-that number from a real one.
+See open item 1 for the cause. `scripts/url-survival-lib.mjs` adds a third
+state: **LOST** (5xx and not seen alive for 3 days) is reported in full every
+run and does not fail the build, guarded by `RUN_HEALTHY_SHARE` so a site-wide
+outage — where the healthy share collapses — reclassifies nothing and stays
+red. Run against production before the 402:
+`GONE=0 UNAVAILABLE=0 LOST=214`, exit 0, against `UNAVAILABLE=214`, exit 1
+from the same probe minutes earlier.
+Guard: `tests/unit/url-survival-classify.test.ts` (10 tests).
 
-Replaced with `firstLiveStoryUrl()`: it probes ledger order first, so the URL
-measured week to week does not move while the site is healthy; falls back to
-the most recently verified-alive entries; takes the first that answers **200**;
-and returns `null` — measuring two surfaces instead of three, loudly — when
-none do. Verified this run: it skipped 6 dead URLs (five 500s and a 504) and
-measured a live story instead.
+### The CWV probe was measuring page order — SHIPPED, verified live
 
-**The rule this leaves behind:** a monitoring script that chooses its own
-target must verify the target is healthy before reporting a number about it.
-Otherwise the first thing to break is the instrument, and it breaks quietly.
+Two defects in the same script, one week after the last two were fixed in it.
 
-### `llms.txt` refreshed — SHIPPED
+**Connection warm-up.** Every URL gets a fresh `BrowserContext`, but Chromium
+shares its socket pool across contexts, so only the first navigation pays
+DNS+TCP+TLS. Under the 150 ms emulated latency `/` reported TTFB **2,844 ms**
+while `/top-100`, two contexts later, reported **131 ms** — below one emulated
+round trip, which is only possible on a reused socket. The 2026-08-21 run
+reported 2,842 ms and could not explain the twentyfold disagreement with curl.
+After a throwaway warm-up navigation, same session against production:
+`/` LCP **5,104 -> 1,852 ms**, TTFB **2,844 -> 102 ms**, agreeing with curl's
+135 ms. History entries now carry `warmedConnection` so the discontinuity is
+machine-visible — **the drop across that boundary is the instrument, not the
+site, and next week's run must not read it as a win.**
 
-4,484 → 5,175 bytes. Three drifts corrected against the live pages:
+**Redirect target.** `firstLiveStoryUrl()` probed with `redirect: "follow"`,
+so it accepted a URL that 308s to its canonical slug and baked an extra round
+trip into every story-page number in the history. Story slugs are rebuilt
+whenever `pickLead()` re-selects the lead, so retired addresses are the normal
+case, not an edge one. Now `manual` — the next run skipped a 308 and a 307 and
+measured a real canonical URL.
 
-- It described `/methodology/duplicate-stories` as publishing "their measured
-  precision and recall". That page publishes **no** accuracy percentage and
-  says so in as many words — it publishes the CI contract. Fixed to match.
-- `/archive` (the HTML browse path over permanent URLs, shipped 2026-08-19) and
-  `/contact` were never listed. Added.
-- Added the failure contract, so an AI crawler that meets this outage retries
-  instead of recording a permanent URL as removed: a published story URL never
-  answers 404, and an unreachable archive answers a retriable 5xx while the
-  archive sitemap answers 503 with `Retry-After`.
+### `/news-desk` had no JSON-LD — SHIPPED, live check pending
 
-One line was written and then corrected before shipping: the draft described
-`/contact` as covering "takedown requests". The page has general, corrections,
-publisher and technical inboxes and no takedown channel. *Prose about a page is
-a claim about that page — check it against the page.*
+Open since 2026-08-19 and named in two weekly reports. It is the URL
+`NewsMediaOrganization.masthead` points at, so the Organization schema named a
+page that did not identify itself. Now `WebPage`, along with `/privacy`,
+`/terms` and `/copyright`, which were bare for the same reason.
 
+### `/archive` had no JSON-LD — SHIPPED, live check pending
 
-## Shipped 2026-08-21 (daily loop) — verified live after deploy
+Blamed on the outage in the 2026-08-21 report ("collapsed to 42 words with no
+JSON-LD"). Re-measured with the archive healthy: `/archive` was serving 5,742
+stories across 11 days and **still shipped zero JSON-LD**, while the
+`/archive/<date>` pages beneath it have carried `BreadcrumbList` + `ItemList`
+since 2026-08-19. It was never the outage. Now `CollectionPage` +
+`BreadcrumbList`, suppressed when the archive reads empty so an outage cannot
+produce a cacheable `numberOfItems: 0`.
 
-The daily and weekly loops ran on the same tick again (see
-`MEMORY/2026-08-18-daily-and-weekly-loops-collide.md`) and found the same
-outage independently. Split by file held: the daily loop owned
-`lib/database/archive.ts`, `lib/news/story-resolution.ts`,
-`app/story/[slug]/page.tsx`, `app/archive-sitemap.xml/route.ts`,
-`lib/news/normalization/image-upgrade.ts`, `scripts/url-survival.mjs` and
-`reports/2026-08-21.md`; the weekly run owned the audit, `llms.txt`,
-`cwv-check.mjs` and the Open section above. One conflict, on
-`data/url-ledger.json`, resolved as a union (earliest `firstSeen`, latest
-`lastOk`) rather than by picking a side.
+*The lesson worth keeping: an outage is a tempting explanation for any
+measurement taken during one, and it made a real defect invisible for three
+days. Re-measure a symptom once the excuse is gone.*
 
-### An archive outage no longer emits permanent "gone" signals — SHIPPED (d060817)
+Guards for both: `tests/unit/trust-page-jsonld.test.ts` (33 tests) and
+`scripts/seo-health.mjs`, now checking 11 pages against live HTML instead of 6.
 
-The outage itself is item 1 above and is the owner's to end. What was the
-daily loop's to fix is the **site's response to it**, which was actively
-destructive and was code.
+### llms.txt was describing a smaller site — SHIPPED, live check pending
 
-Every archive read caught its own failure and returned empty, so "the query
-blew up" and "no such story" reached the callers as the same value. The
-callers turned them into the two most permanent signals HTTP has:
+5,175 -> 7,256 bytes. Four whole page families were missing (`/top-10` and its
+9 section variants, `/briefing` plus dated archives,
+`/reports/media-coverage` weekly reports, `/ai`) along with 14 sections. All 48
+URLs it now claims were fetched and answered 200 before the outage. The
+failure contract was corrected: it promised a 5xx means "ask again later",
+which is not true of the 214 in item 1, so it now says so.
 
-| Surface | Before | After |
-|---|---|---|
-| `/archive-sitemap.xml` | `200` + empty `<urlset>` — a valid, cacheable claim of **zero** permanent story URLs where 2,793 were advertised the day before | `503` + `Retry-After: 3600` + `no-store` |
-| Published `/story/` URL | **hard 404** on 1,322 of 1,329 | retriable `5xx` |
-| `/story/<junk>` | 404 | **404, unchanged** |
-| Non-story garbage URL | 404 | **404, unchanged** |
-| Live `/story/` URL | 200 | **200, unchanged** |
+### Thin category pages — CLOSED 2026-08-24, fixed by the feed expansion
 
-Reads that decide *whether a URL exists* now throw `ArchiveUnavailableError`
-instead of returning empty. Reads that merely *enrich* a page (first-seen
-dates, update history, earlier coverage) still degrade quietly — a missing
-byline must never take a page down, and that is why live stories were
-unaffected throughout.
-
-Three decisions worth carrying forward:
-
-- **"No `DATABASE_URL`" is deliberately NOT this error.** A deployment that
-  never promised permanence should still 404. That is what makes the status
-  code a *diagnosis*: `503` means the archive is configured and failing,
-  `200`-empty means the env var is missing. It is how item 1 above can point
-  the owner at Neon rather than at Vercel's environment settings, and it was
-  confirmed by the deploy itself flipping the route to 503.
-- **Junk paths still 404 during an outage.** A slug with no well-formed
-  cluster-id token (`c` + 12 hex — verified against all 1,660 ledger URLs,
-  1,660 of 1,660 matching) was never a story URL whatever the database says.
-  Without this, an outage would answer 5xx to every scanner probe.
-- **`getArchiveBrowse` deliberately does NOT throw.** `/archive` is
-  prerendered at build time (`○` in the route table), so throwing there
-  would fail `next build` exactly when the database is down — that is, when
-  the deploy carrying this fix has to succeed. An empty browse page for an
-  hour is a thin page; a build that cannot ship is an outage nobody can end.
-  **A fix that cannot deploy during the failure it fixes is not a fix.**
-
-Verified against the production build locally with an unreachable
-`DATABASE_URL` before pushing (live story 200, published-looking slug 500,
-junk slug 404, garbage URL 404, `/archive` 200, news-sitemap 200), then live
-after deploy. Guards: `tests/unit/archive-outage.test.ts` (12 tests).
-
-One existing test asserted the old behaviour in as many words — "swallows
-query failures and returns null". Its premise was corrected in place with the
-reason recorded next to it, not weakened.
-
-### `url-survival` must not call a 5xx a lost URL — SHIPPED (8278520)
-
-The probe defends "a published URL never 404s". With every rotated-out story
-answering 5xx it reported them as "no longer resolve", which would have kept
-it red for the whole outage and buried any **real** 404 regression under
-1,555 lines of expected noise. Counted separately now: `GONE` (4xx, the
-guarantee is broken) and `UNAVAILABLE` (5xx, the origin is having a bad day).
-Both still exit non-zero; only one means a promise was broken.
-
-Measured against production right after the fix deployed:
-`GONE=0  UNAVAILABLE=1555  ok=350  redirects=15`. The same probe reported
-**1,322 hard 404s** that morning.
-
-### BBC PNGs routed through the `news` recipe — SHIPPED (4e14f29)
-
-The one remaining health-check failure was a single **683 KB** BBC image —
-more than the rest of `/top-100` put together. BBC's two delivery recipes are
-not interchangeable and which is cheaper depends on the source format.
-Measured live at width 976 on 10 assets, bytes **and** decoded pixels:
-
-| Source format | `ace/standard` | `news` | Verdict |
-|---|---|---|---|
-| `.png` (6 of 6) | 140–929 KB, PNG | 28–106 KB, re-encoded JPEG, identical pixels | **-80% to -92%** |
-| `.jpg` (4 of 4) | 39–137 KB | 45–157 KB | **+14% to +19% — worse** |
-
-So the swap is PNG-only. A blanket switch would have been a ~15% regression
-on the JPEGs that are the overwhelming majority of BBC's feed images — the
-same trap as forcing our 976 over The Hill's own `?w=900`. An existing width
-at or above the target is still BBC's rendition choice and is kept; only the
-recipe changes.
-
-Verified live after the next ingest cycle: the same asset went **699,730 →
-58,325 bytes at an unchanged 976x547**, and `publisher image weight` went from
-failing to `15 images, 1026 KB total, median 63 KB, max 144 KB`.
-Guards: 5 new tests in `tests/unit/image-upgrade.test.ts`, including the JPEG
-case asserting we leave it alone.
-
-### Health-check result this run
-
-`node scripts/seo-health.mjs` against production: **4 failures → 1**. The one
-remaining is `archive-sitemap unavailable`, which is item 1 — the outage
-itself, reported with the action that ends it. `story canonical`,
-`story NewsArticle` and `publisher image weight` all cleared.
-
+Logged for two weeks: `/climate` 3 items / 133 words, `/culture` 3 / 137,
+`/science` 5 / 152. Re-measured this run: **`/climate` 13 items / 599 words,
+`/culture` 13 / 623, `/science` 13 / 541**, and every one of 24 sections
+answered 200, was indexable, and carried 12-80 story links. Not fixed by
+anything the SEO loop did — the 98-feed expansion did it.
 
 ## Known and accepted — not work, but do not "fix" these
 
-- **The operator identity line on `/about`** is deliberately deferred. It is a
-  business decision, not an oversight.
+- **The operator identity line on `/about`** is deliberately deferred. Business
+  decision, not an oversight.
 - **`/topic/*` hubs below the thin-collection bar are `noindex, follow`.** They
-  flip indexable as they accumulate stories. Working as designed.
+  flip indexable as they accumulate stories. Verified again this run:
+  `/topic/donald-trump` is `noindex, follow`. Working as designed.
+- **`/general` and `/search` are noindexed.** Verified live this run
+  (`noindex, nofollow` on both). `/general` is the internal low-confidence
+  bucket; `/source/reuters` is `noindex, follow` for the same thin-collection
+  reason.
 - **Merge 308s and `/story/<clusterId>` 307s show as "Page with redirect" in
-  GSC.** That is the URL-permanence guarantee doing its job.
-- **`/general` is noindexed.** It is the internal low-confidence bucket, not a
-  public section.
+  GSC.** That is the URL-permanence guarantee doing its job — 191 of 2,015
+  ledger URLs are redirects and all resolve 200.
 - **`/top-100` and `/latest` are `force-dynamic`.** They must read
-  `searchParams`, which opts a route into dynamic rendering in this Next
-  version — no route segment config can change that. Their canonical
-  unfiltered documents carry an edge-only cache directive instead
-  (`next.config.ts`), which is the only lever Next sanctions.
-- **`static.politico.com` images cannot be resized.** It is a plain Cloudflare
-  passthrough: `?width=`, `?w=`, `?imwidth=`, `?fit=`, `?d=`, `?resize=` and
-  `?auto=webp` each returned the identical **4,944,055 bytes** on 2026-08-19.
-  There is no free lever, so the health check reports Politico images over
-  1 MB rather than failing on them. Re-probe only if Politico changes CDN.
-- **Coverage breadth on this site tops out low** (max 2 publishers per story in
-  the 2026-08-19 snapshot, 13 publishers represented of 43 configured). That is
-  a function of the ingest feed list in the `RSS_FEEDS` env var, not of the
-  ranking code. `/most-covered` states it on the page as a lower bound rather
-  than hiding it.
-
-## GSC index review — 2026-08-18 (owner asked; read via Search Console UI)
-
-State as of GSC data dated 8/14-8/15: **88 indexed, 185 not indexed, 4 reasons.**
-Three of the four reasons were correct behaviour; the fourth was the strategic
-work now shipped.
-
-- "Excluded by noindex" (23) — thin `/topic/*` hubs. Intentional.
-- "Page with redirect" (13) — merge 308s, alias 307s, www. Correct.
-- "Not found 404" (2) — two story URLs from before the permanent archive
-  existed. Nothing to restore.
-- "Crawled - currently not indexed" (147) — the real one. Broke down into
-  alias URLs (feeding stopped), filtered `/top-100?...` variants that
-  canonicalize away (correct), indexable topic hubs Google had not chosen yet
-  (normal for a young site), and **thin single-source story pages plus the
-  absence of any evergreen content** — which were backlog items 1, 3 and 4 and
-  are now shipped. `/general` rendering indexable was a real bug, fixed
-  2026-08-18.
-
-Re-measure this in the next weekly run: the levers that move it (internal
-linking, story depth, evergreen hubs, and large-thumbnail eligibility, which
-was silently broken sitewide until 2026-08-19) all landed after that snapshot.
-
-## Shipped 2026-08-19 (backlog clear-out) — all verified live after deploy
-
-Every remaining OPEN item was designed, adversarially reviewed, implemented and
-verified in one run. The reviews changed three of them materially; those
-corrections are recorded here because they are the reusable part.
-
-### 1. Story pages were internal-link dead ends — SHIPPED (79e77e5)
-
-Measured 2026-08-18: 39 of 40 story pages had **zero** outbound links to any
-other story. The "More in {Category}" rail fixed it. Verified live 2026-08-19:
-4 outbound story links on 3 of 3 sampled pages. "Related coverage" is unchanged
-and still rare, which is the intended round-8 precision bar, not a bug.
-
-### 2. No CDN caching on HTML — SHIPPED
-
-Root cause: `/story/[slug]`, `/topic/[slug]`, `/source/[slug]` and
-`/archive/[date]` declared `export const revalidate` but exported no
-`generateStaticParams`, which Next 16 requires before ISR engages on a dynamic
-segment. All four sat in the build's ƒ bucket serving `no-store` on every
-request, including repeat fetches of the same URL. Each now returns `[]`.
-Verified live: `X-Nextjs-Prerender: 1`, `HIT` on the second fetch, and **warm
-story TTFB 110–125 ms against the 557 ms median measured 2026-08-18**. No
-regression: `url-survival.mjs` 1,286 URLs / 0 dead, merge 308s still 308, alias
-307s still 307, unknown URLs still 404.
-Guard: `tests/unit/isr-route-config.test.ts`.
-
-### 2b. `/top-100` and `/latest` — SHIPPED, with the review's correction
-
-Both must read `searchParams`, which forces dynamic rendering; no segment
-config can change it. The one lever Next sanctions is a `next.config` headers
-rule, scoped with `missing` so it fires only on the canonical unfiltered
-document (filters, pagination and RSC requests excluded).
-
-**What the review changed:** the first version set a public
-`s-maxage=300`. On Vercel that header is applied by the edge proxy, and no
-route on this deployment has ever produced a cache HIT from a Cache-Control
-string alone — every measured HIT carries `X-Nextjs-Prerender: 1`. So if the
-edge ignored the rule, the site would have been telling every downstream shared
-cache to hold the two freshness-critical pages for five minutes while the
-origin re-rendered each time, and it would also have overwritten the `no-store`
-Next sets on error renders. Split: the TTL now rides in
-`Vercel-CDN-Cache-Control` (consumed and stripped at the edge, so nothing
-downstream can be misinformed) and the client-facing header is byte-identical
-to what `/` already serves. A header that cannot lie beats a header that might.
-Guard: `tests/unit/list-cache-headers.test.ts`.
-
-### 3. Single-source story pages were thin — SHIPPED (scoped down), modest
-
-Measured on 14 paired production URLs: single-report main content went
-**185 → 290 median words**. The module adds 119 words, of which **88 are a
-fixed template and ~31 are per-story values** (18 by a strict LCS-pair
-measure).
-
-It was scoped down from its design, which would have added 254 words with 218
-of them identical on all 2,199 permanent story URLs — mass-duplicated text on
-a site already fighting a duplicate-content ceiling. Duplicated mass across
-the archive drops ~479k → ~194k words. **A sentence that does not change
-between two stories does not belong in the story template**; the fixed prose
-lives on `/methodology/*` and is linked.
-
-State the result honestly in future runs: this roughly doubles a thin page but
-only ~31 of the new words are story-specific, so it is a real improvement and
-**not** a fix for the thin-content ceiling. The structural fix is item 4.
-The publisher-excerpt option from the original backlog turned out to be a
-near-no-op — it adds **0 words to 300 of 313 pages**, because on a one-article
-cluster the publisher description already *is* the dek.
-
-Two sentences the design wanted to publish were false and were dropped: that
-the classifier ignores the publisher's own section label (it does not — that
-is what misfiled the Theban tomb story), and that coverage points come from the
-publication-name count shown on the page (they come from
-`independentSourceCount`, distinct non-press-release domains).
-
-### 4. No evergreen content of any kind — SHIPPED
-
-Three reference pages under `/methodology/`: `coverage-breadth`,
-`publisher-tiers`, `duplicate-stories`. Every figure on them is **computed at
-render from the production scoring functions** (`RANKING_WEIGHTS`,
-`coverageFactor`, `freshnessFactor`, `TIER_WEIGHT`) rather than typed into
-copy, so the pages cannot drift from the code they describe.
-
-**What the review changed:** the draft would have published "on 491 pairs,
-precision 0.989, recall 0.806" as an accuracy figure. Those numbers come from
-`tests/fixtures/cluster-pairs.ts`, whose own header says every pair is invented
-— fictional towns, companies and people — and PLAYBOOK.md's rule is
-"Real-headline accuracy is the only accuracy we quote." The count was stale
-too (501 pairs now, not 491). The page publishes **no measured accuracy**; it
-states the CI gates, which are contract values in the repo rather than
-measurements of the world, and says plainly that the pairs are written for the
-test rather than sampled from live coverage. A guard comment forbids
-reintroducing a figure.
-
-Two more prose claims were false and were rewritten: that an all-press-release
-story's source-mix line prints "0 independent domains" (it was suppressed by a
-`> 0` guard — the guard was fixed so the sentence became true), and that a
-story's address never changes as coverage grows (`pickLead()` re-selects the
-lead and the slug is built from its title — which is exactly why `/story/`
-307s old addresses). **Prose about behaviour is a claim; verify it against the
-code the way you verify a statistic.**
-
-### 5. Category misclassification — SHIPPED
-
-The Lakers/Jeanie Buss story was fixed upstream (now Business). The Theban tomb
-story was traced, not guessed: it scored **zero on every category**, so the
-arstechnica.com feed prior — weight 2, exactly `MIN_PRIMARY_SCORE` — decided it
-alone at confidence 1.0. Archaeology coverage had two words to stand on. Fixed
-as a dictionary change, not a rule change.
-
-**What the review changed:** the first dictionary created **nine new
-confident-wrong placements**. "Ancient city of Aleppo faces new shelling"
-scored science, and "ancient city" is the standard dateline of siege reporting;
-"excavation" is a construction word at least as often as an archaeology one;
-bare "dinosaur" caught a film franchise. It also moved **zero** stories on the
-313-story real-production benchmark, so it was buying nothing while adding
-collisions. Narrowed to precise phrases, five entries removed with the headline
-that broke each recorded in the code, and five collision guards added as
-fixtures. **Turning a harmless `general` abstention into a confident wrong
-section is worse than the misfile being fixed.** Fixtures 268 → 288,
-high-confidence accuracy held at 98.9%.
-
-### 6. "Most covered" had no indexable URL — SHIPPED
-
-`?sort=most-covered` canonicalized straight back to `/top-100`, so the site's
-most differentiated signal had no home. `/most-covered` is now a static ISR
-route with its own canonical, title, BreadcrumbList and ItemList, linked from
-the footer, `/top-100`, the sitemap and llms.txt. The `?sort=` dimension was
-removed from `/top-100`'s generated URL space entirely — one less duplicate
-URL family for Google to fetch and discard.
-
-The page states its own limits on the page: breadth is not importance, not
-agreement, not verification; it is measured only over publishers we ingest and
-is therefore a **lower bound**; syndication is excluded; ties are common. That
-honesty section is also what stops it being thin.
-Guards: `tests/unit/most-covered.test.ts`, four Playwright specs.
-
-### 7. Near-duplicate topic hubs — SHIPPED
-
-A topic identity-key layer (`lib/news/topics.ts`) folds containment and
-singular/plural variants and drops headline-fragment bigrams. Consolidation is
-`rel=canonical`, never a redirect, because `/topic/<slug>` answers 200 for any
-slug — so no advertised URL can start 404ing, and every variant keeps serving a
-**superset** of what it served before. Folding is curated, never naive
-substring matching: `/topic/florida` and `/topic/florida-house` are both real.
-Verified live: `/topic/big-bend` now canonicalizes onto
-`/topic/big-bend-national-park`; `york`/`new-york` and
-`washington`/`washington-post` correctly stayed separate; `bay-giants` and
-`unitedhealthcare-ceo` are gone from `/topics`.
-
-The eligibility floor also moved from articles to **distinct clusters**, which
-is precisely what syndication inflates — three copies of one release are one
-story. That made an existing test's premise obsolete in a good way; it now
-asserts the stronger property.
-
-### 8. Archived stories had no HTML browse path — SHIPPED (79e77e5)
-
-`/archive` and `/archive/<date>`. Verified live: `/archive/2026-08-18` returns
-200 with BreadcrumbList + ItemList and **623 outbound story links**.
-
-### 9. Publisher logo for News surfaces — SHIPPED (cb0bb63), now guarded
-
-Already done and proven live: `/logo-600.png`, 3,858 bytes, IHDR 350x60, and
-`NewsArticle.publisher.logo` carries the URL with explicit width and height. An
-ImageResponse route was rejected — it accepts only ttf/otf/woff, not the woff2
-next/font ships, so a generated wordmark would silently fall back to Arial.
-`tests/unit/publisher-logo.test.ts` reads the PNG's IHDR so the hand-maintained
-schema numbers cannot drift from the file.
-
-### 10. Font preload — SHIPPED as a DELETION
-
-Already shipped in cb0bb63, and shipped wrong. `next/font` injects its own
-preload per subset by default and root-layout fonts preload on all routes, so
-the head carried **four preload links for two files** on every route measured.
-The hand-rolled manifest-reading block in `app/layout.tsx` was deleted.
-Verified live: 2 links, 2 files, no duplicates. The health check now fails if
-the count drops below two or any href repeats. **The fix for a "missing" tag
-can be removal.**
-
-### 11-14. Trust-page schema, interlinking and /contact — SHIPPED
-
-`/topics` gets CollectionPage (listing only hubs that clear the indexing bar,
-so it can never advertise a `noindex` URL). `/about` gets AboutPage,
-`/methodology`, `/editorial-standards` and `/corrections` get WebPage,
-`/contact` gets ContactPage — all six shipped **zero** JSON-LD blocks before
-today. In-body links now connect all seven trust pages. `/contact` went from 77
-words to ~440 with no invented staff, phone numbers, postal addresses or
-response-time promises. The health check verifies all six page types daily.
-
-### 15. Warm the hero `/_next/image` URL — CLOSED as obsolete
-
-`images.unoptimized` is on, so images are served as-is from `src` and live HTML
-contains zero occurrences of `/_next/image`. There is no URL to warm. Proven by
-command, not assumed.
-
-### 16. Shard the archive sitemap — CLOSED, converted to monitoring
-
-`scripts/seo-health.mjs` now fails when `/archive-sitemap.xml` exceeds 45,000
-URLs, ~5,000 short of the 50,000 cap, with the fix named in the failure
-message. 2,199 URLs today. Nobody has to remember it.
-
-### 17. Google Search Console sitemap submission — CLOSED, not required
-
-`robots.txt` advertises all three sitemaps, verified live. Google discovers
-sitemaps from `robots.txt` with no UI action, so this was never a prerequisite
-for indexing — only for per-sitemap reporting. Optional, owner's call.
-
-### 18. Bing Webmaster Tools — SHIPPED
-
-Verified by GSC import, all 3 sitemaps submitted, 0 errors
-(`seo/offpage/LEDGER.md`). The optional API key is unnecessary: IndexNow
-already pushes every new story to Bing within ~30 min, and DuckDuckGo and Yahoo
-source from Bing.
-
-### 19. PageSpeed Insights API key — CLOSED, no key needed
-
-The keyless PSI endpoint still returns HTTP 429, so `scripts/cwv-check.mjs` no
-longer depends on it. It defaults to a keyless probe driving the Chromium the
-e2e suite already installs, under Lighthouse's mobile throttling (4x CPU,
-1638.4 kbps, 150 ms), reading LCP/CLS/FCP/TTFB from the browser's own
-PerformanceObserver. It reports no Lighthouse score, because one cannot be
-derived from those metrics and inventing it would be a fabricated number.
-A PSI key would only add CrUX **field** data, which needs real traffic volume
-this site does not have yet — it would report nothing today even if added.
-
-### 20. Homepage LCP — connection setup SHIPPED, image weight still OPEN
-
-`ImageOriginPreconnect` derives the LCP image's origin from the rendered hero
-(it changes per story, so a hardcoded list would be wrong within the hour) and
-opens the connection before the parser reaches the `<img>`. Verified live.
-
-Two honest caveats, both worth carrying forward:
-
-- **The first version emitted two preconnects** to the same origin, one with
-  `crossorigin` and one without. Images with no `crossorigin` attribute are
-  fetched in no-cors mode, so the CORS-mode connection was never used — an
-  extra TLS handshake competing with the LCP image on a throttled link.
-  Corrected to the no-cors form only. *A preconnect whose CORS mode does not
-  match the eventual request is worse than no preconnect.*
-- **It did not fix the LCP, and measurement said so.** FCP improved
-  (1,912 → 1,492 ms) and TTFB is 100 ms, but LCP moved the wrong way because
-  the hero image changed from 71 KB to 546 KB between runs. That is open
-  item 1 above, and it is the real constraint — connection setup was never
-  going to beat half a megabyte on a throttled link.
-
-### Found while working: every `pageMetadata()` page shipped no robots meta
-
-Not on any backlog. `/us`, `/topics`, `/top-100`, `/politics`, `/sources`,
-`/methodology` and `/about` carried **no `<meta name="robots">` at all**,
-silently losing `max-image-preview:large` and `max-snippet:-1` — large-thumbnail
-eligibility in Discover and Top Stories. Page-level metadata replaces the root
-layout's wholesale in this Next version, and `undefined` counts as replacing it
-with nothing. The helper already documented that exact hazard for `openGraph`
-one field above. Verified live on 7 pages before and after; guarded by
-`tests/unit/page-metadata-robots.test.ts`.
-
-
-## Shipped 2026-08-19 (daily loop) — verified live after deploy
-
-- **ISR was inert on every dynamic route** (backlog item 2). Four routes
-  declared `export const revalidate` but exported no `generateStaticParams`,
-  which Next 16 requires before ISR engages on a dynamic segment — so
-  `/story/[slug]`, `/topic/[slug]`, `/source/[slug]` and `/archive/[date]`
-  server-rendered every request under `no-store`. All four now return `[]`
-  and flip from ƒ (Dynamic) to ● (SSG) in the build output. Live evidence and
-  the full no-regression sweep are recorded against item 2 above.
-  `tests/unit/isr-route-config.test.ts` is the standing guard. SHIPPED
-
-## Shipped 2026-08-18 (weekly deep run) — all verified live after deploy
-
-- **Unbounded duplicate pagination space.** `/top-100?page=9`, `?page=999` and
-  `/latest?page=5000` each returned HTTP 200 serving the last real page's
-  content under their **own** canonical — an unlimited supply of
-  self-canonicalizing duplicate URLs. `generateMetadata` clamped nothing while
-  the body clamped to the last page. Out-of-range pages now answer
-  `noindex, follow` and canonicalize to page 1; in-range pages 2-4 keep their
-  own canonicals and stay indexable (all 7 cases verified live). SHIPPED
-- **Every story link on `/latest` was a redirect.** All 60 pointed at
-  `/story/<clusterId>`, which only 307s to the slug — 12 of 12 sampled were
-  redirects, so the canonical URL never received the link and each crawl of the
-  feed cost 60 extra hops. Cards now link to the cluster slug, attached at
-  query time and never persisted. Verified live: 15 of 15 sampled resolve 200
-  directly. SHIPPED
-- **Meta descriptions ended mid-sentence.** 16 of 30 sampled live stories (53%)
-  ended in an ellipsis. `metaDescription()` now packs whole sentences and only
-  falls back to truncation when the first sentence cannot fit; trailing
-  connectors are cleaned. 7 unit tests. Verified live: 7 of 30 (23%) — the
-  remainder are summaries whose first sentence alone exceeds the limit, which
-  is item 3's problem, not the formatter's. SHIPPED
-- **Story titles overflowed the SERP.** 29 of 30 sampled exceeded 60
-  characters, with `" | CurrentWire"` spending 14 of them. Headlines stay
-  truthful and whole; the suffix is dropped when the headline is long.
-  Verified live: suffix dropped on 25 of 30. SHIPPED
-- **Indexable hubs were in no sitemap.** Topic and source hubs are indexable
-  once they clear the thin-collection bar, but nothing listed them.
-  `sitemap.xml` now includes them, gated by that same bar so it can never
-  advertise a `noindex` URL. Verified live: 258 URLs including 21 topic and 12
-  source hubs; 8 sampled hubs all 200 and indexable. SHIPPED
-- **List pages had no ItemList.** `/latest` (60 items), `/sources` (12) and
-  `/source/<slug>` (26 on BBC News) now emit ItemList JSON-LD; `/top-100`
-  pages 2-4 now carry their own per-page ItemList `url`. All parse. SHIPPED
-- **Hero images had no fetchPriority.** Next 16 deprecated `Image priority` in
-  favour of explicit hints, and the preload it emitted never put
-  `fetchpriority` on the `<img>` (bundled docs recommend `loading="eager"` or
-  `fetchPriority="high"` over preload). Hero images now carry both, and the
-  first four ranked thumbnails load eagerly. Verified live: home emits
-  `fetchpriority="high"`; `/top-100` shows 3 eager (of 4 — one story has no
-  image) where all 15 were lazy. SHIPPED
-- **llms.txt refreshed** — coverage hubs (`/topics`, `/sources`), the archive
-  sitemap, and a "facts worth knowing before citing" section covering URL
-  permanence, attribution, honest dates, ranking method and correction policy.
-  Verified live at 3,521 bytes. SHIPPED
-
-## Shipped 2026-08-18 (daily loop)
-
-- **Google News sitemap emitted out-of-window publication_date** — the renderer
-  kept a story whenever its source coverage was inside 48h but emitted
-  `first_seen_at` as `<news:publication_date>`. 9 of 307 live entries were
-  affected and the daily health check had failed since 2026-08-17. Both
-  timestamps must now be inside the window. 5 new unit tests. Verified live:
-  0 entries older than 48h. SHIPPED
-- **`npx eslint .` was not a usable gate** — root-anchored ignore patterns let
-  `.next/` output inside agent worktrees be linted (1398 errors and 21362
-  warnings on a clean tree). Patterns are now `**/`-prefixed; zero problems.
-  SHIPPED
-
-## Shipped 2026-08-15 (baseline round)
-
-- NewsArticle dateModified could precede datePublished — clamped (JSON-LD + og
-  modifiedTime), unit-tested. SHIPPED
-- Homepage had no canonical/og:url — added (with RSS alternate preserved). SHIPPED
-- www.currentwire.us served the whole site as a duplicate host — permanent
-  host redirect to the apex added in next.config. SHIPPED
-- /top-100?page=2..4 canonicalized to page 1, hiding ranks 26-100 — per-page
-  canonicals + titles + ItemList rank offsets. SHIPPED
-- No archive sitemap: stories older than the newest 200 were in no sitemap
-  despite permanent URLs — /archive-sitemap.xml added (all non-merged archived
-  stories) + robots.txt entry. SHIPPED
-- No max-image-preview:large — sitewide robots directives added (Discover
-  large previews). SHIPPED
-- Organization schema was bare — upgraded to NewsMediaOrganization with logo,
-  publishingPrinciples, correctionsPolicy, masthead, actionableFeedbackPolicy
-  (sameAs deliberately omitted: no published social profiles). SHIPPED
-- NewsArticle now carries publishingPrinciples + correctionsPolicy; self-hosted
-  OG card first in image[]. SHIPPED
-- RSS feeds existed for only 6 sections — all public categories now have
-  feeds; category/us/canada/top-100 pages advertise them via
-  link rel=alternate. SHIPPED
-- llms.txt 404 — added (aggregator-honest, llmstxt.org format). SHIPPED
-- IndexNow wired: key file at site root, new story URLs pinged from the cron
-  on first archive (production only, never breaks a refresh), unit-tested. SHIPPED
-- Archived stories lost their OG headline card — archive fallback added to the
-  story opengraph-image route. SHIPPED
-- apple-icon (180x180) + theme-color viewport export added. SHIPPED
-- 404 page had the homepage title — own title + noindex. SHIPPED
-- Corrections page: honest corrections-log section + editorial-standards link. SHIPPED
+  `searchParams`. Their canonical unfiltered documents carry an edge-only cache
+  directive instead; both measured `X-Vercel-Cache: HIT` at 109-128 ms TTFB
+  this run.
+- **`static.politico.com` images cannot be resized.** Six query shapes returned
+  the identical 4,944,055 bytes on 2026-08-19. Re-probe only if Politico
+  changes CDN.
+- **The keyless PageSpeed Insights API returns HTTP 429 with a per-day quota of
+  zero.** Confirmed again this run. `cwv-check.mjs` does not depend on it. A
+  key would only add CrUX field data, which needs traffic this site does not
+  have yet.
+
+## History
+
+Earlier shipped work (2026-08-15 baseline through 2026-08-22) is recorded in
+`seo/reports/`. The 2026-08-19 backlog clear-out, the 2026-08-20 image-weight
+fix, the 2026-08-21 outage response and the 2026-08-22 news-sitemap 404 fix all
+have their own entries there with the live verification attached.
