@@ -44,6 +44,55 @@ verified property, US/English. Retitle effects are judged against the
 indexation buckets once (2) produces data — do not conclude anything from
 impressions before ~2 weeks post-deploy.
 
+**FIRST INDEXATION DATA — 2026-08-25 00:29 UTC, and it reorders the work.**
+`scripts/gsc-indexation-check.mjs` ran for the first time (GSC run #4,
+commit 3e071cc). Result: **12 of 34 evergreen surfaces are indexed, 22 are
+NOT.** Indexed: `/`, `/latest`, `/topics`, `/sources`, `/us`, `/canada`,
+`/politics`, `/business`, `/technology`, `/climate`, `/culture`, `/sports`.
+NOT indexed: `/briefing`, `/top-10`, `/most-covered`, `/world`, `/health`
+("Discovered — currently not indexed"), `/reports/media-coverage`,
+`/science`, `/energy`, `/space`, `/obituaries` ("URL is unknown to Google"),
+and **all 15 topic hubs**.
+
+**Mechanically we are clean — verified live, not assumed:** every one of
+those URLs is in `sitemap.xml` (342 URLs), every one serves
+`robots: index, follow` with `max-image-preview:large`, every one renders
+2,000–8,300 words, and the hubs carry internal links from `/topics` which
+IS indexed. So this is not a bug to fix. It is Google declining to spend
+index budget on a 1-month-old domain's aggregated list pages — a
+value/authority verdict, exactly the thesis behind STRATEGY BET 2.
+
+**Consequences, and they are concrete:**
+1. **Retitles cannot work on the 22 unindexed pages** until indexing
+   happens — the reviewer's correction, proven by our own data within
+   hours of shipping. The retitles that DO apply are the homepage and the
+   9 category pages (indexed) plus story pages (indexed and earning).
+2. **The work splits by bucket, permanently.** Indexed surfaces
+   (homepage, categories, ~521 story URLs) → packaging/CTR work. Unindexed
+   surfaces (hubs, briefing, top-10, most-covered, reports) → they need
+   ORIGINAL VALUE, not better titles. That is BET 2 (data moat) and the
+   Sprint-3 hub explainer blocks, and both just became more urgent than
+   any further retitling.
+3. Do NOT respond by adding more internal links or resubmitting sitemaps —
+   both are already correct, and doing more of a thing that is not the
+   constraint wastes runs.
+
+**FIRST QUERY DATA — same run (data/gsc-queries.json): 217 web queries,
+26 in striking distance, and a clear CTR failure.** We rank **position 1**
+for "oswaldo pirela ice detention" (12 impressions, 0 clicks), **position
+9** for "espn nba coverage cuts" (69 impressions — our single most-shown
+query, 0 clicks), **7.2** for "jd vance hometown book response" (19, 0),
+**12.4** for "trump bbc lawsuit judge change" (14, 0). Four page-one
+queries, ~114 impressions, zero clicks. Story pages ARE indexed and ARE
+ranking; their titles are not earning the click against the BBC/ESPN beside
+them. **The Sprint-2 CTR-rescue job is now the highest-value item with
+evidence behind it** — trigger on the striking-distance list, not on
+impressions alone. Also: `newsRows: 0` — the News surface returns no query
+rows at all, confirming Google News shows us essentially nothing. And
+"current events" sits at position 96 (9 impressions) with a typo variant
+"curren events" at 97.3 — real demand, we are nowhere, which validates the
+Sprint-3 `/current-events` build.
+
 **360° checklist audit 2026-08-24** (`seo/CHECKLIST-360.md` is the verdict
 map — consult it before re-investigating any "have we considered X"): three
 queued adoptions — (a) Google Preferred Sources: owner checks whether
