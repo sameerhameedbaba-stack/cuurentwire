@@ -99,6 +99,79 @@ if (news.status !== 200 || !news.body.includes("sitemap-news/0.9")) {
   }
 }
 
+// 3b. Every news-sitemap URL must answer 200 DIRECTLY. Googlebot-News
+// fetches this sitemap within minutes of publication and judges the whole
+// feed by what the listed URLs answer — and on 2026-08-24 it could have
+// been handed both failure shapes: a story advertised before the batched
+// persist archived it answered the deliberate retriable 500 for up to
+// ~30 minutes, and a merged story answered 308 to the survivor. The
+// generator now gates entries on archive standing (lib/seo/news-sitemap.ts),
+// so anything caught here is that gate regressing — or failing open during
+// an archive outage, which the archive-sitemap check below already flags.
+//
+// One redirect shape is a benign race, not a regression: a slug rename
+// between our sitemap fetch and this check redirects WITHIN the same
+// trailing cluster-id token to a 200 (the same race check 7 documents).
+// Reported, never failed. A redirect whose target carries a DIFFERENT id
+// token means the sitemap advertised a merged/non-canonical story: fail.
+if (news.status === 200) {
+  const newsLocs = [...news.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  const idToken = (u) => {
+    const path = new URL(u).pathname;
+    return path.slice(path.lastIndexOf("-") + 1);
+  };
+  const NEWS_URL_CONCURRENCY = 10;
+  const bad = [];
+  const renames = [];
+  const checkNewsUrl = async (u) => {
+    try {
+      const res = await fetch(u, {
+        redirect: "manual",
+        headers: { "User-Agent": "CurrentWire-SEO-Health/1.0" },
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (res.status === 200) return;
+      if (res.status >= 300 && res.status < 400) {
+        const location = res.headers.get("location");
+        if (!location) return bad.push({ url: u, detail: `${res.status} without location` });
+        const target = new URL(location, u).toString();
+        const final = await fetch(target, {
+          redirect: "follow",
+          headers: { "User-Agent": "CurrentWire-SEO-Health/1.0" },
+          signal: AbortSignal.timeout(30_000),
+        });
+        if (final.status !== 200) {
+          return bad.push({ url: u, detail: `${res.status} -> ${target} -> ${final.status}` });
+        }
+        if (idToken(target) === idToken(u)) return renames.push(`${u} -> ${target}`);
+        return bad.push({
+          url: u,
+          detail: `${res.status} -> ${target} (different story id — a merged or non-canonical URL is advertised)`,
+        });
+      }
+      return bad.push({ url: u, detail: `status ${res.status}` });
+    } catch (e) {
+      return bad.push({ url: u, detail: String(e) });
+    }
+  };
+  for (let i = 0; i < newsLocs.length; i += NEWS_URL_CONCURRENCY) {
+    await Promise.all(newsLocs.slice(i, i + NEWS_URL_CONCURRENCY).map(checkNewsUrl));
+  }
+  if (bad.length) {
+    fail(
+      "news-sitemap URLs",
+      `${bad.length}/${newsLocs.length} not directly 200 e.g. ${bad[0].url} (${bad[0].detail})`,
+    );
+    for (const r of bad.slice(0, 10)) console.error(`  news-url ${r.url}: ${r.detail}`);
+  } else {
+    ok(
+      "news-sitemap URLs",
+      `${newsLocs.length} answer 200 directly${renames.length ? `, ${renames.length} mid-check rename(s)` : ""}`,
+    );
+  }
+  for (const r of renames.slice(0, 5)) console.log(`  note rename race: ${r}`);
+}
+
 // 4. archive-sitemap.xml: valid urlset, or an honest 503 while the archive
 // is down. Both are failures worth waking someone for, but they are DIFFERENT
 // failures and the message says which — on 2026-08-21 this check reported

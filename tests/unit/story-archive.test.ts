@@ -17,6 +17,7 @@ import {
   ArchiveUnavailableError,
   findArchivedStory,
   getArchiveFirstSeen,
+  getNewsSitemapArchiveStatus,
   idTokenFromSlug,
   mergeSourceRefs,
   rowToArchivedStory,
@@ -530,6 +531,10 @@ describe("database-off behavior (DATABASE_URL unset)", () => {
   it("getArchiveFirstSeen returns an empty map", async () => {
     const map = await getArchiveFirstSeen(["cl4b2n8x1"]);
     expect(map.size).toBe(0);
+  });
+
+  it("getNewsSitemapArchiveStatus returns null so the sitemap renders unfiltered", async () => {
+    await expect(getNewsSitemapArchiveStatus(["cl4b2n8x1"])).resolves.toBeNull();
   });
 });
 

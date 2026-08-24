@@ -3,8 +3,17 @@ import {
   NEWS_SITEMAP_MAX_ENTRIES,
   NEWS_SITEMAP_WINDOW_HOURS,
   renderNewsSitemap,
+  type NewsSitemapArchiveInfo,
 } from "@/lib/seo/news-sitemap";
 import type { Article, StoryCluster } from "@/lib/news/types";
+
+/** Archive standing with every listed id archived and nothing merged. */
+function archiveInfo(
+  firstSeen: [string, string][],
+  mergedIds: string[] = [],
+): NewsSitemapArchiveInfo {
+  return { firstSeenById: new Map(firstSeen), mergedIds: new Set(mergedIds) };
+}
 
 const NOW = new Date("2026-08-14T12:00:00.000Z");
 
@@ -148,19 +157,64 @@ describe("renderNewsSitemap", () => {
     expect(xml.match(/same-slug-c6/g)?.length).toBe(1);
   });
 
-  it("prefers archive first_seen_at as publication_date, falling back to firstPublishedAt", () => {
+  it("uses archive first_seen_at as publication_date when archive standing is provided", () => {
     const firstCoverage = hoursAgo(10);
     const firstSeen = hoursAgo(9);
     const xml = renderNewsSitemap(
-      [
-        makeCluster({ id: "c1", slug: "archived-c1", firstPublishedAt: firstCoverage }),
-        makeCluster({ id: "c2", slug: "unarchived-c2", firstPublishedAt: firstCoverage }),
-      ],
+      [makeCluster({ id: "c1", slug: "archived-c1", firstPublishedAt: firstCoverage })],
       NOW,
-      new Map([["c1", firstSeen]]),
+      archiveInfo([["c1", firstSeen]]),
     );
     expect(xml).toContain(`<news:publication_date>${firstSeen}</news:publication_date>`);
+    expect(xml).not.toContain(firstCoverage);
+  });
+
+  it("falls back to firstPublishedAt without archive standing (no DB / archive outage)", () => {
+    const firstCoverage = hoursAgo(10);
+    const xml = renderNewsSitemap(
+      [makeCluster({ id: "c2", slug: "unarchived-c2", firstPublishedAt: firstCoverage })],
+      NOW,
+    );
+    expect(xml).toContain("unarchived-c2");
     expect(xml).toContain(`<news:publication_date>${firstCoverage}</news:publication_date>`);
+  });
+
+  it("excludes clusters the archive does not hold yet (publish-to-burst window)", () => {
+    // Advertised before the batched persist archives it, a URL answers the
+    // deliberate retriable 500 whenever the serving instance's dataset
+    // misses it (measured live 2026-08-24) — so it must not be advertised
+    // to Googlebot-News until the archive can back it.
+    const xml = renderNewsSitemap(
+      [
+        makeCluster({ id: "c1", slug: "archived-c1" }),
+        makeCluster({ id: "c2", slug: "not-yet-archived-c2" }),
+      ],
+      NOW,
+      archiveInfo([["c1", hoursAgo(2)]]),
+    );
+    expect(xml).toContain("archived-c1");
+    expect(xml).not.toContain("not-yet-archived-c2");
+  });
+
+  it("excludes clusters whose archive row carries a merge pointer", () => {
+    // A merged story's URL answers 308 to the survivor — a news sitemap must
+    // list only the surviving canonical URL (measured live 2026-08-24).
+    const xml = renderNewsSitemap(
+      [
+        makeCluster({ id: "c1", slug: "merged-away-c1" }),
+        makeCluster({ id: "c2", slug: "survivor-c2" }),
+      ],
+      NOW,
+      archiveInfo(
+        [
+          ["c1", hoursAgo(3)],
+          ["c2", hoursAgo(2)],
+        ],
+        ["c1"],
+      ),
+    );
+    expect(xml).not.toContain("merged-away-c1");
+    expect(xml).toContain("survivor-c2");
   });
 
   it("skips clusters with invalid dates instead of crashing", () => {
@@ -200,7 +254,7 @@ describe("renderNewsSitemap", () => {
         }),
       ],
       NOW,
-      new Map([["c11", hoursAgo(60)]]),
+      archiveInfo([["c11", hoursAgo(60)]]),
     );
     expect(xml).not.toContain("old-first-seen-c11");
   });
@@ -217,7 +271,7 @@ describe("renderNewsSitemap", () => {
         }),
       ],
       NOW,
-      new Map([["c12", firstSeen]]),
+      archiveInfo([["c12", firstSeen]]),
     );
     expect(xml).toContain("late-discovery-c12");
     expect(xml).toContain(`<news:publication_date>${firstSeen}</news:publication_date>`);
