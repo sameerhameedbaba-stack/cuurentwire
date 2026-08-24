@@ -214,7 +214,10 @@ describe("briefing metadata", () => {
   ];
 
   it("titles a briefing with the region and the day", () => {
-    expect(briefingMetaTitle("August 21, 2026")).toBe("US & Canada News Briefing — August 21, 2026");
+    // Retitled 2026-08-24 (seo/STRATEGY.md Sprint 1): dated pages target
+    // the "news summary" query family, deliberately WITHOUT "today" so an
+    // archived day never fakes freshness.
+    expect(briefingMetaTitle("August 21, 2026")).toBe("News Summary: August 21, 2026 — Top US & Canada Stories");
   });
 
   it("describes today's briefing from its top three headlines and total reports", () => {

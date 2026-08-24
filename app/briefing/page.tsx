@@ -8,7 +8,7 @@ import { getTop100 } from "@/lib/news/queries";
 import { COUNTRY_LABELS, type Country } from "@/lib/news/types";
 import { newsDayET } from "@/lib/utils/news-day";
 import { pageMetadata } from "@/lib/seo/metadata";
-import { briefingMetaDescription, briefingMetaTitle } from "@/lib/seo/story-indexing";
+import { briefingMetaDescription } from "@/lib/seo/story-indexing";
 import { ItemListJsonLd } from "@/lib/seo/structured-data";
 
 // COST floor, not a freshness choice: every ISR re-render is billed
@@ -32,7 +32,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const { stories } = await getTop100({});
   const description = briefingMetaDescription(stories.slice(0, 10)) || DESCRIPTION;
   return pageMetadata({
-    title: briefingMetaTitle(dayLabel(newsDayET())),
+    // STABLE evergreen title (seo/STRATEGY.md Sprint 1): this URL targets
+    // "daily news briefing" / "news summary today" and must not change day
+    // to day; the dated /briefing/[date] pages carry the dated titles.
+    title: "Daily News Briefing — Today's Top US & Canada Stories, Summarized",
     description,
     path: "/briefing",
     rssPath: "/rss",

@@ -48,6 +48,15 @@ jobs:
           GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
           GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
         run: node scripts/gsc-report.mjs
+      - name: Indexation check (evergreen surfaces)
+        # Sprint-1 gate (seo/STRATEGY.md): classify zero-traffic surfaces as
+        # indexing vs packaging failures. Best-effort — an API hiccup must
+        # not lose the main report's commit.
+        continue-on-error: true
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+        run: node scripts/gsc-indexation-check.mjs
       - name: Commit updated report
         if: always()
         # The glob guard keeps the secret-less run green: with nothing

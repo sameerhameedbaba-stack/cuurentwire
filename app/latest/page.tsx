@@ -47,7 +47,12 @@ export async function generateMetadata({
   const { pageCount } = await getLatest("all", PAGE_SIZE, page);
   const inRange = page <= pageCount;
   return pageMetadata({
-    title: page > 1 ? `Latest News — Page ${page}` : "Latest News",
+    // "Every 30 minutes" is the cron cadence — literally true (refreshes are
+    // at least that frequent). Paged URLs keep the short form.
+    title:
+      page > 1
+        ? `Latest News — Page ${page}`
+        : "Latest News Today — New US & Canada Stories, Updated Every 30 Minutes",
     description:
       "The newest reporting across the United States, Canada and the world, in reverse chronological order.",
     path: inRange && page > 1 ? `/latest?page=${page}` : "/latest",

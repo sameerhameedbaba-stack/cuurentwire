@@ -85,7 +85,10 @@ export const siteConfig = {
   },
   seo: {
     titleTemplate: "%s | CurrentWire",
-    defaultTitle: "CurrentWire — Top US & Canada News, Ranked",
+    // Search-phrased (seo/STRATEGY.md Sprint 1): "top news today" is how the
+    // homepage's nearest page-1 queries are typed; the brand stays at the end
+    // so the "currentwire" navigational query still matches.
+    defaultTitle: "Top News Today — US & Canada Headlines, Ranked | CurrentWire",
     defaultDescription:
       "The top 100 current news stories across the United States and Canada, continuously refreshed, intelligently ranked, deduplicated and transparently attributed.",
     twitterHandle: "@currentwire",

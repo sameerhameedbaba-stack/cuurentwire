@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { BreakingBanner } from "@/components/news/BreakingBanner";
 import { LastUpdated } from "@/components/news/LastUpdated";
@@ -112,6 +113,31 @@ export default async function HomePage() {
           <TrendingTopics topics={data.trending} />
           <LastUpdated generatedAt={data.dataset.generatedAt} />
         </div>
+        {/* Prominent crawl paths to the evergreen surfaces (seo/STRATEGY.md
+            Sprint 1 internal-link rewire): the footer already links these,
+            but link equity flows from main content, not boilerplate. */}
+        <nav
+          aria-label="Today's editions"
+          className="mt-3 flex flex-wrap items-center gap-1.5"
+        >
+          <span className="text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-brand-ink">
+            Today
+          </span>
+          {[
+            { href: "/briefing", label: "Daily Briefing" },
+            { href: "/top-10", label: "Top 10 Stories" },
+            { href: "/most-covered", label: "Most Covered" },
+            { href: "/reports/media-coverage", label: "Coverage Report" },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="block rounded-full border border-rule bg-surface px-3 py-1 text-xs font-semibold text-ink transition-colors hover:border-brand hover:text-brand-ink"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
       </div>
 
       <div className={`${container} flex flex-col gap-14 pb-4`}>

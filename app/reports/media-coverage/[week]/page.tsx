@@ -33,7 +33,9 @@ export async function generateStaticParams(): Promise<{ week: string }[]> {
   return [];
 }
 
-const TITLE = "Media Coverage Report";
+// Search-phrased (seo/STRATEGY.md Sprint 1): matches the vacant
+// "most covered news stories this week" SERP; the data is literally that.
+const TITLE = "The Most Covered News Stories";
 
 /** Null when the id is malformed, before the archive, the current week or in the future. */
 function resolveWeek(week: string): WeekRange | null {

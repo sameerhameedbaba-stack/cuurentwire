@@ -54,6 +54,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     id: "politics",
     label: "Politics",
     path: "/politics",
+    seoTitle: "Politics News Today — Top US & Canada Political Stories",
     description:
       "Government, elections, courts and public policy across the United States and Canada.",
     keywords: [
@@ -83,6 +84,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     id: "business",
     label: "Business",
     path: "/business",
+    seoTitle: "Business News Today — Markets, Economy & Companies",
     description:
       "Markets, companies, employment, trade and the North American economy.",
     keywords: [
@@ -110,6 +112,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     id: "technology",
     label: "Technology",
     path: "/technology",
+    seoTitle: "Tech News Today — AI, Big Tech & Cybersecurity",
     description:
       "Artificial intelligence, Big Tech, cybersecurity, and technology policy.",
     keywords: [
@@ -131,6 +134,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     id: "world",
     label: "World",
     path: "/world",
+    seoTitle: "World News Today — Top International Stories",
     description:
       "Global stories with significant consequences for the United States and Canada.",
     keywords: [
@@ -164,6 +168,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     id: "climate",
     label: "Climate",
     path: "/climate",
+    seoTitle: "Climate News Today — Environment, Energy & Extreme Weather",
     description:
       "Climate, energy, extreme weather, wildfires and environmental policy.",
     keywords: [
@@ -180,6 +185,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     id: "health",
     label: "Health",
     path: "/health",
+    seoTitle: "Health News Today — Medicine, Public Health & Research",
     description:
       "Public health, medicine, health systems and health regulation.",
     keywords: [
@@ -200,6 +206,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     id: "science",
     label: "Science",
     path: "/science",
+    seoTitle: "Science News Today — Research, Space & Discovery",
     description: "Research, space exploration and scientific discovery.",
     keywords: [
       // No bare "launch": product/album/campaign launches are not science.
@@ -256,7 +263,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     id: "culture",
     label: "Culture",
     path: "/culture",
-    seoTitle: "Entertainment & Culture News",
+    seoTitle: "Entertainment & Culture News Today",
     description: "Film, television, music, books, media and society.",
     keywords: [
       "film", "movie", "box office", "television", "tv series", "streaming series",
@@ -273,6 +280,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     id: "sports",
     label: "Sports",
     path: "/sports",
+    seoTitle: "Sports News Today — Top US & Canada Stories",
     description: "Major US and Canadian sports coverage.",
     keywords: [
       "nfl", "nba", "nhl", "mlb", "mls", "cfl", "super bowl", "stanley cup",

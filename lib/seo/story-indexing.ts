@@ -275,7 +275,12 @@ export const BRIEFING_DESCRIPTION_MAX_CHARS = 300;
 
 /** "US & Canada News Briefing — August 21, 2026". */
 export function briefingMetaTitle(dayLabel: string): string {
-  return `US & Canada News Briefing — ${dayLabel}`;
+  // "news summary" is the query family these dated pages match (won today
+  // by dated Substack posts — seo/STRATEGY.md Sprint 1). Deliberately no
+  // "Today" on dated pages: they persist as archives, and a stale "today"
+  // is the fake-freshness pattern Google warns against. The evergreen
+  // /briefing page carries the "today" phrasing instead.
+  return `News Summary: ${dayLabel} — Top US & Canada Stories`;
 }
 
 function joinHeadlines(headlines: string[]): string {

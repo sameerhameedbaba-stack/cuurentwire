@@ -22,17 +22,27 @@ guardrails override any older idea in this file. Already shipped from
 Sprint 1 (2026-08-24): GSC query instrumentation (scripts/gsc-report.mjs now
 pulls ["query"] web+news and ["page","query"] web → data/gsc-queries.json
 with the striking-distance inventory; first data lands on the next gsc.yml
-run). Remaining Sprint-1 items, in order: (1) news-sitemap integrity — the
-#1 item (resolve the story-render 500, emit only canonical 200 slugs, cron
-validation + alert; IN FLIGHT in a separate session, 2026-08-24); (2)
-dead-template indexation check via URL Inspection API BEFORE retitles, with
-the six-bucket failure classification (STRATEGY §3 Sprint 1 — reviewer
-correction: a page with zero impressions may be an indexing failure no
-title can fix); (3) retitle wave 1 (exact titles in STRATEGY §3 — every
-claim literally true, applied only to pages classified as CTR/intent
-failures or matching vacant SERPs); (4) ≥1200px self-generated story cards
-(publisher-photo hotlinking is an OWNER legal decision — default self-made);
-(5) internal-link rewire; (6) [owner ~15 min] Publisher Center claim.
+run). Sprint-1 status as of 2026-08-24 late session: (1) news-sitemap
+integrity — IN FLIGHT in a separate session (the one open item); (2)
+indexation check — SHIPPED as scripts/gsc-indexation-check.mjs, runs in
+gsc.yml after the report (URL Inspection sweep over 34 evergreen surfaces →
+data/gsc-indexation.json with the first bucket split; first data next
+Monday run or manual dispatch); (3) retitle wave 1 — SHIPPED (homepage
+defaultTitle, stable /briefing title, dated briefings via briefingMetaTitle
+without fake-freshness "today", 9 category seoTitles, /most-covered
+META_TITLE split from the plain h1, /latest, /reports/media-coverage both
+pages; tests updated with premise notes); (4) story cards — VERIFIED
+ALREADY SATISFIED (og card is self-generated 1200×630, listed FIRST in
+NewsArticle image, max-image-preview:large set site-wide; no change
+needed — publisher-photo hotlinking stays an owner legal decision, not
+taken); (5) internal-link rewire — SHIPPED (homepage "Today" pill nav to
+/briefing /top-10 /most-covered /reports/media-coverage; footer already
+carried sitewide links); (6) Publisher Center — DONE by owner 2026-08-24:
+publication "CurrentWire" created under the ovyajewels@gmail.com Google
+account (the GSC-owner account — see MEMORY), auto-suggested from the
+verified property, US/English. Retitle effects are judged against the
+indexation buckets once (2) produces data — do not conclude anything from
+impressions before ~2 weeks post-deploy.
 
 **360° checklist audit 2026-08-24** (`seo/CHECKLIST-360.md` is the verdict
 map — consult it before re-investigating any "have we considered X"): three

@@ -211,7 +211,9 @@ test.describe("most covered", () => {
     expect(response?.status()).toBe(200);
 
     await expect(page.locator("h1")).toHaveCount(1);
-    await expect(page).toHaveTitle(/Most Covered/i);
+    // Retitled 2026-08-24 (seo/STRATEGY.md Sprint 1): the <title> is
+    // search-phrased; the h1 keeps the plain "Most Covered Stories" name.
+    await expect(page).toHaveTitle(/Biggest News Stories/i);
     await expect(
       page.locator('link[rel="canonical"]'),
     ).toHaveAttribute("href", /\/most-covered$/);

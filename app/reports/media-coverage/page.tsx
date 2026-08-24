@@ -20,7 +20,9 @@ import { BreadcrumbJsonLd } from "@/lib/seo/structured-data";
  */
 export const revalidate = 1800;
 
-const TITLE = "Media Coverage Report";
+// Search-phrased (seo/STRATEGY.md Sprint 1): matches the vacant
+// "most covered news stories this week" SERP; the data is literally that.
+const TITLE = "The Most Covered News Stories";
 const DESCRIPTION =
   "Weekly statistics from CurrentWire's own coverage data for US and Canada news: the stories the most publications covered, how fast coverage spread, category and geography mix, and which publishers joined multi-publication stories.";
 

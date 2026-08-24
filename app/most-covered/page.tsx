@@ -36,6 +36,11 @@ import { BreadcrumbJsonLd, ItemListJsonLd } from "@/lib/seo/structured-data";
 export const revalidate = 3600;
 
 const TITLE = "Most Covered Stories";
+// Search-phrased <title> only (seo/STRATEGY.md Sprint 1): "biggest news
+// stories" is the query family, and the coverage-count ranking is the
+// literal truth behind it. The on-page h1 and breadcrumb keep the plain
+// name, same idiom as the category pages.
+const META_TITLE = "Biggest News Stories Right Now — Ranked by Publisher Coverage";
 const DESCRIPTION =
   "The current stories being reported by the most publishers at once — ranked by how many distinct outlets are covering each event, which is a measure of breadth, not of importance.";
 
@@ -45,7 +50,7 @@ const TRACKED_PUBLISHERS = SOURCES.filter((source) => !source.demo).length;
 export async function generateMetadata(): Promise<Metadata> {
   const { stories } = await getMostCovered();
   const metadata = pageMetadata({
-    title: TITLE,
+    title: META_TITLE,
     description: DESCRIPTION,
     path: "/most-covered",
   });
