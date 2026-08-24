@@ -43,9 +43,47 @@ Vercel Hobby has no native spend limit and that Neon's paid usage-based plan
 is billed through Vercel — but **that is inference and cannot be confirmed
 from outside the dashboard.** Only the owner can read the actual reason.
 
+**ROOT CAUSE — added after this report was first written, reported by a
+concurrent session with dashboard access that this run did not have.** The
+project was paused for exceeding the **Vercel Hobby free tier**, not for a
+spend limit: **ISR Writes at 238%** and **Fluid Active CPU at 307%** of
+allowance. The named trigger is commit **3e8397a (2026-08-19)**, which enabled
+ISR on the dynamic routes — bots crawling ~3,000 archive story URLs burn a
+write unit and CPU on every crawl. An emergency mitigation is being shipped by
+that session (targeted per-slug revalidation replacing four dynamic-pattern
+`revalidatePath` calls, plus longer TTLs on `/story/`, `/topic/`, `/source/`
+and `/[category]`).
+
+These figures were read from the Vercel dashboard by that session and are
+recorded here on its authority — **this run did not and could not verify
+them**, which is exactly why the paragraph above stopped at "inference".
+
+**The uncomfortable part, and the reason it belongs in an SEO report:
+3e8397a is recorded in this backlog as one of the biggest SEO wins of the
+month.** "ISR was inert on every dynamic route" was backlog item 2 of the
+2026-08-19 clear-out; fixing it took warm story TTFB from a 557 ms median to
+110-125 ms, and `tests/unit/isr-route-config.test.ts` stands guard over it.
+The speed win and the cost blowout are the same commit. Two consequences for
+future runs:
+
+- **Whatever TTL the mitigation lands on is a cost constraint, not a
+  freshness one.** A later run optimising TTFB must not quietly tighten it
+  back. There was 106-145 ms of warm TTFB headroom measured across every
+  surface today, so the trade is affordable.
+- **`isr-route-config.test.ts` may fail against the mitigation, and its
+  premise would then be the thing that expired** — the same situation as
+  `MEMORY/2026-08-22-a-cost-fix-can-move-a-correctness-boundary.md`. Read the
+  premise before touching the assertion.
+
+A TTL change alone may not hold, either: `/archive-sitemap.xml` went
+**2,169 -> 5,891 URLs in two days** and the ledger is gaining 450-700 story
+URLs a day. If crawler volume over archive pages is the cost driver, the
+driver is still growing.
+
 **What the owner has to do:** open vercel.com, look at the project's status
-and the account's billing/usage page, and clear whatever is blocking it. No
-run may enter payment details, and none has.
+and the account's usage page, and re-enable the deployment. Do NOT buy Pro to
+make this go away — the $0 rule stands, the code-side fix is already in
+flight, and no run may enter payment details (none has).
 
 **Consequence while it lasts.** This is worse than the 2026-08-20 archive
 outage, because `robots.txt` and all three sitemaps are also 402. A 402 is
