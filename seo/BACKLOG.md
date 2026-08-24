@@ -1,5 +1,14 @@
 # SEO Backlog
 
+**Status 2026-08-25 daily run: production is HEALTHY.** `/`,
+`/news-sitemap.xml`, `/archive-sitemap.xml` and `/rss` all 200;
+`node scripts/seo-health.mjs` against production passed every check
+(sitemap 337 URLs, news-sitemap 725 entries all inside 49 h and all
+answering 200, archive-sitemap 6,658 URLs, 11 category feeds, llms.txt,
+IndexNow key file, 11 trust pages typed, real 404, www 308). Two
+`[auto-alert]` issues remain open — #1 url-survival and #2 surface
+coherence — and both are the known backlog items below, not new breakage.
+
 **Status 2026-08-24, updated ~14:10 UTC: the 402 outage is RESOLVED — the
 owner approved the Vercel Pro upgrade in person and the site returned 200 on
 every probed surface at ~13:55 UTC after ~37 minutes dark. Item 0 below is
@@ -371,7 +380,7 @@ path, which produced both of the last two incidents (`d060817`, `f757bba`); a
 rushed change there costs more than two stale pages. It needs a design and a
 review.
 
-### 3. `/source/<slug>` hubs carry no durable per-publisher facts
+### 3. `/source/<slug>` hubs carry no durable per-publisher facts — SHIPPED 2026-08-25, verified live
 
 **The clearest competitor gap this run found, and it is measurable on both
 sides.** `/source/bbc-news` is 200, indexable, `BreadcrumbList` + `ItemList`,
@@ -402,7 +411,47 @@ Carried from last week's top 5, where it was ranked 4 and described as "the
 largest content gap on the board". Unchanged since, now with competitor
 evidence attached.
 
-### 4. Story pages have no outbound topic links — RE-MEASURED 2026-08-24, still open
+**SHIPPED 2026-08-25 as `7457912`, verified on production after deploy.**
+`lib/news/source-profile.ts` computes the facts from the dataset already in
+memory (no new IO, no added ISR cost — the `hubStats` contract), and
+`/source/[slug]` renders them as a coverage-profile block. Live evidence,
+fetched after the deploy landed:
+
+```
+/source/bbc-news
+title  BBC News — coverage and corroboration | CurrentWire   (was "… — Latest stories")
+desc   BBC News coverage: 33 stories in the current window, 5 also carried by
+       other publications, each linked to the original reporting.
+words  870 -> 1040
+schema CollectionPage, about={"@type":"Organization","name":"BBC News",
+       "url":"https://bbc.com"}, publisher=CurrentWire,
+       numberOfItems 30 = 30 emitted
+```
+
+The rendered profile on that page: *"In the current snapshot CurrentWire is
+tracking 33 reports from BBC News across 33 stories published over the past
+33 hours. 5 of them are also carried by at least one other publication
+CurrentWire ingests, and BBC News is the account this site leads with on 33.
+The most widely corroborated is … carried by 5 publications. Across the
+corroborated stories, the publication reporting the same stories most often
+is The Guardian (2 shared). Sections filed in: General (11), World (7),
+Sports (4), Business (3), Health (3), Politics (3)."*
+
+**The editorial position is unchanged and is now stated on the page**: the
+tier links to `/methodology/publisher-tiers` and the copy says in words that
+CurrentWire publishes no bias or factuality rating. `collectionPageSchema`
+refuses any rating property on the `about` node, and `publisher` stays
+CurrentWire — an e2e test asserts both directions, because markup naming the
+publisher as the page's publisher would misrepresent who wrote it.
+
+Thin hubs are unaffected by design: `/source/reuters` and
+`/source/associated-press` have no stories in the window, so they render no
+profile block at all and stay `noindex, follow` (both verified live, 200).
+
+Guards: `tests/unit/source-profile.test.ts` (12) and
+`tests/e2e/source-hubs.spec.ts` (4).
+
+### 4. Story pages have no outbound topic links — IMPROVED 2026-08-25, still open
 
 Measured on 12 live stories sampled across `/news-sitemap.xml`: outbound
 `/story/` links **median 4, zero on none of them** (the 2026-08-19 "More in
@@ -413,11 +462,61 @@ Unchanged for a third week, so it keeps its rank. Topic hubs are exactly the
 surface that needs inbound links: 40 sit in `sitemap.xml` and they flip
 indexable as they accumulate stories.
 
+**RE-MEASURED 2026-08-25 on 5 live stories sampled across
+`/news-sitemap.xml`: outbound `/topic/` links are median 1, present on 3 of
+5** (1, 0, 0, 4, 1), against median 0 and absent on 9 of 12 the day before.
+`674502f` — the "In this story" hub rail — did move it, so the item is no
+longer "unchanged"; it stays open because 2 of 5 stories still carry none,
+which is what happens when a story matches no hub vocabulary. Small sample:
+5 stories, not 12. Re-measure on a wider sample before claiming a trend.
+
 Two smaller story-template defects measured alongside it, same sample:
 **9 of 12 titles exceed 60 characters** and **4 of 12 meta descriptions still
 end mid-sentence** (53% on 08-18, 23% after the formatter fix, 25% on 08-22).
 The description residue is summaries whose first sentence alone exceeds the
 limit — a summarizer input-length question, not a formatter bug.
+
+### 5. `general` is the largest section for three tier-A publishers — NEW 2026-08-25
+
+**Surfaced by the source-hub profile shipped this run, then corroborated
+independently.** The "Sections filed in" line on the new `/source/` hubs
+reads the cluster category of every story a publisher filed in the window:
+
+| Source hub | Top sections (live fetch, 2026-08-25) |
+|---|---|
+| `/source/bbc-news` | **General (11)**, World (7), Sports (4), Business (3), Health (3), Politics (3) |
+| `/source/cbc-news` | **General (17)**, Politics (10), Business (4), Culture (1), Health (1), Science (1) |
+| `/source/the-guardian` | **General (11)**, World (9), Politics (7), Climate (6), Business (4), Sports (3) |
+| `/source/npr` | Business (5), Politics (5), Climate (4), Culture (4), General (4), Health (3) |
+
+Corroborated on a separate probe that did not use those pages: 22 story
+pages sampled at even intervals through `/news-sitemap.xml`, read from their
+`NewsArticle.articleSection` — **3 of 22 (14%) are `General`**, and
+`/general` itself lists 27 stories. One is plainly misfiled:
+`https://currentwire.us/story/settler-attacks-threaten-the-west-banks-final-christian-village-cd6dbaa9e7839`
+serves `articleSection: "General"` and is a World story by any reading.
+
+**Why it is an SEO problem and not just untidy.** `/general` is
+`noindex, nofollow` on purpose — it is the internal low-confidence bucket
+(recorded under "Known and accepted"). A story routed there therefore
+appears on **no indexable category page at all**: it loses the category
+listing, the category's internal-link path, and the topical grouping that
+`articleSection` is supposed to give it. The playbook ranks wrong categories
+as a data-quality defect precisely because they poison category relevance;
+this is the same defect, one step worse, because the destination is
+deliberately invisible.
+
+**Not fixable from templates**, per the playbook's rule that classifier
+defects are engineered upstream: the fix belongs in `lib/news/` with
+benchmark coverage (`data/benchmark-history.json`, 313 validated stories),
+not in a page component. What a future run needs first is the **share over
+time** — one day's fetch cannot say whether 14% is the designed
+low-confidence rate or a regression. The source hubs now publish that share
+continuously, so it is measurable without new tooling.
+
+Ranked below item 4 only because the measurement is one day old; if the next
+run reproduces `General` as the top section for tier-A publishers, it
+outranks everything except an outage.
 
 ## Watching, not yet work
 
@@ -433,25 +532,52 @@ limit — a summarizer input-length question, not a formatter bug.
   same 4xx, say "the origin is refusing to serve" rather than naming the
   guarantee.
 
-- **A one-off 500 on `/` during the Playwright suite.** The first full run
-  this session failed one assertion — `security.spec.ts` got **500** from `/`.
-  The same spec passed alone immediately after, and a full re-run went
-  107/107. Recorded rather than dismissed: an intermittent 500 on the homepage
-  would matter, and `MEMORY/2026-08-18-daily-and-weekly-loops-collide.md` says
-  to diagnose with a control run before believing a Playwright failure —
-  which is what was done. If it recurs, it is real.
+- **The Playwright suite is flaky under its default worker count — IT
+  RECURRED, and it is load, not a site bug.** Logged on 2026-08-24 as "a
+  one-off 500 on `/`" with the note *"if it recurs, it is real"*. It
+  recurred. Measured 2026-08-25 across **five full runs** of the same
+  unchanged tree: three failed and **each failed a DIFFERENT test** —
+  `seo.spec.ts` "the sitemap lists the reference pages", `briefing.spec.ts`
+  "/briefing serves today's briefing", `top-10.spec.ts` "the internal general
+  bucket has no top-10 page" — and **every one of them passed when its own
+  spec was run alone** (38/38, 10/10, and the suite green twice at 111
+  passed). A run at `--workers=2` was also green. A failure that moves to a
+  different test on every run, and disappears when the same tests run with
+  less concurrency, is the harness saturating, not a defect in any of those
+  pages.
+
+  Two consequences worth keeping. (1) **The gate is noisy**, so a single red
+  Playwright run is not evidence of a regression — control-run it, as
+  `MEMORY/2026-08-18-daily-and-weekly-loops-collide.md` says. (2) **Pinning
+  workers in `playwright.config.ts` is the obvious fix and is NOT ranked
+  work yet**, because the failure detail was never captured: the artifacts
+  were wiped by the passing re-runs before they could be read, so whether
+  these are 500s or timeouts is still unknown. Capture that first — a
+  config change that hides an intermittent 500 would be the worst possible
+  outcome.
+- **The `url-survival` LOST fix has not yet been proven in CI.** The last
+  two workflow runs are `failure` (2026-08-23 07:03 UTC, 2026-08-24 07:30
+  UTC) and both predate `c124d70`, which shipped later that day. The fix was
+  verified by running the script against production (`GONE=0 UNAVAILABLE=0
+  LOST=214`, exit 0), so the code is known good; what is unproven is the
+  workflow. The 2026-08-25 run is the first that exercises it — check it,
+  and only then consider closing `[auto-alert]` issue #1.
+
 - **`/archive-sitemap.xml` grew 2,169 -> 5,891** in two days while the ledger
   gained ~450-700 URLs/day. Consistent with the feed-list expansion (98 feeds)
   plus the thin-story policy's 72 h/2-source/history rule admitting more
   stories, but the arithmetic was not reconciled this run. The health check
   fails above 45,000, ~5,000 short of the 50,000 cap, so the ceiling is
-  guarded. Re-measure next week; a count that keeps doubling needs an
-  explanation, not a shrug.
-- **Publisher image weight drifted up.** `seo-health` passes: 15 images,
-  1,503 KB, median 52 KB, **max 448 KB** — against median 79 KB / max 144 KB
-  on 2026-08-21. The median improved and the max tripled, so one host is
-  serving something large. Becomes work if the max crosses 500 KB (which fails
-  the check for capped hosts).
+  guarded. **Re-measured 2026-08-25: 6,658** — +767 in one day, which is
+  ordinary ledger growth (450-700/day) and NOT a continuation of the
+  doubling. The 2,169 -> 5,891 jump was the outage recovery refilling the
+  archive, not a runaway. Keep watching, but the alarm is downgraded.
+- **Publisher image weight drifted up, then came back.** `seo-health`
+  passes. 2026-08-24: 15 images, 1,503 KB, median 52 KB, **max 448 KB**.
+  **2026-08-25: 15 images, 1,410 KB, median 74 KB, max 235 KB** — the
+  448 KB outlier is gone, so it was one host on one day, not a trend.
+  Becomes work if the max crosses 500 KB (which fails the check for capped
+  hosts).
 - **`/most-covered` is at 25 items**, up from 5 on 2026-08-22 and 12 on
   2026-08-19. The feed expansion fixed the thinness that was logged here for
   two weeks. Keep watching that it does not fall back.
