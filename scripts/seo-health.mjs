@@ -45,6 +45,43 @@ async function get(path) {
   };
 }
 
+/**
+ * Fetch that retries once on a TRANSPORT error (DNS hiccup, dropped socket,
+ * connection reset) — never on an HTTP status.
+ *
+ * A thrown fetch is a fact about the prober's network, not about the site,
+ * and treating one as a site regression makes this check cry wolf: on
+ * 2026-08-26 exactly 1 of 743 news-sitemap URLs threw `TypeError: fetch
+ * failed` while the same URL answered 200 three times seconds later, and
+ * that alone turned the whole run red. A false red is expensive here —
+ * the daily loop treats any seo-health failure as its top priority, so a
+ * blip costs a whole run and erodes trust in the alert that exists to catch
+ * real outages.
+ *
+ * Retrying does NOT hide an outage: when the origin is genuinely down every
+ * attempt throws, so the retry throws too and the caller still records the
+ * failure. It only absorbs the single-URL blip.
+ *
+ * Each attempt gets its OWN timeout signal. Reusing one `AbortSignal.timeout`
+ * across both attempts would leave the retry pre-aborted whenever the first
+ * attempt was the thing that timed out — the retry would return instantly
+ * without touching the network, which is not a retry at all.
+ */
+async function fetchWithRetry(url, init = {}, timeoutMs = 30_000) {
+  const attempt = () =>
+    fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+  try {
+    return await attempt();
+  } catch (first) {
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+    try {
+      return await attempt();
+    } catch {
+      throw first;
+    }
+  }
+}
+
 function extractJsonLd(html) {
   const blocks = [];
   const re = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g;
@@ -123,35 +160,51 @@ if (news.status === 200) {
   const NEWS_URL_CONCURRENCY = 10;
   const bad = [];
   const renames = [];
+  const MAX_HOPS = 6;
   const checkNewsUrl = async (u) => {
     try {
-      const res = await fetch(u, {
-        redirect: "manual",
-        headers: { "User-Agent": "CurrentWire-SEO-Health/1.0" },
-        signal: AbortSignal.timeout(30_000),
-      });
-      if (res.status === 200) return;
-      if (res.status >= 300 && res.status < 400) {
+      // Follow the chain BY HAND rather than with redirect:"follow".
+      // A redirect cycle makes undici throw a bare `TypeError: fetch failed`
+      // whose cause ("redirect count exceeded") never reaches the log, so a
+      // real crawl-breaking loop was reported for days as an unreadable
+      // transport error — measured 2026-08-26 on a live news-sitemap URL
+      // whose two slugs 307 to each other forever. Chasing hop by hop lets
+      // the failure name itself.
+      const chain = [u];
+      let current = u;
+      for (let hop = 0; hop < MAX_HOPS; hop++) {
+        const res = await fetchWithRetry(current, {
+          redirect: "manual",
+          headers: { "User-Agent": "CurrentWire-SEO-Health/1.0" },
+        });
+        if (res.status === 200) {
+          if (current === u) return;
+          if (idToken(current) === idToken(u)) return renames.push(`${u} -> ${current}`);
+          return bad.push({
+            url: u,
+            detail: `${chain.length - 1} redirect(s) -> ${current} (different story id — a merged or non-canonical URL is advertised)`,
+          });
+        }
+        if (res.status < 300 || res.status >= 400) {
+          return bad.push({ url: u, detail: `status ${res.status}${current === u ? "" : ` at ${current}`}` });
+        }
         const location = res.headers.get("location");
         if (!location) return bad.push({ url: u, detail: `${res.status} without location` });
-        const target = new URL(location, u).toString();
-        const final = await fetch(target, {
-          redirect: "follow",
-          headers: { "User-Agent": "CurrentWire-SEO-Health/1.0" },
-          signal: AbortSignal.timeout(30_000),
-        });
-        if (final.status !== 200) {
-          return bad.push({ url: u, detail: `${res.status} -> ${target} -> ${final.status}` });
+        const target = new URL(location, current).toString();
+        if (chain.includes(target)) {
+          return bad.push({
+            url: u,
+            detail: `REDIRECT LOOP ${res.status}: ${target} <-> ${current} — a crawler following this URL never reaches a page`,
+          });
         }
-        if (idToken(target) === idToken(u)) return renames.push(`${u} -> ${target}`);
-        return bad.push({
-          url: u,
-          detail: `${res.status} -> ${target} (different story id — a merged or non-canonical URL is advertised)`,
-        });
+        chain.push(target);
+        current = target;
       }
-      return bad.push({ url: u, detail: `status ${res.status}` });
+      return bad.push({ url: u, detail: `more than ${MAX_HOPS} redirects, last ${current}` });
     } catch (e) {
-      return bad.push({ url: u, detail: String(e) });
+      // Reached only when BOTH attempts threw — a transport failure that
+      // reproduced, not a blip.
+      return bad.push({ url: u, detail: `${e} (retried once)` });
     }
   };
   for (let i = 0; i < newsLocs.length; i += NEWS_URL_CONCURRENCY) {
