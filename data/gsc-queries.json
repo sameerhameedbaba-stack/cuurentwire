@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-24T18:55:55.194Z",
+  "generatedAt": "2026-08-25T16:12:07.269Z",
   "window": {
-    "startDate": "2026-07-28",
-    "endDate": "2026-08-24",
+    "startDate": "2026-07-29",
+    "endDate": "2026-08-25",
     "days": 28
   },
   "webQueries": [
@@ -14,9 +14,9 @@
     },
     {
       "query": "tommy john",
-      "impressions": 20,
+      "impressions": 24,
       "clicks": 0,
-      "position": 60.9
+      "position": 63.8
     },
     {
       "query": "jd vance hometown book response",
@@ -61,6 +61,18 @@
       "position": 9.6
     },
     {
+      "query": "cancer vaccine",
+      "impressions": 4,
+      "clicks": 0,
+      "position": 77
+    },
+    {
+      "query": "cancer vaccines",
+      "impressions": 4,
+      "clicks": 0,
+      "position": 64.3
+    },
+    {
       "query": "frank beard",
       "impressions": 4,
       "clicks": 0,
@@ -77,12 +89,6 @@
       "impressions": 3,
       "clicks": 0,
       "position": 4
-    },
-    {
-      "query": "cancer vaccine",
-      "impressions": 3,
-      "clicks": 0,
-      "position": 79
     },
     {
       "query": "curren events",
@@ -313,6 +319,12 @@
       "position": 58
     },
     {
+      "query": "an autopsy",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 74
+    },
+    {
       "query": "anti cancer vaccine therapy",
       "impressions": 1,
       "clicks": 0,
@@ -371,12 +383,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 50
-    },
-    {
-      "query": "cancer vaccines",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 64
     },
     {
       "query": "category 1 hurricane",
@@ -475,6 +481,12 @@
       "position": 75
     },
     {
+      "query": "death row ohio",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 59
+    },
+    {
       "query": "dei gone",
       "impressions": 1,
       "clicks": 0,
@@ -551,6 +563,18 @@
       "impressions": 1,
       "clicks": 0,
       "position": 99
+    },
+    {
+      "query": "execution florida",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 95
+    },
+    {
+      "query": "execution in florida",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 90
     },
     {
       "query": "fda egg recall salmonella",
@@ -739,6 +763,12 @@
       "position": 73
     },
     {
+      "query": "is trump making money off the presidency",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 95
+    },
+    {
       "query": "jason arday death",
       "impressions": 1,
       "clicks": 0,
@@ -769,6 +799,12 @@
       "position": 48
     },
     {
+      "query": "legal residents from mexico deportation",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 96
+    },
+    {
       "query": "lindsay clancy news",
       "impressions": 1,
       "clicks": 0,
@@ -785,6 +821,18 @@
       "impressions": 1,
       "clicks": 0,
       "position": 97
+    },
+    {
+      "query": "lions bay, british columbia",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 89
+    },
+    {
+      "query": "list of current events",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 100
     },
     {
       "query": "lithuania corgi",
@@ -973,6 +1021,12 @@
       "position": 26
     },
     {
+      "query": "the current national debt",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 89
+    },
+    {
       "query": "the current news",
       "impressions": 1,
       "clicks": 0,
@@ -989,6 +1043,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 75
+    },
+    {
+      "query": "therapeutic cancer vaccines",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 87
     },
     {
       "query": "tommy hjohn",
@@ -1027,10 +1087,22 @@
       "position": 58
     },
     {
+      "query": "tommy johns",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 77
+    },
+    {
       "query": "tommy.john",
       "impressions": 1,
       "clicks": 0,
       "position": 49
+    },
+    {
+      "query": "trader joe's coming soon",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 73
     },
     {
       "query": "trader joe's store openings",
@@ -1117,6 +1189,12 @@
       "position": 28
     },
     {
+      "query": "us vaccination progress",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 84
+    },
+    {
       "query": "usa sanctions icc",
       "impressions": 1,
       "clicks": 0,
@@ -1133,6 +1211,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 20
+    },
+    {
+      "query": "vaccine for cancer",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 73
     },
     {
       "query": "virgin mary statue",
@@ -1217,6 +1301,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 94
+    },
+    {
+      "query": "who owns oncourse home solutions",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 69
     },
     {
       "query": "who was united healthcare ceo",
@@ -1495,8 +1585,8 @@
     }
   ],
   "counts": {
-    "webRows": 217,
+    "webRows": 232,
     "newsRows": 0,
-    "pageQueryRows": 224
+    "pageQueryRows": 239
   }
 }

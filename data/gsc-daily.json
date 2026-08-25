@@ -1,0 +1,132 @@
+{
+  "generatedAt": "2026-08-25T16:12:07.269Z",
+  "window": {
+    "startDate": "2026-07-29",
+    "endDate": "2026-08-25",
+    "days": 28
+  },
+  "lagDays": 3,
+  "trend": {
+    "insufficient": true,
+    "completeDays": 10
+  },
+  "days": [
+    {
+      "date": "2026-08-13",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": []
+    },
+    {
+      "date": "2026-08-14",
+      "clicks": 0,
+      "impressions": 11,
+      "ctr": 0,
+      "position": 1.2,
+      "incidents": []
+    },
+    {
+      "date": "2026-08-15",
+      "clicks": 3,
+      "impressions": 85,
+      "ctr": 0.0353,
+      "position": 16.2,
+      "incidents": []
+    },
+    {
+      "date": "2026-08-16",
+      "clicks": 3,
+      "impressions": 438,
+      "ctr": 0.0068,
+      "position": 18.9,
+      "incidents": []
+    },
+    {
+      "date": "2026-08-17",
+      "clicks": 2,
+      "impressions": 253,
+      "ctr": 0.0079,
+      "position": 27.6,
+      "incidents": []
+    },
+    {
+      "date": "2026-08-18",
+      "clicks": 4,
+      "impressions": 290,
+      "ctr": 0.0138,
+      "position": 21.6,
+      "incidents": []
+    },
+    {
+      "date": "2026-08-19",
+      "clicks": 6,
+      "impressions": 410,
+      "ctr": 0.0146,
+      "position": 21.5,
+      "incidents": [
+        "Neon free-tier egress exhausted: archive reads failing, story URLs 5xx",
+        "ISR enabled on all dynamic routes (3e8397a) — TTFB win, quota burn begins"
+      ]
+    },
+    {
+      "date": "2026-08-20",
+      "clicks": 5,
+      "impressions": 93,
+      "ctr": 0.0538,
+      "position": 49.8,
+      "incidents": [
+        "Neon free-tier egress exhausted: archive reads failing, story URLs 5xx"
+      ]
+    },
+    {
+      "date": "2026-08-21",
+      "clicks": 3,
+      "impressions": 72,
+      "ctr": 0.0417,
+      "position": 68.8,
+      "incidents": [
+        "Neon free-tier egress exhausted: archive reads failing, story URLs 5xx"
+      ]
+    },
+    {
+      "date": "2026-08-22",
+      "clicks": 2,
+      "impressions": 55,
+      "ctr": 0.0364,
+      "position": 70.8,
+      "incidents": []
+    },
+    {
+      "date": "2026-08-23",
+      "clicks": 0,
+      "impressions": 41,
+      "ctr": 0,
+      "position": 79.7,
+      "incidents": []
+    },
+    {
+      "date": "2026-08-24",
+      "clicks": 1,
+      "impressions": 47,
+      "ctr": 0.0213,
+      "position": 75.3,
+      "incidents": [
+        "Vercel Hobby tier exceeded: whole site 402 for ~37 minutes (13:18-13:55 UTC)",
+        "Retitle wave 1 deployed (b33d8c1): homepage, categories, briefing, latest, most-covered",
+        "News-sitemap integrity: listed URLs gated on archive standing (2515c55)"
+      ]
+    },
+    {
+      "date": "2026-08-25",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Snippet/hub deploy (674502f + 23a7b79): breadth descriptions, hub links on stories, schema honesty"
+      ]
+    }
+  ]
+}

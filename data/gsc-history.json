@@ -795,5 +795,221 @@
         "sufficientSample": false
       }
     }
+  },
+  {
+    "date": "2026-08-25T16:12:07.269Z",
+    "window": {
+      "startDate": "2026-07-29",
+      "endDate": "2026-08-25",
+      "days": 28
+    },
+    "surfaces": {
+      "web": {
+        "urls": 570,
+        "impressions": 1887,
+        "clicks": 42,
+        "ctr": 0.0223,
+        "avgPosition": 28,
+        "impressionsPerUrl": 3.31,
+        "clicksPerUrl": 0.07,
+        "sufficientSample": true
+      },
+      "news": {
+        "urls": 2,
+        "impressions": 16,
+        "clicks": 0,
+        "ctr": 0,
+        "avgPosition": 5.3,
+        "impressionsPerUrl": 8,
+        "clicksPerUrl": 0,
+        "sufficientSample": false
+      },
+      "discover": {
+        "urls": 0,
+        "impressions": 0,
+        "clicks": 0,
+        "ctr": 0,
+        "avgPosition": null,
+        "impressionsPerUrl": 0,
+        "clicksPerUrl": 0,
+        "sufficientSample": false
+      },
+      "image": {
+        "urls": 14,
+        "impressions": 138,
+        "clicks": 0,
+        "ctr": 0,
+        "avgPosition": 25.7,
+        "impressionsPerUrl": 9.86,
+        "clicksPerUrl": 0,
+        "sufficientSample": true
+      }
+    },
+    "templates": {
+      "home": {
+        "urls": 1,
+        "impressions": 26,
+        "clicks": 4
+      },
+      "story": {
+        "urls": 533,
+        "impressions": 1697,
+        "clicks": 23
+      },
+      "top-10": {
+        "urls": 0,
+        "impressions": 0,
+        "clicks": 0
+      },
+      "top-100": {
+        "urls": 3,
+        "impressions": 6,
+        "clicks": 1
+      },
+      "briefing": {
+        "urls": 0,
+        "impressions": 0,
+        "clicks": 0
+      },
+      "topic": {
+        "urls": 15,
+        "impressions": 47,
+        "clicks": 3
+      },
+      "source": {
+        "urls": 2,
+        "impressions": 7,
+        "clicks": 0
+      },
+      "reports": {
+        "urls": 0,
+        "impressions": 0,
+        "clicks": 0
+      },
+      "archive": {
+        "urls": 0,
+        "impressions": 0,
+        "clicks": 0
+      },
+      "section": {
+        "urls": 5,
+        "impressions": 19,
+        "clicks": 2
+      },
+      "hub": {
+        "urls": 0,
+        "impressions": 0,
+        "clicks": 0
+      },
+      "most-covered": {
+        "urls": 0,
+        "impressions": 0,
+        "clicks": 0
+      },
+      "latest": {
+        "urls": 1,
+        "impressions": 38,
+        "clicks": 1
+      },
+      "country": {
+        "urls": 2,
+        "impressions": 6,
+        "clicks": 1
+      },
+      "index": {
+        "urls": 2,
+        "impressions": 16,
+        "clicks": 3
+      },
+      "other": {
+        "urls": 6,
+        "impressions": 25,
+        "clicks": 4
+      }
+    },
+    "earlyDiscovery": {
+      "method": "day-granular GSC data; hours = end of first impression day (UTC) minus publishedAt (upper bound)",
+      "windowDays": 14,
+      "minStoryAgeHours": 72,
+      "eligibleStories": 893,
+      "discoveredStories": 0,
+      "discoveredPct": 0,
+      "within24hPct": 0,
+      "within48hPct": 0,
+      "within72hPct": 0,
+      "medianHoursToFirstImpression": null
+    },
+    "storiesBySourceCount": {
+      "1": {
+        "urls": 469,
+        "impressions": 1460,
+        "clicks": 22,
+        "ctr": 0.0151,
+        "avgPosition": 24.7,
+        "impressionsPerUrl": 3.11,
+        "clicksPerUrl": 0.05,
+        "sufficientSample": true
+      },
+      "2": {
+        "urls": 32,
+        "impressions": 104,
+        "clicks": 1,
+        "ctr": 0.0096,
+        "avgPosition": 46,
+        "impressionsPerUrl": 3.25,
+        "clicksPerUrl": 0.03,
+        "sufficientSample": true
+      },
+      "3": {
+        "urls": 17,
+        "impressions": 70,
+        "clicks": 0,
+        "ctr": 0,
+        "avgPosition": 51.8,
+        "impressionsPerUrl": 4.12,
+        "clicksPerUrl": 0,
+        "sufficientSample": false
+      },
+      "4+": {
+        "urls": 12,
+        "impressions": 59,
+        "clicks": 0,
+        "ctr": 0,
+        "avgPosition": 52.6,
+        "impressionsPerUrl": 4.92,
+        "clicksPerUrl": 0,
+        "sufficientSample": false
+      },
+      "2+": {
+        "urls": 61,
+        "impressions": 233,
+        "clicks": 1,
+        "ctr": 0.0043,
+        "avgPosition": 49.4,
+        "impressionsPerUrl": 3.82,
+        "clicksPerUrl": 0.02,
+        "sufficientSample": true
+      },
+      "3+": {
+        "urls": 29,
+        "impressions": 129,
+        "clicks": 0,
+        "ctr": 0,
+        "avgPosition": 52.2,
+        "impressionsPerUrl": 4.45,
+        "clicksPerUrl": 0,
+        "sufficientSample": true
+      },
+      "unknown": {
+        "urls": 0,
+        "impressions": 0,
+        "clicks": 0,
+        "ctr": 0,
+        "avgPosition": null,
+        "impressionsPerUrl": 0,
+        "clicksPerUrl": 0,
+        "sufficientSample": false
+      }
+    }
   }
 ]

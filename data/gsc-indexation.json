@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T18:59:37.657Z",
+  "generatedAt": "2026-08-25T16:15:53.412Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "counts": {
@@ -29,7 +29,7 @@
       "path": "/top-10",
       "bucket": "not-crawled",
       "verdict": "NEUTRAL",
-      "coverageState": "Discovered - currently not indexed",
+      "coverageState": "URL is unknown to Google",
       "indexingState": "INDEXING_STATE_UNSPECIFIED",
       "lastCrawlTime": null,
       "googleCanonical": null
@@ -56,7 +56,7 @@
       "path": "/reports/media-coverage",
       "bucket": "not-crawled",
       "verdict": "NEUTRAL",
-      "coverageState": "URL is unknown to Google",
+      "coverageState": "Discovered - currently not indexed",
       "indexingState": "INDEXING_STATE_UNSPECIFIED",
       "lastCrawlTime": null,
       "googleCanonical": null
@@ -146,7 +146,7 @@
       "path": "/health",
       "bucket": "not-crawled",
       "verdict": "NEUTRAL",
-      "coverageState": "Discovered - currently not indexed",
+      "coverageState": "URL is unknown to Google",
       "indexingState": "INDEXING_STATE_UNSPECIFIED",
       "lastCrawlTime": null,
       "googleCanonical": null
@@ -191,7 +191,7 @@
       "path": "/elections",
       "bucket": "not-crawled",
       "verdict": "NEUTRAL",
-      "coverageState": "Discovered - currently not indexed",
+      "coverageState": "URL is unknown to Google",
       "indexingState": "INDEXING_STATE_UNSPECIFIED",
       "lastCrawlTime": null,
       "googleCanonical": null
@@ -236,7 +236,7 @@
       "path": "/housing",
       "bucket": "not-crawled",
       "verdict": "NEUTRAL",
-      "coverageState": "Discovered - currently not indexed",
+      "coverageState": "URL is unknown to Google",
       "indexingState": "INDEXING_STATE_UNSPECIFIED",
       "lastCrawlTime": null,
       "googleCanonical": null
@@ -263,7 +263,7 @@
       "path": "/weather",
       "bucket": "not-crawled",
       "verdict": "NEUTRAL",
-      "coverageState": "Discovered - currently not indexed",
+      "coverageState": "URL is unknown to Google",
       "indexingState": "INDEXING_STATE_UNSPECIFIED",
       "lastCrawlTime": null,
       "googleCanonical": null
@@ -272,7 +272,7 @@
       "path": "/energy",
       "bucket": "not-crawled",
       "verdict": "NEUTRAL",
-      "coverageState": "URL is unknown to Google",
+      "coverageState": "Discovered - currently not indexed",
       "indexingState": "INDEXING_STATE_UNSPECIFIED",
       "lastCrawlTime": null,
       "googleCanonical": null
@@ -281,7 +281,7 @@
       "path": "/space",
       "bucket": "not-crawled",
       "verdict": "NEUTRAL",
-      "coverageState": "URL is unknown to Google",
+      "coverageState": "Discovered - currently not indexed",
       "indexingState": "INDEXING_STATE_UNSPECIFIED",
       "lastCrawlTime": null,
       "googleCanonical": null

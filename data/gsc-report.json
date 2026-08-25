@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-08-24T18:55:55.194Z",
+  "generatedAt": "2026-08-25T16:12:07.269Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-07-28",
-    "endDate": "2026-08-24",
+    "startDate": "2026-07-29",
+    "endDate": "2026-08-25",
     "days": 28
   },
   "minSampleImpressions": 100,
   "surfaces": {
     "web": {
-      "rows": 563,
+      "rows": 570,
       "total": {
-        "urls": 563,
-        "impressions": 1848,
-        "clicks": 41,
-        "ctr": 0.0222,
-        "avgPosition": 26.9,
-        "impressionsPerUrl": 3.28,
+        "urls": 570,
+        "impressions": 1887,
+        "clicks": 42,
+        "ctr": 0.0223,
+        "avgPosition": 28,
+        "impressionsPerUrl": 3.31,
         "clicksPerUrl": 0.07,
         "sufficientSample": true
       },
@@ -33,12 +33,12 @@
           "sufficientSample": false
         },
         "story": {
-          "urls": 526,
-          "impressions": 1660,
-          "clicks": 22,
-          "ctr": 0.0133,
-          "avgPosition": 26.9,
-          "impressionsPerUrl": 3.16,
+          "urls": 533,
+          "impressions": 1697,
+          "clicks": 23,
+          "ctr": 0.0136,
+          "avgPosition": 28,
+          "impressionsPerUrl": 3.18,
           "clicksPerUrl": 0.04,
           "sufficientSample": true
         },
@@ -74,11 +74,11 @@
         },
         "topic": {
           "urls": 15,
-          "impressions": 46,
+          "impressions": 47,
           "clicks": 3,
-          "ctr": 0.0652,
-          "avgPosition": 19.9,
-          "impressionsPerUrl": 3.07,
+          "ctr": 0.0638,
+          "avgPosition": 20.9,
+          "impressionsPerUrl": 3.13,
           "clicksPerUrl": 0.2,
           "sufficientSample": false
         },
@@ -144,11 +144,11 @@
         },
         "latest": {
           "urls": 1,
-          "impressions": 37,
+          "impressions": 38,
           "clicks": 1,
-          "ctr": 0.027,
-          "avgPosition": 67.5,
-          "impressionsPerUrl": 37,
+          "ctr": 0.0263,
+          "avgPosition": 68.4,
+          "impressionsPerUrl": 38,
           "clicksPerUrl": 1,
           "sufficientSample": false
         },
@@ -769,7 +769,7 @@
     "method": "day-granular GSC data; hours = end of first impression day (UTC) minus publishedAt (upper bound)",
     "windowDays": 14,
     "minStoryAgeHours": 72,
-    "eligibleStories": 180,
+    "eligibleStories": 893,
     "discoveredStories": 0,
     "discoveredPct": 0,
     "within24hPct": 0,
@@ -779,62 +779,62 @@
   },
   "storiesBySourceCount": {
     "1": {
-      "urls": 463,
-      "impressions": 1436,
-      "clicks": 21,
-      "ctr": 0.0146,
-      "avgPosition": 23.7,
-      "impressionsPerUrl": 3.1,
+      "urls": 469,
+      "impressions": 1460,
+      "clicks": 22,
+      "ctr": 0.0151,
+      "avgPosition": 24.7,
+      "impressionsPerUrl": 3.11,
       "clicksPerUrl": 0.05,
       "sufficientSample": true
     },
     "2": {
       "urls": 32,
-      "impressions": 98,
+      "impressions": 104,
       "clicks": 1,
-      "ctr": 0.0102,
-      "avgPosition": 44.4,
-      "impressionsPerUrl": 3.06,
+      "ctr": 0.0096,
+      "avgPosition": 46,
+      "impressionsPerUrl": 3.25,
       "clicksPerUrl": 0.03,
-      "sufficientSample": false
+      "sufficientSample": true
     },
     "3": {
-      "urls": 16,
-      "impressions": 64,
+      "urls": 17,
+      "impressions": 70,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": 49.2,
-      "impressionsPerUrl": 4,
+      "avgPosition": 51.8,
+      "impressionsPerUrl": 4.12,
       "clicksPerUrl": 0,
       "sufficientSample": false
     },
     "4+": {
       "urls": 12,
-      "impressions": 58,
+      "impressions": 59,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": 51.9,
-      "impressionsPerUrl": 4.83,
+      "avgPosition": 52.6,
+      "impressionsPerUrl": 4.92,
       "clicksPerUrl": 0,
       "sufficientSample": false
     },
     "2+": {
-      "urls": 60,
-      "impressions": 220,
+      "urls": 61,
+      "impressions": 233,
       "clicks": 1,
-      "ctr": 0.0045,
-      "avgPosition": 47.8,
-      "impressionsPerUrl": 3.67,
+      "ctr": 0.0043,
+      "avgPosition": 49.4,
+      "impressionsPerUrl": 3.82,
       "clicksPerUrl": 0.02,
       "sufficientSample": true
     },
     "3+": {
-      "urls": 28,
-      "impressions": 122,
+      "urls": 29,
+      "impressions": 129,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": 50.5,
-      "impressionsPerUrl": 4.36,
+      "avgPosition": 52.2,
+      "impressionsPerUrl": 4.45,
       "clicksPerUrl": 0,
       "sufficientSample": true
     },
@@ -850,13 +850,13 @@
     }
   },
   "archiveSources": {
-    "requestedIds": 490,
-    "matchedIds": 490,
+    "requestedIds": 496,
+    "matchedIds": 496,
     "chunks": 3,
     "failedChunks": 0
   },
   "urlSignals": {
-    "stories": 490,
+    "stories": 496,
     "truncated": false,
     "written": true
   },
@@ -869,21 +869,21 @@
     },
     {
       "url": "https://currentwire.us/story/us-firms-that-kept-dei-policies-despite-go-woke-go-broke-threats-thrived-cb7ef6764e2aa",
-      "impressions": 64,
+      "impressions": 65,
       "clicks": 0,
-      "position": 55.7
+      "position": 56.3
     },
     {
       "url": "https://currentwire.us/latest",
-      "impressions": 37,
+      "impressions": 38,
       "clicks": 1,
-      "position": 67.5
+      "position": 68.4
     },
     {
       "url": "https://currentwire.us/story/tommy-john-pitcher-whose-surgery-changed-baseball-dies-at-age-of-83-c5b4db2199c22",
-      "impressions": 31,
+      "impressions": 36,
       "clicks": 0,
-      "position": 62.5
+      "position": 64.7
     },
     {
       "url": "https://currentwire.us/story/why-americans-now-hate-each-other-more-than-ever-c7c39f3dad971",
@@ -946,16 +946,34 @@
       "position": 22
     },
     {
+      "url": "https://currentwire.us/story/mrna-cancer-vaccine-succeeded-in-phase-3-melanoma-trial-moderna-and-merck-say-c3680de3baa62",
+      "impressions": 18,
+      "clicks": 0,
+      "position": 74.2
+    },
+    {
       "url": "https://currentwire.us/story/congress-breaks-for-summer-recess-with-little-to-show-c4e2a216c4c37",
       "impressions": 17,
       "clicks": 0,
       "position": 76.3
     },
     {
+      "url": "https://currentwire.us/story/us-vaccination-rates-fall-again-as-exemptions-continue-to-rise-cdc-data-shows-c28b48b768f19",
+      "impressions": 15,
+      "clicks": 0,
+      "position": 88
+    },
+    {
       "url": "https://currentwire.us/story/beijing-is-said-to-move-to-clarify-tax-rules-stoking-confusion-among-chinas-ultr-c8a19c5f4a8b0",
       "impressions": 14,
       "clicks": 0,
       "position": 10.6
+    },
+    {
+      "url": "https://currentwire.us/story/tupac-shakur-autopsy-photos-shown-at-murder-trial-after-some-family-members-leav-ce2f2697263f1",
+      "impressions": 13,
+      "clicks": 1,
+      "position": 57
     },
     {
       "url": "https://currentwire.us/story/miniluxe-announces-substantial-issuer-bid-sib-for-up-to-cdn-6-000-000-of-its-cla-c2b6d7bd5c938",
@@ -968,18 +986,6 @@
       "impressions": 13,
       "clicks": 0,
       "position": 8.2
-    },
-    {
-      "url": "https://currentwire.us/story/us-vaccination-rates-fall-again-as-exemptions-continue-to-rise-cdc-data-shows-c28b48b768f19",
-      "impressions": 13,
-      "clicks": 0,
-      "position": 88.9
-    },
-    {
-      "url": "https://currentwire.us/story/tupac-shakur-autopsy-photos-shown-at-murder-trial-after-some-family-members-leav-ce2f2697263f1",
-      "impressions": 12,
-      "clicks": 1,
-      "position": 55.6
     },
     {
       "url": "https://currentwire.us/story/from-europe-to-asia-floods-to-heatwaves-world-experiences-weather-shocks-c81fc24dc883e",
@@ -998,12 +1004,6 @@
       "impressions": 12,
       "clicks": 0,
       "position": 6.3
-    },
-    {
-      "url": "https://currentwire.us/story/mrna-cancer-vaccine-succeeded-in-phase-3-melanoma-trial-moderna-and-merck-say-c3680de3baa62",
-      "impressions": 12,
-      "clicks": 0,
-      "position": 76
     },
     {
       "url": "https://currentwire.us/story/prime-drink-group-provides-bi-weekly-mcto-status-report-c8afa90c65200",
@@ -1042,6 +1042,12 @@
       "position": 63.9
     },
     {
+      "url": "https://currentwire.us/story/trump-pauses-new-tariffs-on-canada-for-three-days-saying-deal-close-cb2bc3e84ddcb",
+      "impressions": 10,
+      "clicks": 0,
+      "position": 54.7
+    },
+    {
       "url": "https://currentwire.us/story/u-s-and-iran-miss-peace-talks-deadline-and-alaska-florida-and-wyoming-primaries-cda731d12333e",
       "impressions": 10,
       "clicks": 0,
@@ -1076,12 +1082,6 @@
       "impressions": 9,
       "clicks": 0,
       "position": 24
-    },
-    {
-      "url": "https://currentwire.us/story/trump-pauses-new-tariffs-on-canada-for-three-days-saying-deal-close-cb2bc3e84ddcb",
-      "impressions": 9,
-      "clicks": 0,
-      "position": 50.1
     },
     {
       "url": "https://currentwire.us/about",
@@ -1165,26 +1165,34 @@
   "queries": {
     "written": true,
     "strikingDistance": 26,
-    "webRows": 217,
+    "webRows": 232,
     "newsRows": 0,
-    "pageQueryRows": 224
+    "pageQueryRows": 239
+  },
+  "daily": {
+    "written": true,
+    "days": 13,
+    "trend": {
+      "insufficient": true,
+      "completeDays": 10
+    }
   },
   "liveCoverage": {
-    "clusters": 745,
-    "singleSource": 703,
-    "twoSource": 34,
-    "threeSource": 4,
-    "fourPlus": 4,
-    "multiSourcePct": 5.6,
-    "threePlusPct": 1.1,
-    "fourPlusPct": 0.5,
+    "clusters": 748,
+    "singleSource": 712,
+    "twoSource": 23,
+    "threeSource": 8,
+    "fourPlus": 5,
+    "multiSourcePct": 4.8,
+    "threePlusPct": 1.7,
+    "fourPlusPct": 0.7,
     "medianIndependentPublications": 1,
     "meanIndependentPublications": 1.08,
-    "pressReleasePct": 0.8,
-    "opinionPct": 0.7,
-    "generalCategoryPct": 21.6
+    "pressReleasePct": 0.7,
+    "opinionPct": 1.3,
+    "generalCategoryPct": 21
   },
-  "liveDatasetVersion": "20260824T185104Z-0e775a",
-  "ledgerStories": 1885,
+  "liveDatasetVersion": "20260825T161027Z-2698f1",
+  "ledgerStories": 2551,
   "warnings": []
 }
