@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-08-24T07:43:49.590Z",
+  "ranAt": "2026-08-25T07:29:05.486Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,113 +16,115 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 700,
-    "cardsWithId": 700,
-    "cardsWithCategory": 618,
-    "cardsWithCountry": 255,
-    "cardsWithSources": 116,
-    "storyPagesFetched": 375,
+    "cards": 715,
+    "cardsWithId": 715,
+    "cardsWithCategory": 633,
+    "cardsWithCountry": 289,
+    "cardsWithSources": 126,
+    "storyPagesFetched": 369,
     "storyErrors": [],
-    "uniqueClusters": 192
+    "uniqueClusters": 189
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.883,
-    "country": 0.364,
-    "sources": 0.166
+    "category": 0.885,
+    "country": 0.404,
+    "sources": 0.176
   },
   "versionsSeen": [
-    "20260824T073749Z-792753",
-    "20260824T034046Z-ac0435",
-    "20260824T074349Z-f10f0a",
-    "20260824T051612Z-ae3f57",
-    "20260824T062457Z-fe2a3b",
-    "20260824T074352Z-95431a",
-    "20260824T074307Z-d51cf1",
-    "20260824T074232Z-773abe",
-    "20260824T073907Z-aec688",
-    "20260824T074357Z-a033c4",
-    "20260824T074251Z-3cae50",
-    "20260824T073037Z-eea970",
-    "20260824T074319Z-94ef22",
-    "20260824T073039Z-921092",
-    "20260824T074120Z-4ccc51",
-    "20260824T074335Z-a95304",
-    "20260824T074304Z-d51cf1",
-    "20260824T073041Z-921092",
-    "20260824T074406Z-b0b6ca",
-    "20260824T074415Z-62f1f8",
-    "20260824T074416Z-cb4ca0",
-    "20260824T074416Z-62f1f8",
-    "20260824T074418Z-e1cdb9",
-    "20260824T074422Z-03c14d",
-    "archive:2026-08-23T19:05:07.636Z",
-    "archive:2026-08-22T17:30:07.205Z",
-    "archive:2026-08-21T19:31:19.400Z",
-    "20260824T074019Z-8d93c0",
-    "archive:2026-08-21T20:00:10.304Z",
-    "archive:2026-08-24T01:00:12.638Z",
-    "20260824T073929Z-dd1351",
-    "archive:2026-08-23T13:31:30.439Z",
-    "20260824T073957Z-57c37b",
-    "20260824T074100Z-9b2019",
-    "20260824T073946Z-7ff549",
-    "20260824T074455Z-92e7cc"
+    "20260825T072103Z-c82282",
+    "20260825T054529Z-0f7d7f",
+    "20260825T072532Z-a8b3cd",
+    "20260825T071813Z-c2ff74",
+    "20260825T064531Z-a054df",
+    "20260825T072311Z-284ecc",
+    "20260825T072257Z-7b2f79",
+    "20260825T071625Z-a028ea",
+    "20260825T072358Z-43d373",
+    "20260825T072404Z-49403a",
+    "20260825T072419Z-fb53a2",
+    "20260825T071939Z-ba6f3a",
+    "20260825T072300Z-6e30d8",
+    "20260825T072336Z-dc3bd6",
+    "20260825T072349Z-66d665",
+    "20260825T072017Z-3c221c",
+    "archive:2026-08-25T02:05:07.831Z",
+    "20260825T072337Z-9db679",
+    "20260825T072335Z-dc3bd6",
+    "20260825T072324Z-950d7b",
+    "20260825T072335Z-decd13",
+    "20260825T072336Z-9db679",
+    "archive:2026-08-25T07:00:08.165Z",
+    "20260825T071642Z-b66e1a",
+    "20260825T072357Z-270e05",
+    "20260825T072408Z-7705ad",
+    "archive:2026-08-25T01:30:08.004Z",
+    "20260825T072441Z-6b4fd0",
+    "20260825T072426Z-f52dd4",
+    "20260825T072441Z-6bfe29",
+    "20260825T072418Z-fb53a2",
+    "20260825T072449Z-88d00b",
+    "20260825T072502Z-f8a8af",
+    "20260825T071617Z-21b62f",
+    "20260825T072509Z-00e4cd",
+    "20260825T072443Z-877c82",
+    "20260825T072504Z-f8a8af",
+    "20260825T072511Z-a6cdc7",
+    "20260825T072512Z-cfb0dd",
+    "20260825T072448Z-88d00b",
+    "20260825T052558Z-d7a823",
+    "20260825T072531Z-ba42ed",
+    "20260825T072443Z-2d3e87",
+    "20260825T071646Z-b66e1a"
   ],
   "violations": [
     {
-      "type": "archive-vs-live",
-      "clusterId": "cda1edb058077",
-      "storySurface": "/story/dr-dre-admits-he-uses-ai-to-produce-doesnt-see-it-as-a-threat-im-embracing-it-cda1edb058077 (r1)",
-      "storyVersion": "archive:2026-08-23T19:05:07.636Z",
-      "listSurfaces": [
-        "/ai (r1)",
-        "/ai (r2)"
+      "type": "category-flap",
+      "clusterId": "ca74b073e7dc7",
+      "sequence": [
+        {
+          "version": "20260825T072103Z-c82282",
+          "category": "technology"
+        },
+        {
+          "version": "20260825T054529Z-0f7d7f",
+          "category": "general"
+        },
+        {
+          "version": "20260825T072311Z-284ecc",
+          "category": "technology"
+        }
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c3471d2dc092a",
-      "storySurface": "/story/ai-mapping-reveals-hidden-stage-of-arctic-freeze-with-climate-implications-c3471d2dc092a (r1)",
-      "storyVersion": "archive:2026-08-22T17:30:07.205Z",
+      "clusterId": "cedc705d8264e",
+      "storySurface": "/story/canada-to-announce-loans-benefits-as-part-of-domestic-response-to-u-s-tariffs-so-cedc705d8264e (r1)",
+      "storyVersion": "archive:2026-08-25T02:05:07.831Z",
       "listSurfaces": [
-        "/ai (r1)"
+        "/canada (r1)",
+        "/business (r1)",
+        "/canada (r2)",
+        "/business (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c2e4d234da383",
-      "storySurface": "/story/maha-activists-urge-trump-against-promoting-coal-to-power-energy-hungry-ai-data-c2e4d234da383 (r1)",
-      "storyVersion": "archive:2026-08-21T19:31:19.400Z",
+      "clusterId": "c2b383ccb5df5",
+      "storySurface": "/story/messick-throws-6-strong-innings-and-hedges-hits-2-run-homer-as-guardians-beat-an-c2b383ccb5df5 (r1)",
+      "storyVersion": "archive:2026-08-25T07:00:08.165Z",
       "listSurfaces": [
-        "/ai (r1)"
+        "/latest (r1)",
+        "/latest (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c815a88cecf2f",
-      "storySurface": "/story/nvidia-just-showed-that-the-harness-not-the-ai-model-is-now-the-real-hero-c815a88cecf2f (r1)",
-      "storyVersion": "archive:2026-08-21T20:00:10.304Z",
+      "clusterId": "ca545a0bc0a08",
+      "storySurface": "/story/investor-presentation-green-bay-preliminary-economic-assessment-and-capital-rais-ca545a0bc0a08 (r1)",
+      "storyVersion": "archive:2026-08-25T01:30:08.004Z",
       "listSurfaces": [
-        "/ai (r1)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c2f12b9df56b1",
-      "storySurface": "/story/tokayev-allies-head-for-landslide-victory-in-kazakhstan-elections-c2f12b9df56b1 (r1)",
-      "storyVersion": "archive:2026-08-24T01:00:12.638Z",
-      "listSurfaces": [
-        "/elections (r1)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c3d21b9bcc52c",
-      "storySurface": "/story/president-zelensky-says-having-elections-in-ukraine-would-destroy-the-country-c3d21b9bcc52c (r1)",
-      "storyVersion": "archive:2026-08-23T13:31:30.439Z",
-      "listSurfaces": [
-        "/elections (r1)"
+        "/business (r1)"
       ]
     }
   ],
@@ -130,57 +132,57 @@
   "warnings": [
     {
       "type": "cross-version-drift",
-      "clusterId": "cf1d12e74aef2",
+      "clusterId": "cf5989fd7a243",
       "field": "sources",
       "values": [
         {
-          "version": "20260824T073749Z-792753",
-          "value": 5
-        },
-        {
-          "version": "20260824T034046Z-ac0435",
-          "value": 4
-        },
-        {
-          "version": "20260824T074349Z-f10f0a",
-          "value": 5
-        },
-        {
-          "version": "20260824T074352Z-95431a",
-          "value": 5
-        }
-      ]
-    },
-    {
-      "type": "cross-version-drift",
-      "clusterId": "c31961528834f",
-      "field": "sources",
-      "values": [
-        {
-          "version": "20260824T073749Z-792753",
-          "value": 5
-        },
-        {
-          "version": "20260824T074349Z-f10f0a",
-          "value": 6
-        },
-        {
-          "version": "20260824T074352Z-95431a",
-          "value": 6
-        }
-      ]
-    },
-    {
-      "type": "cross-version-drift",
-      "clusterId": "c43fdde1e2088",
-      "field": "sources",
-      "values": [
-        {
-          "version": "20260824T034046Z-ac0435",
+          "version": "20260825T072103Z-c82282",
           "value": 3
         },
         {
-          "version": "20260824T074357Z-a033c4",
+          "version": "20260825T072532Z-a8b3cd",
+          "value": 3
+        },
+        {
+          "version": "20260825T072311Z-284ecc",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "type": "cross-version-drift",
+      "clusterId": "c2165f60968ee",
+      "field": "sources",
+      "values": [
+        {
+          "version": "20260825T054529Z-0f7d7f",
+          "value": 3
+        },
+        {
+          "version": "20260825T072532Z-a8b3cd",
+          "value": 2
+        },
+        {
+          "version": "20260825T072311Z-284ecc",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "type": "cross-version-drift",
+      "clusterId": "c2a7946d06e56",
+      "field": "sources",
+      "values": [
+        {
+          "version": "20260825T054529Z-0f7d7f",
+          "value": 3
+        },
+        {
+          "version": "20260825T072311Z-284ecc",
+          "value": 2
+        },
+        {
+          "version": "20260825T072532Z-a8b3cd",
           "value": 2
         }
       ]
