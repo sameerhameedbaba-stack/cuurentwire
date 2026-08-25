@@ -1,13 +1,17 @@
 # SEO Backlog
 
-**Status 2026-08-25 daily run: production is HEALTHY.** `/`,
-`/news-sitemap.xml`, `/archive-sitemap.xml` and `/rss` all 200;
-`node scripts/seo-health.mjs` against production passed every check
-(sitemap 337 URLs, news-sitemap 725 entries all inside 49 h and all
-answering 200, archive-sitemap 6,658 URLs, 11 category feeds, llms.txt,
-IndexNow key file, 11 trust pages typed, real 404, www 308). Two
-`[auto-alert]` issues remain open — #1 url-survival and #2 surface
-coherence — and both are the known backlog items below, not new breakage.
+**Status 2026-08-26 daily run: production is HEALTHY, and a crawl-breaking
+redirect loop was found, root-caused and cleared.** `/`, `/news-sitemap.xml`,
+`/archive-sitemap.xml` and `/rss` all 200. `node scripts/seo-health.mjs`
+against production failed on 1 of 643 news-sitemap URLs — a genuine
+**infinite 307 loop** between two slugs of cluster `c73a14a645aa9` — and
+passed all checks again after the fix deploy (`SEO health: ALL CHECKS
+PASSED`, exit 0). See item 1 below: the loop is cleared but the mechanism
+that produces it is still live. `[auto-alert]` issue **#1 (url-survival) is
+resolved** — the 2026-08-25 workflow run is `success`, which is the first
+run to exercise `c124d70`, so the LOST fix is now proven in CI and not just
+against a local probe. Issue **#2 (surface coherence) remains open** and is
+item 3.
 
 **Status 2026-08-24, updated ~14:10 UTC: the 402 outage is RESOLVED — the
 owner approved the Vercel Pro upgrade in person and the site returned 200 on
@@ -315,7 +319,76 @@ and `s-maxage` on sitemap/RSS responses. Measure the real post-phase-1 burn
 on the Vercel usage page after ~48 h (by 26-27 Aug) before deciding how much
 of phase 2 to build.
 
-### 1. 214 published stories permanently gone — CLOSED 2026-08-25: tombstoned, now clean 404s
+### 1. A stale cached redirect can pair with a fresh one and form an infinite loop — OPEN (instance cleared, mechanism live)
+
+**Found 2026-08-26 by `scripts/seo-health.mjs`, which had been reporting it
+as an unreadable `TypeError: fetch failed`.** One of 643 news-sitemap URLs
+307-redirected to a second slug of the SAME cluster, which 307-redirected
+straight back:
+
+```
+/story/multiple-people-dead-including-kids-in-shooting-and-fire-at-montana-home-c73a14a645aa9
+  <-> /story/multiple-people-killed-in-shooting-at-montana-home-also-set-on-fire-officials-sa-c73a14a645aa9
+```
+
+Traced by hand: A -> B -> A -> B for as many hops as were followed. A
+crawler never reaches a page. This was live on **`/news-sitemap.xml`** — the
+feed Googlebot-News fetches within minutes of publication and judges as a
+whole — which makes it strictly worse than the item-3 staleness.
+
+**Root cause, measured from cache headers rather than inferred:**
+
+| URL | `Age` | `X-Vercel-Cache` | redirects to |
+|---|---|---|---|
+| slug A | **17,547 s (~4.9 h)** | HIT | slug B |
+| slug B | 325 s (~5 min) | HIT | slug A |
+| `/story/c73a14a645aa9` (fresh) | — | **MISS** | **slug A** |
+
+The fresh render says the canonical slug is **A**, so B is behaving
+correctly. A is a **stale cached redirect frozen ~5 hours earlier**, when the
+lead headline — and therefore the canonical slug — was B. Cluster slugs are
+rebuilt whenever `pickLead()` re-selects the lead, so a headline that flaps
+back and forth is the ordinary case, not an edge one. Observed twice in one
+session: the `mike-lindell-...` pair swapped direction between two health-check
+runs minutes apart.
+
+**Why the stale entry survives so long, and this is the part to fix:**
+`resolveStoryRequest` returns `{ kind: "redirect" }` from the live branch
+*before* any tagged data read, so the redirect response carries no
+`NEWS_CACHE_TAG`. `forceRefresh()`'s `revalidateTag(NEWS_CACHE_TAG, "max")`
+therefore never invalidates it, and it inherits the 30-day `/story/[slug]`
+segment TTL from item 0b. A redirect can outlive by weeks the slug it points
+at; pair one with a fresh redirect pointing the other way and the result is a
+permanent cycle.
+
+**The instance is cleared, by accident of deploy.** Pushing `9fd5991` wiped
+the ISR cache (every deploy does — item 0b), and slug A came back as **200
+`age 3`** with B correctly 307ing to it. Verified live. **That is a symptom
+cure, not a fix:** the next headline flap re-creates it, and the next wipe
+happens whenever someone deploys.
+
+**Shipped this run: detection only** (`9fd5991`). `seo-health.mjs` now chases
+the chain hop by hop instead of using `redirect: "follow"`, so a cycle
+reports itself as `REDIRECT LOOP` naming both URLs, and retries once on a
+genuine transport error (each attempt gets a fresh timeout signal). The check
+went green after the loop cleared, so it tracks reality in both directions.
+
+**Deliberately NOT fixed this run**, for the reason item 3 gives: this is the
+story-resolution + ISR path that produced `d060817` and `f757bba`, and the
+candidate fixes all touch the ISR cost controls the playbook protects as a
+hard constraint. Candidates for a run that can design and review it:
+
+- give redirect responses a short TTL (or the `NEWS_CACHE_TAG`) so a stale
+  redirect cannot outlive its target — the cheapest correct fix, but it adds
+  ISR writes on the long tail and must be costed against item 0b;
+- make the redirect target authoritative rather than snapshot-derived: store
+  the canonical slug per cluster id at persist time and redirect only to
+  that, so two renders can never disagree;
+- have the news-sitemap generator advertise only self-canonical URLs (it
+  already gates on archive standing), which contains the damage on the one
+  surface that matters most without touching resolution.
+
+### 2. 214 published stories permanently gone — CLOSED 2026-08-25: tombstoned, now clean 404s
 
 **Found by probing all 2,015 local ledger URLs against production this run,
 while the site was still up.** Result: **1,610 answer 200, 191 redirect, 214
@@ -371,7 +444,7 @@ Contained in the meantime, and checked rather than assumed: **0 of the 214
 appear in `sitemap.xml`, `news-sitemap.xml` or `archive-sitemap.xml`.** The
 site is not asking anyone to fetch them.
 
-### 2. Surface coherence: a live story can serve a stale archived copy
+### 3. Surface coherence: a live story can serve a stale archived copy
 
 **Open `[auto-alert]` issue #2, failing since 2026-08-23. Reproduced this
 run.** `node scripts/surface-coherence.mjs`: 20 pages, 700 cards, 174
@@ -399,7 +472,7 @@ path, which produced both of the last two incidents (`d060817`, `f757bba`); a
 rushed change there costs more than two stale pages. It needs a design and a
 review.
 
-### 3. `/source/<slug>` hubs carry no durable per-publisher facts — SHIPPED 2026-08-25, verified live
+### 4. `/source/<slug>` hubs carry no durable per-publisher facts — SHIPPED 2026-08-25, verified live
 
 **The clearest competitor gap this run found, and it is measurable on both
 sides.** `/source/bbc-news` is 200, indexable, `BreadcrumbList` + `ItemList`,
@@ -470,7 +543,7 @@ profile block at all and stay `noindex, follow` (both verified live, 200).
 Guards: `tests/unit/source-profile.test.ts` (12) and
 `tests/e2e/source-hubs.spec.ts` (4).
 
-### 4. Story pages have no outbound topic links — IMPROVED 2026-08-25, still open
+### 5. Story pages have no outbound topic links — IMPROVED 2026-08-25, still open
 
 Measured on 12 live stories sampled across `/news-sitemap.xml`: outbound
 `/story/` links **median 4, zero on none of them** (the 2026-08-19 "More in
@@ -495,7 +568,52 @@ end mid-sentence** (53% on 08-18, 23% after the formatter fix, 25% on 08-22).
 The description residue is summaries whose first sentence alone exceeds the
 limit — a summarizer input-length question, not a formatter bug.
 
-### 5. `general` is the largest section for three tier-A publishers — NEW 2026-08-25
+**RE-MEASURED 2026-08-26 on 40 story pages sampled through
+`/news-sitemap.xml`, and it is much worse than the 25% recorded above:
+17 of 40 (43%) meta descriptions end mid-sentence**, and **34 of 40 (85%)
+titles exceed 60 characters**. Both sit on the story pages, which are the
+site's only indexed, click-earning surface, so this is squarely the
+Sprint-2 CTR question.
+
+**A clause-boundary fallback was built and measured against real inputs, and
+is NOT recommended as-is.** `NewsArticle.description` in the page JSON-LD
+carries the FULL summary while the meta tag carries the clipped one, so 49
+real summaries were harvested as an evaluation corpus (22 over the 155-char
+limit — 45%, matching the live rate). Cutting at the last clause boundary
+(`,` `;` `:` em/en dash) that keeps >=50% of the budget, instead of
+mid-phrase, changed **only 2 of 49** and cost ~60 characters of snippet on
+both:
+
+```
+BEFORE [155] (The Conversation) — Thai Buddhism involves daily rituals and collective
+             acts of worship, unlike the individual-focused emphasis on meditation often found…
+AFTER  [ 89] (The Conversation) — Thai Buddhism involves daily rituals and collective
+             acts of worship…
+```
+
+Cleaner, but 4% coverage for a third of the snippet is not obviously a CTR
+win and should not be sold as one.
+
+**The real mechanism, visible in the corpus and not previously recorded:** a
+large share of the clipped descriptions are an RSS standfirst concatenated
+to the article body **with no punctuation between them**, so the sentence
+splitter finds no boundary at all and the whole thing is one oversized
+"sentence":
+
+```
+…as US requests extradition FBI agents raided the Ibiza, Spain…
+…smoke reaching Malaysia and putting Singapore on alert Suwadi…
+…will harm smaller grocers A New York City business group sued…
+```
+
+That is a summary-construction defect (clustering sets
+`summary = lead.description`), not a formatter one, and it degrades the
+visible page copy as well as the meta tag. Detecting the junction is the
+hard part — the obvious "lowercase word followed by a capitalised word"
+heuristic false-positives on ordinary mid-sentence proper nouns
+("reaching Malaysia and"). Needs design; filed here rather than guessed at.
+
+### 6. `general` is the largest section for three tier-A publishers — NEW 2026-08-25
 
 **Surfaced by the source-hub profile shipped this run, then corroborated
 independently.** The "Sections filed in" line on the new `/source/` hubs
@@ -533,9 +651,82 @@ time** — one day's fetch cannot say whether 14% is the designed
 low-confidence rate or a regression. The source hubs now publish that share
 continuously, so it is measurable without new tooling.
 
-Ranked below item 4 only because the measurement is one day old; if the next
+Ranked below item 5 only because the measurement is one day old; if the next
 run reproduces `General` as the top section for tier-A publishers, it
 outranks everything except an outage.
+
+**REPRODUCED 2026-08-26 — and the framing above is now corrected in two
+directions. Read this before acting on the item.**
+
+*The share is real and larger.* 40 story pages sampled at even intervals
+through `/news-sitemap.xml`, read from `NewsArticle.articleSection`:
+**9 of 40 (23%) are `General`** — tied with Sports as the largest single
+section, against 3 of 22 (14%) the day before. Nearly all nine are plainly
+misfiled by any reading: an Artemis II livestream story, a European rights
+court ruling on Turkey, a Montreal airport death, two Dolly Parton pieces,
+a Buddhism explainer.
+
+*But 23% is BELOW the designed rate, so this is NOT a regression.* The
+313-story validated benchmark in `data/benchmark-history.json` records
+`realGeneralCount: 109` of 313 — **34.8%**. Re-running `classifyCategory`
+over `data/local/real-stories.json` + `truth.tsv` this run reproduces the
+recorded figures exactly: **73.2% exact, 5.4% wrong-specific, 110 general
+(35.1%)**. The live 23% is the designed precision-over-recall contract
+operating normally, not something that broke. **Do not open this as a
+regression again without comparing against 35%.**
+
+*What IS worth fixing, quantified:* of those 110 general verdicts, the human
+truth set labels only 43 genuinely general — **67 of 313 (21%) are stories a
+reviewer gave a specific category and the classifier routes to a noindex
+bucket.** Split by the guard that produced them:
+
+| Path to `general` | misroutes | top score would have been correct |
+|---|---|---|
+| nothing scored at all | 28 | 0 |
+| below `MIN_PRIMARY_SCORE` | 29 | **18** |
+| exact tie | 10 | 4 |
+
+**REFUTED this run — do not resurrect it: relaxing the ambiguity guard.**
+Four variants were simulated against the truth set (sole-scorer-wins,
+`MIN_PRIMARY_SCORE` 2 -> 1, clear-margin-wins, and a world-excluded
+variant). Every one buys ~2 points of exact accuracy and **roughly doubles
+wrong-specific errors, 5.4% -> 9.3-11.2%**. That is the wrong trade here and
+the asymmetry is the reason: a `general` verdict only *withholds* a story
+from a category page, while a wrong specific verdict *actively publishes* it
+onto an indexable one. The playbook ranks wrong categories as the defect
+that poisons category relevance.
+
+**Keyword patching was also tried and rejected.** Mining the truth set for
+terms concentrated >=85% in one category and present in >=2 misroutes returns
+almost entirely one-news-cycle proper nouns — "uss abraham lincoln", "selena
+gomez", plus spurious stopword hits like "don" and "long". Adding those
+overfits a 313-story snapshot. The only durable candidate surfaced was
+`israeli` -> world (3/3).
+
+**Severity re-measured, and it is narrower than "invisible" but real.** All
+nine live `General` stories were checked against all 14 indexable section
+pages: **7 of 9 appear on no indexable category page at all**; 2 are rescued
+because `CategoryResult.all` keeps the tied runners-up and
+`getCategoryData()` lists them in the `related` rail
+(`lib/news/queries.ts:592` selects `c.lead.categories.includes(category)`).
+The story pages themselves stay `index, follow` and keep earning — the loss
+is the category listing and its internal-link path, not the story.
+
+**New finding, and it cuts against the guard's own purpose.** That same
+`all` rail means an ambiguity-rejected candidate still reaches an indexable
+page. The Dolly Parton *philanthropy* story is listed on **`/health` and
+`/science`**. So the guard protects `articleSection` while leaking the very
+categories it rejected onto the category pages it was meant to protect.
+Whether the `related` rail should read `all` at all is a real design
+question and is the most promising thread here — it is cheap, it is
+template-adjacent rather than classifier-deep, and it needs no accuracy
+trade.
+
+*The honest summary for whoever picks this up:* the cheap fixes are measured
+and refused. Real movement needs either better signals (the shadow
+`local-minilm` hybrid at 78.3% exact is the existing candidate, already
+measured in `tests/shadow/`) or a decision about the `all` rail — not a
+threshold nudge.
 
 ## Watching, not yet work
 
@@ -574,6 +765,11 @@ outranks everything except an outage.
   these are 500s or timeouts is still unknown. Capture that first — a
   config change that hides an intermittent 500 would be the worst possible
   outcome.
+- **RESOLVED 2026-08-26: the `url-survival` LOST fix is proven in CI.** The
+  2026-08-25 07:10 UTC run is `success` (16 min), the first run to exercise
+  `c124d70`, and `[auto-alert]` issue #1 is no longer open — only #2
+  (surface coherence) remains. Original note follows.
+
 - **The `url-survival` LOST fix has not yet been proven in CI.** The last
   two workflow runs are `failure` (2026-08-23 07:03 UTC, 2026-08-24 07:30
   UTC) and both predate `c124d70`, which shipped later that day. The fix was
@@ -591,6 +787,11 @@ outranks everything except an outage.
   ordinary ledger growth (450-700/day) and NOT a continuation of the
   doubling. The 2,169 -> 5,891 jump was the outage recovery refilling the
   archive, not a runaway. Keep watching, but the alarm is downgraded.
+  **2026-08-26: 8,036** — +1,378 in one day, roughly double the 450-700/day
+  ledger rate and the second-largest single-day jump recorded. Not yet
+  reconciled against feed growth. The health check still fails above 45,000,
+  so the cap is guarded, but at this rate that is weeks not months: worth an
+  arithmetic reconciliation on the next weekly run.
 - **Publisher image weight drifted up, then came back.** `seo-health`
   passes. 2026-08-24: 15 images, 1,503 KB, median 52 KB, **max 448 KB**.
   **2026-08-25: 15 images, 1,410 KB, median 74 KB, max 235 KB** — the
