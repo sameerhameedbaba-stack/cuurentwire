@@ -18,6 +18,8 @@ import {
   storyIdOf,
   summarizeQueries,
   topUrlsByImpressions,
+  buildDailySeries,
+  trendSummary,
 } from "../../scripts/gsc-report-lib.mjs";
 
 const BASE = "https://currentwire.us";
@@ -317,5 +319,55 @@ describe("topUrlsByImpressions", () => {
       { url: `${BASE}/`, impressions: 20, clicks: 4, position: 12.3 },
       { url: `${BASE}/ai`, impressions: 5, clicks: 3, position: null },
     ]);
+  });
+});
+
+describe("daily series and trend", () => {
+  function day(date: string, clicks: number, impressions: number) {
+    return { keys: [date], clicks, impressions, position: 20 };
+  }
+  const incidents = [
+    { date: "2026-08-20", end: "2026-08-21", label: "db outage" },
+    { date: "2026-08-24", label: "402 outage" },
+  ];
+
+  it("annotates days that fall inside incident ranges", () => {
+    const series = buildDailySeries(
+      [day("2026-08-19", 1, 10), day("2026-08-20", 0, 2), day("2026-08-21", 0, 3), day("2026-08-22", 2, 12)],
+      incidents,
+    );
+    expect(series.map((d: { incidents: string[] }) => d.incidents.length)).toEqual([0, 1, 1, 0]);
+    expect(series[1].incidents).toEqual(["db outage"]);
+  });
+
+  it("drops partial trailing days and compares 7d windows", () => {
+    // 17 days: 14 complete after dropping lag 3. Prior week 1 click/day,
+    // current week 2 clicks/day -> +100%.
+    const rows = [];
+    for (let i = 0; i < 17; i++) {
+      const date = `2026-08-${String(i + 5).padStart(2, "0")}`;
+      rows.push(day(date, i < 7 ? 1 : 2, 10));
+    }
+    const series = buildDailySeries(rows, []);
+    const trend = trendSummary(series);
+    expect(trend.insufficient).toBe(false);
+    expect(trend.clicks).toEqual({ current: 14, prior: 7, deltaPct: 100 });
+    expect(trend.window?.to).toBe("2026-08-18");
+    expect(trend.explained).toBe(false);
+  });
+
+  it("marks a decline explained when the current window carries an incident", () => {
+    const rows = [];
+    for (let i = 0; i < 17; i++) {
+      const date = `2026-08-${String(i + 5).padStart(2, "0")}`;
+      rows.push(day(date, 1, 10));
+    }
+    const series = buildDailySeries(rows, [{ date: "2026-08-16", label: "outage" }]);
+    expect(trendSummary(series).explained).toBe(true);
+  });
+
+  it("reports insufficient data under 14 complete days", () => {
+    const series = buildDailySeries([day("2026-08-20", 1, 5)], []);
+    expect(trendSummary(series)).toEqual({ insufficient: true, completeDays: 0 });
   });
 });

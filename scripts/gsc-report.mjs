@@ -108,6 +108,9 @@ import {
   storyIdOf,
   summarizeQueries,
   topUrlsByImpressions,
+  GSC_LAG_DAYS,
+  buildDailySeries,
+  trendSummary,
 } from "./gsc-report-lib.mjs";
 
 // MIN_SAMPLE_IMPRESSIONS (= 100) is defined once in scripts/gsc-report-lib.mjs
@@ -132,6 +135,8 @@ const HISTORY_PATH = `${DATA_DIR}gsc-history.json`;
 const LEDGER_PATH = `${DATA_DIR}gsc-story-dates.json`;
 const SIGNALS_PATH = `${DATA_DIR}gsc-url-signals.json`;
 const QUERIES_PATH = `${DATA_DIR}gsc-queries.json`;
+const DAILY_PATH = `${DATA_DIR}gsc-daily.json`;
+const INCIDENTS_PATH = `${DATA_DIR}incidents.json`;
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
@@ -350,6 +355,9 @@ async function main() {
     webQuery: { dimensions: ["query"], type: "web" },
     newsQuery: { dimensions: ["query"], type: "news" },
     pageQuery: { dimensions: ["page", "query"], type: "web" },
+    // Site-wide daily series — the permanent "are we losing performance,
+    // and why" answer (data/gsc-daily.json, annotated from incidents.json).
+    dateSeries: { dimensions: ["date"], type: "web" },
   };
   const queryRows = {};
   const queryErrors = [];
@@ -443,6 +451,25 @@ async function main() {
   }
   const topUrls = topUrlsByImpressions(rowsBySurface.web ?? []);
 
+  // Daily series + trend, annotated from the incident ledger. Same outage
+  // discipline: a failed date pull keeps the previous file.
+  const incidents = readJson(INCIDENTS_PATH, []);
+  const dailySeries = buildDailySeries(queryRows.dateSeries, incidents);
+  const trend = trendSummary(dailySeries);
+  let dailyWritten = false;
+  if (queryErrors.some((failure) => failure.startsWith("dateSeries"))) {
+    warnings.push("gsc-daily.json not updated: date pull failed");
+  } else {
+    writeJson(DAILY_PATH, {
+      generatedAt: now.toISOString(),
+      window: { startDate, endDate, days: WINDOW_DAYS },
+      lagDays: GSC_LAG_DAYS,
+      trend,
+      days: dailySeries,
+    });
+    dailyWritten = true;
+  }
+
   const report = {
     generatedAt: now.toISOString(),
     site: SITE,
@@ -461,6 +488,7 @@ async function main() {
     urlSignals: { stories: signals.storyCount, truncated: signals.truncated, written: signalsWritten },
     topUrls,
     queries: { written: queriesWritten, strikingDistance: querySummary.strikingDistance.length, ...querySummary.counts },
+    daily: { written: dailyWritten, days: dailySeries.length, trend },
     liveCoverage: storySources.coverage,
     liveDatasetVersion: storySources.datasetVersion,
     ledgerStories: ledger.length,
@@ -556,6 +584,23 @@ async function main() {
       ),
     );
   }
+  if (!trend.insufficient) {
+    const t = trend;
+    const label = (metric) =>
+      metric.deltaPct === null ? "n/a" : `${metric.deltaPct > 0 ? "+" : ""}${metric.deltaPct}%`;
+    console.log(
+      `
+### Trend (complete days only, ${t.window.from} → ${t.window.to} vs prior 7d)
+`,
+    );
+    console.log(
+      `Clicks ${t.clicks.current} vs ${t.clicks.prior} (${label(t.clicks)}); ` +
+        `impressions ${t.impressions.current} vs ${t.impressions.prior} (${label(t.impressions)}). ` +
+        (t.explained
+          ? "Window overlaps recorded incidents (data/incidents.json) — attribute before alarming."
+          : "No recorded incident in the window — an unexplained decline here IS report-worthy."),
+    );
+  }
   for (const warning of warnings) console.warn(`[gsc-report] WARN: ${warning}`);
   const written = [
     REPORT_PATH,
@@ -563,6 +608,7 @@ async function main() {
     LEDGER_PATH,
     ...(signalsWritten ? [SIGNALS_PATH] : []),
     ...(queriesWritten ? [QUERIES_PATH] : []),
+    ...(dailyWritten ? [DAILY_PATH] : []),
   ];
   console.log(
     `\n[gsc-report] wrote ${written.join(", ")} ` +

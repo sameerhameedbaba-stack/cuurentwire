@@ -1,0 +1,39 @@
+[
+  {
+    "date": "2026-08-19",
+    "end": "2026-08-21",
+    "kind": "outage",
+    "label": "Neon free-tier egress exhausted: archive reads failing, story URLs 5xx",
+    "detail": "Postgres error 53000 on every archive read; 214 stories published 2026-08-20/21 were permanently lost and their URLs served 5xx until cleanup. Fixed by Data Cache (aeceeae) + paid Neon Launch plan 2026-08-21."
+  },
+  {
+    "date": "2026-08-19",
+    "kind": "change",
+    "label": "ISR enabled on all dynamic routes (3e8397a) — TTFB win, quota burn begins",
+    "detail": "Story TTFB 557ms -> 110-125ms; ISR write/CPU burn started that paused the account five days later."
+  },
+  {
+    "date": "2026-08-24",
+    "kind": "outage",
+    "label": "Vercel Hobby tier exceeded: whole site 402 for ~37 minutes (13:18-13:55 UTC)",
+    "detail": "ISR Writes 238%, Fluid CPU 307%. Resolved by owner-approved Pro upgrade; burn fixed by e3baa72 (deploy hygiene, burst-gated revalidation, TTL floors)."
+  },
+  {
+    "date": "2026-08-24",
+    "kind": "change",
+    "label": "Retitle wave 1 deployed (b33d8c1): homepage, categories, briefing, latest, most-covered",
+    "detail": "Search-phrased titles; Google re-processes titles over days — short-term position wobble is expected, judge at 2-4 weeks."
+  },
+  {
+    "date": "2026-08-24",
+    "kind": "fix",
+    "label": "News-sitemap integrity: listed URLs gated on archive standing (2515c55)",
+    "detail": "Before this, Googlebot-News could fetch listed URLs that answered 500 or 308 — a direct News-trust hit while it lasted."
+  },
+  {
+    "date": "2026-08-25",
+    "kind": "change",
+    "label": "Snippet/hub deploy (674502f + 23a7b79): breadth descriptions, hub links on stories, schema honesty",
+    "detail": "Multi-source descriptions, story->hub crawl paths, ItemList counts fixed, hub coverage snapshots."
+  }
+]

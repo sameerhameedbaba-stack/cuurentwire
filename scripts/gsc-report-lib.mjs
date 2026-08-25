@@ -423,6 +423,63 @@ export function summarizeQueries(webQueryRows, newsQueryRows, pageQueryRows) {
   };
 }
 
+// ── Daily series (data/gsc-daily.json) ──────────────────────────────────────
+/**
+ * Site-wide day-by-day web series with incident annotations — the permanent
+ * answer to "are we losing performance, and why". Rows come from a
+ * dimensions:["date"] pull; incidents from data/incidents.json (date, and
+ * optional end for ranges). GSC's last 2-3 days are always partial — the
+ * trend windows below exclude them so a reporting lag never reads as a
+ * traffic collapse.
+ */
+export const GSC_LAG_DAYS = 3;
+
+export function buildDailySeries(dateRows, incidents) {
+  const inRange = (incident, day) =>
+    incident.date <= day && day <= (incident.end ?? incident.date);
+  return (dateRows ?? [])
+    .map((row) => ({
+      date: row.keys?.[0] ?? "",
+      clicks: row.clicks ?? 0,
+      impressions: row.impressions ?? 0,
+      ctr: row.impressions ? Number(((row.clicks ?? 0) / row.impressions).toFixed(4)) : 0,
+      position: row.position == null ? null : Number(row.position.toFixed(1)),
+      incidents: (incidents ?? [])
+        .filter((incident) => inRange(incident, row.keys?.[0] ?? ""))
+        .map((incident) => incident.label),
+    }))
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
+/**
+ * 7-day-vs-prior-7-day trend over the COMPLETE days only (the trailing
+ * GSC_LAG_DAYS are dropped as partial). `explained` is true when any day of
+ * the current window carries an incident annotation — a decline then has a
+ * named cause and must not be reported as a mystery.
+ */
+export function trendSummary(series, lagDays = GSC_LAG_DAYS) {
+  const complete = series.slice(0, Math.max(0, series.length - lagDays));
+  if (complete.length < 14) {
+    return { insufficient: true, completeDays: complete.length };
+  }
+  const current = complete.slice(-7);
+  const prior = complete.slice(-14, -7);
+  const sum = (rows, key) => rows.reduce((total, row) => total + row[key], 0);
+  const pct = (now, before) =>
+    before === 0 ? null : Number((((now - before) / before) * 100).toFixed(1));
+  const clicksNow = sum(current, "clicks");
+  const clicksBefore = sum(prior, "clicks");
+  const imprNow = sum(current, "impressions");
+  const imprBefore = sum(prior, "impressions");
+  return {
+    insufficient: false,
+    window: { from: current[0].date, to: current[current.length - 1].date },
+    clicks: { current: clicksNow, prior: clicksBefore, deltaPct: pct(clicksNow, clicksBefore) },
+    impressions: { current: imprNow, prior: imprBefore, deltaPct: pct(imprNow, imprBefore) },
+    explained: current.some((row) => row.incidents.length > 0),
+  };
+}
+
 /**
  * Top page URLs by impressions, full URL kept — so a top earner is always
  * resolvable even after its story leaves the live window and the ledger.
