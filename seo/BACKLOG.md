@@ -150,6 +150,25 @@ no run re-litigates:
   run. /story/* aggregate CTR is NOT a success metric — it was 1.32%
   before the change.
 
+**THE DECLINE, ROOT-CAUSED WITH DAY-LEVEL DATA — 2026-08-25 (first
+data/gsc-daily.json pull).** The owner's "we are losing performance" is
+confirmed and explained. Daily web series: impressions climbed to a peak of
+438 (Aug 16) and clicks to 6 (Aug 19, position ~21). **On Aug 20 — the
+first full day of the Neon egress outage — impressions collapsed 410 → 93
+(-77%) in one day**, then 72/55/41/47, while average position exploded
+21 → 50 → 69 → 71 → 80. That is Google fetching 5xx story pages and
+demoting the site, not seasonality. The Aug 24 402 outage reinforced it.
+No unexplained component: every declining day is annotated by the incident
+ledger. **The active poison found and killed today:** the ~211 stories
+whose archive rows were never written during the outage still answered a
+permanent retriable 500 (the batched-write unavailable shield has no time
+bound) — with a healthy database, verified live 2026-08-25. Fixed by
+tombstoning: data/lost-stories.json (205 ids) + isLostStorySlug() in
+story-resolution.ts answers an honest 404 in every archive state; tests in
+archive-outage.test.ts. Recovery expectation (honest): crawl-trust dips of
+this kind take 2-6 weeks of consistent 200s to unwind; the daily series +
+incident ledger now measure it without owner involvement.
+
 **360° checklist audit 2026-08-24** (`seo/CHECKLIST-360.md` is the verdict
 map — consult it before re-investigating any "have we considered X"): three
 queued adoptions — (a) Google Preferred Sources: owner checks whether
@@ -296,7 +315,7 @@ and `s-maxage` on sitemap/RSS responses. Measure the real post-phase-1 burn
 on the Vercel usage page after ~48 h (by 26-27 Aug) before deciding how much
 of phase 2 to build.
 
-### 1. 214 published stories are permanently gone, and the site still serves them a 500
+### 1. 214 published stories permanently gone — CLOSED 2026-08-25: tombstoned, now clean 404s
 
 **Found by probing all 2,015 local ledger URLs against production this run,
 while the site was still up.** Result: **1,610 answer 200, 191 redirect, 214

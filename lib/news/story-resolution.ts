@@ -1,10 +1,29 @@
+import lostStories from "@/data/lost-stories.json";
 import {
   ArchiveUnavailableError,
+  idTokenFromSlug,
   looksLikePublishedStorySlug,
   type ArchivedStory,
 } from "@/lib/database/archive";
 import { cleanDescription } from "@/lib/news/normalization/boilerplate";
 import type { StoryCluster } from "@/lib/news/types";
+
+/**
+ * Tombstones: cluster ids whose stories are PERMANENTLY gone — published
+ * during the 2026-08-19..21 Neon egress outage, when archive writes were
+ * failing, so their rows never existed and never will. The unavailable
+ * shield below is scoped to the batched-write window (~30 minutes); without
+ * this list it would answer a retriable 500 for these URLs forever, which
+ * measurably poisoned crawl health after the outage (impressions -77%
+ * on 2026-08-20, avg position 21 → 70+, data/gsc-daily.json). A tombstoned
+ * id is an honest 404 in EVERY archive state, including outages. Future
+ * data-loss events append here (provenance inside the file).
+ */
+const LOST_STORY_IDS = new Set<string>(lostStories.ids);
+
+export function isLostStorySlug(slug: string): boolean {
+  return LOST_STORY_IDS.has(idTokenFromSlug(slug));
+}
 
 /**
  * Story URL resolution order (used by app/story/[slug]/page.tsx and its
@@ -91,6 +110,10 @@ export async function resolveStoryRequest(
     if (live.slug !== slug) return { kind: "redirect", slug: live.slug };
     return { kind: "live", cluster: live };
   }
+
+  // Known-lost ids answer 404 before any shield: absence is not unknown
+  // here, it is certain (see LOST_STORY_IDS above).
+  if (isLostStorySlug(slug)) return { kind: "not-found" };
 
   let archived: ArchivedStory | null;
   try {

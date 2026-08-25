@@ -169,6 +169,25 @@ describe("resolveStoryRequest during an archive outage", () => {
     expect(getArchived).not.toHaveBeenCalled();
   });
 
+  it("a TOMBSTONED id answers not-found in every archive state — outage included", async () => {
+    // c0016f37d6306 is a real entry in data/lost-stories.json: published
+    // during the 2026-08-19..21 outage, its archive row never written. The
+    // unavailable shield protects a ~30-minute write window; without the
+    // tombstone these URLs 500 forever and poison crawl health.
+    const LOST = "some-story-lost-in-the-outage-c0016f37d6306";
+    const duringOutage = await resolveStoryRequest(
+      LOST,
+      lookups({
+        getArchived: async () => {
+          throw new ArchiveUnavailableError("story lookup", new Error("timeout"));
+        },
+      }),
+    );
+    expect(duringOutage.kind).toBe("not-found");
+    const cleanMiss = await resolveStoryRequest(LOST, lookups());
+    expect(cleanMiss.kind).toBe("not-found");
+  });
+
   it("an archive that ANSWERS 'no such story' ALSO refuses to 404 a published-looking slug", async () => {
     // Premise change, 2026-08-22. This case asserted "not-found" while every
     // 5-minute refresh wrote straight through to Postgres, so an archive that
