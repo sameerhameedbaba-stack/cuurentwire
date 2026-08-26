@@ -12,6 +12,19 @@ Format: date | what | live URL | notes. Only entries verified live belong here.
   weekly run prepares the compliant title + first comment when the owner has
   a free evening. Never solicit upvotes.
 
+## Verified live
+
+- 2026-08-27 | **SaaSHub listing — LIVE and approved** |
+  https://www.saashub.com/currentwire | submitted 2026-08-20 on the free
+  queue (quoted as up to 32 days); approved in 7. Public page carries the
+  tagline, the 5 categories, the logo, screenshots and a "Visit website"
+  link to https://currentwire.us. Also surfacing in the category page's
+  "Recently Verified" strip at
+  https://www.saashub.com/best-news-aggregator-software . First verified
+  off-page placement. Logo + screenshots are present, so that gap is closed
+  with no owner action needed. Alternatives page:
+  https://www.saashub.com/currentwire-alternatives
+
 ## Submitted, awaiting review (move up when verified live)
 
 - 2026-08-19 | Bing Webmaster Tools | site https://currentwire.us/ imported
@@ -31,7 +44,6 @@ Format: date | what | live URL | notes. Only entries verified live belong here.
   sameerhameedbaba@gmail.com Drafts — safe to delete, never send them, they
   would be duplicates.)
 
-(no verified-live placements yet)
 
 ## Progress checks
 
@@ -121,3 +133,40 @@ The notability conclusion is unchanged either way.
 
 Still open: Product Hunt launch window from 2026-08-26; SaaSHub re-verification
 is required every quarter (next ~2026-11).
+
+### 2026-08-27 (weekly run — first placement goes live)
+
+- **SaaSHub: LIVE.** See "Verified live" above. Approved 7 days after the
+  2026-08-20 free-queue submission, well inside the 32-day quote. Both
+  remaining gaps from that submission (logo, screenshots) are filled on the
+  live page, so nothing is owed here until the ~2026-11 re-verification.
+- **Curlie: still queued.** curlie.org search for "currentwire" returns
+  nothing. Normal — editor review runs for months.
+- **Journalist's Toolbox: no listing.** Fetched journaliststoolbox.ai, no
+  mention of CurrentWire. The site has no news-aggregation section at all
+  (closest is "Summarization tools"), so this pitch was always a long shot.
+- **Feedspot: not listed.** The USA news websites page still lists 90 sites,
+  none of them CurrentWire. Editor-reviewed, 7 days in, no signal either way.
+- **All 5 listicle pitches: no additions.** None of the target articles has
+  been edited since the pitches went out, which is the more useful signal —
+  they have not rejected us, they simply have not touched the piece:
+  - iTechGuides "9 Best News Aggregators in 2026" — still checked 2026-08-10
+  - daily.dev "10 Best News Aggregator Apps in 2026" — still 2026-07-30
+  - Readless "Best News Aggregators 2026" — still 2026-07-29
+  - Readless "Best AI News Aggregators" — still 2026-08-09
+  - MediaHacker "10 Best News Aggregator Apps (2026)" — HTTP 403, the site
+    now blocks automated fetches, so it can only be checked by hand
+- **Web mentions: still zero.** Searches for "currentwire.us" and
+  "CurrentWire news aggregator" return nothing but similarly-named sites
+  (Loudwire, GeekWire, Newswire.lk). The SaaSHub page is new enough that it
+  has not been indexed yet; expect it to be the first hit that appears.
+- **Social profiles: unchanged, no `sameAs` added.**
+  linkedin.com/company/currentwire → HTTP 404. facebook.com/currentwire →
+  still resolves to an unrelated handle (@current.wire.3), not a CurrentWire
+  page. x.com/currentwire → X blocks automated fetches, unverifiable from
+  here. lib/seo/structured-data.tsx correctly still has no sameAs. No code
+  changes this run.
+- **Product Hunt launch kit prepared** at `seo/offpage/producthunt/` — six
+  1270×760 @2x gallery images cut from the live site, plus LAUNCH.md with
+  the tagline (55/60), description (253/260) and first comment. Owner time
+  is now scheduling only; no asset work left.
