@@ -30,13 +30,11 @@ upvote services and promotion groups get you removed from the homepage.
 Account created by the owner, feed followed, and confirmed findable in
 Feedly's search by the name "CurrentWire".
 
-### Inoreader RSS — waiting on you
-https://www.inoreader.com/signup . Their form wants an email, a password and
-a reCAPTCHA "I'm not a robot" — all three are off-limits for the assistant
-(account creation, password entry and bot checks each independently), so this
-one is entirely yours. Once the account exists, say so and
-`https://currentwire.us/rss` gets added for you the same way Feedly was.
-Distribution rather than backlinks; no deadline.
+### ~~Inoreader~~ — DONE 2026-08-28
+Account created by the owner (`support222`), feed followed, 50 articles
+synced. Unlike Feedly it is NOT findable by name in Inoreader's feed search
+yet — see LEDGER. Nothing owed; the weekly run re-checks whether it enters
+their database.
 
 ## Recurring
 
@@ -49,7 +47,9 @@ Distribution rather than backlinks; no deadline.
 ## Later (when you have time)
 
 ### NewsBlur RSS
-Same 3-minute job as Feedly/Inoreader, whenever you are in there anyway.
+Same 3-minute job as Feedly/Inoreader. Lower priority now: of the two just
+done, only Feedly actually produced name-searchable discovery, so treat this
+family of tasks as low-yield rather than a reliable win.
 
 ### Show HN
 Account exists. Post when you have a free evening.

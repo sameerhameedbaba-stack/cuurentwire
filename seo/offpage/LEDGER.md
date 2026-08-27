@@ -57,6 +57,20 @@ Format: date | what | live URL | notes. Only entries verified live belong here.
   security teams; the consumer News Reader still exists, is still free and
   needs no card, but it is no longer the company's focus.
 
+- 2026-08-28 | **Inoreader — feed followed.** Owner created the free account
+  (username `support222`, on support@currentwire.us — the intended contact
+  address, unlike the Product Hunt/Feedly accounts) and verified the email.
+  Feed added from Add feeds -> Follow websites -> paste
+  https://currentwire.us/rss ; Inoreader resolved it as "CurrentWire — Top
+  Stories" with live headlines and pulled 50 articles on the first sync.
+  **Discoverability: NO, unlike Feedly.** Immediately after following, an
+  Inoreader feed search for the plain word "CurrentWire" returns *"We
+  couldn't find any feeds related to CurrentWire in the Inoreader
+  database."* The feed resolves by URL but is not in their searchable
+  database. It may enter it later with age or followers — worth a re-check
+  in a few weeks, but do not assume this one buys discovery the way Feedly
+  does.
+
 ## Submitted, awaiting review (move up when verified live)
 
 - 2026-08-19 | Bing Webmaster Tools | site https://currentwire.us/ imported
