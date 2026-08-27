@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-08-25T16:12:07.269Z",
+  "generatedAt": "2026-08-27T21:32:29.835Z",
   "window": {
-    "startDate": "2026-07-29",
-    "endDate": "2026-08-25",
+    "startDate": "2026-07-31",
+    "endDate": "2026-08-27",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
     "insufficient": true,
-    "completeDays": 10
+    "completeDays": 12
   },
   "days": [
     {
@@ -109,9 +109,9 @@
     {
       "date": "2026-08-24",
       "clicks": 1,
-      "impressions": 47,
-      "ctr": 0.0213,
-      "position": 75.3,
+      "impressions": 49,
+      "ctr": 0.0204,
+      "position": 76.1,
       "incidents": [
         "Vercel Hobby tier exceeded: whole site 402 for ~37 minutes (13:18-13:55 UTC)",
         "Retitle wave 1 deployed (b33d8c1): homepage, categories, briefing, latest, most-covered",
@@ -121,11 +121,33 @@
     {
       "date": "2026-08-25",
       "clicks": 0,
-      "impressions": 0,
+      "impressions": 71,
       "ctr": 0,
-      "position": 0,
+      "position": 81.6,
       "incidents": [
         "Snippet/hub deploy (674502f + 23a7b79): breadth descriptions, hub links on stories, schema honesty"
+      ]
+    },
+    {
+      "date": "2026-08-26",
+      "clicks": 0,
+      "impressions": 41,
+      "ctr": 0,
+      "position": 79,
+      "incidents": [
+        "Redirect loop on a news-sitemap URL found, root-caused and cleared (9fd5991)",
+        "Archive write burst stalled: 14 h on Aug 26, 10 h on Aug 27, with every surface answering 200"
+      ]
+    },
+    {
+      "date": "2026-08-27",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 81.8,
+      "incidents": [
+        "Archive write burst stalled: 14 h on Aug 26, 10 h on Aug 27, with every surface answering 200",
+        "Write burst restored to ~2/hour and made phase-independent (e1b4cfb)"
       ]
     }
   ]

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-25T16:12:07.269Z",
+  "generatedAt": "2026-08-27T21:32:29.835Z",
   "window": {
-    "startDate": "2026-07-29",
-    "endDate": "2026-08-25",
+    "startDate": "2026-07-31",
+    "endDate": "2026-08-27",
     "days": 28
   },
   "webQueries": [
@@ -14,9 +14,9 @@
     },
     {
       "query": "tommy john",
-      "impressions": 24,
+      "impressions": 26,
       "clicks": 0,
-      "position": 63.8
+      "position": 64.9
     },
     {
       "query": "jd vance hometown book response",
@@ -53,6 +53,12 @@
       "impressions": 7,
       "clicks": 0,
       "position": 60.3
+    },
+    {
+      "query": "what is the current national debt",
+      "impressions": 6,
+      "clicks": 0,
+      "position": 92.2
     },
     {
       "query": "rise and fall of tony romo",
@@ -103,6 +109,12 @@
       "position": 77
     },
     {
+      "query": "what is us national debt today",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 89
+    },
+    {
       "query": "wire news",
       "impressions": 3,
       "clicks": 0,
@@ -143,6 +155,12 @@
       "impressions": 2,
       "clicks": 0,
       "position": 70
+    },
+    {
+      "query": "dan bilzerian",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 93
     },
     {
       "query": "depleted strategic oil reserve nears level that raises concerns about damage to caverns, operations",
@@ -199,10 +217,22 @@
       "position": 82.5
     },
     {
+      "query": "playstation speakers",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 54.5
+    },
+    {
       "query": "prediction markets cnbc",
       "impressions": 2,
       "clicks": 0,
       "position": 69
+    },
+    {
+      "query": "property debt",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 98
     },
     {
       "query": "recent events",
@@ -215,6 +245,12 @@
       "impressions": 2,
       "clicks": 0,
       "position": 57
+    },
+    {
+      "query": "sigal chattah",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 58.5
     },
     {
       "query": "telus outagw",
@@ -241,10 +277,28 @@
       "position": 34.5
     },
     {
+      "query": "wayne national forest trump",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 82
+    },
+    {
       "query": "what is happening with the uss abraham lincoln",
       "impressions": 2,
       "clicks": 0,
       "position": 19
+    },
+    {
+      "query": "what is the current us national debt",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 89.5
+    },
+    {
+      "query": "what is the national debt now",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 81
     },
     {
       "query": "who will be florida's next governor",
@@ -343,6 +397,12 @@
       "position": 38
     },
     {
+      "query": "autopsy while alive",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 63
+    },
+    {
       "query": "bae export control violations settlement",
       "impressions": 1,
       "clicks": 0,
@@ -377,6 +437,18 @@
       "impressions": 1,
       "clicks": 0,
       "position": 9
+    },
+    {
+      "query": "canada tariff pause",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 76
+    },
+    {
+      "query": "cancer vaccine adjuvant",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 92
     },
     {
       "query": "cancer vaccine melanoma",
@@ -433,6 +505,12 @@
       "position": 67
     },
     {
+      "query": "current amount of national debt",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 87
+    },
+    {
       "query": "current avents",
       "impressions": 1,
       "clicks": 0,
@@ -457,16 +535,22 @@
       "position": 98
     },
     {
+      "query": "current national debt in the us",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 92
+    },
+    {
+      "query": "current united states national debt",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 90
+    },
+    {
       "query": "current xmen lineup",
       "impressions": 1,
       "clicks": 0,
       "position": 55
-    },
-    {
-      "query": "dan bilzerian",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 95
     },
     {
       "query": "david crowley hasan piker",
@@ -503,6 +587,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 63
+    },
+    {
+      "query": "did best buy get rid of dei",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 82
     },
     {
       "query": "did congress go on recess",
@@ -577,6 +667,12 @@
       "position": 90
     },
     {
+      "query": "famous autopsy images",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 99
+    },
+    {
       "query": "fda egg recall salmonella",
       "impressions": 1,
       "clicks": 0,
@@ -637,10 +733,34 @@
       "position": 27
     },
     {
+      "query": "full autopsy",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 63
+    },
+    {
       "query": "future aircraft carrier design",
       "impressions": 1,
       "clicks": 0,
       "position": 44
+    },
+    {
+      "query": "georgia detention watch",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 91
+    },
+    {
+      "query": "governor alaska",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 76
+    },
+    {
+      "query": "have there been any recent earthquakes",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 64
     },
     {
       "query": "hawaii hurricane warning",
@@ -685,6 +805,12 @@
       "position": 91
     },
     {
+      "query": "how much is the national debt today",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 87
+    },
+    {
       "query": "how to disable gemini watermark",
       "impressions": 1,
       "clicks": 0,
@@ -695,6 +821,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 44
+    },
+    {
+      "query": "hurricane warning",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 99
     },
     {
       "query": "incumbent senators who lost primaries",
@@ -763,6 +895,12 @@
       "position": 73
     },
     {
+      "query": "is there a vaccine for cancer",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 75
+    },
+    {
       "query": "is trump making money off the presidency",
       "impressions": 1,
       "clicks": 0,
@@ -805,6 +943,12 @@
       "position": 96
     },
     {
+      "query": "lifeguard white nose",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 68
+    },
+    {
       "query": "lindsay clancy news",
       "impressions": 1,
       "clicks": 0,
@@ -821,6 +965,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 97
+    },
+    {
+      "query": "lions bay, bc",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 100
     },
     {
       "query": "lions bay, british columbia",
@@ -877,6 +1027,12 @@
       "position": 59
     },
     {
+      "query": "migrants from mexico to usa",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 85
+    },
+    {
       "query": "moderna",
       "impressions": 1,
       "clicks": 0,
@@ -919,16 +1075,52 @@
       "position": 66
     },
     {
+      "query": "mrna cancer treatment",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 72
+    },
+    {
+      "query": "mrna cancer vaccine research",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 99
+    },
+    {
+      "query": "name of most recent hurricane",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 65
+    },
+    {
       "query": "name of tropical storm today",
       "impressions": 1,
       "clicks": 0,
       "position": 94
     },
     {
+      "query": "national forest protection",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 100
+    },
+    {
+      "query": "new cancer vaccine",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 72
+    },
+    {
       "query": "news about the uss abraham lincoln",
       "impressions": 1,
       "clicks": 0,
       "position": 12
+    },
+    {
+      "query": "news trump cnn",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 98
     },
     {
       "query": "news wire us",
@@ -949,6 +1141,12 @@
       "position": 98
     },
     {
+      "query": "our national debt today",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 85
+    },
+    {
       "query": "pfizer moderna",
       "impressions": 1,
       "clicks": 0,
@@ -961,10 +1159,16 @@
       "position": 66
     },
     {
-      "query": "property debt",
+      "query": "present national debt",
       "impressions": 1,
       "clicks": 0,
-      "position": 96
+      "position": 98
+    },
+    {
+      "query": "present us debt",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 85
     },
     {
       "query": "reporter today",
@@ -991,10 +1195,10 @@
       "position": 54
     },
     {
-      "query": "sigal chattah",
+      "query": "sigal chattah us attorney",
       "impressions": 1,
       "clicks": 0,
-      "position": 30
+      "position": 65
     },
     {
       "query": "soapbox derby pdx",
@@ -1021,6 +1225,12 @@
       "position": 26
     },
     {
+      "query": "the athletic top 100 soccer players",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 73
+    },
+    {
       "query": "the current national debt",
       "impressions": 1,
       "clicks": 0,
@@ -1037,6 +1247,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 58
+    },
+    {
+      "query": "the window broke",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 66
     },
     {
       "query": "the ‘betting coup’ shaking up horse racing",
@@ -1123,6 +1339,12 @@
       "position": 27
     },
     {
+      "query": "trump asks supreme court",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 55
+    },
+    {
       "query": "trump cnn",
       "impressions": 1,
       "clicks": 0,
@@ -1171,6 +1393,12 @@
       "position": 118
     },
     {
+      "query": "tupac theory",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 95
+    },
+    {
       "query": "united healthxare ceo",
       "impressions": 1,
       "clicks": 0,
@@ -1187,6 +1415,18 @@
       "impressions": 1,
       "clicks": 0,
       "position": 28
+    },
+    {
+      "query": "us national debt now",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 90
+    },
+    {
+      "query": "us national debt today",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 99
     },
     {
       "query": "us vaccination progress",
@@ -1219,6 +1459,12 @@
       "position": 73
     },
     {
+      "query": "vaccine rate",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 91
+    },
+    {
       "query": "virgin mary statue",
       "impressions": 1,
       "clicks": 0,
@@ -1243,10 +1489,34 @@
       "position": 55
     },
     {
-      "query": "what is the current national debt",
+      "query": "what is national debt today",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 90
+    },
+    {
+      "query": "what is recess therapy",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 64
+    },
+    {
+      "query": "what is the amount of the national debt today",
       "impressions": 1,
       "clicks": 0,
       "position": 95
+    },
+    {
+      "query": "what is the current amount of the national debt",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 98
+    },
+    {
+      "query": "what is the current u.s. debt?",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 93
     },
     {
       "query": "what is the name of the latest hurricane",
@@ -1255,10 +1525,100 @@
       "position": 77
     },
     {
+      "query": "what is the national debt as of today",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 95
+    },
+    {
+      "query": "what is the national debt currently",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 86
+    },
+    {
+      "query": "what is the national debt of the us right now",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 89
+    },
+    {
+      "query": "what is the national debt right now",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 83
+    },
+    {
+      "query": "what is the national debt today",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 84
+    },
+    {
+      "query": "what is the national debt today in the united states",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 91
+    },
+    {
+      "query": "what is the present national debt",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 90
+    },
+    {
+      "query": "what is the total us debt today",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 93
+    },
+    {
       "query": "what percentage of the us is vaccinated",
       "impressions": 1,
       "clicks": 0,
       "position": 80
+    },
+    {
+      "query": "what was national debt now",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 89
+    },
+    {
+      "query": "what was the most recent hurricane",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 56
+    },
+    {
+      "query": "what was the national debt today",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 97
+    },
+    {
+      "query": "what will russia do",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 48
+    },
+    {
+      "query": "what's our current national debt",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 100
+    },
+    {
+      "query": "what's the current national debt",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 85
+    },
+    {
+      "query": "what's the current us debt",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 83
     },
     {
       "query": "when does congress come back from summer break",
@@ -1585,8 +1945,8 @@
     }
   ],
   "counts": {
-    "webRows": 232,
+    "webRows": 292,
     "newsRows": 0,
-    "pageQueryRows": 239
+    "pageQueryRows": 299
   }
 }
