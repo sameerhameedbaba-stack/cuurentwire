@@ -41,5 +41,18 @@
     "kind": "fix",
     "label": "Redirect loop on a news-sitemap URL found, root-caused and cleared (9fd5991)",
     "detail": "Two slugs of cluster c73a14a645aa9 307ed to each other: a redirect response cached ~4.9h (no NEWS_CACHE_TAG, so revalidateTag never invalidates it, inheriting the 30-day story TTL) paired with a fresh redirect pointing back. Googlebot-News following the sitemap entry reached no page. Cleared by the deploy's ISR wipe; mechanism still live (BACKLOG item 1). seo-health.mjs now names redirect loops instead of reporting TypeError: fetch failed."
+  },
+  {
+    "date": "2026-08-26",
+    "end": "2026-08-27",
+    "kind": "outage",
+    "label": "Archive write burst stalled: 14 h on Aug 26, 10 h on Aug 27, with every surface answering 200",
+    "detail": "Measured via /api/stats/archive-sources: last archive row 2026-08-26T07:31:39Z then nothing for 14 h; 2026-08-27T07:00:30Z then nothing for 10 h. Stories published inside the windows got no permanent row (6 already answered 500 on Aug 26), /news-sitemap.xml starved from 643 entries to 132 with its newest entry 14.4 h old, and IndexNow was never pinged. Cause: the cron route returned before the persist gate whenever the dataset was fresh, and a cold instance opened the gate only in minutes 0-4/30-34, so the gate was consulted ~4x/hour at a drifting phase. Fixed 2026-08-27 by e1b4cfb."
+  },
+  {
+    "date": "2026-08-27",
+    "kind": "fix",
+    "label": "Write burst restored to ~2/hour and made phase-independent (e1b4cfb)",
+    "detail": "Cron route decides the burst on every tick (a fresh dataset skips the refresh only); persist-gate cold window widened to half the cycle so any scheduler beat <= 15 min must land in one. Uptime probe and seo-health now fail when the newest news-sitemap publication_date (the archive's first_seen_at) is over 4 h old, so a repeat alerts in <= 30 min instead of being found by hand."
   }
 ]

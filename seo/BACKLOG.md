@@ -1,5 +1,22 @@
 # SEO Backlog
 
+**Status 2026-08-27 daily run: production answers 200 everywhere and has
+done all day — and it was quietly failing to KEEP anything.** The permanent
+archive took its last row at **07:00:30 UTC and then nothing for 10 hours**
+(measured through `/api/stats/archive-sources`), exactly as it had for 14
+hours the day before. Stories published inside those windows get no archive
+row, so they have no permanent URL, never enter `/news-sitemap.xml` (which
+is gated on archive standing — the feed fell to **132 entries on Aug 26**,
+newest entry 14.4 h old) and are never pinged to IndexNow. Root-caused to
+two rules that only opened the write gate when a drifting refresh tick
+happened to land in a 5-minute window, and **fixed in `e1b4cfb`** (item 0c).
+Three `[auto-alert]` issues are open — **#4 and #5 were opened 2026-08-26
+07:31/07:32 UTC and no run had seen them until today** (the daily loop runs
+before that hour): #5 (seo-health) is **already stale** — the local run
+against production passes all checks — and #4 (url-survival) was **the
+tombstones reporting themselves as broken promises**, now fixed. #2
+(coherence) remains open and is item 3.
+
 **Status 2026-08-26 daily run: production is HEALTHY, and a crawl-breaking
 redirect loop was found, root-caused and cleared.** `/`, `/news-sitemap.xml`,
 `/archive-sitemap.xml` and `/rss` all 200. `node scripts/seo-health.mjs`
@@ -318,6 +335,98 @@ a real CPU hog), `dynamicParams = false` on closed param spaces
 and `s-maxage` on sitemap/RSS responses. Measure the real post-phase-1 burn
 on the Vercel usage page after ~48 h (by 26-27 Aug) before deciding how much
 of phase 2 to build.
+
+### 0c. The archive write burst was firing a few times a day, not twice an hour — SHIPPED 2026-08-27 (`e1b4cfb`, `ab2ac21`, `c88e8ab`)
+
+**The most expensive kind of failure this site can have: every public
+surface healthy, and nothing being kept.** Found 2026-08-27 by reading the
+newest `<news:publication_date>` in `/news-sitemap.xml` (that date is the
+archive's `first_seen_at`, so it dates the last successful database write)
+and confirming against `/api/stats/archive-sources`:
+
+| day | last archive row | dry for | news-sitemap |
+|---|---|---|---|
+| 2026-08-26 | `07:31:39Z` | **14 h** | 643 -> **132** entries, newest 14.4 h old |
+| 2026-08-27 | `07:00:30Z` | **10 h** (and counting when found) | 254 entries, newest 10.1 h old |
+
+Both days show the same shape: a cluster of bursts between 03:00 and 07:00
+UTC (Aug 27: `03h:693 04h:26 05h:16 06h:18 07h:10` rows), then nothing.
+
+**What each stalled hour costs.** A story with no archive row has no
+permanent home: when it ages out of the 72 h live dataset its URL answers
+the deliberate retriable 500 and eventually joins `data/lost-stories.json`.
+Six were already there on 2026-08-26 (`unavailable 500` in the survival
+probe). This is the exact mechanism that permanently lost 205 stories in the
+2026-08-20 outage and cost 77% of impressions. It also starves Google News
+(the sitemap gate) and silences IndexNow (pings only happen inside a burst).
+
+**Root cause — three layers, each found by fixing the one above it.**
+
+1. `app/api/cron/news-refresh/route.ts` returned EARLY whenever the dataset
+   was younger than `RSS_REFRESH_MINUTES`, so `shouldPersistNow()` was only
+   ever consulted on ticks that also refreshed.
+2. `lib/database/persist-gate.ts` opened the gate, on a cold instance, only
+   in minutes 0-4 and 30-34 — a window narrower than any beat above five
+   minutes is guaranteed to catch.
+3. **Nothing was calling the endpoint at all.** `vercel.json` carried one
+   daily `0 6 * * *` cron (a Hobby-plan artifact — that tier allows a single
+   daily cron) and the 5-minute beat the code is written around came from an
+   EXTERNAL scheduler that no longer reaches production. Measured after
+   layers 1-2 were already fixed and deployed: the dataset sat unchanged
+   from 18:23:52 to 18:48:53 against a 15-minute refresh interval, zero
+   archive rows were written after 17:43, and 11 of the 50 stories in `/rss`
+   had no archive row. With no beat, the burst could only fire when traffic
+   happened to regenerate the cache inside the persist window — which is the
+   entire 03:00-07:00 pattern: a wandering coincidence, never a schedule.
+
+**Fixed:** the cadence guard skips the REFRESH only, never the burst; the
+cold window is caller-aware (cron half the cycle — `persist-gate.test.ts`
+proves exhaustively that any beat <= 15 min lands in one; producer stays on
+minutes 0-4/30-34 because it runs on cache-missing traffic and the wide
+window made it write in 12 distinct minutes of one window); and the site now
+has its own quarter-hourly Vercel cron, `0,15,30,45 * * * *`, whose ticks
+land on minutes 0 and 30 inside the window. 96 invocations/day against the
+288/day a 5-minute beat implies — below the cost the code was written for,
+and the ~2 bursts/hour (~48/day) the ISR comment already assumes.
+
+**Verified live, in two stages:**
+
+```
+17:32  news-sitemap 228 entries, newest 07:00:30Z (631 min old)
+17:37  news-sitemap 715 entries, newest 17:35:48Z (1 min old)   <- gate fix
+       530 rows written in the 17:00 hour; today 763 -> 1,293 archived
+18:48  archive rows since 17:44: 0                              <- no scheduler
+18:54  c88e8ab deployed, Vercel cron registered
+19:00  109 rows written on the minute-0 tick                    <- scheduler fix
+19:07  50 of 50 stories in /rss have an archive row (was 39/50)
+19:00 / 19:31 / 20:00  109 / 41 / 39 rows — the cadence, three bursts running
+```
+
+**Detection shipped with it** (a stall was invisible to every existing
+check: URLs 200, dataset fresh, sitemap over the 50-entry floor):
+`.github/workflows/uptime.yml` and `scripts/seo-health.mjs` now fail when
+the newest news-sitemap publication date is over 4 hours old. The uptime
+probe reuses the sitemap it already downloads — no extra request, no
+database read.
+
+### 0d. The url-survival gate had gone permanently red on the site's own tombstones — SHIPPED 2026-08-27 (`e1b4cfb`)
+
+`[auto-alert]` **#4**, opened 2026-08-26 07:31 UTC: *"FAIL: 212 previously
+published URL(s) return 4xx — the published URLs never 404 guarantee is
+broken"*. Reproduced locally against production, then checked id by id:
+**all 212 URLs map to exactly the 205 cluster ids in
+`data/lost-stories.json`** (7 are renamed slugs of the same ids) — the
+deliberate 404s this loop shipped on 2026-08-25 to stop those stories
+serving a crawl-poisoning 500. Zero unexplained 404s.
+
+So the gate was failing every night for the site behaving exactly as
+designed, which is the same defect the GONE/LOST split was written to
+prevent, arriving from a third side. `classifyResults()` now has a
+**TOMBSTONED** class: a 4xx whose cluster id is listed in
+`data/lost-stories.json` is reported and does not fail the build. Any other
+4xx still fails; a 5xx on a tombstoned id is still an outage; and tombstones
+are excluded from `RUN_HEALTHY_SHARE` entirely so a growing list can never
+suspend LOST classification for unrelated 5xx. Six new unit tests.
 
 ### 1. A stale cached redirect can pair with a fresh one and form an infinite loop — OPEN (instance cleared, mechanism live)
 
