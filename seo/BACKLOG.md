@@ -469,7 +469,46 @@ prevent, arriving from a third side. `classifyResults()` now has a
 are excluded from `RUN_HEALTHY_SHARE` entirely so a growing list can never
 suspend LOST classification for unrelated 5xx. Six new unit tests.
 
-### 1. A stale cached redirect can pair with a fresh one and form an infinite loop — OPEN (instance cleared, mechanism live)
+### 1. A stale cached redirect can pair with a fresh one and form an infinite loop — SHIPPED 2026-08-28 (`9dc666f`), verified live
+
+**Fixed by re-rendering the slug each rename retires.** The burst already
+reads the archive per cluster id, so the rename is free to detect:
+`readArchivedClusterSlugs()` returns the stored slug per id (and
+`findNewClusterIds` is now derived from it — one query, both answers),
+`archivePublicDataset` records the slug each upsert retires, and the cron
+burst calls `revalidatePath('/story/<retired slug>')` for each. The frozen
+307 is purged at the moment the slug becomes an alias, so it can never
+outlive its target; a two-way flap re-renders both sides, so neither can
+freeze pointing at the other. 8 new unit tests, including the flap and the
+"archive did not answer" case.
+
+**Measured before writing code, because the fix is only worth it if renames
+are common: 5 of 178 archived live stories were slugged differently in the
+live dataset than in the archive at one instant**, and across the 22:00 UTC
+burst **8 of ~690 news-sitemap stories were renamed in 32 minutes** (~15/h).
+Headline flapping is the normal case, exactly as this item said.
+
+**Live verification** — every one of those 8 retired slugs, probed right
+after the burst:
+
+```
+307 age=0   MISS         -> current canonical OK   (x6)
+307 age=0   REVALIDATED  -> current canonical OK
+307 age=752 STALE        -> current canonical OK
+```
+
+Not one frozen `HIT` pointing at an outdated slug, and no loops:
+`scripts/seo-health.mjs`, which chases every news-sitemap URL hop by hop,
+passed. (`MISS` alone cannot distinguish "purged by the burst" from "never
+cached"; the `REVALIDATED` row is the one that shows the entry existed and
+was marked.)
+
+Cost: single digits per burst against the 150 canonical revalidations the
+same burst already performs, and only when a headline actually changes.
+
+The original analysis follows, unchanged.
+
+#### Original finding (2026-08-26)
 
 **Found 2026-08-26 by `scripts/seo-health.mjs`, which had been reporting it
 as an unreadable `TypeError: fetch failed`.** One of 643 news-sitemap URLs
