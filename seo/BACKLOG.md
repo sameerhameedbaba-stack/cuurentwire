@@ -1,5 +1,46 @@
 # SEO Backlog
 
+**Status 2026-08-28 manual session (owner asked why performance keeps
+worsening): gsc.yml run #6 dispatched, data lands through Aug 27, and an
+adversarial multi-agent review REFUTED the "decline fully explained, all
+fixed" verdict.** What survived: the Aug 20 collapse is the outage
+(impressions 410 -> 93, -77%), the tombstoned outage URLs have **fully
+dropped out of Google's impression data** (0 of 205 ids appear in
+`gsc-url-signals.json`), and production is verified healthy live (cron
+beating, newest news-sitemap entry 37 min old, 672 entries). What did NOT
+survive, three findings, in rank order:
+
+1. **ACTIVE: Google de-indexed 11 of 12 indexed hub/category pages between
+   the Aug 25 and Aug 27 URL-Inspection sweeps — without re-crawling them**
+   (`lastCrawlTime` Aug 15-16 identical in both sweeps; only `/` remains
+   indexed). This is index-selection re-evaluation — most plausibly the
+   site-level trust drop propagating — NOT a crawl failure. Per the standing
+   verdict (2026-08-25): do not resubmit sitemaps, do not add links; the
+   levers are uninterrupted uptime + page value. Now in
+   `data/incidents.json` (kind "google") so trend dips self-explain. This
+   data point arrives early for the **~Sep 22 hub-consolidation decision**
+   — if the next sweep shows no recovery, the consolidation case
+   strengthens.
+2. **NEW ITEM — CTR pass on the pages that already rank (CTR bucket,
+   sanctioned by STRATEGY §3).** 509 query impressions -> 3 clicks. The
+   named targets, each with impressions and near-zero clicks:
+   `c5a295c6ce624` ("espn nba coverage cuts", 69 impr, pos 9, 0 clicks —
+   the single largest impression pool on the site), `cb3392289511d`
+   ("jd vance hometown book response", 19 impr, pos 7.2, 0 clicks),
+   `cf03400ab04ec` ("trump bbc lawsuit judge change", 14 impr, pos 12.4),
+   plus a SERP-presentation check on the **position-1, 0-click** page for
+   "oswaldo pirela ice detention". Execution = the already-sanctioned
+   per-story title/description override (PREFIX-experiment infrastructure);
+   guardrails apply (no fake freshness, no "sources" wording).
+3. **Complete-day series is not a flat bottom**: erosion continued through
+   Aug 23 (impressions 93 -> 72 -> 55 -> 41, position 49.8 -> 79.7), a small
+   Aug 24 uptick (49), and partial Aug 25 (71) already exceeds complete
+   Aug 24 despite lag undercounting — a weak stabilization hint, judge only
+   after Aug 25-27 finalize (~Aug 30). The Aug 22-23 erosion is
+   mechanistically consistent with Google progressively dropping the 214
+   dead outage URLs (lagged fallout, now annotated via the de-indexation
+   incident above).
+
 **Status 2026-08-27 daily run: production answers 200 everywhere and has
 done all day — and it was quietly failing to KEEP anything.** The permanent
 archive took its last row at **07:00:30 UTC and then nothing for 10 hours**

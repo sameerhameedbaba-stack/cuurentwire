@@ -37,6 +37,13 @@
     "detail": "Multi-source descriptions, story->hub crawl paths, ItemList counts fixed, hub coverage snapshots."
   },
   {
+    "date": "2026-08-25",
+    "end": "2026-08-27",
+    "kind": "google",
+    "label": "Google de-indexed 11 of 12 indexed hub/category pages between URL-Inspection sweeps (Aug 25 -> 27), without re-crawling",
+    "detail": "All 11 (/latest, /topics, /sources, /us, /canada, /politics, /business, /technology, /climate, /culture, /sports) moved indexed -> 'Crawled - currently not indexed' with lastCrawlTime unchanged (Aug 15-16) in BOTH sweeps - an index-selection re-evaluation of pre-outage copies, most plausibly the site-level trust drop from the Aug 19-27 instability propagating. Not a crawl failure: nothing to resubmit, no fetch to fix. Only / remains indexed of the 34 swept paths. Watch for reversal as clean uptime accumulates; this is a direct input to the ~Sep 22 hub-consolidation decision."
+  },
+  {
     "date": "2026-08-26",
     "kind": "fix",
     "label": "Redirect loop on a news-sitemap URL found, root-caused and cleared (9fd5991)",
