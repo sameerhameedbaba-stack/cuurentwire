@@ -26,12 +26,17 @@ upvote services and promotion groups get you removed from the homepage.
 
 ## Owner-only, whenever (~5 min)
 
-### Feedly + Inoreader RSS
-Free accounts on each, then add `https://currentwire.us/rss`. Account creation
-is off-limits for the assistant regardless of permission — the same rule that
-left the SaaSHub sign-up and the MediaHacker anti-spam question with you. Once
-the accounts exist, say so and the feed-adding can be done for you.
-Distribution rather than backlinks; low priority, no deadline.
+### ~~Feedly~~ — DONE 2026-08-28
+Account created by the owner, feed followed, and confirmed findable in
+Feedly's search by the name "CurrentWire".
+
+### Inoreader RSS — waiting on you
+https://www.inoreader.com/signup . Their form wants an email, a password and
+a reCAPTCHA "I'm not a robot" — all three are off-limits for the assistant
+(account creation, password entry and bot checks each independently), so this
+one is entirely yours. Once the account exists, say so and
+`https://currentwire.us/rss` gets added for you the same way Feedly was.
+Distribution rather than backlinks; no deadline.
 
 ## Recurring
 

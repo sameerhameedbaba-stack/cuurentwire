@@ -41,6 +41,22 @@ Format: date | what | live URL | notes. Only entries verified live belong here.
   what happened. The launch date can still be changed at any time from
   https://www.producthunt.com/my/products .
 
+## Live distribution
+
+- 2026-08-28 | **Feedly — feed followed and indexed.** Owner created the free
+  account (Lavita's Feedly); the feed was added from Follow sources ->
+  https://currentwire.us/rss , which Feedly resolved instantly as
+  "CurrentWire — Top Stories / currentwire.us", pulling live headlines at
+  ~12 articles/week. Filed under a "News" folder.
+  **Verified discoverability:** searching Feedly for the plain word
+  "CurrentWire" (not the URL) returns the feed card. This settles the open
+  question from earlier runs — the feed IS findable by name in Feedly's
+  discovery search, not only resolvable by URL. Caveat: tested from a
+  logged-in account that follows the feed, so results may be personalised.
+  Note: Feedly has repositioned around "Feedly Threat Intelligence" for
+  security teams; the consumer News Reader still exists, is still free and
+  needs no card, but it is no longer the company's focus.
+
 ## Submitted, awaiting review (move up when verified live)
 
 - 2026-08-19 | Bing Webmaster Tools | site https://currentwire.us/ imported
