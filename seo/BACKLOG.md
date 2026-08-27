@@ -917,6 +917,47 @@ and refused. Real movement needs either better signals (the shadow
 measured in `tests/shadow/`) or a decision about the `all` rail — not a
 threshold nudge.
 
+**THE `all` RAIL IS DECIDED AND SHIPPED 2026-08-28 (`015e2b9`), verified
+live.** The "most promising thread" above was right, and the live leak was
+far larger than the 2026-08-26 sample suggested.
+
+*Measured on production BEFORE the fix* — 9 category pages, their "Related
+coverage" rails read, then every listed story fetched for its real
+`NewsArticle.articleSection`: **all 9 pages were leaking, 24 general-bucket
+placements across 54 rail slots.** `/health` was the worst — **6 of 6** rail
+slots were general-bucket stories, including "Talking Shop with Kelly
+Rowland". The double-placement mechanism is visible in the data: one Jemima
+Kirke fashion interview sat on `/culture` AND `/politics`; one emission study
+on `/science` AND `/world`; one Maui wildfire story on `/health` AND
+`/climate`. A two-way tie lists the story on both pages and at most one can
+be right.
+
+*Measured against the 313-story truth set:* the tie path produced **40
+category-page placements, 31 of them (77.5%) not matching the human label**.
+
+*The fix, at the source as the playbook requires.* In
+`lib/news/classification/category.ts` the ambiguity guard now returns
+`all: ["general"]` on every path; the tied ids move to a new
+`rejectedCandidates` field that is diagnostics-only and routes nothing.
+`getCategoryData` additionally refuses any general-bucket cluster in the
+rail, because ~10,000 archived articles still carry `categoriesAll` computed
+under the old rule and the invariant should not depend on data vintage.
+
+*Accuracy is untouched, because `primary` is untouched* — re-run this run
+over `data/local/real-stories.json` + `truth.tsv`: **73.2% exact, 5.4%
+wrong-specific, 110 general (35.1%)**, reproducing the recorded benchmark
+figures exactly. Leaked placements **40 -> 0**. Three new tests pin it
+(`tests/unit/classification.test.ts`) plus a queries-level invariant in
+`tests/unit/category-integrity.test.ts`, whose synthetic dataset already
+reproduced the leak and now fails without the guard.
+
+*What this does NOT fix, stated plainly:* the 67-of-313 misroute rate that
+sends specific stories to a noindex bucket is untouched — this closes the
+leak in the other direction (rejected categories reaching indexable pages),
+which is the half that was actively publishing wrong signals. The remaining
+half still needs better signals, not a threshold nudge. **Item 6 stays OPEN
+for that reason.**
+
 ## Watching, not yet work
 
 - **A site-wide 4xx outage reads as a broken permanence promise.** Noted
