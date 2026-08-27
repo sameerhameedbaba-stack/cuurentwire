@@ -23,6 +23,7 @@ function det(overrides: Partial<CategoryResult> = {}): CategoryResult {
   return {
     primary: "general",
     all: ["general"],
+    rejectedCandidates: [],
     confidence: 0,
     scores: {},
     matchedSignals: [],

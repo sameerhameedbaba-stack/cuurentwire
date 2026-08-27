@@ -33,7 +33,23 @@ export interface CategoryInput {
 
 export interface CategoryResult {
   primary: CategoryId;
+  /**
+   * PUBLIC ROUTING FIELD — copied to `Article.categories`, which drives the
+   * indexable "Related coverage" rail on every category page
+   * (`getCategoryData`, lib/news/queries.ts). Only categories this classifier
+   * is willing to stand behind belong here: the confident path lists the
+   * primary plus its genuine secondary signals, and every ambiguity-guard
+   * path lists `["general"]` alone. Candidates the guard REJECTED go to
+   * `rejectedCandidates` instead — see the guard below for the measurement
+   * that forced that split.
+   */
   all: CategoryId[];
+  /**
+   * Categories that tied for the top score and were rejected by the
+   * ambiguity guard. Diagnostics only — never a routing or listing signal.
+   * Empty whenever the guard did not fire on a tie.
+   */
+  rejectedCandidates: CategoryId[];
   /**
    * 0..1, deterministic — normalized margin between the top-2 category
    * scores ((top1 - top2) / top1). 1 when only one category scored,
@@ -177,6 +193,7 @@ export function classifyCategory(input: CategoryInput): CategoryResult {
     return {
       primary: "general",
       all: ["general"],
+      rejectedCandidates: [],
       confidence: 0,
       scores: {},
       matchedSignals,
@@ -207,15 +224,22 @@ export function classifyCategory(input: CategoryInput): CategoryResult {
   // exact tie between different categories must never be decided by map
   // insertion order — ambiguous stories go to the internal general bucket.
   if (topScore < MIN_PRIMARY_SCORE || tiedTop.length > 1) {
-    const all: CategoryId[] = ["general"];
-    if (tiedTop.length > 1) {
-      for (const id of tiedTop) {
-        if (id !== "general") all.push(id);
-      }
-    }
+    // The guard fired: no specific category is defensible, so `all` carries
+    // general ALONE. The tied ids used to be pushed in here, which routed an
+    // ambiguous story onto the "Related coverage" rail of EVERY category it
+    // tied for — the guard protected `articleSection` while leaking the very
+    // categories it had just rejected onto the indexable pages it exists to
+    // protect. Measured against the 313-story validated truth set: the tie
+    // path produced 40 such category-page placements and 31 of them (77.5%)
+    // did not match the human label. That is arithmetic, not bad luck — a
+    // two-way tie lists the story on both pages and at most one can be right.
+    // The candidates stay available as diagnostics; they are not a signal.
+    const rejectedCandidates =
+      tiedTop.length > 1 ? tiedTop.filter((id) => id !== "general").slice(0, 3) : [];
     return {
       primary: "general",
-      all: all.slice(0, 3),
+      all: ["general"],
+      rejectedCandidates,
       confidence: 0,
       scores: Object.fromEntries(sorted) as Partial<Record<CategoryId, number>>,
       matchedSignals,
@@ -235,6 +259,7 @@ export function classifyCategory(input: CategoryInput): CategoryResult {
   return {
     primary,
     all: all.slice(0, 3),
+    rejectedCandidates: [],
     confidence,
     scores: Object.fromEntries(sorted) as Partial<Record<CategoryId, number>>,
     matchedSignals,

@@ -111,6 +111,15 @@ describe("category page hard invariant", () => {
           (c) => c.category !== category && c.lead.categories.includes(category),
         ),
       ).toBe(true);
+      // ...and NEVER a story from the internal low-confidence bucket. The
+      // synthetic dataset deliberately gives the `general` cluster a
+      // secondary category, reproducing the live leak: the ambiguity guard
+      // refused to pick a category, then the rejected candidate put the
+      // story on that category's indexable page anyway.
+      expect(
+        data.related.every((c) => c.category !== "general"),
+        `/${category} related rail listed a general-bucket story`,
+      ).toBe(true);
     },
   );
 

@@ -370,3 +370,56 @@ describe("extractEntities", () => {
     expect(isGenericEntity("Luigi Mangione")).toBe(false);
   });
 });
+
+describe("ambiguity guard: rejected candidates never become a routing signal", () => {
+  // CategoryResult.all is copied to Article.categories, which drives the
+  // indexable "Related coverage" rail on every category page. When the guard
+  // sends a story to the internal general bucket it has declared that NO
+  // specific category is defensible, so `all` must not re-publish the
+  // candidates it just refused. Measured against the 313-story validated
+  // truth set before this was fixed: the tie path produced 40 category-page
+  // placements and 31 (77.5%) did not match the human label.
+
+  it("keeps a tied story out of BOTH tied categories", () => {
+    const result = classifyCategory({
+      title: "Stadium vaccine clinic opens before championship game",
+    });
+    expect(result.primary).toBe("general");
+    // The tie is real and still visible for diagnostics...
+    expect(result.rejectedCandidates).toEqual(["health", "sports"]);
+    expect(result.scores.health).toBe(result.scores.sports);
+    // ...but nothing routes on it.
+    expect(result.all).toEqual(["general"]);
+    expect(result.all).not.toContain("health");
+    expect(result.all).not.toContain("sports");
+  });
+
+  it("never lets a general verdict carry a specific category, by any path", () => {
+    const titles = [
+      "Stadium vaccine clinic opens before championship game",
+      "Astronomers and filmmakers debut telescope documentary",
+      "Museum exhibit explores spacecraft engineering",
+      "A quiet afternoon in the village",
+      "Local resident shares thoughts on the weekend",
+    ];
+    for (const title of titles) {
+      const result = classifyCategory({ title });
+      if (result.primary !== "general") continue;
+      expect(result.all, `"${title}" leaked a specific category`).toEqual([
+        "general",
+      ]);
+    }
+  });
+
+  it("still lists genuine secondary signals when it IS confident", () => {
+    // The rail's designed use must survive the fix: a confident primary keeps
+    // its ranked secondary signals, which is what "Related coverage" means.
+    const result = classifyCategory({
+      title: "Senator debates climate scientist over emissions research",
+    });
+    expect(result.primary).toBe("climate");
+    expect(result.all.length).toBeGreaterThan(1);
+    expect(result.all[0]).toBe("climate");
+    expect(result.rejectedCandidates).toEqual([]);
+  });
+});

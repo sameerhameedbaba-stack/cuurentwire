@@ -587,9 +587,18 @@ export async function getCategoryData(category: CategoryId): Promise<{
   // ungated — that feed is chronological, and the release is labeled there.
   const curated = dataset.clusters.filter(isCuratedEligible);
   const clusters = curated.filter((c) => c.category === category);
+  // `general` is the internal low-confidence bucket and /general is
+  // noindex: a cluster that landed there has NO category the classifier was
+  // willing to stand behind, so it must not surface on an indexable category
+  // page. The classifier no longer emits rejected candidates in
+  // `categories`, but articles archived before that fix still carry them, so
+  // the boundary enforces the invariant rather than trusting data vintage.
   const related = curated
     .filter(
-      (c) => c.category !== category && c.lead.categories.includes(category),
+      (c) =>
+        c.category !== category &&
+        c.category !== "general" &&
+        c.lead.categories.includes(category),
     )
     .slice(0, 6);
   const hero = clusters[0] ?? null;
