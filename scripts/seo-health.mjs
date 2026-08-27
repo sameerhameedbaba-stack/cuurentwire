@@ -208,6 +208,13 @@ if (news.status === 200) {
   const NEWS_URL_CONCURRENCY = 10;
   /** How long to let a merge/rename race settle before believing a failure. */
   const MERGE_RACE_RECHECK_MS = 90_000;
+  /**
+   * How many merged-but-still-advertised entries the 30-minute archive
+   * standing cache can explain before the count itself is the story. A
+   * handful of the ~700 entries is the documented window; dozens would mean
+   * the gate is not working at all, and that must stay a failure.
+   */
+  const MERGE_LAG_TOLERANCE = 10;
   const bad = [];
   const renames = [];
   const MAX_HOPS = 6;
@@ -266,6 +273,7 @@ if (news.status === 200) {
   }
   let confirmedBad = bad;
   let raced = 0;
+  let mergeLag = [];
   if (bad.length) {
     // Settle the merge/rename race before believing any of it (see above).
     await new Promise((resolve) => setTimeout(resolve, MERGE_RACE_RECHECK_MS));
@@ -288,6 +296,38 @@ if (news.status === 200) {
     raced += recheck.length - bad2.length;
     confirmedBad = bad2;
     renames.push(...renames2);
+
+    // What survives the re-check can still be the KNOWN merge-lag window
+    // rather than a regression, and the difference is a fact we can look
+    // up instead of guess: the sitemap gate reads archive standing through
+    // a 30-minute cached query (FIRST_SEEN_TTL_S in lib/database/archive.ts),
+    // so a cluster merged after that cache was populated stays advertised
+    // until it expires. Ask the public archive stats whether the SOURCE id
+    // is actually merged. Merged -> the archive is right and the feed is
+    // catching up: a note. Not merged (or unknown) -> the feed is
+    // advertising a non-canonical URL for a reason we do not understand,
+    // which is exactly what this check exists to catch: still a failure.
+    const crossId = confirmedBad.filter((r) => /different story id/.test(r.detail));
+    if (crossId.length > 0 && crossId.length <= MERGE_LAG_TOLERANCE) {
+      const ids = crossId
+        .map((r) => idToken(r.url))
+        .filter((id) => /^c[0-9a-f]{12}$/.test(id));
+      try {
+        const stats = await get(`/api/stats/archive-sources?ids=${ids.join(",")}`);
+        const merged = new Set(
+          stats.status === 200
+            ? (JSON.parse(stats.body).rows ?? [])
+                .filter((row) => row.merged)
+                .map((row) => row.id)
+            : [],
+        );
+        mergeLag = crossId.filter((r) => merged.has(idToken(r.url)));
+        const lagged = new Set(mergeLag.map((r) => r.url));
+        confirmedBad = confirmedBad.filter((r) => !lagged.has(r.url));
+      } catch {
+        // Stats unavailable: decide nothing, keep every failure.
+      }
+    }
   }
   if (confirmedBad.length) {
     fail(
@@ -299,10 +339,17 @@ if (news.status === 200) {
     ok(
       "news-sitemap URLs",
       `${newsLocs.length} answer 200 directly${renames.length ? `, ${renames.length} mid-check rename(s)` : ""}` +
-        `${raced ? `, ${raced} merge race(s) cleared on re-check` : ""}`,
+        `${raced ? `, ${raced} merge race(s) cleared on re-check` : ""}` +
+        `${mergeLag.length ? `, ${mergeLag.length} merged story(ies) still advertised inside the 30-min standing cache` : ""}`,
     );
   }
   for (const r of renames.slice(0, 5)) console.log(`  note rename race: ${r}`);
+  for (const r of mergeLag.slice(0, 5)) {
+    console.log(
+      `  note merge lag: ${r.url} — the archive marks this cluster merged; the ` +
+        `news-sitemap gate reads standing through a 30-minute cache and has not caught up`,
+    );
+  }
 }
 
 // 4. archive-sitemap.xml: valid urlset, or an honest 503 while the archive
