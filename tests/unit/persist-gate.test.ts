@@ -79,16 +79,30 @@ beforeEach(() => {
 });
 
 describe("shouldPersistNow — cold instance (no module state)", () => {
-  it("opens during the first half of each half hour", () => {
+  it("opens for the cron during the first half of each half hour", () => {
     for (const minute of [0, 1, 4, 14, 30, 31, 44]) {
-      expect(shouldPersistNow(midday(minute))).toBe(true);
+      expect(shouldPersistNow(midday(minute), "cron")).toBe(true);
     }
     for (const minute of [15, 20, 25, 29, 45, 55, 59]) {
-      expect(shouldPersistNow(midday(minute))).toBe(false);
+      expect(shouldPersistNow(midday(minute), "cron")).toBe(false);
     }
   });
 
-  it("no scheduler beat of 15 minutes or less can miss every window", () => {
+  it("keeps the producer on the narrow window — it runs on traffic, not on a beat", () => {
+    // Measured 2026-08-27: with the wide window the producer wrote in 12
+    // distinct minutes of one 14-minute window, which keeps Neon awake
+    // instead of letting it suspend between bursts.
+    for (const minute of [0, 4, 30, 34]) {
+      expect(shouldPersistNow(midday(minute), "producer")).toBe(true);
+    }
+    for (const minute of [5, 14, 20, 35, 44, 59]) {
+      expect(shouldPersistNow(midday(minute), "producer")).toBe(false);
+    }
+    // Default caller is the cautious one.
+    expect(shouldPersistNow(midday(10))).toBe(false);
+  });
+
+  it("no scheduler beat of 15 minutes or less can miss every cron window", () => {
     // The 2026-08-27 stall in one assertion: a window narrower than the
     // beat is a coin flip on the scheduler's phase, and the phase is not
     // ours to choose. Every start minute, every beat up to 15 minutes.
@@ -96,7 +110,7 @@ describe("shouldPersistNow — cold instance (no module state)", () => {
       for (let phase = 0; phase < 60; phase++) {
         const opens = [];
         for (let tick = 0; tick * beat < 60; tick++) {
-          opens.push(shouldPersistNow(midday((phase + tick * beat) % 60)));
+          opens.push(shouldPersistNow(midday((phase + tick * beat) % 60), "cron"));
         }
         expect(opens.some(Boolean), `beat ${beat} phase ${phase}`).toBe(true);
       }

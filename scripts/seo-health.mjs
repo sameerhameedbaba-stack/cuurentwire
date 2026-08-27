@@ -186,6 +186,19 @@ if (news.status !== 200 || !news.body.includes("sitemap-news/0.9")) {
 // trailing cluster-id token to a 200 (the same race check 7 documents).
 // Reported, never failed. A redirect whose target carries a DIFFERENT id
 // token means the sitemap advertised a merged/non-canonical story: fail.
+//
+// A cross-id redirect has its own short-lived race, measured 2026-08-27
+// right after the archive write burst was repaired: a cluster archived at
+// 17:30 was merged into another at 17:33, and the sitemap kept advertising
+// the pre-merge entry until the archive-standing query's cache caught up —
+// 9 of the first 400 entries at 17:45, 0 of them two minutes later. That is
+// a window, not a regression, and failing on it would hand the daily gate a
+// false red roughly every time it ran within a couple of minutes of a
+// burst. So a failure is re-checked once after MERGE_RACE_RECHECK_MS
+// against a FRESH sitemap: an entry that is no longer advertised, or that
+// now answers 200 directly, was a race. Anything still advertised and still
+// not answering fails, exactly as before — a real outage cannot heal this
+// way, because the URL stays listed and stays broken.
 if (news.status === 200) {
   const newsLocs = [...news.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
   const idToken = (u) => {
@@ -193,10 +206,12 @@ if (news.status === 200) {
     return path.slice(path.lastIndexOf("-") + 1);
   };
   const NEWS_URL_CONCURRENCY = 10;
+  /** How long to let a merge/rename race settle before believing a failure. */
+  const MERGE_RACE_RECHECK_MS = 90_000;
   const bad = [];
   const renames = [];
   const MAX_HOPS = 6;
-  const checkNewsUrl = async (u) => {
+  const checkNewsUrl = async (u, bad, renames) => {
     try {
       // Follow the chain BY HAND rather than with redirect:"follow".
       // A redirect cycle makes undici throw a bare `TypeError: fetch failed`
@@ -243,18 +258,48 @@ if (news.status === 200) {
     }
   };
   for (let i = 0; i < newsLocs.length; i += NEWS_URL_CONCURRENCY) {
-    await Promise.all(newsLocs.slice(i, i + NEWS_URL_CONCURRENCY).map(checkNewsUrl));
+    await Promise.all(
+      newsLocs
+        .slice(i, i + NEWS_URL_CONCURRENCY)
+        .map((u) => checkNewsUrl(u, bad, renames)),
+    );
   }
+  let confirmedBad = bad;
+  let raced = 0;
   if (bad.length) {
+    // Settle the merge/rename race before believing any of it (see above).
+    await new Promise((resolve) => setTimeout(resolve, MERGE_RACE_RECHECK_MS));
+    const fresh = await get("/news-sitemap.xml");
+    const stillListed =
+      fresh.status === 200
+        ? new Set([...fresh.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]))
+        : new Set(newsLocs); // could not re-read: re-check everything
+    const recheck = bad.filter((r) => stillListed.has(r.url));
+    raced = bad.length - recheck.length;
+    const bad2 = [];
+    const renames2 = [];
+    for (let i = 0; i < recheck.length; i += NEWS_URL_CONCURRENCY) {
+      await Promise.all(
+        recheck
+          .slice(i, i + NEWS_URL_CONCURRENCY)
+          .map((r) => checkNewsUrl(r.url, bad2, renames2)),
+      );
+    }
+    raced += recheck.length - bad2.length;
+    confirmedBad = bad2;
+    renames.push(...renames2);
+  }
+  if (confirmedBad.length) {
     fail(
       "news-sitemap URLs",
-      `${bad.length}/${newsLocs.length} not directly 200 e.g. ${bad[0].url} (${bad[0].detail})`,
+      `${confirmedBad.length}/${newsLocs.length} not directly 200 e.g. ${confirmedBad[0].url} (${confirmedBad[0].detail})`,
     );
-    for (const r of bad.slice(0, 10)) console.error(`  news-url ${r.url}: ${r.detail}`);
+    for (const r of confirmedBad.slice(0, 10)) console.error(`  news-url ${r.url}: ${r.detail}`);
   } else {
     ok(
       "news-sitemap URLs",
-      `${newsLocs.length} answer 200 directly${renames.length ? `, ${renames.length} mid-check rename(s)` : ""}`,
+      `${newsLocs.length} answer 200 directly${renames.length ? `, ${renames.length} mid-check rename(s)` : ""}` +
+        `${raced ? `, ${raced} merge race(s) cleared on re-check` : ""}`,
     );
   }
   for (const r of renames.slice(0, 5)) console.log(`  note rename race: ${r}`);

@@ -34,23 +34,41 @@ import { archiveDataset, findNewClusterIds } from "./archive";
  *   bursts per hour (a burst marks the instance, so the 25-minute clock,
  *   not the window width, is what bounds repeats).
  *
- * The window is HALF the cycle, not five minutes (widened 2026-08-27).
- * A narrow window only opens for a scheduler whose tick phase happens to
- * land inside it: with ticks every T minutes at an arbitrary phase, a
- * 5-minute window is guaranteed to be hit only when T <= 5, and the
- * external scheduler's beat is not ours to depend on. At half the cycle
- * any beat of 15 minutes or less is guaranteed to land in a window — two
- * ticks 15 minutes apart cannot both sit in the same half. This is the
- * second half of the 2026-08-27 fix; the first is in the cron route, which
- * used to skip the gate entirely on ticks that found the dataset fresh.
- * Archive writes stopped for 14 h on 2026-08-26 and 10 h on 2026-08-27
- * because those two rules combined to open the gate a few times a day.
+ * The window width depends on WHO is asking (split 2026-08-27):
+ *
+ * - the authenticated cron route gets HALF the cycle. A narrow window only
+ *   opens for a scheduler whose tick phase happens to land inside it: with
+ *   ticks every T minutes at an arbitrary phase, a 5-minute window is
+ *   guaranteed to be hit only when T <= 5, and the external scheduler's
+ *   beat is not ours to depend on. At half the cycle any beat of 15
+ *   minutes or less must land in a window — two ticks 15 minutes apart
+ *   cannot both sit in the same half. Ticks arrive a few times an hour, so
+ *   a wide window costs at most a few extra wake-ups.
+ * - the shared-cache producer keeps the narrow one. It is the fallback for
+ *   a dead cron, and it runs on whatever traffic happens to miss the cache
+ *   — measured 2026-08-27, giving it the wide window turned ~2 bursts an
+ *   hour into a write almost every minute of the window (12 distinct write
+ *   minutes between 17:30 and 17:43), which keeps Neon compute awake
+ *   instead of letting it suspend between bursts. The narrow window is
+ *   what bounds that failure mode, exactly as the note above says.
+ *
+ * This is the second half of the 2026-08-27 fix; the first is in the cron
+ * route, which used to skip the gate entirely on ticks that found the
+ * dataset fresh. Archive writes stopped for 14 h on 2026-08-26 and 10 h on
+ * 2026-08-27 because those two rules combined to open the gate a handful of
+ * times a day.
  */
 
 /** A warm instance persists when its last successful burst is this old. */
 export const PERSIST_MIN_INTERVAL_MS = 25 * 60_000;
-/** Cold-instance windows: minutes 0-14 and 30-44 of each hour. */
-const COLD_WINDOW_MINUTES = 15;
+/**
+ * Cold-instance window widths, in minutes from each half-hour boundary.
+ * Cron: minutes 0-14 and 30-44. Producer: minutes 0-4 and 30-34.
+ */
+const COLD_WINDOW_MINUTES = { cron: 15, producer: 5 } as const;
+
+/** Who is asking for a burst — the window width differs (see above). */
+export type PersistCaller = keyof typeof COLD_WINDOW_MINUTES;
 /**
  * The external cron's cadence. Only used to ask "is this the ET day's last
  * tick?" — a slower cron makes the lookahead fire on a later tick, which
@@ -72,13 +90,16 @@ let cronBurstUntil = 0;
  * regardless — otherwise the frozen row would miss the day's final ~25
  * minutes of movement that a 5-minute cadence used to capture.
  */
-export function shouldPersistNow(now: Date = new Date()): boolean {
+export function shouldPersistNow(
+  now: Date = new Date(),
+  caller: PersistCaller = "producer",
+): boolean {
   const lookahead = new Date(now.getTime() + CRON_INTERVAL_MS);
   if (newsDayET(now) !== newsDayET(lookahead)) return true;
   if (lastPersistAt > 0) {
     return now.getTime() - lastPersistAt >= PERSIST_MIN_INTERVAL_MS;
   }
-  return now.getMinutes() % 30 < COLD_WINDOW_MINUTES;
+  return now.getMinutes() % 30 < COLD_WINDOW_MINUTES[caller];
 }
 
 /** Record a successful write burst (call when the archive upsert landed). */

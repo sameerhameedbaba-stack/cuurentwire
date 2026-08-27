@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
     // puts the burst back on its intended ~2/hour cadence with the 5-minute
     // scheduler beat, and costs nothing extra: the gate itself is still the
     // only thing that decides whether Neon is woken.
-    const persistDue = shouldPersistNow();
+    const persistDue = shouldPersistNow(new Date(), "cron");
     if (datasetIsFresh && !persistDue) {
       return NextResponse.json({
         ok: true,
