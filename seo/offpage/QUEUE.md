@@ -14,14 +14,17 @@ preparation.
 
 ## This week (~15 min)
 
-### 1. Schedule the Product Hunt launch — ~10 min
-Everything is written and cut. Open
-https://www.producthunt.com/posts/new , then copy each field straight out of
-`seo/offpage/producthunt/LAUNCH.md` and upload the six PNGs from that same
-folder in numbered order (`01-home.png` is the feed thumbnail — upload it
-first). Schedule it for a **day you can check in a few times**; the comments
-are the whole point of launch day. Never ask anyone to upvote — PH buries
-posts for that.
+### 1. Finish + schedule the Product Hunt launch — ~5 min
+**The draft is already built and Product Hunt reports Required: 100%
+complete.** Name, tagline, link, description, tag and all six gallery
+screenshots are in. Open https://www.producthunt.com/my/products →
+CurrentWire → Continue editing, then:
+  a. Main info → "Write the first comment": paste the comment from
+     `seo/offpage/producthunt/LAUNCH.md`. It has to be you — an assistant
+     cannot author public comment text on your behalf.
+  b. Schedule (or post) it for a **day you can check in a few times**; the
+     comments are the whole point of launch day.
+Never ask anyone to upvote — PH buries posts for that.
 
 ### 2. Add the RSS feed to Feedly + Inoreader — ~5 min
 Free accounts, then add `https://currentwire.us/rss` in each. This is
