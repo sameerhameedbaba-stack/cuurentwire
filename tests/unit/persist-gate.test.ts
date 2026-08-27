@@ -79,12 +79,27 @@ beforeEach(() => {
 });
 
 describe("shouldPersistNow — cold instance (no module state)", () => {
-  it("opens only during the first five minutes of each half hour", () => {
-    for (const minute of [0, 1, 4, 30, 31, 34]) {
+  it("opens during the first half of each half hour", () => {
+    for (const minute of [0, 1, 4, 14, 30, 31, 44]) {
       expect(shouldPersistNow(midday(minute))).toBe(true);
     }
-    for (const minute of [5, 10, 15, 25, 29, 35, 45, 55, 59]) {
+    for (const minute of [15, 20, 25, 29, 45, 55, 59]) {
       expect(shouldPersistNow(midday(minute))).toBe(false);
+    }
+  });
+
+  it("no scheduler beat of 15 minutes or less can miss every window", () => {
+    // The 2026-08-27 stall in one assertion: a window narrower than the
+    // beat is a coin flip on the scheduler's phase, and the phase is not
+    // ours to choose. Every start minute, every beat up to 15 minutes.
+    for (let beat = 1; beat <= 15; beat++) {
+      for (let phase = 0; phase < 60; phase++) {
+        const opens = [];
+        for (let tick = 0; tick * beat < 60; tick++) {
+          opens.push(shouldPersistNow(midday((phase + tick * beat) % 60)));
+        }
+        expect(opens.some(Boolean), `beat ${beat} phase ${phase}`).toBe(true);
+      }
     }
   });
 });

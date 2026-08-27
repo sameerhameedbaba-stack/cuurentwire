@@ -1,6 +1,11 @@
 name: Uptime probe
 
 # Every 30 minutes: is production actually up AND serving real, fresh news?
+# "Fresh" means two independent things and both are checked: the dataset the
+# pages render from (the cw-dataset-version stamp) and the permanent archive
+# behind it (the newest news-sitemap publication_date). 2026-08-26 proved
+# they can diverge — a fresh dataset served over a write path that had been
+# dead for 14 hours.
 # Probes the homepage, the archive sitemap (the surface that exposed the
 # 2026-08-19 Neon outage), the news sitemap and /briefing for HTTP 200, then
 # checks the homepage content itself: no demo-mode banner, a dataset version
@@ -108,6 +113,39 @@ jobs:
               echo "news sitemap -> $news_count <url> entries (ok)"
             fi
 
+            # 4. Archive write stall. Each entry's <news:publication_date> is
+            #    the archive's first_seen_at, and the sitemap lists only
+            #    clusters the archive already holds, so the NEWEST date is a
+            #    direct read of the last successful database write burst
+            #    (persist-gate.ts caps that gap at ~30 min). On 2026-08-26
+            #    the bursts stopped at 07:31 UTC and nothing noticed for 14
+            #    hours: every URL answered 200, the dataset stayed fresh, the
+            #    checks above all passed — while every story published in
+            #    that window got no permanent row (the same mechanism that
+            #    lost 205 stories in the 2026-08-20 outage) and the feed
+            #    Google News reads shrank from 643 entries to 132. Four
+            #    hours is eight missed bursts. Reuses the sitemap already
+            #    fetched above: no extra request, no database read.
+            if [ "$news_code" = "200" ]; then
+              newest=$(grep -o '<news:publication_date>[^<]*' "$news_xml" | sed 's/.*>//' | sort | tail -n 1)
+              if [ -z "$newest" ]; then
+                echo "archive write freshness -> no publication_date found in the news sitemap"
+                fail=1
+              else
+                newest_s=$(date -u -d "$newest" +%s || echo 0)
+                age_min=$(( ($(date -u +%s) - newest_s) / 60 ))
+                if [ "$newest_s" -eq 0 ]; then
+                  echo "archive write freshness -> unparseable publication_date '$newest'"
+                  fail=1
+                elif [ "$age_min" -gt 240 ]; then
+                  echo "archive write freshness -> newest story archived $newest (${age_min} min ago, limit 240) — the persist burst has stopped; new stories have no permanent row"
+                  fail=1
+                else
+                  echo "archive write freshness -> newest story archived ${age_min} min ago (ok)"
+                fi
+              fi
+            fi
+
             echo "DETAILS_EOF"
           } >> "$GITHUB_OUTPUT"
           exit "$fail"
@@ -155,7 +193,7 @@ jobs:
               await github.rest.issues.createComment({
                 owner: context.repo.owner, repo: context.repo.repo,
                 issue_number: existing.number,
-                body: "Recovered — every probed URL answers 200, no demo-mode banner, the dataset version is fresh and the news sitemap is populated again. Closing.",
+                body: "Recovered — every probed URL answers 200, no demo-mode banner, the dataset version is fresh, the news sitemap is populated and the archive is taking writes again. Closing.",
               });
               await github.rest.issues.update({
                 owner: context.repo.owner, repo: context.repo.repo,

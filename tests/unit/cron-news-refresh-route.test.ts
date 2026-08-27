@@ -155,6 +155,7 @@ describe("cron news-refresh route — batched persistence wiring", () => {
 
 describe("cron news-refresh route — cadence guard", () => {
   it("skips the refresh when the dataset is younger than the interval", async () => {
+    shouldPersistNowMock.mockReturnValue(false);
     getDatasetMock.mockResolvedValue({ ...dataset, generatedAt: new Date().toISOString() });
     const res = await GET(cronRequest());
     const body = await res.json();
@@ -162,6 +163,29 @@ describe("cron news-refresh route — cadence guard", () => {
     expect(body.skipped).toBe("fresh");
     expect(forceRefreshMock).not.toHaveBeenCalled();
     expect(persistDatasetMock).not.toHaveBeenCalled();
+  });
+
+  it("a fresh dataset skips the refresh but NEVER the write burst", async () => {
+    // Regression, 2026-08-26: the guard used to return before the persist
+    // gate was even consulted, so the burst could only ever run on a tick
+    // that also refreshed. Refresh ticks drift against the gate's
+    // half-hour cold windows, and archive writes stopped for 14 hours
+    // while every public surface still looked healthy.
+    getDatasetMock.mockResolvedValue({ ...dataset, generatedAt: new Date().toISOString() });
+    const res = await GET(cronRequest());
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.skipped).toBeUndefined();
+    expect(body.refreshSkipped).toBe(true);
+    expect(forceRefreshMock).not.toHaveBeenCalled();
+    // No producer run to race with, so the burst is not claimed — but every
+    // database write still happens.
+    expect(claimCronBurstMock).not.toHaveBeenCalled();
+    expect(persistDatasetMock).toHaveBeenCalledTimes(1);
+    expect(archivePublicDatasetMock).toHaveBeenCalledTimes(1);
+    expect(upsertBriefingMock).toHaveBeenCalledTimes(1);
+    expect(markPersistedMock).toHaveBeenCalledTimes(1);
+    expect(body.archivedStories).toBe(1);
   });
 
   it("?force=1 bypasses the guard", async () => {

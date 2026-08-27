@@ -16,14 +16,20 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { classifyResults, LOST_AFTER_DAYS } from "./url-survival-lib.mjs";
+import {
+  classifyResults,
+  clusterIdFromStoryUrl,
+  LOST_AFTER_DAYS,
+} from "./url-survival-lib.mjs";
 
 const BASE =
   process.argv.includes("--base")
     ? process.argv[process.argv.indexOf("--base") + 1]
     : "https://currentwire.us";
-const LEDGER_PATH = new URL("../data/url-ledger.json", import.meta.url).pathname
-  .replace(/^\/([A-Za-z]:)/, "$1"); // strip leading slash on Windows paths
+const repoPath = (relative) =>
+  new URL(relative, import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"); // strip leading slash on Windows paths
+const LEDGER_PATH = repoPath("../data/url-ledger.json");
+const LOST_STORIES_PATH = repoPath("../data/lost-stories.json");
 const CONCURRENCY = 10;
 const LEDGER_RETENTION_DAYS = 30;
 
@@ -37,6 +43,22 @@ function extractStoryUrls(xml) {
   return [...xml.matchAll(/<loc>\s*([^<]*\/story\/[^<]+?)\s*<\/loc>/g)].map(
     (m) => m[1].trim(),
   );
+}
+
+/**
+ * Cluster ids the site answers a deliberate, permanent 404 for — the same
+ * file lib/news/story-resolution.ts reads. Their URLs are 404 BY DESIGN, so
+ * counting them as broken promises would keep this gate red forever (the
+ * exact failure mode the GONE/LOST split exists to prevent) and bury the
+ * next genuine 404 among 212 expected ones.
+ */
+function loadTombstonedIds() {
+  try {
+    const data = JSON.parse(readFileSync(LOST_STORIES_PATH, "utf-8"));
+    return new Set(Array.isArray(data?.ids) ? data.ids : []);
+  } catch {
+    return new Set();
+  }
 }
 
 function loadLedger() {
@@ -123,10 +145,9 @@ for (let i = 0; i < entries.length; i += CONCURRENCY) {
  * gone/unavailable split was written to prevent, arriving from the other
  * side. A gate that cannot go green stops being read.
  */
-const { gone, unavailable, lost, redirects, runIsHealthy } = classifyResults({
-  results,
-  ledger: known,
-});
+const tombstonedIds = loadTombstonedIds();
+const { gone, unavailable, lost, tombstoned, redirects, runIsHealthy } =
+  classifyResults({ results, ledger: known, tombstonedIds });
 for (const result of results) {
   if (result.ok) known.get(result.url).lastOk = now;
 }
@@ -145,7 +166,8 @@ console.log(
   `[url-survival] ${now} base=${BASE} ledger=${kept.length} (+${added} new) ` +
     `checked=${results.length} ok=${results.length - gone.length - unavailable.length - lost.length} ` +
     `redirects=${redirects.length} GONE=${gone.length} UNAVAILABLE=${unavailable.length} ` +
-    `LOST=${lost.length}${runIsHealthy ? "" : " (lost-classification suspended: run unhealthy)"}`,
+    `LOST=${lost.length} TOMBSTONED=${tombstoned.length}` +
+    `${runIsHealthy ? "" : " (lost-classification suspended: run unhealthy)"}`,
 );
 for (const r of redirects.slice(0, 10)) console.log(`  redirect ${r.url} ${r.note}`);
 for (const r of gone) console.log(`  GONE ${r.status} ${r.url} ${r.note ?? ""}`);
@@ -154,6 +176,22 @@ for (const r of unavailable.slice(0, 10)) {
 }
 for (const r of lost.slice(0, 10)) {
   console.log(`  lost ${r.status} ${r.url} ${r.note ?? ""}`);
+}
+for (const r of tombstoned.slice(0, 5)) {
+  console.log(`  tombstoned ${r.status} ${r.url}`);
+}
+
+if (tombstoned.length > 0) {
+  const ids = new Set(
+    tombstoned.map((r) => clusterIdFromStoryUrl(r.url)).filter(Boolean),
+  );
+  console.log(
+    `[url-survival] ${tombstoned.length} URL(s) (${ids.size} cluster id(s)) answer a ` +
+      `deliberate 404 from data/lost-stories.json — content that exists nowhere, ` +
+      `tombstoned on 2026-08-25 because the retriable 500 it used to serve was ` +
+      `poisoning crawl health. Expected, not a regression. Any OTHER 4xx still fails ` +
+      `this gate.`,
+  );
 }
 
 if (lost.length > 0) {
@@ -186,9 +224,15 @@ if (gone.length > 0) {
   process.exit(1);
 }
 if (unavailable.length > 0) process.exit(1);
+const knownGoneNote = [
+  lost.length > 0 ? `${lost.length} known-lost (5xx)` : null,
+  tombstoned.length > 0 ? `${tombstoned.length} tombstoned (404)` : null,
+]
+  .filter(Boolean)
+  .join(" and ");
 console.log(
-  lost.length > 0
+  knownGoneNote
     ? `[url-survival] PASS: no new failures — every published URL still resolves ` +
-      `except ${lost.length} known-lost from the 2026-08-20 archive outage`
+      `except ${knownGoneNote} from the 2026-08-19..21 archive outage`
     : "[url-survival] PASS: every previously published URL still resolves",
 );

@@ -153,40 +153,62 @@ export async function GET(request: NextRequest) {
 
   try {
     // Cadence guard: the scheduler may ping more often than the refresh
-    // interval (RSS_REFRESH_MINUTES, default 10). A dataset younger than
+    // interval (RSS_REFRESH_MINUTES, default 15). A dataset younger than
     // the interval is served as-is — each real refresh costs ~1s of
-    // function CPU with ~100 feeds, and the Hobby CPU allowance is the
-    // budget that keeps this site free. `?force=1` bypasses the guard.
+    // function CPU with ~100 feeds, and the Fluid CPU allowance is a
+    // standing cost constraint. `?force=1` bypasses the guard.
     const force = request.nextUrl.searchParams.get("force") === "1";
-    if (!force) {
-      const current = await getDataset();
-      const ageMs = Date.now() - new Date(current.generatedAt).getTime();
-      const intervalMs = env.rssRefreshMinutes * 60_000;
-      // One-minute slack so a scheduler that fires a few seconds early
-      // still refreshes on its intended tick.
-      if (Number.isFinite(ageMs) && ageMs < intervalMs - 60_000) {
-        return NextResponse.json({
-          ok: true,
-          skipped: "fresh",
-          dataMode: current.dataMode,
-          datasetVersion: current.datasetVersion,
-          generatedAt: current.generatedAt,
-          ageSeconds: Math.round(ageMs / 1000),
-          refreshIntervalMinutes: env.rssRefreshMinutes,
-        });
-      }
-    }
-    // Decide the write burst BEFORE forceRefresh, and claim it so the
-    // shared-cache producer leaves the archive upsert to this route (the
-    // producer runs inside forceRefresh; if it archived first, the
-    // new-story check below could never see a new id).
+    const current = force ? null : await getDataset();
+    const ageMs = current
+      ? Date.now() - new Date(current.generatedAt).getTime()
+      : Number.NaN;
+    // One-minute slack so a scheduler that fires a few seconds early
+    // still refreshes on its intended tick.
+    const datasetIsFresh =
+      current !== null &&
+      Number.isFinite(ageMs) &&
+      ageMs < env.rssRefreshMinutes * 60_000 - 60_000;
+
+    // The write burst is decided BEFORE anything else, and a fresh dataset
+    // skips the REFRESH ONLY — never the burst.
+    //
+    // Why (measured 2026-08-26): this guard used to return early, so the
+    // persist decision was only ever evaluated on the ~4 ticks per hour
+    // that actually refreshed. A cold instance opens the gate only in
+    // minutes 0-4 and 30-34 (persist-gate.ts), and refresh ticks drift
+    // slowly against that half-hour grid — so for 14 hours no refresh tick
+    // landed in a window, no burst ran, and every story published in that
+    // window got no archive row: no permanent URL, no news-sitemap entry
+    // (it is gated on archive standing), no IndexNow ping. The site looked
+    // perfectly healthy the whole time. Evaluating the gate on EVERY tick
+    // puts the burst back on its intended ~2/hour cadence with the 5-minute
+    // scheduler beat, and costs nothing extra: the gate itself is still the
+    // only thing that decides whether Neon is woken.
     const persistDue = shouldPersistNow();
-    if (persistDue) claimCronBurst();
+    if (datasetIsFresh && !persistDue) {
+      return NextResponse.json({
+        ok: true,
+        skipped: "fresh",
+        dataMode: current.dataMode,
+        datasetVersion: current.datasetVersion,
+        generatedAt: current.generatedAt,
+        ageSeconds: Math.round(ageMs / 1000),
+        refreshIntervalMinutes: env.rssRefreshMinutes,
+      });
+    }
     let dataset: NewsDataset;
-    try {
-      dataset = await forceRefresh();
-    } finally {
-      releaseCronBurst();
+    if (datasetIsFresh) {
+      dataset = current;
+    } else {
+      // Claim the burst so the shared-cache producer leaves the archive
+      // upsert to this route (the producer runs inside forceRefresh; if it
+      // archived first, the new-story check below could never see a new id).
+      if (persistDue) claimCronBurst();
+      try {
+        dataset = await forceRefresh();
+      } finally {
+        releaseCronBurst();
+      }
     }
     // Revalidation is burst-gated with the database writes: page caches are
     // refreshed on the ~30-minute cadence, not on every 5-minute tick — the
@@ -237,6 +259,9 @@ export async function GET(request: NextRequest) {
     }
     return NextResponse.json({
       ok: true,
+      // The dataset was young enough to reuse; this tick ran for the write
+      // burst alone.
+      refreshSkipped: datasetIsFresh,
       dataMode: dataset.dataMode,
       datasetVersion: dataset.datasetVersion,
       generatedAt: dataset.generatedAt,

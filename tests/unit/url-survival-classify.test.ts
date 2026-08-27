@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   classifyResults,
+  clusterIdFromStoryUrl,
   LOST_AFTER_DAYS,
   RUN_HEALTHY_SHARE,
 } from "../../scripts/url-survival-lib.mjs";
@@ -118,5 +119,93 @@ describe("url-survival failure classification", () => {
     const out = classifyResults({ results, ledger: new Map(), nowMs: NOW });
     expect(out.unavailable).toHaveLength(1);
     expect(out.lost).toHaveLength(0);
+  });
+});
+
+describe("tombstoned stories", () => {
+  // data/lost-stories.json holds cluster ids whose content exists nowhere:
+  // published during the 2026-08-19..21 Neon egress outage, never archived.
+  // lib/news/story-resolution.ts answers a deliberate 404 for them, so the
+  // probe must recognise its own site's decision instead of reporting 212
+  // broken promises every night.
+  const TOMB = "c0123456789ab";
+  const tombUrl = `https://x/story/some-headline-${TOMB}`;
+  const liveId = "cfedcba987654";
+  const liveUrl = `https://x/story/another-headline-${liveId}`;
+
+  it("reads the cluster id out of a story URL", () => {
+    expect(clusterIdFromStoryUrl(tombUrl)).toBe(TOMB);
+    expect(clusterIdFromStoryUrl("https://x/about")).toBeNull();
+  });
+
+  it("a 404 for a tombstoned id is expected, not a broken promise", () => {
+    const out = classifyResults({
+      results: healthyRun([dead(tombUrl, 404)]),
+      ledger: new Map([[tombUrl, { lastOk: daysAgo(7) }]]),
+      nowMs: NOW,
+      tombstonedIds: new Set([TOMB]),
+    });
+    expect(out.tombstoned).toHaveLength(1);
+    expect(out.gone).toHaveLength(0);
+  });
+
+  it("a 404 for any OTHER id still fails the gate", () => {
+    // The whole reason to split them out: a real regression must stay
+    // visible next to the expected ones.
+    const out = classifyResults({
+      results: healthyRun([dead(tombUrl, 404), dead(liveUrl, 404)]),
+      ledger: new Map(),
+      nowMs: NOW,
+      tombstonedIds: new Set([TOMB]),
+    });
+    expect(out.tombstoned).toHaveLength(1);
+    expect(out.gone).toHaveLength(1);
+    expect(out.gone[0].url).toBe(liveUrl);
+  });
+
+  it("a tombstone excuses a 404 only — a 5xx on the same id is still an outage", () => {
+    const out = classifyResults({
+      results: healthyRun([dead(tombUrl, 500)]),
+      ledger: new Map([[tombUrl, { lastOk: daysAgo(1) }]]),
+      nowMs: NOW,
+      tombstonedIds: new Set([TOMB]),
+    });
+    expect(out.tombstoned).toHaveLength(0);
+    expect(out.unavailable).toHaveLength(1);
+  });
+
+  it("tombstones never drag the run below the healthy share", () => {
+    // 205 tombstoned ids against a ~4,600-URL ledger is 4.5% today, but the
+    // file only grows. If they counted as sick, a bigger tombstone list
+    // would silently suspend LOST classification for unrelated 5xx.
+    const results: Result[] = [];
+    const tombs = new Set<string>();
+    for (let i = 0; i < 40; i++) {
+      const id = `c${i.toString(16).padStart(12, "0")}`;
+      tombs.add(id);
+      results.push(dead(`https://x/story/gone-${id}`, 404));
+    }
+    for (let i = 0; i < 60; i++) results.push(ok(`https://x/story/live-${i}`));
+    const stale = "https://x/story/stale-cabcdef123456";
+    results.push(dead(stale, 500));
+    const out = classifyResults({
+      results,
+      ledger: new Map([[stale, { lastOk: daysAgo(LOST_AFTER_DAYS + 1) }]]),
+      nowMs: NOW,
+      tombstonedIds: tombs,
+    });
+    expect(out.runIsHealthy).toBe(true);
+    expect(out.tombstoned).toHaveLength(40);
+    expect(out.lost).toHaveLength(1);
+  });
+
+  it("with no tombstone list every 4xx is still GONE", () => {
+    const out = classifyResults({
+      results: healthyRun([dead(tombUrl, 404)]),
+      ledger: new Map(),
+      nowMs: NOW,
+    });
+    expect(out.gone).toHaveLength(1);
+    expect(out.tombstoned).toHaveLength(0);
   });
 });

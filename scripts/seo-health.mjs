@@ -15,6 +15,21 @@
 const BASE = process.env.SEO_BASE_URL ?? "https://currentwire.us";
 const INDEXNOW_KEY = "d67fe7ac1896e8fd9e691a2d2abeca89";
 const NEWS_WINDOW_HOURS = 49; // 48h window + 1h grace for clock/emit skew
+/**
+ * How old the NEWEST news-sitemap entry may be before the publishing
+ * pipeline is considered stalled.
+ *
+ * Each entry's <news:publication_date> is the archive's first_seen_at
+ * (lib/seo/news-sitemap.ts), and the sitemap lists only clusters the
+ * archive already holds — so the newest date is a direct read of the last
+ * successful database write burst. persist-gate.ts caps that gap at
+ * ~30 minutes by design. Measured 2026-08-26: writes stopped at 07:31 UTC
+ * and nothing noticed for 14 hours while every surface answered 200, the
+ * dataset stayed fresh and the feed quietly shrank 643 -> 132 entries.
+ * Four hours is eight missed bursts — far outside normal jitter, and still
+ * loose enough that a quiet news hour cannot cry wolf.
+ */
+const NEWS_STALL_HOURS = 4;
 /** Sitemaps cap at 50,000 URLs — alarm with runway, not at the cliff. */
 const ARCHIVE_SHARD_AT = 45_000;
 const FEEDS = [
@@ -133,6 +148,26 @@ if (news.status !== 200 || !news.body.includes("sitemap-news/0.9")) {
     const stale = dates.filter((d) => new Date(d).getTime() < cutoff);
     if (stale.length) fail("news-sitemap freshness", `${stale.length} entries older than ${NEWS_WINDOW_HOURS}h e.g. ${stale[0]}`);
     else ok("news-sitemap.xml", `${count} entries, all within ${NEWS_WINDOW_HOURS}h`);
+    // Newest entry = last successful archive write (see NEWS_STALL_HOURS).
+    const newest = dates
+      .map((d) => new Date(d).getTime())
+      .filter((t) => Number.isFinite(t))
+      .sort((a, b) => b - a)[0];
+    if (newest === undefined) {
+      fail("news-sitemap stall", "no parseable publication_date to age");
+    } else {
+      const ageHours = (Date.now() - newest) / 3_600_000;
+      if (ageHours > NEWS_STALL_HOURS) {
+        fail(
+          "news-sitemap stall",
+          `newest entry is ${ageHours.toFixed(1)}h old (limit ${NEWS_STALL_HOURS}h) — ` +
+            `the archive write burst has stopped; new stories are being published ` +
+            `with no permanent row and Google News is being fed a shrinking feed`,
+        );
+      } else {
+        ok("news-sitemap stall guard", `newest entry ${ageHours.toFixed(1)}h old`);
+      }
+    }
   }
 }
 

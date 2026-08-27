@@ -16,6 +16,14 @@
  *               permanently unresolvable. Reported every run; does NOT fail
  *               the build, because a condition that will never clear keeps a
  *               gate red forever and a permanently red gate stops being read.
+ *   TOMBSTONED  4xx for a cluster id listed in data/lost-stories.json. The
+ *               404 is the site's own deliberate answer for content that no
+ *               longer exists anywhere (2026-08-25: 205 outage-lost stories
+ *               were tombstoned because the retriable 500 they used to serve
+ *               was poisoning crawl health). Reported every run; does NOT
+ *               fail the build — for the same reason LOST does not. Only ids
+ *               written into that file qualify, so nothing can launder itself
+ *               into this state: adding one is a reviewed commit.
  *
  * See the long note in url-survival.mjs for the incident that produced the
  * LOST state (214 URLs published during the 2026-08-20 archive outage that
@@ -33,19 +41,51 @@ export const LOST_AFTER_DAYS = 3;
 export const RUN_HEALTHY_SHARE = 0.9;
 
 /**
+ * Trailing cluster-id token of a /story/<slug> URL ("c" + 12 hex), or null
+ * when the URL is not a story URL in that shape. Mirrors idTokenFromSlug()
+ * in lib/database/archive.ts, which is TypeScript and cannot be imported
+ * here.
+ */
+export function clusterIdFromStoryUrl(url) {
+  const match = /\/story\/[^/?#]*-(c[0-9a-f]{12})(?:[/?#]|$)/.exec(url);
+  return match ? match[1] : null;
+}
+
+/**
  * @param {{results: Array<{url:string, ok:boolean, status:number}>,
  *          ledger: Map<string,{lastOk?:string|null, firstSeen?:string|null}>,
- *          nowMs?: number}} input
+ *          nowMs?: number,
+ *          tombstonedIds?: Set<string>|ReadonlySet<string>}} input
  */
-export function classifyResults({ results, ledger, nowMs = Date.now() }) {
-  const gone = results.filter((r) => !r.ok && r.status >= 400 && r.status < 500);
+export function classifyResults({
+  results,
+  ledger,
+  nowMs = Date.now(),
+  tombstonedIds = new Set(),
+}) {
+  const clientErrors = results.filter(
+    (r) => !r.ok && r.status >= 400 && r.status < 500,
+  );
+  const tombstoned = clientErrors.filter((r) => {
+    const id = clusterIdFromStoryUrl(r.url);
+    return id !== null && tombstonedIds.has(id);
+  });
+  const tombstonedUrls = new Set(tombstoned.map((r) => r.url));
+  const gone = clientErrors.filter((r) => !tombstonedUrls.has(r.url));
   const failed = results.filter(
     (r) => !r.ok && (r.status === 0 || r.status >= 500),
   );
   const redirects = results.filter((r) => r.ok && r.status !== 200);
 
+  // Tombstoned URLs leave the health share entirely — numerator AND
+  // denominator. This share answers one question: "is the origin broadly
+  // answering right now?", and a deliberate permanent 404 is the origin
+  // answering exactly as designed. Counting them as sick would let a large
+  // tombstone list drag a healthy run below RUN_HEALTHY_SHARE and suspend
+  // the LOST classification for unrelated 5xx.
+  const considered = results.length - tombstoned.length;
   const healthyShare =
-    (results.length - failed.length - gone.length) / (results.length || 1);
+    (considered - failed.length - gone.length) / (considered || 1);
   const runIsHealthy = healthyShare >= RUN_HEALTHY_SHARE;
   const lostCutoff = nowMs - LOST_AFTER_DAYS * 86_400_000;
 
@@ -67,5 +107,13 @@ export function classifyResults({ results, ledger, nowMs = Date.now() }) {
   const lostUrls = new Set(lost.map((r) => r.url));
   const unavailable = failed.filter((r) => !lostUrls.has(r.url));
 
-  return { gone, unavailable, lost, redirects, runIsHealthy, healthyShare };
+  return {
+    gone,
+    unavailable,
+    lost,
+    tombstoned,
+    redirects,
+    runIsHealthy,
+    healthyShare,
+  };
 }

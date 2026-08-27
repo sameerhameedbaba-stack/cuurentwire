@@ -24,20 +24,33 @@ import { archiveDataset, findNewClusterIds } from "./archive";
  *   steady 5-minute beat keeps its instance warm, so in practice this is
  *   the signal that decides.
  * - Wall clock: a cold instance (fresh deploy, recycled function) has no
- *   module state, so it opens the gate only during the first five minutes
- *   of each half hour. Every instance agrees on those windows without any
+ *   module state, so it opens the gate only during the first half of each
+ *   half hour. Every instance agrees on those windows without any
  *   coordination, and they bound the persist gap across restarts: a
  *   redeploy can never stretch archive latency past the next half-hour
  *   boundary. "Persist immediately when cold" would be simpler, but with a
  *   dead cron every traffic-triggered producer run on a fresh instance
  *   would then write — the windows keep even that failure mode at two
- *   bursts per hour.
+ *   bursts per hour (a burst marks the instance, so the 25-minute clock,
+ *   not the window width, is what bounds repeats).
+ *
+ * The window is HALF the cycle, not five minutes (widened 2026-08-27).
+ * A narrow window only opens for a scheduler whose tick phase happens to
+ * land inside it: with ticks every T minutes at an arbitrary phase, a
+ * 5-minute window is guaranteed to be hit only when T <= 5, and the
+ * external scheduler's beat is not ours to depend on. At half the cycle
+ * any beat of 15 minutes or less is guaranteed to land in a window — two
+ * ticks 15 minutes apart cannot both sit in the same half. This is the
+ * second half of the 2026-08-27 fix; the first is in the cron route, which
+ * used to skip the gate entirely on ticks that found the dataset fresh.
+ * Archive writes stopped for 14 h on 2026-08-26 and 10 h on 2026-08-27
+ * because those two rules combined to open the gate a few times a day.
  */
 
 /** A warm instance persists when its last successful burst is this old. */
 export const PERSIST_MIN_INTERVAL_MS = 25 * 60_000;
-/** Cold-instance windows: minutes 0-4 and 30-34 of each hour. */
-const COLD_WINDOW_MINUTES = 5;
+/** Cold-instance windows: minutes 0-14 and 30-44 of each hour. */
+const COLD_WINDOW_MINUTES = 15;
 /**
  * The external cron's cadence. Only used to ask "is this the ET day's last
  * tick?" — a slower cron makes the lookahead fire on a later tick, which
