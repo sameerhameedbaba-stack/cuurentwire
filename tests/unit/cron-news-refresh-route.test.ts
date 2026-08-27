@@ -60,6 +60,15 @@ const releaseCronBurstMock = vi.fn();
 const markPersistedMock = vi.fn();
 const archivePublicDatasetMock = vi.fn(async () => 1);
 const drainPendingMock = vi.fn((): string[] => []);
+const drainStaleSlugsMock = vi.fn((): string[] => []);
+// next/cache throws outside a request context, and the route swallows that
+// by design (a revalidation failure must never fail the refresh). Mocking it
+// lets these tests assert WHICH paths were revalidated instead of watching
+// every call fail silently.
+const revalidatePathMock = vi.fn();
+vi.mock("next/cache", () => ({
+  revalidatePath: (path: string) => revalidatePathMock(path),
+}));
 vi.mock("@/lib/database/persist-gate", () => ({
   shouldPersistNow: () => shouldPersistNowMock(),
   claimCronBurst: () => claimCronBurstMock(),
@@ -67,6 +76,7 @@ vi.mock("@/lib/database/persist-gate", () => ({
   markPersisted: () => markPersistedMock(),
   archivePublicDataset: () => archivePublicDatasetMock(),
   drainPendingIndexNowIds: () => drainPendingMock(),
+  drainStaleSlugs: () => drainStaleSlugsMock(),
 }));
 
 import { GET } from "@/app/api/cron/news-refresh/route";
@@ -86,6 +96,8 @@ beforeEach(() => {
   shouldPersistNowMock.mockReturnValue(true);
   archivePublicDatasetMock.mockResolvedValue(1);
   drainPendingMock.mockReturnValue([]);
+  drainStaleSlugsMock.mockReturnValue([]);
+  revalidatePathMock.mockClear();
 });
 
 describe("cron news-refresh route — batched persistence wiring", () => {
@@ -140,6 +152,29 @@ describe("cron news-refresh route — batched persistence wiring", () => {
     expect(persistDatasetMock).not.toHaveBeenCalled();
     expect(body.persistedToDatabase).toBe(false);
     expect(body.persistenceDeferred).toBe(false);
+  });
+
+  it("re-renders the story URLs the burst retired", async () => {
+    // The canonical revalidation above never touches a retired alias, and
+    // the alias is the URL holding a cached 307 with no cache tag — the
+    // ingredient of the 2026-08-26 infinite redirect loop.
+    drainStaleSlugsMock.mockReturnValue(["old-headline-crenamed00001"]);
+    const res = await GET(cronRequest());
+    const body = await res.json();
+    expect(drainStaleSlugsMock).toHaveBeenCalledTimes(1);
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      "/story/old-headline-crenamed00001",
+    );
+    expect(body.retiredSlugsRevalidated).toBe(1);
+  });
+
+  it("drains nothing to revalidate when the archive write failed", async () => {
+    archivePublicDatasetMock.mockResolvedValue(0);
+    drainStaleSlugsMock.mockReturnValue(["old-headline-crenamed00001"]);
+    const res = await GET(cronRequest());
+    const body = await res.json();
+    expect(drainStaleSlugsMock).not.toHaveBeenCalled();
+    expect(body.retiredSlugsRevalidated).toBe(0);
   });
 
   it("keeps IndexNow out of non-production runs but drains the stash", async () => {

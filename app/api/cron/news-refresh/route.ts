@@ -9,6 +9,7 @@ import {
   archivePublicDataset,
   claimCronBurst,
   drainPendingIndexNowIds,
+  drainStaleSlugs,
   markPersisted,
   releaseCronBurst,
   shouldPersistNow,
@@ -103,6 +104,40 @@ function revalidateLiveStories(dataset: NewsDataset): void {
       });
     }
   }
+}
+
+/**
+ * Re-render the story URLs a cluster has just STOPPED using.
+ *
+ * revalidateLiveStories above only ever touches canonical slugs, which is
+ * precisely the set that cannot hold a stale redirect. The retired alias is
+ * the one that 307s, whose ISR entry carries the route's 30-day TTL and no
+ * cache tag — so it can outlive by weeks the slug it points at, and when the
+ * headline flaps back the two redirects point at each other and a crawler
+ * following the news sitemap enters an INFINITE LOOP (seo/BACKLOG.md item 1,
+ * observed live 2026-08-26). Rendering the retired slug once, at the moment
+ * the rename is recorded, replaces the frozen redirect with a correct one.
+ *
+ * Cost is bounded by how often headlines actually change — measured
+ * 2026-08-28 at 5 of 178 archived live stories, so single digits per burst
+ * against the 150 canonical revalidations already happening here.
+ */
+const STALE_SLUG_REVALIDATE_MAX = 100;
+
+function revalidateRetiredSlugs(slugs: string[]): number {
+  let done = 0;
+  for (const slug of slugs.slice(0, STALE_SLUG_REVALIDATE_MAX)) {
+    try {
+      revalidatePath(`/story/${slug}`);
+      done += 1;
+    } catch (error) {
+      logger.warn("cron.revalidate_retired_slug_failed", {
+        slug,
+        error: error instanceof Error ? error.message : "unknown",
+      });
+    }
+  }
+  return done;
 }
 
 /**
@@ -244,6 +279,7 @@ export async function GET(request: NextRequest) {
     let archivedStories = 0;
     let indexNowSubmitted = 0;
     let briefingStored = false;
+    let retiredSlugsRevalidated = 0;
     if (isDatabaseConfigured() && persistDue) {
       persisted = await persistDataset(dataset);
       // Permanent story archive (plus any clusters that went public and
@@ -258,6 +294,9 @@ export async function GET(request: NextRequest) {
         // Only a successful archive advances the batch clock — a failed
         // burst is retried on every tick until it lands.
         markPersisted();
+        // Slugs this burst retired: their cached 307 is the one nothing
+        // else invalidates (see revalidateRetiredSlugs).
+        retiredSlugsRevalidated = revalidateRetiredSlugs(drainStaleSlugs());
         // Tell IndexNow about genuinely new story URLs — production only,
         // so localhost URLs are never submitted. Best-effort: never throws.
         const newIds = drainPendingIndexNowIds();
@@ -313,6 +352,7 @@ export async function GET(request: NextRequest) {
       persistedToDatabase: persisted,
       archivedStories,
       briefingStored,
+      retiredSlugsRevalidated,
       heroWarmed,
       indexNowSubmitted,
       // True when database work was intentionally skipped this run (the

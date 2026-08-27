@@ -727,22 +727,45 @@ export async function getArchiveBrowse(
  * IndexNow for genuinely new story URLs (call BEFORE archiveDataset writes
  * them). Best-effort: any failure reports nothing new rather than throwing.
  */
-export async function findNewClusterIds(clusterIds: string[]): Promise<string[]> {
+/**
+ * The archive's stored slug for each of these cluster ids (absent ids are
+ * simply missing from the map). One query answers two questions the write
+ * burst needs: which ids are brand new (not in the map) and which ones the
+ * live dataset now slugs DIFFERENTLY — a canonical-slug rename, which is
+ * what leaves a stale redirect behind on the old URL (persist-gate.ts).
+ *
+ * null means the archive did not answer (no database, or the query failed);
+ * an empty Map means it answered and knows none of these ids.
+ */
+export async function readArchivedClusterSlugs(
+  clusterIds: string[],
+): Promise<Map<string, string> | null> {
   const db = getDb();
-  if (!db || clusterIds.length === 0) return [];
+  if (!db || clusterIds.length === 0) return null;
   try {
     const rows = await db
-      .select({ clusterId: storyArchive.clusterId })
+      .select({ clusterId: storyArchive.clusterId, slug: storyArchive.slug })
       .from(storyArchive)
       .where(inArray(storyArchive.clusterId, clusterIds));
-    const existing = new Set(rows.map((r) => r.clusterId));
-    return clusterIds.filter((id) => !existing.has(id));
+    return new Map(rows.map((r) => [r.clusterId, r.slug]));
   } catch (error) {
     logger.warn("database.find_new_clusters_failed", {
       error: describeDbError(error),
     });
-    return [];
+    return null;
   }
+}
+
+/**
+ * Which of these ids the archive has never seen. null from the read above
+ * means "no answer" (no database, or the query failed) — NOT "none of them
+ * are archived" — so it yields an empty list, exactly as this function did
+ * before it shared a query with the slug read.
+ */
+export async function findNewClusterIds(clusterIds: string[]): Promise<string[]> {
+  const known = await readArchivedClusterSlugs(clusterIds);
+  if (!known) return [];
+  return clusterIds.filter((id) => !known.has(id));
 }
 
 /**

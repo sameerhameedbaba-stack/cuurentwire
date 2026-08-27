@@ -1,24 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NewsDataset, StoryCluster } from "@/lib/news/types";
 
-// archiveDataset / findNewClusterIds are stubbed: these tests exercise the
-// gate's decisions and the carry/ping registries, not the upsert itself.
+// archiveDataset / readArchivedClusterSlugs are stubbed: these tests
+// exercise the gate's decisions and the carry/ping/rename registries, not
+// the upsert itself. The slug read answers with a Map of what the archive
+// already holds, or null when it could not answer at all.
 const archiveDatasetMock = vi.fn<
   (dataset: NewsDataset, carry?: StoryCluster[]) => Promise<number>
 >(async () => 1);
-const findNewClusterIdsMock = vi.fn<(ids: string[]) => Promise<string[]>>(
-  async () => [],
-);
+const readArchivedClusterSlugsMock = vi.fn<
+  (ids: string[]) => Promise<Map<string, string> | null>
+>(async () => null);
 vi.mock("@/lib/database/archive", () => ({
   archiveDataset: (dataset: NewsDataset, carry?: StoryCluster[]) =>
     archiveDatasetMock(dataset, carry),
-  findNewClusterIds: (ids: string[]) => findNewClusterIdsMock(ids),
+  readArchivedClusterSlugs: (ids: string[]) => readArchivedClusterSlugsMock(ids),
 }));
 
 import {
   archivePublicDataset,
   claimCronBurst,
   drainPendingIndexNowIds,
+  drainStaleSlugs,
   isCronBurstActive,
   markPersisted,
   PERSIST_MIN_INTERVAL_MS,
@@ -74,8 +77,8 @@ beforeEach(() => {
   resetPersistGateForTests();
   archiveDatasetMock.mockClear();
   archiveDatasetMock.mockResolvedValue(1);
-  findNewClusterIdsMock.mockClear();
-  findNewClusterIdsMock.mockResolvedValue([]);
+  readArchivedClusterSlugsMock.mockClear();
+  readArchivedClusterSlugsMock.mockResolvedValue(null);
 });
 
 describe("shouldPersistNow — cold instance (no module state)", () => {
@@ -200,23 +203,23 @@ describe("archivePublicDataset — carry registry", () => {
 
 describe("archivePublicDataset — IndexNow stash", () => {
   it("stashes new ids on success and drains them once", async () => {
-    findNewClusterIdsMock.mockResolvedValueOnce(["cnewstory0001"]);
+    readArchivedClusterSlugsMock.mockResolvedValueOnce(new Map());
     await archivePublicDataset(makeDataset([makeCluster("cnewstory0001")]));
     expect(drainPendingIndexNowIds()).toEqual(["cnewstory0001"]);
     expect(drainPendingIndexNowIds()).toEqual([]);
   });
 
   it("stashes nothing when the archive write failed", async () => {
-    findNewClusterIdsMock.mockResolvedValueOnce(["cnewstory0001"]);
+    readArchivedClusterSlugsMock.mockResolvedValueOnce(new Map());
     archiveDatasetMock.mockResolvedValueOnce(0);
     await archivePublicDataset(makeDataset([makeCluster("cnewstory0001")]));
     expect(drainPendingIndexNowIds()).toEqual([]);
   });
 
   it("accumulates across bursts until drained (producer burst + cron drain)", async () => {
-    findNewClusterIdsMock.mockResolvedValueOnce(["cfirstnew0001"]);
+    readArchivedClusterSlugsMock.mockResolvedValueOnce(new Map());
     await archivePublicDataset(makeDataset([makeCluster("cfirstnew0001")]));
-    findNewClusterIdsMock.mockResolvedValueOnce(["csecondnew001"]);
+    readArchivedClusterSlugsMock.mockResolvedValueOnce(new Map());
     await archivePublicDataset(makeDataset([makeCluster("csecondnew001")]));
     expect(drainPendingIndexNowIds().sort()).toEqual([
       "cfirstnew0001",
@@ -224,8 +227,73 @@ describe("archivePublicDataset — IndexNow stash", () => {
     ]);
   });
 
-  it("skips the new-id lookup entirely for mock datasets", async () => {
+  it("skips the archive lookup entirely for mock datasets", async () => {
     await archivePublicDataset(makeDataset([makeCluster("cmock00000001")], "mock"));
-    expect(findNewClusterIdsMock).not.toHaveBeenCalled();
+    expect(readArchivedClusterSlugsMock).not.toHaveBeenCalled();
+  });
+
+  it("treats an unanswered archive as 'nothing is new', never as 'all new'", async () => {
+    // null is "the archive did not answer". Reading it as an empty result
+    // would announce the entire dataset to IndexNow on every DB hiccup.
+    readArchivedClusterSlugsMock.mockResolvedValueOnce(null);
+    await archivePublicDataset(makeDataset([makeCluster("cnewstory0001")]));
+    expect(drainPendingIndexNowIds()).toEqual([]);
+  });
+});
+
+describe("archivePublicDataset — retired slugs", () => {
+  // A cluster's canonical slug is rebuilt whenever the lead headline
+  // changes. The retired slug keeps serving a cached 307 that nothing else
+  // invalidates, and a flap back makes the pair an infinite loop
+  // (seo/BACKLOG.md item 1, observed live on /news-sitemap.xml 2026-08-26).
+  const RENAMED = new Map([["crenamed00001", "old-headline-crenamed00001"]]);
+  const renamedCluster = () =>
+    makeCluster("crenamed00001", { slug: "new-headline-crenamed00001" });
+
+  it("stashes the slug the story used to live at, and drains it once", async () => {
+    readArchivedClusterSlugsMock.mockResolvedValueOnce(RENAMED);
+    await archivePublicDataset(makeDataset([renamedCluster()]));
+    expect(drainStaleSlugs()).toEqual(["old-headline-crenamed00001"]);
+    expect(drainStaleSlugs()).toEqual([]);
+  });
+
+  it("stashes nothing when the slug is unchanged", async () => {
+    readArchivedClusterSlugsMock.mockResolvedValueOnce(
+      new Map([["csameslug0001", "story-csameslug0001"]]),
+    );
+    await archivePublicDataset(makeDataset([makeCluster("csameslug0001")]));
+    expect(drainStaleSlugs()).toEqual([]);
+  });
+
+  it("stashes nothing for a story the archive has never seen", async () => {
+    readArchivedClusterSlugsMock.mockResolvedValueOnce(new Map());
+    await archivePublicDataset(makeDataset([makeCluster("cbrandnew0001")]));
+    expect(drainStaleSlugs()).toEqual([]);
+  });
+
+  it("stashes nothing when the archive write failed", async () => {
+    // The upsert has not replaced the stored slug, so the next burst sees
+    // the same rename and records it then.
+    readArchivedClusterSlugsMock.mockResolvedValueOnce(RENAMED);
+    archiveDatasetMock.mockResolvedValueOnce(0);
+    await archivePublicDataset(makeDataset([renamedCluster()]));
+    expect(drainStaleSlugs()).toEqual([]);
+  });
+
+  it("survives a flap in both directions", async () => {
+    readArchivedClusterSlugsMock.mockResolvedValueOnce(RENAMED);
+    await archivePublicDataset(makeDataset([renamedCluster()]));
+    readArchivedClusterSlugsMock.mockResolvedValueOnce(
+      new Map([["crenamed00001", "new-headline-crenamed00001"]]),
+    );
+    await archivePublicDataset(
+      makeDataset([makeCluster("crenamed00001", { slug: "old-headline-crenamed00001" })]),
+    );
+    // Both sides of the flap get re-rendered, so neither can stay frozen
+    // pointing at the other.
+    expect(drainStaleSlugs().sort()).toEqual([
+      "new-headline-crenamed00001",
+      "old-headline-crenamed00001",
+    ]);
   });
 });

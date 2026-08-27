@@ -1,6 +1,6 @@
 import type { NewsDataset, StoryCluster } from "@/lib/news/types";
 import { newsDayET } from "@/lib/utils/news-day";
-import { archiveDataset, findNewClusterIds } from "./archive";
+import { archiveDataset, readArchivedClusterSlugs } from "./archive";
 
 /**
  * Batched database persistence (cost control, 2026-08-21).
@@ -152,6 +152,31 @@ const unarchivedPublic = new Map<string, StoryCluster>();
 const PENDING_PING_CAP = 500;
 const pendingIndexNowIds = new Set<string>();
 
+/**
+ * Slugs a story used to be published under, awaiting an ISR revalidation.
+ *
+ * A cluster's canonical slug is rebuilt whenever pickLead() re-selects the
+ * lead, so headlines flap and story URLs are renamed constantly — measured
+ * 2026-08-28: 5 of 178 archived live stories were slugged differently in
+ * the live dataset than in the archive at one instant. The OLD URL then
+ * 307s to the new one, and that redirect is an ISR entry of its own under
+ * the story route's 30-day TTL. Nothing invalidates it: the cron
+ * revalidates `/story/<canonical slug>` for live clusters, which is never
+ * the retired alias, and the redirect is returned from the live branch of
+ * resolveStoryRequest before any tagged read, so revalidateTag misses it
+ * too. A redirect can therefore outlive by weeks the slug it points at —
+ * and when the headline flaps back, the fresh redirect points at the frozen
+ * one and the two form an INFINITE 307 LOOP. That is not hypothetical: one
+ * was live on /news-sitemap.xml on 2026-08-26 (seo/BACKLOG.md item 1),
+ * where a crawler following the entry reaches no page at all.
+ *
+ * The burst already reads the archive's stored slug per cluster, so a
+ * rename is free to detect: stored slug != current slug means the stored
+ * one is now an alias whose cached redirect must be re-rendered.
+ */
+const PENDING_STALE_SLUG_CAP = 200;
+const pendingStaleSlugs = new Set<string>();
+
 /** Record every live cluster of a public generation (mock data never). */
 export function registerPublicClusters(dataset: NewsDataset): void {
   if (dataset.dataMode === "mock") return;
@@ -176,9 +201,22 @@ export function registerPublicClusters(dataset: NewsDataset): void {
  * in which case the registry is kept so the next burst retries the carry.
  */
 export async function archivePublicDataset(dataset: NewsDataset): Promise<number> {
-  const liveIds = dataset.clusters.filter((c) => !c.isMock).map((c) => c.id);
-  const newIds =
-    dataset.dataMode === "mock" ? [] : await findNewClusterIds(liveIds);
+  const live = dataset.clusters.filter((c) => !c.isMock);
+  const liveIds = live.map((c) => c.id);
+  // One read answers both questions: which ids are new (for the IndexNow
+  // ping) and which ones have been re-slugged (for the stale-redirect
+  // revalidation). null = the archive did not answer; assume neither.
+  const archivedSlugs =
+    dataset.dataMode === "mock" ? null : await readArchivedClusterSlugs(liveIds);
+  const newIds = archivedSlugs
+    ? liveIds.filter((id) => !archivedSlugs.has(id))
+    : [];
+  const renamed = archivedSlugs
+    ? live.filter((c) => {
+        const stored = archivedSlugs.get(c.id);
+        return stored !== undefined && stored !== c.slug;
+      })
+    : [];
   const currentIds = new Set(liveIds);
   const carryover = [...unarchivedPublic.values()].filter(
     (c) => !currentIds.has(c.id),
@@ -193,6 +231,17 @@ export async function archivePublicDataset(dataset: NewsDataset): Promise<number
       if (oldest === undefined) break;
       pendingIndexNowIds.delete(oldest);
     }
+    // The upsert has just replaced the stored slug, so this is the last
+    // moment the old one is knowable.
+    for (const cluster of renamed) {
+      const stored = archivedSlugs?.get(cluster.id);
+      if (stored) pendingStaleSlugs.add(stored);
+    }
+    while (pendingStaleSlugs.size > PENDING_STALE_SLUG_CAP) {
+      const oldest = pendingStaleSlugs.values().next().value;
+      if (oldest === undefined) break;
+      pendingStaleSlugs.delete(oldest);
+    }
   }
   return archived;
 }
@@ -204,10 +253,22 @@ export function drainPendingIndexNowIds(): string[] {
   return ids;
 }
 
+/**
+ * Take (and clear) the retired slugs whose cached redirect needs
+ * re-rendering. The caller revalidates `/story/<slug>` for each — see the
+ * registry comment above for why nothing else does.
+ */
+export function drainStaleSlugs(): string[] {
+  const slugs = [...pendingStaleSlugs];
+  pendingStaleSlugs.clear();
+  return slugs;
+}
+
 /** Module state must be resettable between test cases. */
 export function resetPersistGateForTests(): void {
   lastPersistAt = 0;
   cronBurstUntil = 0;
   unarchivedPublic.clear();
   pendingIndexNowIds.clear();
+  pendingStaleSlugs.clear();
 }
