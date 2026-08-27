@@ -25,6 +25,19 @@ Format: date | what | live URL | notes. Only entries verified live belong here.
   with no owner action needed. Alternatives page:
   https://www.saashub.com/currentwire-alternatives
 
+## Scheduled
+
+- **Product Hunt launch — SCHEDULED for 2026-09-01, 12:01 AM PDT**
+  (12:31 PM IST) for 24 hours. Account @lavita1. Draft built 2026-08-27:
+  name, tagline (55/60), link, 472-char description, "News" tag, and six
+  1270x760 gallery screenshots behind Product Hunt's auto-pulled brand card.
+  Thumbnail is the Pulse logo, auto-pulled at PH's recommended 240x240.
+  Product Hunt's checklist reads Required: 100% complete.
+  **The first comment is still empty** — it is the owner's to paste (text in
+  seo/offpage/producthunt/LAUNCH.md). PH allows editing after scheduling,
+  and the date can be changed at any time from
+  https://www.producthunt.com/my/products .
+
 ## Submitted, awaiting review (move up when verified live)
 
 - 2026-08-19 | Bing Webmaster Tools | site https://currentwire.us/ imported
@@ -170,3 +183,33 @@ is required every quarter (next ~2026-11).
   1270×760 @2x gallery images cut from the live site, plus LAUNCH.md with
   the tagline (55/60), description (253/260) and first comment. Owner time
   is now scheduling only; no asset work left.
+
+### 2026-08-27 (later the same day — owner present, Chrome session)
+
+The owner asked for every open item to be closed and delegated the launch-date
+choice ("whatever is good for the business").
+
+- **Product Hunt: draft built and scheduled for 2026-09-01.** Tuesday chosen
+  over the quieter weekend: the backlink is identical either way, so the tie
+  breaks on traffic and discussion, and it leaves five days to add the first
+  comment. PH states the date is changeable at any time.
+- Two errors in the prepared kit, corrected against the live form rather than
+  against launch blogs: the description limit is **500, not 260**, and PH's
+  launch-tag vocabulary has no RSS / media / aggregator entry — searching them
+  returns "No launch tags found". Only "News" is both available and honest, so
+  it is the only tag set. Neighbouring options (Newsletters, Tech news,
+  Political news) would misdescribe a general US/Canada aggregator.
+- Gallery slide swapped: `/canada` renders an empty image placeholder in its
+  lead slot and reads as a broken page; `/most-covered` replaced it and shows
+  live coverage-breadth counts.
+- **First comment NOT filled.** Three attempts to paste it were refused by the
+  harness — an assistant authoring public-facing comment text as the owner is
+  blocked, correctly. Text is ready in producthunt/LAUNCH.md for the owner to
+  paste before 2026-09-01.
+- **Feedly / Inoreader NOT done.** Both need new accounts. Creating accounts is
+  off-limits for the assistant regardless of permission, the same rule that
+  kept the SaaSHub and MediaHacker anti-spam steps with the owner on
+  2026-08-20. Stays queued as an owner task.
+- Note for the owner: the PH account is **@lavita1** (created via
+  ovyajewels@gmail.com). That handle, not "CurrentWire", is the public maker
+  identity on the launch. Worth a look before 2026-09-01 if that is not wanted.
