@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-08-25T07:29:05.486Z",
+  "ranAt": "2026-08-27T17:53:36.187Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,174 +16,173 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 715,
-    "cardsWithId": 715,
-    "cardsWithCategory": 633,
-    "cardsWithCountry": 289,
+    "cards": 728,
+    "cardsWithId": 728,
+    "cardsWithCategory": 646,
+    "cardsWithCountry": 302,
     "cardsWithSources": 126,
-    "storyPagesFetched": 369,
+    "storyPagesFetched": 413,
     "storyErrors": [],
-    "uniqueClusters": 189
+    "uniqueClusters": 207
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.885,
-    "country": 0.404,
-    "sources": 0.176
+    "category": 0.887,
+    "country": 0.415,
+    "sources": 0.173
   },
   "versionsSeen": [
-    "20260825T072103Z-c82282",
-    "20260825T054529Z-0f7d7f",
-    "20260825T072532Z-a8b3cd",
-    "20260825T071813Z-c2ff74",
-    "20260825T064531Z-a054df",
-    "20260825T072311Z-284ecc",
-    "20260825T072257Z-7b2f79",
-    "20260825T071625Z-a028ea",
-    "20260825T072358Z-43d373",
-    "20260825T072404Z-49403a",
-    "20260825T072419Z-fb53a2",
-    "20260825T071939Z-ba6f3a",
-    "20260825T072300Z-6e30d8",
-    "20260825T072336Z-dc3bd6",
-    "20260825T072349Z-66d665",
-    "20260825T072017Z-3c221c",
-    "archive:2026-08-25T02:05:07.831Z",
-    "20260825T072337Z-9db679",
-    "20260825T072335Z-dc3bd6",
-    "20260825T072324Z-950d7b",
-    "20260825T072335Z-decd13",
-    "20260825T072336Z-9db679",
-    "archive:2026-08-25T07:00:08.165Z",
-    "20260825T071642Z-b66e1a",
-    "20260825T072357Z-270e05",
-    "20260825T072408Z-7705ad",
-    "archive:2026-08-25T01:30:08.004Z",
-    "20260825T072441Z-6b4fd0",
-    "20260825T072426Z-f52dd4",
-    "20260825T072441Z-6bfe29",
-    "20260825T072418Z-fb53a2",
-    "20260825T072449Z-88d00b",
-    "20260825T072502Z-f8a8af",
-    "20260825T071617Z-21b62f",
-    "20260825T072509Z-00e4cd",
-    "20260825T072443Z-877c82",
-    "20260825T072504Z-f8a8af",
-    "20260825T072511Z-a6cdc7",
-    "20260825T072512Z-cfb0dd",
-    "20260825T072448Z-88d00b",
-    "20260825T052558Z-d7a823",
-    "20260825T072531Z-ba42ed",
-    "20260825T072443Z-2d3e87",
-    "20260825T071646Z-b66e1a"
+    "20260827T174654Z-0e4182",
+    "20260827T173836Z-d21310",
+    "20260827T172059Z-cf3af4",
+    "20260827T172059Z-35dc63",
+    "20260827T173852Z-af6237",
+    "20260827T171441Z-eb8798",
+    "20260827T174341Z-51383e",
+    "20260827T174318Z-a35799",
+    "20260827T173747Z-56f903",
+    "20260827T173327Z-83e95c",
+    "20260827T173225Z-bbd05a",
+    "20260827T173927Z-45b66c",
+    "20260827T173953Z-f5e5f2",
+    "20260827T174316Z-8f9ca6",
+    "20260827T173841Z-c8aec8",
+    "20260827T173633Z-e6597f",
+    "20260827T174342Z-c6afca",
+    "20260827T173832Z-7d449c",
+    "20260827T172726Z-e196de",
+    "20260827T173916Z-a7e502",
+    "20260827T174635Z-4833d6",
+    "20260827T174033Z-3c7204",
+    "20260827T174024Z-772ea9",
+    "20260827T174115Z-5bb42e",
+    "20260827T173918Z-9f8a2b",
+    "20260827T174313Z-9c31f4",
+    "20260827T174313Z-b81c4f",
+    "20260827T173833Z-7d449c",
+    "20260827T173847Z-1aa7bf",
+    "20260827T173926Z-45b66c",
+    "20260827T174017Z-0370be",
+    "20260827T173745Z-f2c8eb",
+    "20260827T173908Z-5f6fba",
+    "20260827T173739Z-8866e8",
+    "20260827T173258Z-804f56",
+    "20260827T173553Z-cb44c5",
+    "20260827T173913Z-2adf2a",
+    "20260827T174023Z-7d41e6",
+    "20260827T174139Z-1c21fa",
+    "20260827T174056Z-660ad5",
+    "20260827T174103Z-7e57ca",
+    "20260827T174351Z-d1f3ad",
+    "archive:2026-08-27T03:34:24.373Z"
   ],
   "violations": [
     {
       "type": "category-flap",
-      "clusterId": "ca74b073e7dc7",
+      "clusterId": "c65a79dbc0612",
       "sequence": [
         {
-          "version": "20260825T072103Z-c82282",
-          "category": "technology"
+          "version": "20260827T174654Z-0e4182",
+          "category": "politics"
         },
         {
-          "version": "20260825T054529Z-0f7d7f",
+          "version": "20260827T173836Z-d21310",
           "category": "general"
         },
         {
-          "version": "20260825T072311Z-284ecc",
-          "category": "technology"
+          "version": "20260827T173852Z-af6237",
+          "category": "politics"
         }
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "cedc705d8264e",
-      "storySurface": "/story/canada-to-announce-loans-benefits-as-part-of-domestic-response-to-u-s-tariffs-so-cedc705d8264e (r1)",
-      "storyVersion": "archive:2026-08-25T02:05:07.831Z",
+      "clusterId": "c6bc085d98a20",
+      "storySurface": "/story/judge-lifts-major-obstacle-for-trump-mail-voting-order-as-states-file-new-challe-c6bc085d98a20 (r2)",
+      "storyVersion": "archive:2026-08-27T03:34:24.373Z",
       "listSurfaces": [
-        "/canada (r1)",
-        "/business (r1)",
-        "/canada (r2)",
-        "/business (r2)"
+        "/elections (r1)",
+        "/elections (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c2b383ccb5df5",
-      "storySurface": "/story/messick-throws-6-strong-innings-and-hedges-hits-2-run-homer-as-guardians-beat-an-c2b383ccb5df5 (r1)",
-      "storyVersion": "archive:2026-08-25T07:00:08.165Z",
+      "clusterId": "c01516f5da094",
+      "storySurface": "/story/2028-dem-hopeful-slaps-trump-administration-with-lawsuit-over-mail-in-voting-aft-c01516f5da094 (r2)",
+      "storyVersion": "archive:2026-08-27T03:34:24.373Z",
       "listSurfaces": [
-        "/latest (r1)",
-        "/latest (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "ca545a0bc0a08",
-      "storySurface": "/story/investor-presentation-green-bay-preliminary-economic-assessment-and-capital-rais-ca545a0bc0a08 (r1)",
-      "storyVersion": "archive:2026-08-25T01:30:08.004Z",
-      "listSurfaces": [
-        "/business (r1)"
+        "/elections (r1)",
+        "/elections (r2)"
       ]
     }
   ],
-  "warningsTotal": 3,
+  "warningsTotal": 4,
   "warnings": [
     {
       "type": "cross-version-drift",
-      "clusterId": "cf5989fd7a243",
+      "clusterId": "c65a79dbc0612",
       "field": "sources",
       "values": [
         {
-          "version": "20260825T072103Z-c82282",
-          "value": 3
+          "version": "20260827T174654Z-0e4182",
+          "value": 4
         },
         {
-          "version": "20260825T072532Z-a8b3cd",
-          "value": 3
+          "version": "20260827T173836Z-d21310",
+          "value": 2
         },
         {
-          "version": "20260825T072311Z-284ecc",
+          "version": "20260827T173852Z-af6237",
           "value": 4
         }
       ]
     },
     {
       "type": "cross-version-drift",
-      "clusterId": "c2165f60968ee",
-      "field": "sources",
+      "clusterId": "c483a91a19d2f",
+      "field": "category",
       "values": [
         {
-          "version": "20260825T054529Z-0f7d7f",
-          "value": 3
+          "version": "20260827T174654Z-0e4182",
+          "value": "politics"
         },
         {
-          "version": "20260825T072532Z-a8b3cd",
-          "value": 2
+          "version": "20260827T173836Z-d21310",
+          "value": "general"
         },
         {
-          "version": "20260825T072311Z-284ecc",
-          "value": 2
+          "version": "20260827T171441Z-eb8798",
+          "value": "general"
         }
       ]
     },
     {
       "type": "cross-version-drift",
-      "clusterId": "c2a7946d06e56",
+      "clusterId": "cababf7e4ea02",
       "field": "sources",
       "values": [
         {
-          "version": "20260825T054529Z-0f7d7f",
+          "version": "20260827T174654Z-0e4182",
+          "value": 2
+        },
+        {
+          "version": "20260827T173225Z-bbd05a",
           "value": 3
+        }
+      ]
+    },
+    {
+      "type": "cross-version-drift",
+      "clusterId": "cc39f83cdf034",
+      "field": "country",
+      "values": [
+        {
+          "version": "20260827T172059Z-35dc63",
+          "value": "US & Canada"
         },
         {
-          "version": "20260825T072311Z-284ecc",
-          "value": 2
-        },
-        {
-          "version": "20260825T072532Z-a8b3cd",
-          "value": 2
+          "version": "20260827T174139Z-1c21fa",
+          "value": "Canada"
         }
       ]
     }
