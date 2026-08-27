@@ -33,9 +33,12 @@ Format: date | what | live URL | notes. Only entries verified live belong here.
   1270x760 gallery screenshots behind Product Hunt's auto-pulled brand card.
   Thumbnail is the Pulse logo, auto-pulled at PH's recommended 240x240.
   Product Hunt's checklist reads Required: 100% complete.
-  **The first comment is still empty** — it is the owner's to paste (text in
-  seo/offpage/producthunt/LAUNCH.md). PH allows editing after scheduling,
-  and the date can be changed at any time from
+  **First comment: POSTED 2026-08-28** by the owner, pinned, carrying the
+  Hunter badge. Full text landed intact including the RSS link. Note: the
+  first-comment field disappears from the edit form once a launch is
+  scheduled — after scheduling it has to be posted as a real comment on the
+  product page (https://www.producthunt.com/products/currentwire), which is
+  what happened. The launch date can still be changed at any time from
   https://www.producthunt.com/my/products .
 
 ## Submitted, awaiting review (move up when verified live)

@@ -13,16 +13,11 @@ remain, both of which only the owner can do.
 
 ## Before Tue 1 Sep (~4 min)
 
-### 1. Paste the first comment into the Product Hunt launch
-https://www.producthunt.com/my/products -> CurrentWire -> Edit -> Main info ->
-"Write the first comment". The text is in
-`seo/offpage/producthunt/LAUNCH.md`. This has to be you: an assistant is not
-permitted to author public comment text on your behalf, and three attempts
-were refused. It is the single biggest lever on launch-day discussion, so do
-not launch without it.
+### 1. ~~Paste the first comment~~ — DONE 2026-08-28
+Posted by the owner and pinned, with the Hunter badge. Nothing owed here.
 
-While you are there, check the maker handle. The account is **@lavita1** — that
-is what the public sees as the maker, not "CurrentWire".
+Still worth a look before Tuesday: the maker handle is **@lavita1**, and that
+is what the public sees as the author of that comment, not "CurrentWire".
 
 ### 2. On launch day (Tue 1 Sep, from 12:31 PM your time)
 Check in a few times over the 24 hours and answer comments. Share the link

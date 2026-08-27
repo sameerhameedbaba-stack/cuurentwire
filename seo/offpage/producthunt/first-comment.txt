@@ -1,0 +1,14 @@
+Hi Product Hunt
+
+CurrentWire answers one question: what are the 100 stories actually moving in the US and Canada right now, and who reported them first?
+
+It is fully automated. There is no human editorial desk and it produces no original reporting. What it does is cluster coverage of the same event from many publishers into a single story page, then rank the clusters by freshness, how broadly the story is being covered, source authority and momentum. Every story links back to the publishers that did the work, and the ranking method is published at /methodology rather than being a black box.
+
+Two things I care about and would like feedback on:
+
+- Attribution. Aggregators have a bad reputation for burying the original reporter. Every cluster names its sources and links out. Tell me if you find a story where that reads unfairly to the publisher.
+- Story pages are permanent. A URL from today still resolves in a year, so a story you cite does not rot.
+
+It is free, no account needed, and there is an RSS feed at https://currentwire.us/rss
+
+Happy to answer anything about the ranking pipeline or the dedup.
