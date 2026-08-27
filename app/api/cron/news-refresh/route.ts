@@ -107,6 +107,24 @@ function revalidateLiveStories(dataset: NewsDataset): void {
 
 /**
  * Scheduled news refresh.
+ *
+ * Driven by the Vercel cron in vercel.json, every quarter hour since
+ * 2026-08-27. Before that the only entry was a daily `0 6 * * *` — a
+ * Hobby-plan artifact, that tier allows one daily cron — and the real beat
+ * came from an EXTERNAL scheduler. That scheduler stopped reaching this
+ * endpoint: measured 2026-08-27, the dataset went 25 minutes without a
+ * refresh against a 15-minute RSS_REFRESH_MINUTES, and the archive took no
+ * rows for an hour while 11 of the 50 stories in /rss had no archive row.
+ * With no beat, the write burst could only fire when a traffic-triggered
+ * cache regeneration happened to land in the persist gate's cold window,
+ * which is why archive writes clustered between 03:00 and 07:00 UTC and
+ * then stopped for 10-14 hours. Quarter-hourly ticks match
+ * RSS_REFRESH_MINUTES (so every tick refreshes) and land on minutes 0 and
+ * 30, both inside the cron cold window, so the burst runs ~2x/hour as the
+ * batching intends. An external scheduler coming back changes nothing: the
+ * cadence guard skips a refresh younger than the interval and the persist
+ * gate batches the writes.
+ *
  * Protected by CRON_SECRET via `Authorization: Bearer <secret>` (Vercel Cron
  * convention) or an `x-cron-secret` header. Refreshes the in-process cache on
  * every run; the database work (dataset persist, archive upsert, briefing)
