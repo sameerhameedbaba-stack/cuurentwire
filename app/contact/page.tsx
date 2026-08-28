@@ -7,7 +7,7 @@ import { TrustPageJsonLd } from "@/lib/seo/structured-data";
 
 /** One string for both <meta name="description"> and the ContactPage JSON-LD. */
 const DESCRIPTION =
-  "Contact CurrentWire: general enquiries, corrections, publishers, partnerships and technical issues.";
+  "How to reach CurrentWire — general enquiries, corrections, publisher questions, partnerships and technical issues, and which email to use for each.";
 
 export const metadata: Metadata = pageMetadata({
   title: "Contact",

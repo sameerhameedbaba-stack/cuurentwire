@@ -55,8 +55,11 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     label: "Politics",
     path: "/politics",
     seoTitle: "Politics News Today — Top US & Canada Political Stories",
+    // Doubles as the visible section dek and the meta description — keep
+    // every entry ~130-160 chars (Bing flags shorter ones; Google truncates
+    // longer ones) and factually true of what the section shows.
     description:
-      "Government, elections, courts and public policy across the United States and Canada.",
+      "Today's top US and Canada politics news — elections, Congress, Parliament, courts and public policy — every story tracked across the publications covering it.",
     keywords: [
       "election", "congress", "senate", "house of representatives", "white house",
       "president", "prime minister", "parliament", "legislation", "bill",
@@ -86,7 +89,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     path: "/business",
     seoTitle: "Business News Today — Markets, Economy & Companies",
     description:
-      "Markets, companies, employment, trade and the North American economy.",
+      "Today's top business news across the US and Canada — markets, companies, jobs, trade and the economy — every story tracked across the publications covering it.",
     keywords: [
       // No "shares": as a verb ("shares details", "shares photos") it fires
       // on celebrity/lifestyle coverage far more often than on markets.
@@ -114,7 +117,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     path: "/technology",
     seoTitle: "Tech News Today — AI, Big Tech & Cybersecurity",
     description:
-      "Artificial intelligence, Big Tech, cybersecurity, and technology policy.",
+      "Today's top technology news — AI, Big Tech, cybersecurity and tech policy across the US and Canada — every story tracked across the publications covering it.",
     keywords: [
       "artificial intelligence", "ai model", "ai", "machine learning", "chatbot",
       "software", "hardware", "semiconductor", "chip", "cybersecurity", "hack",
@@ -136,7 +139,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     path: "/world",
     seoTitle: "World News Today — Top International Stories",
     description:
-      "Global stories with significant consequences for the United States and Canada.",
+      "Top international stories with consequences for the US and Canada — diplomacy, conflicts and global affairs — each tracked across the publications covering it.",
     keywords: [
       "united nations", "nato", "european union", "g7", "g20", "summit",
       "foreign minister", "diplomacy", "diplomatic", "embassy", "sanctions",
@@ -170,7 +173,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     path: "/climate",
     seoTitle: "Climate News Today — Environment, Energy & Extreme Weather",
     description:
-      "Climate, energy, extreme weather, wildfires and environmental policy.",
+      "Climate and environment news for the US and Canada — extreme weather, wildfires and energy policy — every story tracked across the publications covering it.",
     keywords: [
       "climate change", "climate", "emissions", "carbon", "wildfire", "hurricane",
       "tornado", "flood", "flooding", "drought", "heat wave", "heatwave",
@@ -187,7 +190,7 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     path: "/health",
     seoTitle: "Health News Today — Medicine, Public Health & Research",
     description:
-      "Public health, medicine, health systems and health regulation.",
+      "Today's top health news — public health, medicine, outbreaks and policy across the US and Canada — every story tracked across the publications covering it.",
     keywords: [
       "health", "hospital", "public health", "vaccine", "vaccination", "outbreak",
       "virus", "disease", "cancer", "medicare", "medicaid", "health canada",
@@ -207,7 +210,8 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     label: "Science",
     path: "/science",
     seoTitle: "Science News Today — Research, Space & Discovery",
-    description: "Research, space exploration and scientific discovery.",
+    description:
+      "Today's top science news — space missions, research and discovery across the US and Canada — every story tracked across the publications covering it.",
     keywords: [
       // No bare "launch": product/album/campaign launches are not science.
       "nasa", "space", "spacecraft", "satellite", "rocket launch", "space launch",
@@ -264,7 +268,8 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     label: "Culture",
     path: "/culture",
     seoTitle: "Entertainment & Culture News Today",
-    description: "Film, television, music, books, media and society.",
+    description:
+      "Entertainment and culture news — film, TV, music, books and media across the US and Canada — every story tracked across the publications covering it.",
     keywords: [
       "film", "movie", "box office", "television", "tv series", "streaming series",
       "music", "album", "concert", "concert tour", "book", "novel", "author",
@@ -281,7 +286,8 @@ export const CATEGORIES: Record<CategoryId, CategoryDefinition> = {
     label: "Sports",
     path: "/sports",
     seoTitle: "Sports News Today — Top US & Canada Stories",
-    description: "Major US and Canadian sports coverage.",
+    description:
+      "Today's top sports news — NFL, NBA, NHL, MLB, CFL and more across the US and Canada — every story tracked across the publications covering it.",
     keywords: [
       "nfl", "nba", "nhl", "mlb", "mls", "cfl", "super bowl", "stanley cup",
       "world series", "playoffs", "playoff", "championship", "olympics", "olympic",

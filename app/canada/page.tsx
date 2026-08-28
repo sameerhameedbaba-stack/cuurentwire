@@ -17,7 +17,7 @@ export const metadata: Metadata = pageMetadata({
   // nav label (the on-page h1 keeps it).
   title: "Canada News Today",
   description:
-    "Top Canada news today: politics, business, society and the developments shaping Canada, ranked and updated all day.",
+    "Top Canada news today: politics, business and the developments shaping Canada — ranked, updated all day, and tracked across the publications covering each story.",
   path: "/canada",
   rssPath: "/rss/canada",
 });

@@ -160,7 +160,7 @@ export function CompactStory({
         <Link href={storyHref(cluster)} className="block">
           <StoryImage
             src={cluster.imageUrl}
-            alt=""
+            alt={cluster.title}
             category={cluster.category}
             aspect="1/1"
             sizes="112px"
@@ -282,7 +282,7 @@ export function RankedStory({
           <Link href={storyHref(cluster)} tabIndex={-1} aria-hidden className="block">
             <StoryImage
               src={cluster.imageUrl}
-              alt=""
+              alt={cluster.title}
               category={cluster.category}
               aspect="4/3"
               sizes="112px"
