@@ -87,6 +87,45 @@ function extractLiveVersion(html) {
   return match ? match[1] : null;
 }
 
+/**
+ * Version stamps sort chronologically: "20260828T221542Z-d00266". Only the
+ * timestamp half is comparable — the hash is a content digest.
+ */
+function versionStamp(version) {
+  const match = /^(\d{8}T\d{6}Z)/.exec(String(version));
+  return match ? match[1] : null;
+}
+
+/**
+ * Which side of an archive-vs-live violation is actually wrong.
+ *
+ * Verified against production 2026-08-29, minutes after the stamp shipped:
+ * two clusters whose story pages stamped `archive:…` had left the live
+ * dataset entirely (absent from force-dynamic /latest AND from a fresh
+ * homepage prerender), while cached list pages from an earlier generation
+ * still showed them. The story pages were CORRECT and the list surface was
+ * the stale side — the opposite of what seo/BACKLOG.md item 3 assumed for
+ * six days. Surfaces legitimately read dataset entries up to ~29 minutes
+ * apart (the 1,740 s floor in lib/cache/store.ts), so a disagreement across
+ * generations is skew, and only a same-generation disagreement is a bug.
+ */
+function classifyArchiveVsLive(consulted, listVersions) {
+  if (!consulted) return "unknown (page predates the cw-live-dataset-version stamp)";
+  if (listVersions.includes(consulted)) {
+    return "resolution: the story page missed a cluster the SAME generation was showing";
+  }
+  const story = versionStamp(consulted);
+  const stamps = listVersions.map(versionStamp).filter(Boolean);
+  if (!story || stamps.length === 0) return "skew: generations not comparable";
+  if (stamps.every((v) => v < story)) {
+    return "list-side staleness: the story page read a NEWER generation that had dropped the cluster";
+  }
+  if (stamps.every((v) => v > story)) {
+    return "story-side staleness: an older render, healed by the rotating revalidation window";
+  }
+  return "skew: list surfaces straddle the generation the story page read";
+}
+
 function extractVersion(html) {
   const match =
     html.match(/<meta[^>]*name="cw-dataset-version"[^>]*content="([^"]*)"/) ??
@@ -308,7 +347,7 @@ for (const [clusterId, obs] of byCluster) {
     // cluster that generation contained — a resolution defect. Otherwise
     // the page is an older render, which the rotating revalidation window
     // (lib/news/revalidation-window.ts) heals within one cycle.
-    const liveVersions = new Set(listed.map((o) => o.version));
+    const listVersions = listed.map((o) => o.version);
     const consulted = archived.liveVersionAtRender ?? null;
     violations.push({
       type: "archive-vs-live",
@@ -316,11 +355,7 @@ for (const [clusterId, obs] of byCluster) {
       storySurface: archived.surface,
       storyVersion: archived.version,
       liveVersionAtRender: consulted,
-      cause: !consulted
-        ? "unknown (page predates the cw-live-dataset-version stamp)"
-        : liveVersions.has(consulted)
-          ? "resolution: missed a cluster the same generation was showing"
-          : "staleness: rendered against an older generation",
+      cause: classifyArchiveVsLive(consulted, listVersions),
       listSurfaces: listed.map((o) => o.surface),
     });
   }

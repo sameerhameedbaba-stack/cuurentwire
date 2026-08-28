@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-08-28T22:10:33.873Z",
+  "ranAt": "2026-08-28T22:28:55.877Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,84 +16,178 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 700,
-    "cardsWithId": 700,
-    "cardsWithCategory": 618,
-    "cardsWithCountry": 322,
+    "cards": 702,
+    "cardsWithId": 702,
+    "cardsWithCategory": 620,
+    "cardsWithCountry": 320,
     "cardsWithSources": 142,
-    "storyPagesFetched": 376,
-    "storyErrors": [],
-    "uniqueClusters": 188
+    "storyPagesFetched": 362,
+    "storyErrors": [
+      {
+        "clusterId": "cda22affadae5",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/manitoba-encourages-young-adults-to-keep-active-with-new-initiative-cda22affadae5 responded 500"
+      },
+      {
+        "clusterId": "c2321d6e3f3f1",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/h-r-mcmaster-says-economic-pressure-on-iran-will-make-a-big-difference-as-war-hi-c2321d6e3f3f1 responded 500"
+      },
+      {
+        "clusterId": "c78b18b509b0d",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/footage-of-tibet-floods-isnt-being-shown-in-china-and-we-know-little-about-victi-c78b18b509b0d responded 500"
+      },
+      {
+        "clusterId": "cb6a811159c76",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/no-1-aryna-sabalenka-shrugs-off-her-recent-struggles-as-she-seeks-a-third-straig-cb6a811159c76 responded 500"
+      },
+      {
+        "clusterId": "c82d554728a2c",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/mlb-on-sportsnet-skubal-and-dodgers-vs-tigers-c82d554728a2c responded 500"
+      },
+      {
+        "clusterId": "c5d6419ddbdd4",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/ohio-state-qb-julian-sayin-takes-charge-as-a-team-captain-bringing-swagger-to-th-c5d6419ddbdd4 responded 500"
+      },
+      {
+        "clusterId": "ce790227cb08f",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/how-national-security-threats-have-evolved-in-25-years-since-9-11-ce790227cb08f responded 500"
+      },
+      {
+        "clusterId": "cb47e48d92aa8",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/appeals-court-rules-states-can-regulate-prediction-market-platforms-like-gamblin-cb47e48d92aa8 responded 500"
+      },
+      {
+        "clusterId": "c9a6bd5f8578d",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/lgbtq-group-reveals-which-dem-nominee-is-sponsoring-halloween-event-featuring-dr-c9a6bd5f8578d responded 500"
+      },
+      {
+        "clusterId": "cb723cd74c3bc",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/federal-government-extends-pause-on-big-bend-national-park-border-construction-u-cb723cd74c3bc responded 500"
+      }
+    ],
+    "uniqueClusters": 186
   },
   "coverage": {
     "clusterId": 1,
     "category": 0.883,
-    "country": 0.46,
-    "sources": 0.203
+    "country": 0.456,
+    "sources": 0.202
   },
   "versionsSeen": [
-    "20260828T220036Z-c39bf1",
-    "20260828T214537Z-788c2a",
-    "20260828T221000Z-740641",
-    "20260828T213031Z-0e3dc2",
-    "20260828T220025Z-261c33",
-    "20260828T220026Z-2242c0",
-    "20260828T220024Z-a6856e",
-    "archive:2026-08-28T16:01:03.494Z",
-    "20260828T220844Z-6cdc7c",
-    "20260828T220026Z-b3a251",
-    "20260828T220028Z-dfc826",
-    "archive:2026-08-28T21:00:08.244Z",
-    "20260828T220026Z-7e370c",
-    "20260828T220022Z-d37b3d",
-    "20260828T220916Z-409074",
-    "20260828T214537Z-646197",
-    "20260828T220940Z-4b7ca4"
+    "20260828T222628Z-12e765",
+    "20260828T222630Z-12e765",
+    "20260828T221542Z-d00266",
+    "20260828T222631Z-8266bc",
+    "archive:2026-08-28T12:31:08.319Z",
+    "20260828T222929Z-afae83",
+    "20260828T222934Z-fee7d4",
+    "20260828T223016Z-2bb96f",
+    "20260828T223015Z-95cd68",
+    "20260828T223014Z-2bb96f",
+    "20260828T223030Z-a0448f",
+    "20260828T223024Z-238ae0",
+    "20260828T223044Z-6e6bff",
+    "20260828T223052Z-56862e",
+    "20260828T223059Z-e5052c"
   ],
   "violations": [
     {
       "type": "archive-vs-live",
-      "clusterId": "c4b6eeba54567",
-      "storySurface": "/story/officials-widen-lettuce-linked-cyclospora-outbreak-probe-to-20-states-c4b6eeba54567 (r1)",
-      "storyVersion": "archive:2026-08-28T16:01:03.494Z",
+      "clusterId": "c92e8ee37fe9e",
+      "storySurface": "/story/does-a-2-beneficiary-inherit-100-if-the-98-beneficiary-dies-in-a-car-accident-as-c92e8ee37fe9e (r1)",
+      "storyVersion": "archive:2026-08-28T12:31:08.319Z",
+      "liveVersionAtRender": "20260828T221542Z-d00266",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
       "listSurfaces": [
-        "/ (r1)",
-        "/ (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c13b7d189668c",
-      "storySurface": "/story/how-does-blue-jays-arrighetti-need-to-adjust-and-improve-mechanics-c13b7d189668c (r1)",
-      "storyVersion": "archive:2026-08-28T21:00:08.244Z",
-      "listSurfaces": [
-        "/ (r1)",
-        "/ (r2)"
+        "/business (r1)",
+        "/business (r2)"
       ]
     }
   ],
-  "warningsTotal": 1,
+  "warningsTotal": 4,
   "warnings": [
     {
       "type": "cross-version-drift",
-      "clusterId": "c58477a93f32d",
+      "clusterId": "c2042c9bbe96e",
+      "field": "category",
+      "values": [
+        {
+          "version": "20260828T222628Z-12e765",
+          "value": "general"
+        },
+        {
+          "version": "20260828T222630Z-12e765",
+          "value": "general"
+        },
+        {
+          "version": "20260828T221542Z-d00266",
+          "value": "sports"
+        }
+      ]
+    },
+    {
+      "type": "cross-version-drift",
+      "clusterId": "c40228adb52b7",
+      "field": "category",
+      "values": [
+        {
+          "version": "20260828T222628Z-12e765",
+          "value": "general"
+        },
+        {
+          "version": "20260828T221542Z-d00266",
+          "value": "sports"
+        },
+        {
+          "version": "20260828T223016Z-2bb96f",
+          "value": "sports"
+        }
+      ]
+    },
+    {
+      "type": "cross-version-drift",
+      "clusterId": "cb3c4bf083a1f",
       "field": "sources",
       "values": [
         {
-          "version": "20260828T220036Z-c39bf1",
-          "value": 6
+          "version": "20260828T222628Z-12e765",
+          "value": 2
         },
         {
-          "version": "20260828T214537Z-788c2a",
-          "value": 7
+          "version": "20260828T221542Z-d00266",
+          "value": 2
         },
         {
-          "version": "20260828T221000Z-740641",
-          "value": 6
+          "version": "20260828T223030Z-a0448f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "type": "cross-version-drift",
+      "clusterId": "c4c4569e034b6",
+      "field": "sources",
+      "values": [
+        {
+          "version": "20260828T222631Z-8266bc",
+          "value": 2
         },
         {
-          "version": "20260828T213031Z-0e3dc2",
-          "value": 6
+          "version": "20260828T221542Z-d00266",
+          "value": 3
+        },
+        {
+          "version": "20260828T223059Z-e5052c",
+          "value": 2
         }
       ]
     }

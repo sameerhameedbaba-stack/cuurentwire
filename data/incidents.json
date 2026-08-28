@@ -61,5 +61,11 @@
     "kind": "fix",
     "label": "Write burst restored to ~2/hour and made phase-independent (e1b4cfb)",
     "detail": "Cron route decides the burst on every tick (a fresh dataset skips the refresh only); persist-gate cold window widened to half the cycle so any scheduler beat <= 15 min must land in one. Uptime probe and seo-health now fail when the newest news-sitemap publication_date (the archive's first_seen_at) is over 4 h old, so a repeat alerts in <= 30 min instead of being found by hand."
+  },
+  {
+    "date": "2026-08-29",
+    "kind": "fix",
+    "label": "Live story revalidation window rotated so all 726 live stories stay fresh (a0d26f0)",
+    "detail": "The cron burst marked clusters.slice(0,150) — always the same top 150 by ranking score — while the live dataset holds 726 clusters (/api/stats/coverage). The other 576 live story pages (79%) had no freshness path: the story route carries a 30-day ISR TTL and an archive-rendered page performs no tagged read, so revalidateTag never reached them. A page that rendered from the archive before its cluster entered the live snapshot kept serving that archived copy indefinitely, with dateModified frozen and isBasedOn under-reporting later pickups — the mechanism behind [auto-alert] #2 (surface coherence), reproduced on two clusters listed live on / this run. selectRevalidationSlugs keeps 150 marks per burst (the billed quantity is unchanged) and spends them as a fixed head of 100 plus a rotating 50-URL tail slice, covering every live story within 13 bursts (~6.5 h)."
   }
 ]

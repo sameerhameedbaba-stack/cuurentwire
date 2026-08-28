@@ -647,7 +647,90 @@ Contained in the meantime, and checked rather than assumed: **0 of the 214
 appear in `sitemap.xml`, `news-sitemap.xml` or `archive-sitemap.xml`.** The
 site is not asking anyone to fetch them.
 
-### 3. Surface coherence: a live story can serve a stale archived copy
+### 3. Surface coherence: a live story can serve a stale archived copy — ROOT-CAUSED and SHIPPED 2026-08-29 (`a0d26f0`)
+
+**The cause was a freshness gap, not a resolution bug, and it was hiding in
+an arithmetic mismatch nobody had checked.** The cron burst marked
+`dataset.clusters.slice(0, 150)` for re-render — always the same top 150 by
+ranking score. Measured this run on `/api/stats/coverage`: **the live dataset
+holds 726 clusters.** So **576 live story pages (79%) had no freshness
+mechanism at all.** The story route carries a 30-day ISR TTL (item 0b), and
+an archive-rendered page performs no tagged read, so
+`revalidateTag(NEWS_CACHE_TAG)` never reached them either.
+
+A page that rendered from the archive during the window in which its cluster
+was not yet in the live snapshot therefore kept serving that archived copy
+indefinitely: `dateModified` frozen, `isBasedOn` under-reporting every
+publication that picked the story up afterwards — on the site's only indexed,
+click-earning surface.
+
+**Reproduced before fixing.** `node scripts/surface-coherence.mjs`: 20 pages,
+700 cards, 188 clusters, 376 story fetches, **2 violations, 1 warning**, both
+violations `archive-vs-live` and both listed live on `/`:
+
+| Cluster | story page stamped | listed live on |
+|---|---|---|
+| `c4b6eeba54567` | `archive:2026-08-28T16:01:03.494Z` | `/` |
+| `c13b7d189668c` | `archive:2026-08-28T21:00:08.244Z` | `/` |
+
+Checked rather than assumed: both `/story/<id>` aliases 307 to exactly the
+slug `/` links, so this is **not** a rename or an id mismatch, and
+`getClusterBySlugWithVersion` is an exact scan over `dataset.clusters`
+(`lib/news/queries.ts:348`) — if the cluster were in the snapshot the render
+read, it would have hit. The renders were simply old and nothing re-rendered
+them.
+
+**The fix keeps the cost bound exactly where it was.** `LIVE_REVALIDATE_MAX`
+stays 150 marks per burst — the billed quantity is unchanged, which the
+playbook's ISR-cost constraint requires — and
+`selectRevalidationSlugs` (`lib/news/revalidation-window.ts`) spends it
+better: a fixed head of 100 (what readers and Google News see) plus a
+rotating 50-URL slice of the tail, cursor derived from the clock so the
+serverless cron stays stateless. Every live story is re-rendered within
+**13 bursts ≈ 6.5 hours** at the measured ~2 bursts/hour, against never.
+9 unit tests pin it (`tests/unit/revalidation-window.test.ts`), including
+full-cycle coverage of all 726 and the unchanged per-burst bound.
+
+**Shipped with the diagnostic that was missing.** The live snapshot an
+archive render consulted was already computed and thrown away
+(`app/story/[slug]/page.tsx`), which is exactly why this alert stayed
+unreadable for six days. Archive-rendered pages now stamp
+`cw-live-dataset-version`, and `surface-coherence.mjs` labels every
+`archive-vs-live` violation with its cause: *resolution* (missed a cluster
+the same generation was showing — a real bug) versus *staleness* (an older
+render, which the rotation now heals). A future run must not re-diagnose
+this from the violation alone; read the label.
+
+**The stamp corrected this item within minutes of shipping — read this before
+acting on the violation.** Re-probed on production right after the deploy,
+both clusters above stamped `cw-live-dataset-version:
+20260828T221542Z-d00266` — and **neither cluster is in the live dataset any
+more**: absent from force-dynamic `/latest` (same generation) and from a
+freshly prerendered `/` (`20260828T222628Z`, Age 0). So those two story pages
+were **CORRECT** and the cached LIST pages were the stale side, the opposite
+of what this item assumed for six days. Surfaces legitimately read dataset
+entries up to ~29 minutes apart (the 1,740 s floor in `lib/cache/store.ts`),
+so a cross-generation disagreement is skew, and only a **same-generation**
+disagreement is a resolution bug. `classifyArchiveVsLive` in the probe now
+says which of the three it is.
+
+**Post-fix re-run, 22:28 UTC — violations 2 -> 1, and the survivor is the
+class the rotation heals:**
+
+```
+VIOLATION c92e8ee37fe9e  storyVersion archive:2026-08-28T12:31:08Z
+  liveVersionAtRender 20260828T221542Z-d00266   listSurfaces /business (r1,r2)
+  cause "story-side staleness: an older render, healed by the rotating
+         revalidation window"
+```
+
+**Honest limit on today's verification:** the rotation reaches the whole tail
+in ~6.5 h, so that survivor is not expected to clear inside one run.
+`[auto-alert]` #2 should be judged on the NEXT scheduled coherence run — and
+judged on the `cause` label, not on the violation count alone, since
+list-side skew will keep producing violations that are nobody's bug.
+
+#### Original finding (2026-08-23, kept for the record)
 
 **Open `[auto-alert]` issue #2, failing since 2026-08-23. Reproduced this
 run.** `node scripts/surface-coherence.mjs`: 20 pages, 700 cards, 174
@@ -815,6 +898,39 @@ visible page copy as well as the meta tag. Detecting the junction is the
 hard part — the obvious "lowercase word followed by a capitalised word"
 heuristic false-positives on ordinary mid-sentence proper nouns
 ("reaching Malaysia and"). Needs design; filed here rather than guessed at.
+
+**REFUTED 2026-08-29 — the junction is NOT the driver, and the fix for it was
+built, measured and thrown away. Do not rebuild it.** The mechanism was found
+in the code exactly as described: `stripHtml` deliberately converts block
+boundaries to newlines
+(`lib/news/normalization/normalize.ts:162`), `cleanDescription` splits on
+them — and then **destroys them with `kept.join(" ")`**
+(`lib/news/normalization/boilerplate.ts:234`), so `metaDescription`
+(`lib/utils/text.ts:82`) finds no sentence end and falls back to a
+mid-phrase cut.
+
+That reads like the whole story, and the measurement says it is not. A
+boundary-preserving join (append a stop only where a fragment ends with no
+punctuation at all) was implemented and run over **real feed data pulled
+this run — 24 curated feeds, 268 normalized descriptions through the actual
+pipeline** (`parseItems` -> `normalizeArticle` -> `metaDescription`):
+
+| | descriptions | over 155 chars | clipped mid-sentence |
+|---|---|---|---|
+| current | 268 | 113 | **52** |
+| boundary-preserving join | 268 | 113 | **51** |
+
+One description in 268. The clipped cases are overwhelmingly **genuine
+single sentences longer than 155 characters** — NPR's feed writes them by
+house style, and it dominated the sample. The standfirst-concatenation
+examples recorded above are real but rare in the current feed mix.
+
+So the remaining question is no longer "restore the boundary" but "is a
+mid-phrase `…` worth trading a third of the snippet for", which the
+2026-08-26 clause-boundary experiment already answered NO for 4% coverage.
+**Item 5's description half is downgraded: it is not a CTR defect worth
+engineering.** The title half (85% over 60 chars) is untouched by this and
+keeps its rank.
 
 ### 6. `general` is the largest section for three tier-A publishers — NEW 2026-08-25
 
@@ -1036,12 +1152,22 @@ for that reason.**
   reconciled against feed growth. The health check still fails above 45,000,
   so the cap is guarded, but at this rate that is weeks not months: worth an
   arithmetic reconciliation on the next weekly run.
+- **`/archive-sitemap.xml` reached 11,122 URLs on 2026-08-29** (9,999 on
+  Aug 28, 8,036 on Aug 26) — about +1,100/day, sustained for three days
+  rather than the 450-700/day the ledger used to gain. The health check
+  fails above 45,000 and the hard cap is 50,000, so at this rate the warn
+  line is **roughly 30 days out**, not months. The arithmetic reconciliation
+  against feed growth is still not done and is now dated work, not a watch
+  item, for the next weekly run.
 - **Publisher image weight drifted up, then came back.** `seo-health`
   passes. 2026-08-24: 15 images, 1,503 KB, median 52 KB, **max 448 KB**.
   **2026-08-25: 15 images, 1,410 KB, median 74 KB, max 235 KB** — the
   448 KB outlier is gone, so it was one host on one day, not a trend.
   Becomes work if the max crosses 500 KB (which fails the check for capped
-  hosts).
+  hosts). **2026-08-29: 15 images, 2,256 KB, median 82 KB, max 830 KB** —
+  the max has crossed 500 KB and `seo-health` still passes, so the host
+  carrying it is not one of the capped ones. Worth naming the host on the
+  next run before deciding whether the cap list should grow.
 - **`/most-covered` is at 25 items**, up from 5 on 2026-08-22 and 12 on
   2026-08-19. The feed expansion fixed the thinness that was logged here for
   two weeks. Keep watching that it does not fall back.
