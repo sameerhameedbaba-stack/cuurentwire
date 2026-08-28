@@ -16,6 +16,7 @@ import {
 } from "@/lib/database/persist-gate";
 import { env } from "@/lib/env";
 import { compactDataset } from "@/lib/news/compact";
+import { selectRevalidationSlugs } from "@/lib/news/revalidation-window";
 import type { NewsDataset } from "@/lib/news/types";
 import { pingIndexNow } from "@/lib/seo/indexnow";
 import { warmHomepageHero } from "@/lib/seo/warm-hero";
@@ -82,24 +83,29 @@ function revalidateIsrSurfaces(): void {
 
 /**
  * Targeted freshness for the stories that are actually live: mark each
- * current (non-mock) cluster's story path for lazy re-render on its next
- * visit. Bounded and burst-gated, so the write cost is capped at
+ * selected cluster's story path for lazy re-render on its next visit.
+ * Bounded and burst-gated, so the write cost is capped at
  * ~150 pages × ~48 bursts/day realized only when a page is visited —
  * instead of the site-wide pattern nuke that blew the Hobby tier.
- * Archived stories (the ~3,600-URL long tail) are intentionally NOT
- * revalidated here; they change only via merge pointers and age out on
+ *
+ * WHICH 150 is decided by selectRevalidationSlugs (fixed head + rotating
+ * tail, lib/news/revalidation-window.ts): a flat `slice(0, 150)` left the
+ * other 576 of 726 live clusters with no freshness path at all, which is
+ * how a story page can keep serving an archived copy while every list
+ * surface shows it live. The count per burst — the billed quantity — is
+ * unchanged.
+ *
+ * Archived stories (the long tail beyond the live window) are intentionally
+ * NOT revalidated here; they change only via merge pointers and age out on
  * the story route's own revalidate window.
  */
-const LIVE_REVALIDATE_MAX = 150;
-
 function revalidateLiveStories(dataset: NewsDataset): void {
-  const live = dataset.clusters.filter((c) => !c.isMock);
-  for (const cluster of live.slice(0, LIVE_REVALIDATE_MAX)) {
+  for (const slug of selectRevalidationSlugs(dataset.clusters)) {
     try {
-      revalidatePath(`/story/${cluster.slug}`);
+      revalidatePath(`/story/${slug}`);
     } catch (error) {
       logger.warn("cron.revalidate_story_failed", {
-        slug: cluster.slug,
+        slug,
         error: error instanceof Error ? error.message : "unknown",
       });
     }

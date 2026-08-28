@@ -120,6 +120,18 @@ interface StoryView {
    * archived record's last-modified timestamp.
    */
   datasetVersion: string;
+  /**
+   * Only on an archive-rendered page: the LIVE snapshot this render actually
+   * consulted before falling back. The lookup captures it either way and it
+   * used to be discarded, which made `[auto-alert]` #2 unreadable — a story
+   * page stamped `archive:…` while the list surfaces showed the cluster
+   * live, and nothing said whether the page had missed the cluster in the
+   * CURRENT generation (a resolution defect) or was simply an old render
+   * nothing had re-rendered (a freshness defect — the one fixed in
+   * lib/news/revalidation-window.ts). Stamping it makes the two
+   * distinguishable from outside, by scripts/surface-coherence.mjs.
+   */
+  liveDatasetVersionAtRender?: string;
 }
 
 const buildStoryView = cache(async function buildStoryView(
@@ -142,6 +154,7 @@ const buildStoryView = cache(async function buildStoryView(
       isArchived: true,
       publishedByUsAt: resolution.story.firstSeenAt,
       datasetVersion: `archive:${resolution.story.lastModifiedAt}`,
+      liveDatasetVersionAtRender: request.liveDatasetVersion ?? undefined,
     };
   }
   return null;
@@ -374,6 +387,12 @@ export default async function StoryPage({
       {/* Snapshot stamp for cache-coherence probes — derived from the same
           data this page renders (React hoists it into <head>). */}
       <meta name="cw-dataset-version" content={view.datasetVersion} />
+      {view.liveDatasetVersionAtRender ? (
+        <meta
+          name="cw-live-dataset-version"
+          content={view.liveDatasetVersionAtRender}
+        />
+      ) : null}
       <StoryJsonLd cluster={cluster} datePublished={publishedByUsAt} />
       <BreadcrumbJsonLd
         items={[

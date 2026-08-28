@@ -71,6 +71,22 @@ function decodeEntities(text) {
     .trim();
 }
 
+/**
+ * The LIVE snapshot an archive-rendered story page consulted before falling
+ * back (app/story/[slug]/page.tsx). Present only on archive renders, and it
+ * is what separates the two causes of an archive-vs-live violation: a render
+ * that consulted the SAME generation the list surfaces are showing and still
+ * missed the cluster is a resolution defect; an older generation means the
+ * page is simply a stale render — the freshness gap fixed 2026-08-29 in
+ * lib/news/revalidation-window.ts, which heals within one rotation cycle.
+ */
+function extractLiveVersion(html) {
+  const match =
+    html.match(/<meta[^>]*name="cw-live-dataset-version"[^>]*content="([^"]*)"/) ??
+    html.match(/<meta[^>]*content="([^"]*)"[^>]*name="cw-live-dataset-version"/);
+  return match ? match[1] : null;
+}
+
 function extractVersion(html) {
   const match =
     html.match(/<meta[^>]*name="cw-dataset-version"[^>]*content="([^"]*)"/) ??
@@ -122,6 +138,7 @@ function parseStoryPage(html) {
   const breadcrumb = html.match(BREADCRUMB_RE)?.[0];
   return {
     version: extractVersion(html) ?? "unknown",
+    liveVersionAtRender: extractLiveVersion(html),
     category:
       breadcrumb?.match(CATEGORY_HREF_RE)?.[1] ??
       scope.match(CATEGORY_HREF_RE)?.[1] ??
@@ -285,11 +302,25 @@ for (const [clusterId, obs] of byCluster) {
     (o) => o.kind === "story" && String(o.version).startsWith("archive:"),
   );
   if (archived && listed.length > 0) {
+    // Which defect is it? The story page stamps the live generation it
+    // consulted before falling back to the archive. If that generation is
+    // one the list surfaces are ALSO showing this run, the page missed a
+    // cluster that generation contained — a resolution defect. Otherwise
+    // the page is an older render, which the rotating revalidation window
+    // (lib/news/revalidation-window.ts) heals within one cycle.
+    const liveVersions = new Set(listed.map((o) => o.version));
+    const consulted = archived.liveVersionAtRender ?? null;
     violations.push({
       type: "archive-vs-live",
       clusterId,
       storySurface: archived.surface,
       storyVersion: archived.version,
+      liveVersionAtRender: consulted,
+      cause: !consulted
+        ? "unknown (page predates the cw-live-dataset-version stamp)"
+        : liveVersions.has(consulted)
+          ? "resolution: missed a cluster the same generation was showing"
+          : "staleness: rendered against an older generation",
       listSurfaces: listed.map((o) => o.surface),
     });
   }
