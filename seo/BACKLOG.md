@@ -1,5 +1,19 @@
 # SEO Backlog
 
+**Status 2026-08-28 later session: Bing Webmaster's SEO recommendations
+read with the owner and answered (f3fb112, live-verified).** Four findings:
+(1) meta descriptions too short (8 pages) — FIXED: all public category
+descriptions (they double as the section dek), /canada and /contact
+rewritten to ~140-160 chars; also serves the Google hub-de-indexation
+work, since richer deks make category pages less thin. (2) img without
+meaningful alt — FIXED: the two card variants passing alt="" now pass the
+story title, like every other card. (3) "multiple h1" (6 pages, High) —
+STALE: every flagged page serves exactly one h1 since the Aug 24 retitles,
+verified live; expect Bing to clear it on next crawl, do not re-fix.
+(4) "lacks inbound links from high-quality domains" — the standing
+off-page track (Product Hunt launches Sep 1; Feedly + SaaSHub live);
+no new action. Do not re-investigate these from the Bing dashboard.
+
 **Status 2026-08-28 manual session (owner asked why performance keeps
 worsening): gsc.yml run #6 dispatched, data lands through Aug 27, and an
 adversarial multi-agent review REFUTED the "decline fully explained, all
