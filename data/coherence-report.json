@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-08-28T22:28:55.877Z",
+  "ranAt": "2026-08-29T12:49:42.052Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,177 +16,150 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 702,
-    "cardsWithId": 702,
-    "cardsWithCategory": 620,
-    "cardsWithCountry": 320,
-    "cardsWithSources": 142,
-    "storyPagesFetched": 362,
-    "storyErrors": [
-      {
-        "clusterId": "cda22affadae5",
-        "repeat": 1,
-        "error": "Error: https://currentwire.us/story/manitoba-encourages-young-adults-to-keep-active-with-new-initiative-cda22affadae5 responded 500"
-      },
-      {
-        "clusterId": "c2321d6e3f3f1",
-        "repeat": 1,
-        "error": "Error: https://currentwire.us/story/h-r-mcmaster-says-economic-pressure-on-iran-will-make-a-big-difference-as-war-hi-c2321d6e3f3f1 responded 500"
-      },
-      {
-        "clusterId": "c78b18b509b0d",
-        "repeat": 1,
-        "error": "Error: https://currentwire.us/story/footage-of-tibet-floods-isnt-being-shown-in-china-and-we-know-little-about-victi-c78b18b509b0d responded 500"
-      },
-      {
-        "clusterId": "cb6a811159c76",
-        "repeat": 1,
-        "error": "Error: https://currentwire.us/story/no-1-aryna-sabalenka-shrugs-off-her-recent-struggles-as-she-seeks-a-third-straig-cb6a811159c76 responded 500"
-      },
-      {
-        "clusterId": "c82d554728a2c",
-        "repeat": 1,
-        "error": "Error: https://currentwire.us/story/mlb-on-sportsnet-skubal-and-dodgers-vs-tigers-c82d554728a2c responded 500"
-      },
-      {
-        "clusterId": "c5d6419ddbdd4",
-        "repeat": 1,
-        "error": "Error: https://currentwire.us/story/ohio-state-qb-julian-sayin-takes-charge-as-a-team-captain-bringing-swagger-to-th-c5d6419ddbdd4 responded 500"
-      },
-      {
-        "clusterId": "ce790227cb08f",
-        "repeat": 1,
-        "error": "Error: https://currentwire.us/story/how-national-security-threats-have-evolved-in-25-years-since-9-11-ce790227cb08f responded 500"
-      },
-      {
-        "clusterId": "cb47e48d92aa8",
-        "repeat": 1,
-        "error": "Error: https://currentwire.us/story/appeals-court-rules-states-can-regulate-prediction-market-platforms-like-gamblin-cb47e48d92aa8 responded 500"
-      },
-      {
-        "clusterId": "c9a6bd5f8578d",
-        "repeat": 1,
-        "error": "Error: https://currentwire.us/story/lgbtq-group-reveals-which-dem-nominee-is-sponsoring-halloween-event-featuring-dr-c9a6bd5f8578d responded 500"
-      },
-      {
-        "clusterId": "cb723cd74c3bc",
-        "repeat": 1,
-        "error": "Error: https://currentwire.us/story/federal-government-extends-pause-on-big-bend-national-park-border-construction-u-cb723cd74c3bc responded 500"
-      }
-    ],
-    "uniqueClusters": 186
+    "cards": 706,
+    "cardsWithId": 706,
+    "cardsWithCategory": 624,
+    "cardsWithCountry": 270,
+    "cardsWithSources": 86,
+    "storyPagesFetched": 404,
+    "storyErrors": [],
+    "uniqueClusters": 208
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.883,
-    "country": 0.456,
-    "sources": 0.202
+    "category": 0.884,
+    "country": 0.382,
+    "sources": 0.122
   },
   "versionsSeen": [
-    "20260828T222628Z-12e765",
-    "20260828T222630Z-12e765",
-    "20260828T221542Z-d00266",
-    "20260828T222631Z-8266bc",
-    "archive:2026-08-28T12:31:08.319Z",
-    "20260828T222929Z-afae83",
-    "20260828T222934Z-fee7d4",
-    "20260828T223016Z-2bb96f",
-    "20260828T223015Z-95cd68",
-    "20260828T223014Z-2bb96f",
-    "20260828T223030Z-a0448f",
-    "20260828T223024Z-238ae0",
-    "20260828T223044Z-6e6bff",
-    "20260828T223052Z-56862e",
-    "20260828T223059Z-e5052c"
+    "20260829T124639Z-c6af0b",
+    "20260829T123055Z-faeab3",
+    "20260829T124945Z-d513d0",
+    "20260829T114611Z-5ec44c",
+    "20260829T124952Z-b91a90",
+    "20260829T124946Z-71e480",
+    "20260829T123042Z-a04290",
+    "20260829T124949Z-b98634",
+    "20260829T124950Z-bd0194",
+    "20260829T124507Z-1b9ae2",
+    "20260829T123036Z-02000b",
+    "20260829T124502Z-a44f8a",
+    "20260829T124321Z-106f09",
+    "20260829T125002Z-b6d078",
+    "20260829T125001Z-b6d078",
+    "20260829T125008Z-8ff5ff",
+    "20260829T125010Z-2c7ff4",
+    "20260829T125011Z-772e42",
+    "archive:2026-08-29T03:30:09.518Z",
+    "20260829T125012Z-f880bd",
+    "20260829T124559Z-45bb44",
+    "20260829T125019Z-9c480e",
+    "20260829T102951Z-be72e6",
+    "20260829T111535Z-0edb20",
+    "20260829T125020Z-379a87",
+    "20260829T125023Z-d83c6d",
+    "20260829T113027Z-d91888",
+    "20260829T125014Z-de7e73",
+    "20260829T123041Z-24ab9f",
+    "20260829T123040Z-b75b4e",
+    "20260829T124437Z-5e39ba",
+    "20260829T124943Z-0a1f39",
+    "20260829T125031Z-cf6d1f",
+    "20260829T125040Z-967ea7",
+    "archive:2026-08-29T06:30:08.300Z",
+    "20260829T125043Z-967ea7",
+    "20260829T125037Z-cb9728",
+    "20260829T125038Z-ae9a2b",
+    "20260829T125052Z-4ee345",
+    "20260829T125053Z-c04f7b",
+    "20260829T125052Z-7c21ed",
+    "archive:2026-08-28T22:00:03.090Z",
+    "20260829T125051Z-21e8c3",
+    "20260829T083035Z-14c6f2",
+    "archive:2026-08-29T05:30:21.011Z",
+    "20260829T125102Z-a9a1f3",
+    "20260829T125100Z-a9a1f3",
+    "20260829T125106Z-751d23",
+    "20260829T100027Z-a951d6",
+    "20260829T125117Z-a9f2c0",
+    "20260829T125116Z-a9f2c0",
+    "20260829T124948Z-26e40b",
+    "20260829T125003Z-b6d078",
+    "20260829T125017Z-255bce",
+    "20260829T125033Z-d1abb6",
+    "20260829T125032Z-d1abb6",
+    "20260829T125042Z-967ea7",
+    "20260829T125103Z-a9a1f3"
   ],
   "violations": [
     {
       "type": "archive-vs-live",
-      "clusterId": "c92e8ee37fe9e",
-      "storySurface": "/story/does-a-2-beneficiary-inherit-100-if-the-98-beneficiary-dies-in-a-car-accident-as-c92e8ee37fe9e (r1)",
-      "storyVersion": "archive:2026-08-28T12:31:08.319Z",
-      "liveVersionAtRender": "20260828T221542Z-d00266",
-      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
+      "clusterId": "c7800db517cc4",
+      "storySurface": "/story/arkansas-sports-betting-2026-best-legal-ar-sportsbooks-betting-apps-c7800db517cc4 (r1)",
+      "storyVersion": "archive:2026-08-29T03:30:09.518Z",
+      "liveVersionAtRender": "20260829T125019Z-9c480e",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
-        "/business (r1)",
-        "/business (r2)"
+        "/us (r1)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c22fdc8f36095",
+      "storySurface": "/story/metas-18-billion-settlement-puts-tiktok-and-youtube-on-notice-whos-next-on-the-f-c22fdc8f36095 (r1)",
+      "storyVersion": "archive:2026-08-29T06:30:08.300Z",
+      "liveVersionAtRender": "20260829T125042Z-967ea7",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/business (r1)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "cb0c8736a2d38",
+      "storySurface": "/story/microsofts-stock-seals-its-longest-winning-streak-of-the-year-as-ai-software-fea-cb0c8736a2d38 (r1)",
+      "storyVersion": "archive:2026-08-28T22:00:03.090Z",
+      "liveVersionAtRender": "20260829T125052Z-7c21ed",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/ai (r1)",
+        "/ai (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c5f141002c478",
+      "storySurface": "/story/iceland-heads-to-the-polls-in-knife-edge-vote-on-restarting-eu-talks-c5f141002c478 (r1)",
+      "storyVersion": "archive:2026-08-29T05:30:21.011Z",
+      "liveVersionAtRender": "20260829T125100Z-a9a1f3",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/elections (r1)",
+        "/elections (r2)"
       ]
     }
   ],
-  "warningsTotal": 4,
+  "warningsTotal": 1,
   "warnings": [
-    {
-      "type": "cross-version-drift",
-      "clusterId": "c2042c9bbe96e",
-      "field": "category",
-      "values": [
-        {
-          "version": "20260828T222628Z-12e765",
-          "value": "general"
-        },
-        {
-          "version": "20260828T222630Z-12e765",
-          "value": "general"
-        },
-        {
-          "version": "20260828T221542Z-d00266",
-          "value": "sports"
-        }
-      ]
-    },
-    {
-      "type": "cross-version-drift",
-      "clusterId": "c40228adb52b7",
-      "field": "category",
-      "values": [
-        {
-          "version": "20260828T222628Z-12e765",
-          "value": "general"
-        },
-        {
-          "version": "20260828T221542Z-d00266",
-          "value": "sports"
-        },
-        {
-          "version": "20260828T223016Z-2bb96f",
-          "value": "sports"
-        }
-      ]
-    },
     {
       "type": "cross-version-drift",
       "clusterId": "cb3c4bf083a1f",
       "field": "sources",
       "values": [
         {
-          "version": "20260828T222628Z-12e765",
+          "version": "20260829T124639Z-c6af0b",
           "value": 2
         },
         {
-          "version": "20260828T221542Z-d00266",
-          "value": 2
-        },
-        {
-          "version": "20260828T223030Z-a0448f",
-          "value": 3
-        }
-      ]
-    },
-    {
-      "type": "cross-version-drift",
-      "clusterId": "c4c4569e034b6",
-      "field": "sources",
-      "values": [
-        {
-          "version": "20260828T222631Z-8266bc",
-          "value": 2
-        },
-        {
-          "version": "20260828T221542Z-d00266",
+          "version": "20260829T123055Z-faeab3",
           "value": 3
         },
         {
-          "version": "20260828T223059Z-e5052c",
+          "version": "20260829T124945Z-d513d0",
+          "value": 2
+        },
+        {
+          "version": "20260829T124949Z-b98634",
           "value": 2
         }
       ]
