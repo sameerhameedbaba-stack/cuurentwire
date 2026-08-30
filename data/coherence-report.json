@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-08-29T12:49:42.052Z",
+  "ranAt": "2026-08-30T12:13:12.762Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,122 +16,73 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 706,
-    "cardsWithId": 706,
-    "cardsWithCategory": 624,
-    "cardsWithCountry": 270,
-    "cardsWithSources": 86,
-    "storyPagesFetched": 404,
+    "cards": 714,
+    "cardsWithId": 714,
+    "cardsWithCategory": 632,
+    "cardsWithCountry": 282,
+    "cardsWithSources": 68,
+    "storyPagesFetched": 402,
     "storyErrors": [],
-    "uniqueClusters": 208
+    "uniqueClusters": 201
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.884,
-    "country": 0.382,
-    "sources": 0.122
+    "category": 0.885,
+    "country": 0.395,
+    "sources": 0.095
   },
   "versionsSeen": [
-    "20260829T124639Z-c6af0b",
-    "20260829T123055Z-faeab3",
-    "20260829T124945Z-d513d0",
-    "20260829T114611Z-5ec44c",
-    "20260829T124952Z-b91a90",
-    "20260829T124946Z-71e480",
-    "20260829T123042Z-a04290",
-    "20260829T124949Z-b98634",
-    "20260829T124950Z-bd0194",
-    "20260829T124507Z-1b9ae2",
-    "20260829T123036Z-02000b",
-    "20260829T124502Z-a44f8a",
-    "20260829T124321Z-106f09",
-    "20260829T125002Z-b6d078",
-    "20260829T125001Z-b6d078",
-    "20260829T125008Z-8ff5ff",
-    "20260829T125010Z-2c7ff4",
-    "20260829T125011Z-772e42",
-    "archive:2026-08-29T03:30:09.518Z",
-    "20260829T125012Z-f880bd",
-    "20260829T124559Z-45bb44",
-    "20260829T125019Z-9c480e",
-    "20260829T102951Z-be72e6",
-    "20260829T111535Z-0edb20",
-    "20260829T125020Z-379a87",
-    "20260829T125023Z-d83c6d",
-    "20260829T113027Z-d91888",
-    "20260829T125014Z-de7e73",
-    "20260829T123041Z-24ab9f",
-    "20260829T123040Z-b75b4e",
-    "20260829T124437Z-5e39ba",
-    "20260829T124943Z-0a1f39",
-    "20260829T125031Z-cf6d1f",
-    "20260829T125040Z-967ea7",
-    "archive:2026-08-29T06:30:08.300Z",
-    "20260829T125043Z-967ea7",
-    "20260829T125037Z-cb9728",
-    "20260829T125038Z-ae9a2b",
-    "20260829T125052Z-4ee345",
-    "20260829T125053Z-c04f7b",
-    "20260829T125052Z-7c21ed",
-    "archive:2026-08-28T22:00:03.090Z",
-    "20260829T125051Z-21e8c3",
-    "20260829T083035Z-14c6f2",
-    "archive:2026-08-29T05:30:21.011Z",
-    "20260829T125102Z-a9a1f3",
-    "20260829T125100Z-a9a1f3",
-    "20260829T125106Z-751d23",
-    "20260829T100027Z-a951d6",
-    "20260829T125117Z-a9f2c0",
-    "20260829T125116Z-a9f2c0",
-    "20260829T124948Z-26e40b",
-    "20260829T125003Z-b6d078",
-    "20260829T125017Z-255bce",
-    "20260829T125033Z-d1abb6",
-    "20260829T125032Z-d1abb6",
-    "20260829T125042Z-967ea7",
-    "20260829T125103Z-a9a1f3"
+    "20260830T120112Z-83602d",
+    "20260830T115539Z-2120bb",
+    "20260830T120724Z-eed890",
+    "20260830T120635Z-79780c",
+    "20260830T120349Z-4c3fc8",
+    "20260830T120120Z-809cec",
+    "20260830T120416Z-629333",
+    "20260830T120357Z-1f04da",
+    "20260830T120127Z-b9af06",
+    "20260830T120052Z-8929fd",
+    "20260830T120409Z-04c86e",
+    "20260830T120129Z-f859e7",
+    "20260830T120409Z-24742d",
+    "20260830T120409Z-55f4cf",
+    "20260830T120050Z-3c0cb3",
+    "20260830T120024Z-a90ab3",
+    "20260830T120440Z-42a194",
+    "20260830T120444Z-1cef76",
+    "20260830T115935Z-9b9b01",
+    "20260830T120619Z-d98873",
+    "20260830T120652Z-1c4013",
+    "20260830T120222Z-666963",
+    "20260830T120056Z-7d6f55",
+    "20260830T115926Z-929b8e",
+    "20260830T120001Z-e558c1",
+    "20260830T120649Z-8c6692",
+    "20260830T120458Z-b0f071",
+    "20260830T120520Z-20ac03",
+    "20260830T120554Z-2dcea1",
+    "20260830T120554Z-9a25c0",
+    "20260830T120519Z-20ac03",
+    "20260830T120520Z-9e27ca",
+    "20260830T120141Z-1e5dcb",
+    "20260830T120651Z-011aa2",
+    "20260830T120530Z-864912",
+    "20260830T120613Z-016433",
+    "20260830T120710Z-ccadf6",
+    "20260830T120544Z-82bd21",
+    "20260830T120602Z-0bd204",
+    "20260830T120543Z-ba8892",
+    "archive:2026-08-29T10:30:06.983Z",
+    "20260830T094528Z-643286",
+    "20260830T120643Z-9627e5"
   ],
   "violations": [
     {
       "type": "archive-vs-live",
-      "clusterId": "c7800db517cc4",
-      "storySurface": "/story/arkansas-sports-betting-2026-best-legal-ar-sportsbooks-betting-apps-c7800db517cc4 (r1)",
-      "storyVersion": "archive:2026-08-29T03:30:09.518Z",
-      "liveVersionAtRender": "20260829T125019Z-9c480e",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
-      "listSurfaces": [
-        "/us (r1)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c22fdc8f36095",
-      "storySurface": "/story/metas-18-billion-settlement-puts-tiktok-and-youtube-on-notice-whos-next-on-the-f-c22fdc8f36095 (r1)",
-      "storyVersion": "archive:2026-08-29T06:30:08.300Z",
-      "liveVersionAtRender": "20260829T125042Z-967ea7",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
-      "listSurfaces": [
-        "/business (r1)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "cb0c8736a2d38",
-      "storySurface": "/story/microsofts-stock-seals-its-longest-winning-streak-of-the-year-as-ai-software-fea-cb0c8736a2d38 (r1)",
-      "storyVersion": "archive:2026-08-28T22:00:03.090Z",
-      "liveVersionAtRender": "20260829T125052Z-7c21ed",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
-      "listSurfaces": [
-        "/ai (r1)",
-        "/ai (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c5f141002c478",
-      "storySurface": "/story/iceland-heads-to-the-polls-in-knife-edge-vote-on-restarting-eu-talks-c5f141002c478 (r1)",
-      "storyVersion": "archive:2026-08-29T05:30:21.011Z",
-      "liveVersionAtRender": "20260829T125100Z-a9a1f3",
+      "clusterId": "c13ae792b1d52",
+      "storySurface": "/story/democrats-on-campaign-trail-divided-by-kamala-harris-c13ae792b1d52 (r1)",
+      "storyVersion": "archive:2026-08-29T10:30:06.983Z",
+      "liveVersionAtRender": "20260830T120619Z-d98873",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
         "/elections (r1)",
@@ -139,31 +90,7 @@
       ]
     }
   ],
-  "warningsTotal": 1,
-  "warnings": [
-    {
-      "type": "cross-version-drift",
-      "clusterId": "cb3c4bf083a1f",
-      "field": "sources",
-      "values": [
-        {
-          "version": "20260829T124639Z-c6af0b",
-          "value": 2
-        },
-        {
-          "version": "20260829T123055Z-faeab3",
-          "value": 3
-        },
-        {
-          "version": "20260829T124945Z-d513d0",
-          "value": 2
-        },
-        {
-          "version": "20260829T124949Z-b98634",
-          "value": 2
-        }
-      ]
-    }
-  ],
+  "warningsTotal": 0,
+  "warnings": [],
   "result": "FAIL"
 }
