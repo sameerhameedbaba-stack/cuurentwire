@@ -1,0 +1,44 @@
+name: Bluesky auto-post
+
+# Posts the newest not-yet-shared story from /rss to
+# @currentwire.bsky.social as a link card — at most ONE post per run,
+# ~8/day from the cron below. Dedup is stateless (the account's own feed
+# is the ledger), so this workflow never writes to the repo.
+#
+# Part of the 2026-09-01 strategy shift (seo/STRATEGY.md): distribution
+# channels that do not depend on Google. Needs ONE owner secret:
+# BLUESKY_APP_PASSWORD (created 2026-09-01, app password
+# "currentwire-autoposter"). Without it the script prints "skipped" and
+# exits 0, so the workflow stays green.
+#
+# Manual trigger without gh auth: touch .github/triggers/bluesky and push
+# (same pattern as gsc.yml). .github is excluded from vercel.json's
+# ignoreCommand, so that never deploys.
+
+on:
+  schedule:
+    - cron: "23 */3 * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/triggers/bluesky"
+
+permissions:
+  contents: read
+
+concurrency: bluesky-post
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # No npm install: the script uses only fetch.
+      - name: Post newest unshared story
+        env:
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+        run: node scripts/bluesky-post.mjs

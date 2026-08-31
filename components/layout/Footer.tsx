@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
+import { NewsletterSignup } from "./NewsletterSignup";
 import { Wordmark } from "./Wordmark";
 
 const COLUMNS: { heading: string; links: readonly { label: string; href: string }[] }[] = [
@@ -34,6 +35,7 @@ export function Footer() {
             <p className="mt-3 text-sm leading-relaxed text-white/70">
               {siteConfig.footerTagline}
             </p>
+            <NewsletterSignup />
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
