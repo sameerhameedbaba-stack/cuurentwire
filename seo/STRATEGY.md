@@ -16,6 +16,59 @@ Baseline (GSC, 28d to 2026-08-24, real fetch): 41 clicks, 1,806 impressions,
 16 impressions. Discover: zero. Story template: 521 URLs → 22 clicks.
 /top-10, /briefing, /most-covered: zero impressions each.
 
+## STRATEGY SHIFT — 2026-09-01, owner-directed ("include changing strategy")
+
+**Why.** Google demoted the domain during its first evaluation (four August
+incidents; impressions 438/day → 6/day, position 21 → 70+, 11 of 12 hubs
+de-indexed without re-crawl, News surface zero). A new domain that breaks
+during first evaluation re-earns trust on a months clock. Google web search
+is therefore **no longer the near-term delivery channel** — it becomes a
+background re-earn (uptime, feeds, content keep flowing; we stop expecting
+it to carry the Oct 15 number).
+
+**New primary channels, next 6 weeks, in priority order:**
+
+1. **Bing / AI-search stack.** Bing carries none of the Google demotion,
+   IndexNow gives it instant indexing, and Bing's index feeds ChatGPT
+   search, Copilot, DuckDuckGo and Yahoo. Actions: keep IndexNow flowing;
+   apply to **Bing News PubHub** (unlike Google, Bing HAS an application);
+   read **Bing Webmaster AI Performance** weekly as the AI-search scoreboard
+   (owner's "no progress in AI search" gets a real number). GEO: the
+   coverage-data pages (BET 2) are exactly what AI engines cite — they move
+   from "path to M2" to a **this-month deliverable** (first monthly
+   most-covered report + publisher league table).
+2. **Owned audience.** Newsletter pulled forward from October to NOW
+   (free tier: beehiiv or Buttondown, $0). Product Hunt (launched Sep 1) and
+   the site's header/footer feed it. Owned subscribers are the only channel
+   no algorithm can take away — and the client-facing proof of life.
+3. **Automated social distribution.** Auto-posters for **Bluesky** (free
+   open API) and **Telegram channel** (free bot API), posting top stories
+   with coverage counts; X only if its free write quota is workable. Fully
+   automated after one-time owner account creation. White-hat: our own
+   headlines to our own followers, no engagement bait.
+4. **Speed to Discover threshold.** LCP ~6.0s (PSI, CI-measured) vs the
+   ~2.5s Discover needs — the single biggest automatable ranking lever left.
+   Engineering item, top of the technical queue.
+
+**Measurement change (transparent, not a lowered bar).** The Google-only
+M1 (100 GSC clicks/28d by Oct 15) stays tracked and reported — but the
+client-facing number becomes **total visitors across all channels** (GA4 +
+referrers + newsletter + Bing), reported on the weekly scoreboard.
+Checkpoints unchanged: **Sep 8** (has the Google slide stopped?) and
+**Oct 15**. Assumption to confirm with the owner: the client promise is
+about real visitors/growth, not specifically Google-ranking positions.
+
+**Owner actions, batched into ONE ~20-min session (never piecemeal):**
+create the newsletter account, the Bluesky account, the Telegram channel,
+and click through the Bing PubHub submission — everything else (integration,
+posting, templates, reporting) is automated and will be ready before that
+session so each is paste-a-key-and-done.
+
+**Unchanged:** guardrails (§2 — white-hat, no fabrication, $0 beyond the two
+approved exceptions), the data-moat thesis (accelerated, not replaced), and
+Google trust signals (P0 work continues — it compounds with everything
+above; we just stop billing it for the near-term numbers).
+
 ## 0. Thesis
 
 Aggregator story pages do not win search (521 URLs → 22 clicks; no

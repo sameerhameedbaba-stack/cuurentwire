@@ -1,5 +1,33 @@
 # SEO Backlog
 
+**STRATEGY SHIFT 2026-09-01 (owner-directed: "include changing strategy. i
+wont wanna fail") — see the new section at the top of `seo/STRATEGY.md`; it
+REPRIORITIZES this backlog and sits ABOVE the 2026-08-31 ranking below.**
+Google web search is now a background re-earn, not the near-term delivery
+channel. Execution queue for daily/weekly runs, in strict order:
+
+1. **LCP 6.0s → under 2.5s** (PSI-verified via cwv.yml, never local probes).
+   The one big automatable ranking lever left; gates Discover.
+2. **First monthly most-covered report + publisher league table** (BET 2
+   pulled forward — the GEO/AI-citation surface and link magnet; was
+   Sprint 2, is now current). Folds in the 08-31 topic-hub finding where
+   the same template work overlaps.
+3. **Auto-poster infrastructure** for Bluesky + Telegram (env-var creds,
+   graceful no-op until keys exist) so the owner's one batched session is
+   paste-a-key-and-done. Check X free-tier write quota before building X.
+4. **Newsletter plumbing** (provider-agnostic RSS-to-email prep; signup
+   links land once the owner creates the account).
+5. **Bing PubHub application prep** (assets/answers ready for the owner's
+   click-through) + pull Bing AI Performance numbers into the weekly
+   scoreboard.
+6. CTR pass on the three ranking pages (existing item, unchanged).
+
+Reporting contract (owner-directed, 2026-09-01): **no found/fixed messages
+to the owner.** One weekly scoreboard (total visitors across channels, GSC
+clicks/impressions/position, Bing + AI numbers, newsletter subs,
+referrals); between scoreboards, contact the owner only for outages or
+decisions. Checkpoints: Sep 8 (Google slide stopped?), Oct 15 (M1).
+
 **PRIORITIES REBUILT 2026-08-31 (weekly deep run, score 86 -> 86/100).**
 Everything below the "Ranked now" block is the accumulated record and its
 verdicts still stand — several of them are refutations that cost a run each, so
