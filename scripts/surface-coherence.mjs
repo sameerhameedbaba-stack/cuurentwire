@@ -12,12 +12,28 @@
  * category flap detector (A -> B -> A across versions is a bug even when
  * each version is self-consistent).
  *
- * FAIL (exit 1): same-version disagreement on any field; a story page on
- * the archive fallback while a list surface shows the cluster live; a
- * category flap; extraction coverage under MIN_COVERAGE (regex rot — the
+ * FAIL (exit 1): same-version disagreement on any field; an archive-vs-live
+ * disagreement whose cause is RESOLUTION (the story page missed a cluster
+ * the same generation was showing); a category flap; extraction coverage
+ * under MIN_COVERAGE, including the live-version stamp (regex rot — the
  * probe would be blind). WARN (exit 0): cross-version drift, which is
  * expected between generations. Pages without the meta tag land in the
  * "unknown" version bucket and are still compared, at reduced confidence.
+ *
+ * FINDING (exit 0, reported and counted by cause): an archive-vs-live
+ * disagreement caused by STALENESS or SKEW rather than resolution. Added
+ * 2026-08-31 because every such disagreement used to fail the build, and
+ * measurement showed the failures were the site's own cost controls
+ * working: `/[category]` carries `revalidate = 3600` (app/[category]/page.tsx)
+ * and the cron deliberately does NOT revalidate the dynamic category
+ * pattern — that nuke is what blew the Hobby tier on 2026-08-24 and the
+ * playbook protects its absence as a hard constraint. So a cached category
+ * page listing a cluster the live dataset has since dropped is the designed
+ * TTL, not a defect: measured this run, `/business` answered `Age: 3020`
+ * inside its own 3600 s window while carrying two such clusters. Failing on
+ * that kept [auto-alert] #2 permanently red from 2026-08-23 and buried the
+ * one class that IS a bug. The stamp-coverage guard below is what stops this
+ * becoming a silent pass if the stamp regex ever rots.
  *
  * Run daily by .github/workflows/surface-coherence.yml, which commits
  * data/coherence-report.json back like the url-survival ledger.
@@ -124,6 +140,21 @@ function classifyArchiveVsLive(consulted, listVersions) {
     return "story-side staleness: an older render, healed by the rotating revalidation window";
   }
   return "skew: list surfaces straddle the generation the story page read";
+}
+
+/**
+ * Which archive-vs-live causes are the site's bug, and which are its design.
+ *
+ * Only RESOLUTION is a defect: two renders of the SAME dataset generation
+ * disagreeing about whether a cluster exists. Everything else is a surface
+ * reading a different generation, which the site deliberately allows —
+ * `/[category]` at revalidate 3600, the 1,740 s dataset floor in
+ * lib/cache/store.ts, and the rotating story window that heals a stale story
+ * render within ~6.5 h. Those are cost controls (seo/PLAYBOOK.md), so a
+ * probe that fails on them is asking for the outage of 2026-08-24 back.
+ */
+function isResolutionDefect(cause) {
+  return String(cause).startsWith("resolution:");
 }
 
 function extractVersion(html) {
@@ -299,6 +330,9 @@ for (const obs of observations) {
 
 const violations = [];
 const warnings = [];
+/** Real disagreements that are the designed TTL rather than a defect. */
+const findings = [];
+const stampStats = { archiveRenders: 0, withStamp: 0 };
 
 for (const [clusterId, obs] of byCluster) {
   const buckets = new Map();
@@ -349,15 +383,21 @@ for (const [clusterId, obs] of byCluster) {
     // (lib/news/revalidation-window.ts) heals within one cycle.
     const listVersions = listed.map((o) => o.version);
     const consulted = archived.liveVersionAtRender ?? null;
-    violations.push({
+    stampStats.archiveRenders += 1;
+    if (consulted) stampStats.withStamp += 1;
+    const cause = classifyArchiveVsLive(consulted, listVersions);
+    const entry = {
       type: "archive-vs-live",
       clusterId,
       storySurface: archived.surface,
       storyVersion: archived.version,
       liveVersionAtRender: consulted,
-      cause: classifyArchiveVsLive(consulted, listVersions),
+      cause,
       listSurfaces: listed.map((o) => o.surface),
-    });
+    };
+    // Only a same-generation disagreement is a bug; the rest are the
+    // designed revalidate windows and are reported, not failed on.
+    (isResolutionDefect(cause) ? violations : findings).push(entry);
   }
 
   // (c) Flap detector: category A -> B -> A across the version buckets
@@ -429,6 +469,27 @@ if (stats.cards === 0) {
   }
 }
 
+// The cause split above is only as trustworthy as the cw-live-dataset-version
+// stamp it reads. If that regex rots, every archive-vs-live disagreement
+// classifies as "unknown", lands in findings, and the probe passes forever
+// while blind — the exact failure this file already guards against for card
+// extraction. Measured 2026-08-31: 16 of 16 archive renders carried the stamp.
+const stampCoverage =
+  stampStats.archiveRenders > 0 ? stampStats.withStamp / stampStats.archiveRenders : 1;
+if (stampStats.archiveRenders > 0 && stampCoverage < MIN_COVERAGE) {
+  violations.push({
+    type: "extraction-blind",
+    field: "liveVersionAtRender",
+    coverage: Number(stampCoverage.toFixed(3)),
+  });
+}
+
+const findingsByCause = {};
+for (const f of findings) {
+  const key = String(f.cause).split(":")[0];
+  findingsByCause[key] = (findingsByCause[key] ?? 0) + 1;
+}
+
 const versionsSeen = [...new Set(observations.map((o) => o.version))];
 
 const report = {
@@ -441,6 +502,10 @@ const report = {
   ),
   versionsSeen,
   violations,
+  findingsTotal: findings.length,
+  findingsByCause,
+  findings: findings.slice(0, 50),
+  stampCoverage: Number(stampCoverage.toFixed(3)),
   warningsTotal: warnings.length,
   warnings: warnings.slice(0, 50),
   result: violations.length > 0 ? "FAIL" : "PASS",
@@ -454,8 +519,14 @@ console.log(
     `versions=[${versionsSeen.join(", ")}] ` +
     `coverage id=${report.coverage.clusterId} category=${report.coverage.category} ` +
     `country=${report.coverage.country} sources=${report.coverage.sources} ` +
-    `violations=${violations.length} warnings=${warnings.length}`,
+    `violations=${violations.length} findings=${findings.length} warnings=${warnings.length}`,
 );
+if (findings.length > 0) {
+  console.log(
+    `[surface-coherence] findings by cause: ${JSON.stringify(findingsByCause)} ` +
+      `(stamp coverage ${report.stampCoverage}) — these are revalidate windows, not defects`,
+  );
+}
 if (versionsSeen.length === 1 && versionsSeen[0] === "unknown") {
   console.log(
     "[surface-coherence] note: cw-dataset-version meta tag absent on every page — " +
@@ -464,6 +535,9 @@ if (versionsSeen.length === 1 && versionsSeen[0] === "unknown") {
 }
 for (const w of warnings.slice(0, 10)) {
   console.log(`  WARN ${w.type} ${w.clusterId} ${w.field}: ${JSON.stringify(w.values)}`);
+}
+for (const f of findings.slice(0, 10)) {
+  console.log(`  FINDING ${JSON.stringify(f)}`);
 }
 for (const v of violations) {
   console.log(`  VIOLATION ${JSON.stringify(v)}`);
@@ -475,4 +549,8 @@ if (violations.length > 0) {
   );
   process.exit(1);
 }
-console.log("[surface-coherence] PASS: all surfaces agree within each dataset version");
+console.log(
+  findings.length > 0
+    ? `[surface-coherence] PASS: no same-generation disagreement; ${findings.length} cross-generation finding(s) inside the designed revalidate windows`
+    : "[surface-coherence] PASS: all surfaces agree within each dataset version",
+);

@@ -1,5 +1,101 @@
 # SEO Backlog
 
+**PRIORITIES REBUILT 2026-08-31 (weekly deep run, score 86 -> 86/100).**
+Everything below the "Ranked now" block is the accumulated record and its
+verdicts still stand — several of them are refutations that cost a run each, so
+read before re-opening anything. Ranking rule unchanged: how much indexable,
+crawlable, citable value a fix creates per unit of risk.
+
+## Ranked now — rebuilt from 2026-08-31 evidence
+
+1. **Topic hubs carry nothing durable, and collapse to noindex when the news
+   cycle moves on.** NEW, and it is the week's clearest measured gap. Live
+   today: `/topic/artificial-intelligence` 2,012 words / 33 links / indexable,
+   but `/topic/donald-trump` **79 words / 2 links / noindex**,
+   `/topic/ukraine` **30 / 0 / noindex**, `/topic/elon-musk` **31 / 0 /
+   noindex** — the three highest evergreen-demand entities on the list.
+   Competitor side measured the same day: Ground News topic pages carry ~20-25%
+   durable non-headline content (cumulative article count, "Covered Most By"
+   publisher list, related topics, topic prose). **Every one of those inputs
+   already exists here** — cumulative counts from the 12,524-URL archive,
+   per-publisher breakdowns from `lib/news/source-profile.ts`, entity
+   co-occurrence — and none of them needs the bias rating this site refuses to
+   publish. Same `hubStats` shape as the `/source/<slug>` profile that shipped
+   2026-08-25 and worked (item 4). Converges with the 15 hubs GSC reports as
+   "URL is unknown to Google" and with the **~Sep 22 consolidation decision**:
+   a hub with durable facts is defensible, a 30-word keyword filter over a 72 h
+   window is the doorway-adjacent shape Google may be right about.
+2. **Category flap — `c31fffb88ca32` alternates business -> politics ->
+   business -> politics across four dataset generations.** NEW, and it is the
+   real defect the coherence probe had been hiding under 16 non-defects (see
+   item 3 and the 08-31 report). Classifier-deep, so per the playbook it is
+   engineered upstream with benchmark coverage, not patched in a template.
+   `tests/unit/category-stability.test.ts` is the existing guard to extend.
+3. **CTR rescue on the pages that already rank** — unchanged since 08-25, still
+   509 query impressions to 3 clicks, and still the item with the most direct
+   evidence. Named targets and guardrails in the 08-28 status block below.
+   **Blocked on fresh GSC data** (the Monday workflow did not fire; see owner
+   blockers in the 08-31 report), so it moves when that lands.
+4. **92% of Google's crawl requests are not HTML, and discovery is 5%.** NEW,
+   from the **GSC Crawl stats** report — read for the first time this run (see
+   below: the dashboards are reachable at `/u/1/`, they were never actually
+   blocked). 90 days: **80,800 requests, 354 MB, 162 ms average response,
+   200s at 99%**; by purpose **Refresh 95% / Discovery 5%**; by file type
+   **Other 92% / HTML 5%**; by Googlebot **Desktop 92% / Smartphone 3%**.
+   The 08-25 backlog reasoned its way to "the actual constraint is CRAWL
+   DEMAND on a young domain" and shipped story->hub links on that theory —
+   this is the first direct evidence, and it says the theory was right.
+   **Next step is measurement, not a build:** the file-type row does not say
+   *which* files, and the obvious suspects (a 2.4 MB `archive-sitemap.xml`
+   growing daily, three sitemaps, RSS + 11 category feeds, a per-story Satori
+   OG render) are all cheap to check. If it is the sitemaps, the `s-maxage`
+   lever parked in item 0b stops being theoretical. The Desktop/Smartphone
+   skew is recorded, not diagnosed — one reading is not a trend.
+5. **Meta descriptions overshoot on 5+ list pages** — NEW, and it is this
+   loop's own overcorrection from 08-28. Measured live: `/briefing` **273
+   chars**, `/reports/media-coverage` 235, `/most-covered` 178, `/energy` 173,
+   `/obituaries` 166, against the ~155-160 Google renders. Small and safe.
+6. **Story titles over 60 chars: 34 of 39 (87%)** — re-measured 08-31 on the
+   widest sample yet. The description half of old item 5 is REFUTED and closed
+   (see item 5); the title half keeps its rank and is untouched by that
+   refutation.
+7. **The news sitemap still advertises retired slugs.** `seo-health` logged
+   **2 of 639** rename races on 08-31 and 1 of a separate 40-URL sample
+   answered 307. The loop mechanism is closed (item 1) so these resolve rather
+   than cycling, but the third candidate fix in item 1 — have the generator
+   advertise only self-canonical URLs — is still the clean answer on the one
+   surface Googlebot-News judges as a whole.
+8. **Trust pages serve a build-frozen masthead date.** NEW, measured, and
+   deliberately NOT ranked for a fix yet. All 12 are fully static with no
+   `revalidate` (confirmed in the build route table) and served `Age: 222,545 s`
+   (2.6 days) rendering "Friday, August 28, 2026" on 2026-08-31.
+   `MastheadDate` is already a Client Component precisely for this, so
+   hydration corrects it for humans and for Googlebot; **the exposure is
+   non-JS crawlers only**, which now matters more than it did because Bing
+   reports 69 AI citations. The fix (`revalidate` on 12 previously-static
+   pages, ~240 ISR writes/day) buys a cosmetic correction with new ISR spend,
+   which is the cost control the playbook protects. Recorded with its number so
+   a future run can decide; do not ship it without re-reading that constraint.
+
+**The GSC dashboards were never blocked — do not report them as blocked again.**
+Search Console answers "you don't have access to this property" on the default
+Chrome profile because the property belongs to `ovyajewels@gmail.com`, not
+`sameerhameedbaba@gmail.com`. **Both accounts are signed into the same Chrome
+and the second one is `/u/1/`.** Use
+`https://search.google.com/u/1/search-console/...` and everything opens.
+Verified 2026-08-31: Manual actions **no issues detected**, Security issues
+**no issues detected**, and the full Crawl stats report (item 4 above) — the
+first time any run has read all three.
+
+**Closed by the 2026-08-31 run:** the archive-sitemap growth reconciliation
+(dated work since 08-26 — the "doubling" was the write-stall recovery, the
+settled rate is ~701/day and the 45,000 warn line is ~46 days out, see the
+report); the publisher-image-weight watch (max back to 189 KB from 830 KB on
+08-29, so that outlier was transient); and the coherence probe's permanent red
+(item 3).
+
+---
+
 **Status 2026-08-28 later session: Bing Webmaster's SEO recommendations
 read with the owner and answered (f3fb112, live-verified).** Four findings:
 (1) meta descriptions too short (8 pages) — FIXED: all public category
@@ -647,7 +743,39 @@ Contained in the meantime, and checked rather than assumed: **0 of the 214
 appear in `sitemap.xml`, `news-sitemap.xml` or `archive-sitemap.xml`.** The
 site is not asking anyone to fetch them.
 
-### 3. Surface coherence: a live story can serve a stale archived copy — ROOT-CAUSED and SHIPPED 2026-08-29 (`a0d26f0`)
+### 3. Surface coherence — the alert was mostly a FALSE RED, split 2026-08-31 (`surface-coherence.mjs`)
+
+**Read this before acting on `[auto-alert]` #2.** The 08-29 fix below was
+correct but incomplete: every `archive-vs-live` disagreement still FAILED the
+build, including the ones the probe's own cause label called staleness or skew.
+Measured 2026-08-31, first run of the day: **16 violations, of which
+`resolution: 0`** — 14 list-side staleness, 1 story-side, 1 skew.
+
+Those are the site's cost controls working, and it was checked rather than
+assumed: `/[category]` carries `revalidate = 3600` and the cron deliberately
+does not revalidate the dynamic category pattern (that nuke is what blew the
+Hobby tier on 08-24 and the playbook protects its absence). `/business`
+answered **`Age: 3020`** — inside its own 3,600 s window — while carrying two
+of the flagged clusters. So the gate had been red every night since 08-23 for
+the site behaving as designed, and it was burying the one class that is a bug.
+
+**Now:** only a same-generation disagreement fails; the rest are reported as
+`findings` counted by cause, with `findingsByCause` and `stampCoverage` in
+`data/coherence-report.json`. The silent-pass risk is guarded in the file's own
+idiom — if the `cw-live-dataset-version` regex rots, everything would classify
+as "unknown" and pass forever, so stamp coverage below `MIN_COVERAGE` fails as
+`extraction-blind`. Measured: **16 of 16 archive renders carried the stamp.**
+
+**Payoff, on the re-run: `violations=1 findings=4`** — and the survivor is a
+genuine **category flap** (`c31fffb88ca32`, business -> politics -> business ->
+politics). Issue #2 stays open, correctly, for that. It is now item 2 in the
+ranked block above.
+
+*The lesson, and it is the third time this loop has learned a version of it: a
+gate that fails on a deliberate design decision does not just cry wolf, it
+hides the real thing underneath. See `MEMORY/2026-08-21-the-instrument-breaks-first-and-quietly.md`.*
+
+#### The freshness fix underneath it — SHIPPED 2026-08-29 (`a0d26f0`)
 
 **The cause was a freshness gap, not a resolution bug, and it was hiding in
 an arithmetic mismatch nobody had checked.** The cron burst marked
@@ -1152,13 +1280,18 @@ for that reason.**
   reconciled against feed growth. The health check still fails above 45,000,
   so the cap is guarded, but at this rate that is weeks not months: worth an
   arithmetic reconciliation on the next weekly run.
-- **`/archive-sitemap.xml` reached 11,122 URLs on 2026-08-29** (9,999 on
-  Aug 28, 8,036 on Aug 26) — about +1,100/day, sustained for three days
-  rather than the 450-700/day the ledger used to gain. The health check
-  fails above 45,000 and the hard cap is 50,000, so at this rate the warn
-  line is **roughly 30 days out**, not months. The arithmetic reconciliation
-  against feed growth is still not done and is now dated work, not a watch
-  item, for the next weekly run.
+- **`/archive-sitemap.xml` growth — RECONCILED 2026-08-31, alarm cancelled.**
+  12,524 URLs today. Two independent measurements agree and they explain the
+  scare: per-day `<lastmod>` counts from the served sitemap show
+  **Aug 26: 366** (the 14 h silent write stall), **Aug 27: 1,607** and
+  **Aug 28: 1,417** (the catch-up burst after `e1b4cfb` fixed it), then
+  **Aug 29: 711, Aug 30: 681, Aug 31: 408 in 12 h**. Totals cross-check:
+  11,122 on Aug 29 -> 12,524 today is **+701/day**. So the "+1,100/day
+  sustained" reading was the recovery refilling the archive, not runaway
+  growth, and the settled rate is back inside the original 450-700/day band.
+  The health check fails above 45,000, which at this rate is **~46 days out
+  (mid-October)**, not the ~30 days feared. Back to a watch item; re-measure
+  monthly.
 - **Publisher image weight drifted up, then came back.** `seo-health`
   passes. 2026-08-24: 15 images, 1,503 KB, median 52 KB, **max 448 KB**.
   **2026-08-25: 15 images, 1,410 KB, median 74 KB, max 235 KB** — the
@@ -1166,8 +1299,12 @@ for that reason.**
   Becomes work if the max crosses 500 KB (which fails the check for capped
   hosts). **2026-08-29: 15 images, 2,256 KB, median 82 KB, max 830 KB** —
   the max has crossed 500 KB and `seo-health` still passes, so the host
-  carrying it is not one of the capped ones. Worth naming the host on the
-  next run before deciding whether the cap list should grow.
+  carrying it is not one of the capped ones. **2026-08-31: 15 images,
+  1,525 KB, median 91 KB, max 189 KB** — the 830 KB outlier is gone, so it
+  was one host on one day, exactly as the 448 KB one was on 08-24. Do not
+  grow the cap list on a single day's max: both excursions cleared by
+  themselves within two days. It takes two consecutive readings over
+  500 KB to be a trend.
 - **`/most-covered` is at 25 items**, up from 5 on 2026-08-22 and 12 on
   2026-08-19. The feed expansion fixed the thinness that was logged here for
   two weeks. Keep watching that it does not fall back.

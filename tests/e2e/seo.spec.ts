@@ -256,3 +256,34 @@ test.describe("most covered", () => {
     expect(body).toContain("/most-covered</loc>");
   });
 });
+
+test.describe("homepage LCP image budget", () => {
+  // Measured 2026-08-31 on a 412x823 viewport: the homepage marked FOUR
+  // images eager — the optimized hero plus three rail thumbnails that the
+  // `lg:` grid puts beside the hero but that `grid-cols-1` stacks at
+  // y=1203/1319/1435, more than a viewport down. Those three are raw
+  // publisher originals (only the hero is allowlisted through the
+  // optimizer), so they competed with the LCP image for a throttled
+  // connection. The rail keeps its eager thumbnails only in the case they
+  // were added for: a hero with no image of its own, which would otherwise
+  // leave the page with no protected LCP candidate.
+  test("only the hero preloads when the hero has an image", async ({ page }) => {
+    await page.goto("/");
+    const images = await page.locator("main img").evaluateAll((nodes) =>
+      nodes.map((n) => ({
+        eager: n.getAttribute("loading") !== "lazy",
+        high: n.getAttribute("fetchpriority") === "high",
+      })),
+    );
+    const eager = images.filter((i) => i.eager);
+    const priority = images.filter((i) => i.high);
+    if (priority.length === 0) {
+      // Imageless hero: the rail supplies the LCP candidate instead, which
+      // is exactly the case EAGER_THUMBNAILS still covers.
+      expect(eager.length).toBeLessThanOrEqual(3);
+      return;
+    }
+    expect(priority.length).toBe(1);
+    expect(eager.length).toBe(1);
+  });
+});

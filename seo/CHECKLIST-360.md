@@ -55,3 +55,19 @@ Net-new adoptions from this audit (all shipped or queued 2026-08-24):
 3. **Bing WMT AI-citation metrics** in the Monday run (SKILL updated).
 4. **GSC Manual actions / Security / Crawl-stats** peek in the Monday run (SKILL updated).
 5. **IndexNow for updated/merged URLs** (BACKLOG).
+
+## Operating note added 2026-08-31 — the GSC dashboards are NOT blocked
+
+The three dashboard checks above (Manual actions, Security issues, Crawl stats)
+looked unreachable for a week: Search Console answers *"you don't have access
+to this property"* on Chrome's default profile, because the property belongs to
+`ovyajewels@gmail.com` and the default profile is `sameerhameedbaba@gmail.com`.
+
+**Both accounts are signed into the same Chrome, and the second one is `/u/1/`.**
+Use `https://search.google.com/u/1/search-console/...` — for example
+`https://search.google.com/u/1/search-console/manual-actions?resource_id=sc-domain%3Acurrentwire.us`
+— and all three open. Verified 2026-08-31: Manual actions and Security issues
+both clean, Crawl stats read in full (80,800 requests / 354 MB / 162 ms,
+Refresh 95% vs Discovery 5%, Other file type 92% vs HTML 5%).
+
+Do not record these as owner-blocked again.

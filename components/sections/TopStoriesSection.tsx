@@ -4,9 +4,24 @@ import { CompactStory } from "@/components/news/cards";
 import { SectionHeader } from "@/components/news/SectionHeader";
 
 /**
- * Rail thumbnails above the fold: loaded eagerly, not lazily (same pattern as
- * /top-100). The hero cluster is often imageless, so without this the page
- * can render with every image lazy and no protected LCP candidate.
+ * Rail thumbnails loaded eagerly, not lazily — but ONLY when the hero has no
+ * image of its own.
+ *
+ * The rail sits beside the hero at `lg:` and above the fold there, which is
+ * where this number came from. At `grid-cols-1` it stacks BELOW the hero:
+ * measured 2026-08-31 on a 412x823 mobile viewport, the three eager
+ * thumbnails render at y=1203/1319/1435 — 1.5 viewports down — and they are
+ * raw publisher originals (976x549, 1024x683) because only the hero is
+ * allowlisted through the optimizer. So on the viewport Google actually
+ * scores, three full-size off-screen downloads competed with the LCP image
+ * for a throttled connection: 6 image requests / 592 KB, with the hero's own
+ * `loadTime` at 11,353 ms.
+ *
+ * The original reason for the eager rail still stands and is preserved: when
+ * the hero cluster is imageless the page would otherwise render with every
+ * image lazy and no protected LCP candidate. That case keeps its eager
+ * thumbnails; the common case — a hero WITH an image, already
+ * `fetchPriority="high"` — no longer pays for them.
  */
 const EAGER_THUMBNAILS = 3;
 
@@ -19,6 +34,9 @@ export function TopStoriesSection({
   secondary: StoryCluster[];
 }) {
   if (!hero) return null;
+  // The hero is the LCP element whenever it has an image; the rail only has
+  // to supply an LCP candidate when it does not.
+  const eagerThumbnails = hero.imageUrl ? 0 : EAGER_THUMBNAILS;
   return (
     <section aria-labelledby="top-stories-heading" className="section-in">
       <div className="sr-only">
@@ -35,7 +53,7 @@ export function TopStoriesSection({
               <CompactStory
                 key={cluster.id}
                 cluster={cluster}
-                eagerThumbnail={index < EAGER_THUMBNAILS}
+                eagerThumbnail={index < eagerThumbnails}
               />
             ))}
           </div>

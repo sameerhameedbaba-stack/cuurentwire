@@ -71,6 +71,12 @@ original publishers listed on each story page for the underlying reporting.
 - [News Desk](https://currentwire.us/news-desk): the automated desk behind story summaries
 - [Contact](https://currentwire.us/contact): the addressed inboxes for corrections, publisher enquiries about how their reporting is indexed and attributed, and technical issues
 
+## Terms of reuse
+
+- [Copyright](https://currentwire.us/copyright): who owns what on this site — the summaries and rankings are CurrentWire's, the quoted reporting stays the publisher's — and how a publisher raises a concern
+- [Terms](https://currentwire.us/terms): the conditions the site is offered under
+- [Privacy](https://currentwire.us/privacy): what the site collects
+
 ## Feeds
 
 - [RSS](https://currentwire.us/rss): main feed of top stories
@@ -82,8 +88,8 @@ original publishers listed on each story page for the underlying reporting.
 ## Facts worth knowing before citing
 
 - Story URLs are permanent. A story that leaves the live ranking keeps its URL and still returns 200; when two stories turn out to cover the same event, the older URL permanently redirects to the surviving one. URLs are never deleted.
-- A published story URL never answers 404. If the permanent archive cannot serve a story, the URL answers a retriable 5xx and /archive-sitemap.xml answers 503 with Retry-After, rather than claiming the story is gone. Treat that as "could not serve it", never as a removal.
-- One honest exception to that, stated rather than hidden: 214 stories published on 2026-08-20 and 2026-08-21 were never written to the permanent archive, because the database was refusing all traffic on an exhausted quota during that window. Those URLs answer a 5xx that will not resolve on a later attempt. They are a known gap in the archive, not a removal and not a redirect, and they are the only such gap.
+- A published story URL never answers 404, with the single enumerated exception in the next point. If the permanent archive cannot serve a story, the URL answers a retriable 5xx and /archive-sitemap.xml answers 503 with Retry-After, rather than claiming the story is gone. Treat that as "could not serve it", never as a removal.
+- One honest exception to that, stated rather than hidden: 205 stories published on 2026-08-20 and 2026-08-21 were never written to the permanent archive, because the database was refusing all traffic on an exhausted quota during that window. Their content exists nowhere and no later attempt can recover it, so since 2026-08-25 those URLs answer a plain 404 rather than a 5xx that would invite retrying forever. They are a known, enumerated gap in the archive, not a removal and not a redirect, and they are the only such gap. Every other published story URL still never answers 404.
 - Each story page names every publisher that covered the event and links to their original reporting. The summary on the page is CurrentWire's; the reporting is theirs.
 - Dates on story pages are real: publication is when CurrentWire first published the page, and "latest coverage" is the newest source timestamp. Neither is ever set to the render time.
 - Rankings are computed from freshness, coverage breadth, source authority and momentum. The method is published at /methodology.

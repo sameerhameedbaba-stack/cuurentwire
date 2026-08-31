@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-08-30T12:13:12.762Z",
+  "ranAt": "2026-08-31T12:28:11.977Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,81 +16,258 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 714,
-    "cardsWithId": 714,
-    "cardsWithCategory": 632,
-    "cardsWithCountry": 282,
-    "cardsWithSources": 68,
-    "storyPagesFetched": 402,
-    "storyErrors": [],
-    "uniqueClusters": 201
+    "cards": 722,
+    "cardsWithId": 722,
+    "cardsWithCategory": 640,
+    "cardsWithCountry": 292,
+    "cardsWithSources": 98,
+    "storyPagesFetched": 380,
+    "storyErrors": [
+      {
+        "clusterId": "c4ae6ee2de093",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/trump-threatens-nbc-reporter-with-fcc-punishment-over-midterm-coverage-c4ae6ee2de093 responded 500"
+      },
+      {
+        "clusterId": "c4ae6ee2de093",
+        "repeat": 2,
+        "error": "Error: https://currentwire.us/story/trump-threatens-nbc-reporter-with-fcc-punishment-over-midterm-coverage-c4ae6ee2de093 responded 500"
+      }
+    ],
+    "uniqueClusters": 191
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.885,
-    "country": 0.395,
-    "sources": 0.095
+    "category": 0.886,
+    "country": 0.404,
+    "sources": 0.136
   },
   "versionsSeen": [
-    "20260830T120112Z-83602d",
-    "20260830T115539Z-2120bb",
-    "20260830T120724Z-eed890",
-    "20260830T120635Z-79780c",
-    "20260830T120349Z-4c3fc8",
-    "20260830T120120Z-809cec",
-    "20260830T120416Z-629333",
-    "20260830T120357Z-1f04da",
-    "20260830T120127Z-b9af06",
-    "20260830T120052Z-8929fd",
-    "20260830T120409Z-04c86e",
-    "20260830T120129Z-f859e7",
-    "20260830T120409Z-24742d",
-    "20260830T120409Z-55f4cf",
-    "20260830T120050Z-3c0cb3",
-    "20260830T120024Z-a90ab3",
-    "20260830T120440Z-42a194",
-    "20260830T120444Z-1cef76",
-    "20260830T115935Z-9b9b01",
-    "20260830T120619Z-d98873",
-    "20260830T120652Z-1c4013",
-    "20260830T120222Z-666963",
-    "20260830T120056Z-7d6f55",
-    "20260830T115926Z-929b8e",
-    "20260830T120001Z-e558c1",
-    "20260830T120649Z-8c6692",
-    "20260830T120458Z-b0f071",
-    "20260830T120520Z-20ac03",
-    "20260830T120554Z-2dcea1",
-    "20260830T120554Z-9a25c0",
-    "20260830T120519Z-20ac03",
-    "20260830T120520Z-9e27ca",
-    "20260830T120141Z-1e5dcb",
-    "20260830T120651Z-011aa2",
-    "20260830T120530Z-864912",
-    "20260830T120613Z-016433",
-    "20260830T120710Z-ccadf6",
-    "20260830T120544Z-82bd21",
-    "20260830T120602Z-0bd204",
-    "20260830T120543Z-ba8892",
-    "archive:2026-08-29T10:30:06.983Z",
-    "20260830T094528Z-643286",
-    "20260830T120643Z-9627e5"
+    "20260831T122535Z-585fdc",
+    "20260831T120725Z-9c1323",
+    "20260831T122547Z-2e956c",
+    "20260831T122539Z-93cd2b",
+    "20260831T122539Z-45d0a7",
+    "20260831T122535Z-95eac6",
+    "20260831T120524Z-352825",
+    "20260831T120704Z-33b96f",
+    "20260831T120729Z-eef5d3",
+    "20260831T120726Z-57f2a5",
+    "archive:2026-08-31T10:00:35.916Z",
+    "archive:2026-08-31T11:35:07.096Z",
+    "20260831T120657Z-2db872",
+    "archive:2026-08-31T12:00:03.370Z",
+    "archive:2026-08-31T09:30:02.987Z",
+    "20260831T120752Z-03b9f2",
+    "20260831T120756Z-b64812",
+    "20260831T120756Z-88f55e",
+    "20260831T120836Z-162816",
+    "20260831T084545Z-b253ff",
+    "20260831T120905Z-b51b1a",
+    "20260831T120720Z-8ac079",
+    "20260831T120725Z-32b11b",
+    "20260831T120835Z-8d782a",
+    "20260831T120836Z-efaa74",
+    "20260831T120841Z-27b643",
+    "20260831T120838Z-0546f8",
+    "20260831T120833Z-3bf4de",
+    "20260831T120848Z-c699e2",
+    "20260831T120849Z-c699e2",
+    "20260831T120849Z-011f84",
+    "20260831T120854Z-d54de6",
+    "20260831T120859Z-ba4bd9",
+    "20260831T122839Z-0afc2f",
+    "20260831T122832Z-d5b141",
+    "20260831T122831Z-d5b141",
+    "20260831T122538Z-95c6ff",
+    "20260831T122833Z-d5b141",
+    "20260831T122832Z-f92285"
   ],
   "violations": [
     {
-      "type": "archive-vs-live",
-      "clusterId": "c13ae792b1d52",
-      "storySurface": "/story/democrats-on-campaign-trail-divided-by-kamala-harris-c13ae792b1d52 (r1)",
-      "storyVersion": "archive:2026-08-29T10:30:06.983Z",
-      "liveVersionAtRender": "20260830T120619Z-d98873",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
-      "listSurfaces": [
-        "/elections (r1)",
-        "/elections (r2)"
+      "type": "category-flap",
+      "clusterId": "c31fffb88ca32",
+      "sequence": [
+        {
+          "version": "20260831T122535Z-585fdc",
+          "category": "business"
+        },
+        {
+          "version": "20260831T120725Z-9c1323",
+          "category": "politics"
+        },
+        {
+          "version": "20260831T122547Z-2e956c",
+          "category": "business"
+        },
+        {
+          "version": "20260831T120729Z-eef5d3",
+          "category": "politics"
+        }
       ]
     }
   ],
-  "warningsTotal": 0,
-  "warnings": [],
+  "findingsTotal": 4,
+  "findingsByCause": {
+    "story-side staleness": 4
+  },
+  "findings": [
+    {
+      "type": "archive-vs-live",
+      "clusterId": "cc3111347f07e",
+      "storySurface": "/story/artificial-intelligence-in-europe-does-advanced-ai-have-a-glass-ceiling-cc3111347f07e (r1)",
+      "storyVersion": "archive:2026-08-31T10:00:35.916Z",
+      "liveVersionAtRender": "20260831T120704Z-33b96f",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
+      "listSurfaces": [
+        "/ (r1)",
+        "/us (r1)",
+        "/ai (r1)",
+        "/ (r2)",
+        "/us (r2)",
+        "/ai (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c334bec4643fa",
+      "storySurface": "/story/iran-us-trade-fire-in-first-exchange-in-a-month-c334bec4643fa (r1)",
+      "storyVersion": "archive:2026-08-31T11:35:07.096Z",
+      "liveVersionAtRender": "20260831T120704Z-33b96f",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
+      "listSurfaces": [
+        "/ (r1)",
+        "/ (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "cd15977fba0b6",
+      "storySurface": "/story/nfl-power-rankings-our-preseason-poll-plus-one-milestone-to-watch-for-each-team-cd15977fba0b6 (r1)",
+      "storyVersion": "archive:2026-08-31T12:00:03.370Z",
+      "liveVersionAtRender": "20260831T120841Z-27b643",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
+      "listSurfaces": [
+        "/ (r1)",
+        "/latest (r1)",
+        "/elections (r1)",
+        "/ (r2)",
+        "/latest (r2)",
+        "/elections (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c590b82698d6a",
+      "storySurface": "/story/titans-cut-quarterback-will-levis-giants-keep-odell-beckham-jr-as-nfl-teams-trim-c590b82698d6a (r1)",
+      "storyVersion": "archive:2026-08-31T09:30:02.987Z",
+      "liveVersionAtRender": "20260831T103528Z-1639ad",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
+      "listSurfaces": [
+        "/ (r1)",
+        "/ (r2)"
+      ]
+    }
+  ],
+  "stampCoverage": 1,
+  "warningsTotal": 4,
+  "warnings": [
+    {
+      "type": "cross-version-drift",
+      "clusterId": "c158ea7754424",
+      "field": "sources",
+      "values": [
+        {
+          "version": "20260831T122535Z-585fdc",
+          "value": 4
+        },
+        {
+          "version": "20260831T120725Z-9c1323",
+          "value": 3
+        },
+        {
+          "version": "20260831T122547Z-2e956c",
+          "value": 4
+        },
+        {
+          "version": "20260831T120524Z-352825",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "type": "cross-version-drift",
+      "clusterId": "c875ba7ad1989",
+      "field": "sources",
+      "values": [
+        {
+          "version": "20260831T122535Z-585fdc",
+          "value": 3
+        },
+        {
+          "version": "20260831T120725Z-9c1323",
+          "value": 2
+        },
+        {
+          "version": "20260831T122547Z-2e956c",
+          "value": 3
+        },
+        {
+          "version": "20260831T120524Z-352825",
+          "value": 2
+        },
+        {
+          "version": "20260831T122839Z-0afc2f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "type": "cross-version-drift",
+      "clusterId": "c0fb5f69d597e",
+      "field": "sources",
+      "values": [
+        {
+          "version": "20260831T122535Z-585fdc",
+          "value": 3
+        },
+        {
+          "version": "20260831T122547Z-2e956c",
+          "value": 3
+        },
+        {
+          "version": "20260831T120704Z-33b96f",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "type": "cross-version-drift",
+      "clusterId": "c31fffb88ca32",
+      "field": "sources",
+      "values": [
+        {
+          "version": "20260831T122535Z-585fdc",
+          "value": 5
+        },
+        {
+          "version": "20260831T120725Z-9c1323",
+          "value": 7
+        },
+        {
+          "version": "20260831T122547Z-2e956c",
+          "value": 5
+        },
+        {
+          "version": "20260831T122539Z-93cd2b",
+          "value": 5
+        },
+        {
+          "version": "20260831T120729Z-eef5d3",
+          "value": 7
+        }
+      ]
+    }
+  ],
   "result": "FAIL"
 }
