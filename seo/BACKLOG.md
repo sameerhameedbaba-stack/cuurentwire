@@ -141,8 +141,20 @@ GitHub raises its own "Uh oh! There was an error while loading" banner. The
 same shape appears on Search Console's metric toggles. **These SPAs ignore the
 extension's synthetic clicks.** Three fresh device codes, two tabs,
 click/Enter/Space — same wall every time. Plain navigation and text entry DO
-work, which is how the dashboards above were read. Fix is one human action:
-`gh auth login` in a terminal.
+work, which is how the dashboards above were read.
+
+**SOLVED a better way 2026-08-31 — a run no longer needs `gh` to refresh its
+own data.** `gsc.yml` and `cwv.yml` now carry a **push-path trigger**: change
+`.github/triggers/gsc` (or `cwv`) and push, and the workflow runs. No auth, no
+dashboard click, no `workflow_dispatch`. Verified the same minute it shipped —
+both workflows fired on `event: push`. `.github` is excluded from
+`vercel.json`'s `ignoreCommand`, so the trigger files never cause a deploy.
+This also covers the *other* half of the problem, which was never about auth:
+the Monday schedules simply did not fire.
+
+`gh auth login` in a terminal is still worth one owner minute (it restores
+authenticated issue reads and `gh run` inspection), but it is **no longer
+blocking anything**.
 
 **The GSC dashboards were never blocked — do not report them as blocked again.**
 Search Console answers "you don't have access to this property" on the default
