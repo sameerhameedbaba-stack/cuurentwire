@@ -70,4 +70,16 @@ jobs:
             if [ -f "$f" ]; then git add "$f"; fi
           done
           git diff --cached --quiet || git commit -m "chore: cwv history + image eligibility $(date -u +%F)"
-          git push
+          # Same race as gsc.yml: a bare push loses to any concurrent write to
+          # main and discards a measurement that cost a full Playwright run.
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then break; fi
+            if [ "$attempt" = "5" ]; then
+              echo "::error::push rejected 5 times; the measurement is taken but unsaved"
+              exit 1
+            fi
+            echo "push rejected (attempt $attempt) — rebasing onto origin/main"
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort; exit 1; }
+            sleep $((RANDOM % 5 + 3))
+          done

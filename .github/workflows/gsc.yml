@@ -81,5 +81,20 @@ jobs:
             git config user.email "actions@users.noreply.github.com"
             git add data/gsc-*.json
             git diff --cached --quiet || git commit -m "chore: gsc report $(date -u +%F)"
-            git push
+            # A bare `git push` loses to any concurrent write to main and
+            # throws away a report that already cost its API quota. That was
+            # latent for as long as this ran alone at 07:40 on Mondays; the
+            # push-path trigger added 2026-08-31 can fire this and cwv.yml in
+            # the same second, and both push to main. Rebase and retry.
+            for attempt in 1 2 3 4 5; do
+              if git push origin HEAD:main; then break; fi
+              if [ "$attempt" = "5" ]; then
+                echo "::error::push rejected 5 times; the report is generated but unsaved"
+                exit 1
+              fi
+              echo "push rejected (attempt $attempt) — rebasing onto origin/main"
+              git fetch origin main
+              git rebase origin/main || { git rebase --abort; exit 1; }
+              sleep $((RANDOM % 5 + 3))
+            done
           fi
