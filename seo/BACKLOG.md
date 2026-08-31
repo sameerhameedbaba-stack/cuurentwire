@@ -110,6 +110,40 @@ crawlable, citable value a fix creates per unit of risk.
    which is the cost control the playbook protects. Recorded with its number so
    a future run can decide; do not ship it without re-reading that constraint.
 
+**FRESH GSC READ 2026-08-31 (dashboard, not the API file) — it corrects a
+framing this backlog has carried for a week.** Search performance, 28 days
+through Aug 29: **32 clicks / 1,940 impressions / 1.6% CTR / position 32.7 /
+298 queries**, against the 08-21 baseline of 12 / 1,080 / 1.1% / 21.3. Clicks
++167%, impressions +80%. **Milestone M1 (100 clicks/28d) is at 32.**
+
+Page indexing report, same session: **Indexed 1,520.** Not indexed 793 —
+Discovered-not-indexed **429**, noindex-by-design 211, 404 **69**, redirect 69,
+crawled-not-indexed 10, **5xx 2**, alternate-canonical 2, duplicate 1.
+
+**So "Google de-indexed 11 of 12 indexed hub/category pages" is TRUE but was
+never site-wide** — it was measured by a 34-surface evergreen sweep. The site
+has 1,520 indexed pages and the story pages earn the clicks. Keep the hub work
+(item 1) for what it is: a real problem on a small, high-value slice. Do not
+repeat the collapse framing. Also: 5xx is down to **2**, so the outage-era
+poison is gone, and only 69 of the 205 tombstones have registered as 404 yet.
+
+The **429 Discovered-not-indexed is the crawl-stats finding from the other
+side** (item 5): Google knows the URLs and has not spent budget fetching them.
+
+*Per-query positions could NOT be pulled from the dashboard — its metric
+toggles do not respond to the extension's synthetic clicks — so the
+striking-distance list stays the 08-27 API one until a workflow run lands.*
+
+**Re-authenticating `gh` through Chrome does not work — do not retry it.**
+The device flow reaches GitHub's "Authorize GitHub CLI" screen with the code
+accepted and the correct account, and the Authorize button never submits;
+GitHub raises its own "Uh oh! There was an error while loading" banner. The
+same shape appears on Search Console's metric toggles. **These SPAs ignore the
+extension's synthetic clicks.** Three fresh device codes, two tabs,
+click/Enter/Space — same wall every time. Plain navigation and text entry DO
+work, which is how the dashboards above were read. Fix is one human action:
+`gh auth login` in a terminal.
+
 **The GSC dashboards were never blocked — do not report them as blocked again.**
 Search Console answers "you don't have access to this property" on the default
 Chrome profile because the property belongs to `ovyajewels@gmail.com`, not
