@@ -876,17 +876,12 @@ export function idTokenFromSlug(slug: string): string {
 }
 
 /**
- * Look up an archived story by slug, exact cluster id, or the trailing id
- * token of the slug (same alias rules as the live dataset).
- *
- * Returns null when the DB is not configured or nothing matches — both are
- * real answers meaning "this URL is not in the archive". A FAILED QUERY
- * throws ArchiveUnavailableError, because this lookup is what stands
- * between a published URL and `notFound()`, and "the database timed out"
- * must never be rendered as "gone forever".
+ * The cached row read behind findArchivedStory. Always called with
+ * archiveRowCacheKey(slug), never a raw request slug — see that function
+ * for why the key must be one-per-story and not one-per-alias.
  */
-export const findArchivedStory = cachedRead(
-  "archive-story",
+const readArchivedStoryRow = cachedRead(
+  "archive-story-v2",
   ARCHIVE_ROW_TTL_S,
   async function findArchivedStoryUncached(
     slug: string,
@@ -919,6 +914,63 @@ export const findArchivedStory = cachedRead(
     }
   },
 );
+
+/**
+ * Cache key for ONE archived story's row — shared by every URL that
+ * resolves to it: the canonical slug, the bare cluster id, and every
+ * retired slug a rename left behind.
+ *
+ * Keyed by the raw lookup string instead (the shape until 2026-08-31), the
+ * same row is cached once per alias, each entry with its own independent
+ * ARCHIVE_ROW_TTL_S. The aliases then DISAGREE for up to six hours
+ * whenever `merged_into_cluster_id` flips: the entry filled before the
+ * flip keeps 308-ing away while the one filled after answers 200. Nothing
+ * reconciles them, because neither is stale in its own key's terms.
+ *
+ * Measured on production 2026-08-31 22:10-22:20 UTC. The permanent archive
+ * reported cluster `c9e0f30ebe2a1` as UNMERGED
+ * (`/api/stats/archive-sources?ids=…` -> `merged: false`), so
+ * `/news-sitemap.xml` was correctly advertising its canonical URL — and
+ * that URL answered `308` to `…-c343d2e6168bf`, a cluster the same query
+ * reported as `merged: true`, which itself answered `200`. The bare id
+ * `/story/c9e0f30ebe2a1` — the same row under a different key — answered
+ * `307` to the slug that was 308-ing away. Three URLs of one story, three
+ * different verdicts, all served from cache HITs.
+ * `scripts/seo-health.mjs` caught it, re-fetched to rule out a rename
+ * race, cross-checked the archive and failed the run. The cost is the one
+ * that matters most: Googlebot-News fetches that feed within minutes of
+ * publication and follows what it advertises, so a fresh story's canonical
+ * URL was handing the News crawler a permanent redirect to a duplicate.
+ *
+ * Every published story slug ends with its own cluster id (CLUSTER_ID_RE,
+ * verified against all 1,660 ledger URLs — see above), so the id token IS
+ * the story's identity and is safe to share. A slug carrying no
+ * well-formed token was never one of our URLs, so it keeps its own key and
+ * the previous behaviour.
+ *
+ * This also REMOVES reads rather than adding them — aliases now share one
+ * entry — so it costs nothing against the ISR/database budget the playbook
+ * protects.
+ */
+export function archiveRowCacheKey(slug: string): string {
+  const idToken = idTokenFromSlug(slug);
+  return CLUSTER_ID_RE.test(idToken) ? idToken : slug;
+}
+
+/**
+ * Look up an archived story by slug, exact cluster id, or the trailing id
+ * token of the slug (same alias rules as the live dataset), through the
+ * one cache entry that story owns (archiveRowCacheKey above).
+ *
+ * Returns null when the DB is not configured or nothing matches — both are
+ * real answers meaning "this URL is not in the archive". A FAILED QUERY
+ * throws ArchiveUnavailableError, because this lookup is what stands
+ * between a published URL and `notFound()`, and "the database timed out"
+ * must never be rendered as "gone forever".
+ */
+export function findArchivedStory(slug: string): Promise<ArchivedStory | null> {
+  return readArchivedStoryRow(archiveRowCacheKey(slug));
+}
 
 /**
  * Everything the story page needs from the archived row beyond the story

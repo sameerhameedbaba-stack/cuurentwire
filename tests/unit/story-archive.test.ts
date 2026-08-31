@@ -15,6 +15,7 @@ import {
   clusterToArchiveRow,
   computeClusterMerges,
   ArchiveUnavailableError,
+  archiveRowCacheKey,
   findArchivedStory,
   getArchiveFirstSeen,
   getNewsSitemapArchiveStatus,
@@ -751,5 +752,95 @@ describe("findArchivedStory lookup (mocked db)", () => {
     await expect(findArchivedStory("anything-cl4b2n8x1")).rejects.toBeInstanceOf(
       ArchiveUnavailableError,
     );
+  });
+});
+
+
+// Regression, 2026-08-31: one archived row was cached once per ALIAS
+// (full slug, bare cluster id, every retired slug), each entry with its
+// own 6-hour TTL, so a merge-pointer flip left the aliases contradicting
+// each other. Measured live: `/story/<slug>-c9e0f30ebe2a1` answered 308 to
+// a cluster the archive reported as merged-away, `/story/c9e0f30ebe2a1`
+// answered 307 to that slug, and the news sitemap was correctly
+// advertising the first URL to Googlebot-News. The key must be the story,
+// not the URL that asked for it. See archiveRowCacheKey in
+// lib/database/archive.ts.
+describe("archiveRowCacheKey", () => {
+  const id = "c9e0f30ebe2a1";
+  const canonical = `hundreds-attend-funeral-in-haiti-for-4-victims-c${"9e0f30ebe2a1"}`;
+
+  it("gives every alias of one story the SAME key", () => {
+    const keys = new Set([
+      archiveRowCacheKey(canonical),
+      archiveRowCacheKey(id),
+      // a retired slug left behind by a headline rename
+      archiveRowCacheKey(`an-older-headline-for-the-same-story-${id}`),
+    ]);
+    expect(keys.size).toBe(1);
+    expect([...keys][0]).toBe(id);
+  });
+
+  it("gives two different stories different keys", () => {
+    expect(archiveRowCacheKey(`same-headline-${id}`)).not.toBe(
+      archiveRowCacheKey("same-headline-c343d2e6168bf"),
+    );
+  });
+
+  it("leaves a slug with no well-formed cluster id on its own key", () => {
+    for (const junk of ["unknown-zzz", "wp-admin", "senate-bill-cl4b2n8x1", ""]) {
+      expect(archiveRowCacheKey(junk), junk).toBe(junk);
+    }
+  });
+
+  it("is idempotent — keying an already-keyed value does not shift it", () => {
+    expect(archiveRowCacheKey(archiveRowCacheKey(canonical))).toBe(id);
+  });
+});
+
+describe("findArchivedStory alias consistency (mocked db)", () => {
+  const id = "c343d2e6168bf";
+  const row = {
+    clusterId: id,
+    slug: `hundreds-attend-funeral-in-haiti-${id}`,
+    title: "Hundreds attend funeral in Haiti",
+    summary: null,
+    category: "world",
+    geography: "US",
+    contentType: null,
+    imageUrl: null,
+    firstPublishedAt: new Date("2026-08-30T18:20:00.000Z"),
+    lastPublishedAt: new Date("2026-08-30T18:24:00.000Z"),
+    firstSeenAt: new Date("2026-08-30T18:25:07.028Z"),
+    lastModifiedAt: new Date("2026-08-31T22:00:00.000Z"),
+    rankingScore: 40,
+    sourceCount: 2,
+    sources: [],
+    entities: [],
+    updatedAt: new Date("2026-08-31T22:00:00.000Z"),
+  };
+
+  it("resolves the canonical slug, a retired slug and the bare id to one row", async () => {
+    const seen: string[] = [];
+    getDbMock.mockReturnValue({
+      select: () => ({
+        from: () => ({
+          where: () => ({
+            limit: () => {
+              seen.push("query");
+              return Promise.resolve([row]);
+            },
+          }),
+        }),
+      }),
+    });
+    for (const alias of [row.slug, id, `a-retired-headline-${id}`]) {
+      const story = await findArchivedStory(alias);
+      expect(story?.clusterId, alias).toBe(id);
+      expect(story?.slug, alias).toBe(row.slug);
+    }
+    // Every alias took the same lookup path, so with a live incremental
+    // cache they would share one entry and cannot disagree about the
+    // merge pointer.
+    expect(seen).toHaveLength(3);
   });
 });
