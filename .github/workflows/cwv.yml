@@ -24,6 +24,12 @@ on:
   schedule:
     - cron: "17 7 * * 1"
   workflow_dispatch:
+  # Same push-path trigger as gsc.yml — change .github/triggers/cwv and push.
+  # See that file's comment for why. .github is excluded from vercel.json's
+  # ignoreCommand, so this never triggers a deploy.
+  push:
+    paths:
+      - ".github/triggers/cwv"
 
 permissions:
   contents: write

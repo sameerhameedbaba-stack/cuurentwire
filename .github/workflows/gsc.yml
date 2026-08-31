@@ -30,6 +30,19 @@ on:
   schedule:
     - cron: "40 7 * * 1"
   workflow_dispatch:
+  # Manual trigger that needs no `gh` auth and no dashboard click: change
+  # .github/triggers/gsc (a timestamp line) and push. Added 2026-08-31 after
+  # the Monday schedule silently failed to fire — 5 h past its cron, with the
+  # previous Monday having fired within 45 min — and the loop could not
+  # dispatch it because the local gh token was invalid and re-authenticating
+  # through the browser extension is impossible (GitHub's device-flow
+  # Authorize button never submits there; see seo/BACKLOG.md). A weekly run
+  # that cannot refresh its own data is the failure this guards against.
+  # .github is excluded from vercel.json's ignoreCommand, so this never
+  # triggers a deploy.
+  push:
+    paths:
+      - ".github/triggers/gsc"
 
 permissions:
   contents: write
