@@ -67,5 +67,11 @@
     "kind": "fix",
     "label": "Live story revalidation window rotated so all 726 live stories stay fresh (a0d26f0)",
     "detail": "The cron burst marked clusters.slice(0,150) — always the same top 150 by ranking score — while the live dataset holds 726 clusters (/api/stats/coverage). The other 576 live story pages (79%) had no freshness path: the story route carries a 30-day ISR TTL and an archive-rendered page performs no tagged read, so revalidateTag never reached them. A page that rendered from the archive before its cluster entered the live snapshot kept serving that archived copy indefinitely, with dateModified frozen and isBasedOn under-reporting later pickups — the mechanism behind [auto-alert] #2 (surface coherence), reproduced on two clusters listed live on / this run. selectRevalidationSlugs keeps 150 marks per burst (the billed quantity is unchanged) and spends them as a fixed head of 100 plus a rotating 50-URL tail slice, covering every live story within 13 bursts (~6.5 h)."
+  },
+  {
+    "date": "2026-09-01",
+    "kind": "fix",
+    "label": "News-sitemap canonical URL was 308-ing to a merged-away duplicate; archive row cache re-keyed per story (53ad4b1)",
+    "detail": "scripts/seo-health.mjs failed on 1 of 707 news-sitemap URLs: the canonical URL of cluster c9e0f30ebe2a1 answered 308 to ...-c343d2e6168bf, while /api/stats/archive-sources reported c9e0f30ebe2a1 merged:false and c343d2e6168bf merged:true - so the feed was right and the story route was redirecting the survivor to the duplicate. Cause: findArchivedStory was cachedRead keyed by the raw lookup string, caching one archive row once per alias (canonical slug, bare cluster id, every retired slug) with independent 6h TTLs; a merged_into_cluster_id flip left the aliases contradicting each other. Measured live 22:10-22:20 UTC: three URLs of one story returned 308 away / 200 / 307, all cache HITs. Googlebot-News fetches this feed within minutes of publication and follows what it advertises. Fixed by archiveRowCacheKey(), which keys the row by the story's cluster-id token so all aliases share one entry. Low rate (1/707 that run), so no measurable trend impact expected; logged because it is a crawl-signal change on the News feed."
   }
 ]

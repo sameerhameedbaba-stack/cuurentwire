@@ -154,6 +154,19 @@ crawlable, citable value a fix creates per unit of risk.
    than cycling, but the third candidate fix in item 1 — have the generator
    advertise only self-canonical URLs — is still the clean answer on the one
    surface Googlebot-News judges as a whole.
+
+   **PARTLY REFUTED 2026-09-01, and the refutation is the more useful half.**
+   Today's `seo-health` failure looked like exactly this item — a news-sitemap
+   URL 308-ing to a different story id — and the feed turned out to be RIGHT.
+   `/api/stats/archive-sources?ids=…` reported the advertised cluster
+   `c9e0f30ebe2a1` as `merged: false` and its redirect target
+   `c343d2e6168bf` as `merged: true`: the sitemap was advertising the
+   surviving canonical URL and the **story route** was redirecting the
+   survivor to the merged-away duplicate. So "advertise only self-canonical
+   URLs" would have *suppressed a correct entry* here. Keep this item for the
+   genuine rename races it names, and do not reach for the generator fix until
+   a cross-check against archive standing shows the feed is the wrong side.
+   The route-side cause is fixed — see the shipped block below.
 9. **Trust pages serve a build-frozen masthead date.** NEW, measured, and
    deliberately NOT ranked for a fix yet. All 12 are fully static with no
    `revalidate` (confirmed in the build route table) and served `Age: 222,545 s`
@@ -254,6 +267,61 @@ and the second one is `/u/1/`.** Use
 Verified 2026-08-31: Manual actions **no issues detected**, Security issues
 **no issues detected**, and the full Crawl stats report (item 4 above) — the
 first time any run has read all three.
+
+**NEW, OPEN 2026-09-01 — the news-sitemap merge gate reads standing through a
+30-minute cache whose key cannot see a merge.** Found by the post-fix
+`seo-health` run, which now reports it as a tolerated note rather than burying
+it: `…-c10f7079a8181` is advertised in `/news-sitemap.xml` while
+`/api/stats/archive-sources` marks the cluster merged.
+`getNewsSitemapArchiveStatus` shares the `readFirstSeenEntries` entry
+(`FIRST_SEEN_TTL_S = 1800`), whose cache key is the **sorted live cluster-id
+set**. That key's own comment argues the staleness is harmless because "any
+dataset change alters the id set" — but a merge flips
+`merged_into_cluster_id` on an existing row **without changing the live id
+set** (the merged-away cluster stays in the ~72 h live dataset), so the stale
+`merged: false` is served for up to 30 minutes on the one feed Googlebot-News
+judges as a whole.
+
+Same family as the fix shipped below, opposite half: that one was *one row,
+many keys*; this one is *one key, stale field*. Candidate fix, cheap: split the
+merged-ids read out of the first-seen read and give it a short TTL (~60 s).
+first_seen is write-once and can keep its 1,800 s; the merged query is indexed
+(`story_archive_merged_into_idx`), returns 0–5 rows, and the route is already
+CDN-bounded at `max-age=300`, so it adds at most one small query per region per
+5 minutes. **Measure the current note rate over a few runs before building** —
+today it is 1 of 692, which may not justify the change on its own.
+
+**SHIPPED 2026-09-01 (`53ad4b1`) — one archive-row cache entry per STORY,
+not per URL alias.** `findArchivedStory` was `cachedRead` keyed by the raw
+lookup string, so a single `story_archive` row was cached once per alias —
+canonical slug, bare cluster id, and every retired slug a rename left behind —
+each entry with its own independent 6-hour `ARCHIVE_ROW_TTL_S`. When
+`merged_into_cluster_id` flips, entries filled before the flip keep serving the
+old direction, and nothing reconciles them because **neither is stale in its
+own key's terms**. Measured live 2026-08-31 22:10-22:20 UTC, three URLs of one
+story, three verdicts, all cache `HIT`s:
+
+```
+/story/<slug>-c9e0f30ebe2a1   308 -> ...-c343d2e6168bf   (archive: merged=false)
+/story/<slug>-c343d2e6168bf   200                        (archive: merged=true)
+/story/c9e0f30ebe2a1          307 -> <slug>-c9e0f30ebe2a1
+```
+
+It surfaced on the worst possible feed: `/news-sitemap.xml` advertised the
+canonical survivor, and Googlebot-News fetches that within minutes of
+publication and follows what it advertises — so a fresh story's canonical URL
+was handing the News crawler a permanent redirect to a duplicate.
+`archiveRowCacheKey()` now normalises the lookup to the story's cluster-id
+token (every published slug ends with its own id, verified against all 1,660
+ledger URLs), so all aliases share one entry and cannot disagree; a slug with
+no well-formed id token keeps its own key and the old behaviour. It **removes**
+reads rather than adding them, so it is free against the ISR/database budget.
+9 new unit tests (`archiveRowCacheKey` + alias consistency).
+
+*Verification caveat, stated because this loop has been caught by it before
+(item 1): a deploy wipes the ISR cache, so the frozen 308 would have cleared
+on any deploy. The live check confirms the symptom is gone; the **mechanism**
+is proven by the unit tests and by the archive cross-check, not by the flip.*
 
 **Closed by the 2026-08-31 run:** the archive-sitemap growth reconciliation
 (dated work since 08-26 — the "doubling" was the write-stall recovery, the
