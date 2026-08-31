@@ -37,6 +37,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # Fails when the secret is absent/misnamed — the step name and its
+      # red X are readable on the public API without auth, which is how a
+      # missing secret was diagnosed on 2026-09-01 (logs need auth, step
+      # conclusions do not). The value itself is never printed.
+      - name: Assert BLUESKY_APP_PASSWORD secret is configured
+        env:
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+        run: test -n "$BLUESKY_APP_PASSWORD"
       # No npm install: the script uses only fetch.
       - name: Post newest unshared story
         env:
