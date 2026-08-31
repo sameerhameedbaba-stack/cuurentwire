@@ -503,5 +503,47 @@
         }
       }
     ]
+  },
+  {
+    "date": "2026-08-31T15:05:20.673Z",
+    "base": "https://currentwire.us",
+    "strategy": "mobile",
+    "tool": "psi",
+    "warmedConnection": false,
+    "pages": [
+      {
+        "tool": "psi",
+        "url": "https://currentwire.us/",
+        "field": null,
+        "lab": {
+          "lcpMs": 6720,
+          "cls": 0,
+          "tbtMs": 368,
+          "score": 58
+        }
+      },
+      {
+        "tool": "psi",
+        "url": "https://currentwire.us/top-100",
+        "field": null,
+        "lab": {
+          "lcpMs": 3076,
+          "cls": 0,
+          "tbtMs": 272,
+          "score": 89
+        }
+      },
+      {
+        "tool": "psi",
+        "url": "https://currentwire.us/story/new-aircraft-carrier-going-to-middle-east-amid-questions-over-conditions-on-uss-c2a15dd9ff39b",
+        "field": null,
+        "lab": {
+          "lcpMs": 2551,
+          "cls": 0,
+          "tbtMs": 18,
+          "score": 97
+        }
+      }
+    ]
   }
 ]
