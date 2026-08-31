@@ -31,12 +31,45 @@ crawlable, citable value a fix creates per unit of risk.
    item 3 and the 08-31 report). Classifier-deep, so per the playbook it is
    engineered upstream with benchmark coverage, not patched in a template.
    `tests/unit/category-stability.test.ts` is the existing guard to extend.
-3. **CTR rescue on the pages that already rank** — unchanged since 08-25, still
+3. **The homepage takes 9.3 seconds of main thread before it paints — and it
+   is NOT the images.** NEW, measured 2026-08-31 including after the fix that
+   was supposed to help. Post-deploy on a 412x823 mobile viewport under the
+   4x/1.6 Mbps throttle:
+
+   ```
+   responseStart        120 ms    server is fast
+   responseEnd          410 ms    all 338 KB of HTML delivered
+   domInteractive     9,684 ms    <- the gap, with the bytes already in hand
+   loadEvent         14,649 ms
+   decodedBodySize  343,029 bytes
+   FCP            9,332-11,944 ms;  LCP tracks it (12,664-14,060 ms)
+   ```
+
+   **The eager-image fix shipped this run did exactly what it claimed and did
+   not help:** eager images 4 -> 1, image requests 6 -> 5, image bytes
+   592,537 -> 437,713, all verified live — and LCP was unchanged inside its
+   (very wide) variance band. **Do not re-run that play on `/top-100`,
+   `/top-10`, `/most-covered` or `HubPage` on speed grounds**; the homepage
+   result says it would not buy what it looks like it buys. Keep the fix
+   itself — fewer full-size off-screen downloads is right regardless, and
+   `tests/e2e/seo.spec.ts` guards it.
+
+   The real target is main-thread cost: parsing 343 KB of HTML and hydrating a
+   large React tree. Largest single script is GA's `gtag.js` at **173,356
+   bytes** (the only one reporting a content-length; the Next chunks reported
+   0 and were not individually sized). Two threads, both needing measurement
+   before any build: (a) how much of the 60-link homepage payload must be in
+   the first response, and (b) whether `gtag.js` should move off
+   `strategy="afterInteractive"` — that trades analytics fidelity on quick
+   bounces, so it is an owner-visible decision, not a silent one.
+   **Discover eligibility depends on LCP < 2.5 s and this is nowhere near it**,
+   which is why it outranks the CTR work below.
+4. **CTR rescue on the pages that already rank** — unchanged since 08-25, still
    509 query impressions to 3 clicks, and still the item with the most direct
    evidence. Named targets and guardrails in the 08-28 status block below.
    **Blocked on fresh GSC data** (the Monday workflow did not fire; see owner
    blockers in the 08-31 report), so it moves when that lands.
-4. **92% of Google's crawl requests are not HTML, and discovery is 5%.** NEW,
+5. **92% of Google's crawl requests are not HTML, and discovery is 5%.** NEW,
    from the **GSC Crawl stats** report — read for the first time this run (see
    below: the dashboards are reachable at `/u/1/`, they were never actually
    blocked). 90 days: **80,800 requests, 354 MB, 162 ms average response,
@@ -51,21 +84,21 @@ crawlable, citable value a fix creates per unit of risk.
    OG render) are all cheap to check. If it is the sitemaps, the `s-maxage`
    lever parked in item 0b stops being theoretical. The Desktop/Smartphone
    skew is recorded, not diagnosed — one reading is not a trend.
-5. **Meta descriptions overshoot on 5+ list pages** — NEW, and it is this
+6. **Meta descriptions overshoot on 5+ list pages** — NEW, and it is this
    loop's own overcorrection from 08-28. Measured live: `/briefing` **273
    chars**, `/reports/media-coverage` 235, `/most-covered` 178, `/energy` 173,
    `/obituaries` 166, against the ~155-160 Google renders. Small and safe.
-6. **Story titles over 60 chars: 34 of 39 (87%)** — re-measured 08-31 on the
+7. **Story titles over 60 chars: 34 of 39 (87%)** — re-measured 08-31 on the
    widest sample yet. The description half of old item 5 is REFUTED and closed
    (see item 5); the title half keeps its rank and is untouched by that
    refutation.
-7. **The news sitemap still advertises retired slugs.** `seo-health` logged
+8. **The news sitemap still advertises retired slugs.** `seo-health` logged
    **2 of 639** rename races on 08-31 and 1 of a separate 40-URL sample
    answered 307. The loop mechanism is closed (item 1) so these resolve rather
    than cycling, but the third candidate fix in item 1 — have the generator
    advertise only self-canonical URLs — is still the clean answer on the one
    surface Googlebot-News judges as a whole.
-8. **Trust pages serve a build-frozen masthead date.** NEW, measured, and
+9. **Trust pages serve a build-frozen masthead date.** NEW, measured, and
    deliberately NOT ranked for a fix yet. All 12 are fully static with no
    `revalidate` (confirmed in the build route table) and served `Age: 222,545 s`
    (2.6 days) rendering "Friday, August 28, 2026" on 2026-08-31.
