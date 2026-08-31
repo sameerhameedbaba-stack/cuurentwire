@@ -172,11 +172,26 @@ for (const entry of feed.feed ?? []) {
   if (uri) alreadyPosted.add(uri.replace(/\/$/, ""));
 }
 
-const rss = await (await fetch(`${SITE}/rss`)).text();
+const rssResponse = await fetch(`${SITE}/rss`);
+const rss = await rssResponse.text();
 const items = [...rss.matchAll(/<item>([\s\S]*?)<\/item>/g)]
   .slice(0, RSS_DEPTH)
   .map(([, xml]) => ({ title: fieldOf(xml, "title"), link: fieldOf(xml, "link") }))
   .filter((item) => item.title && item.link);
+
+console.log(
+  `bluesky-post: rss ${rssResponse.status}, ${items.length} parsed items, ` +
+    `${alreadyPosted.size} urls in the posted ledger`,
+);
+if (items.length === 0) {
+  // A feed that yields nothing is a broken fetch, not a quiet day — fail
+  // loudly so the run goes red instead of green-and-silent.
+  console.error(
+    `bluesky-post: /rss yielded no items (status ${rssResponse.status}, ` +
+      `body starts: ${JSON.stringify(rss.slice(0, 200))})`,
+  );
+  process.exit(1);
+}
 
 const candidate = items.find(
   (item) => !alreadyPosted.has(item.link.replace(/\/$/, "")),
