@@ -1,14 +1,28 @@
 {
-  "generatedAt": "2026-08-27T21:32:29.835Z",
+  "generatedAt": "2026-08-31T14:43:42.342Z",
   "window": {
-    "startDate": "2026-07-31",
-    "endDate": "2026-08-27",
+    "startDate": "2026-08-04",
+    "endDate": "2026-08-31",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
-    "insufficient": true,
-    "completeDays": 12
+    "insufficient": false,
+    "window": {
+      "from": "2026-08-22",
+      "to": "2026-08-28"
+    },
+    "clicks": {
+      "current": 6,
+      "prior": 26,
+      "deltaPct": -76.9
+    },
+    "impressions": {
+      "current": 282,
+      "prior": 1641,
+      "deltaPct": -82.8
+    },
+    "explained": true
   },
   "days": [
     {
@@ -125,7 +139,8 @@
       "ctr": 0,
       "position": 81.6,
       "incidents": [
-        "Snippet/hub deploy (674502f + 23a7b79): breadth descriptions, hub links on stories, schema honesty"
+        "Snippet/hub deploy (674502f + 23a7b79): breadth descriptions, hub links on stories, schema honesty",
+        "Google de-indexed 11 of 12 indexed hub/category pages between URL-Inspection sweeps (Aug 25 -> 27), without re-crawling"
       ]
     },
     {
@@ -135,20 +150,56 @@
       "ctr": 0,
       "position": 79,
       "incidents": [
+        "Google de-indexed 11 of 12 indexed hub/category pages between URL-Inspection sweeps (Aug 25 -> 27), without re-crawling",
         "Redirect loop on a news-sitemap URL found, root-caused and cleared (9fd5991)",
         "Archive write burst stalled: 14 h on Aug 26, 10 h on Aug 27, with every surface answering 200"
       ]
     },
     {
       "date": "2026-08-27",
-      "clicks": 0,
-      "impressions": 4,
-      "ctr": 0,
-      "position": 81.8,
+      "clicks": 2,
+      "impressions": 19,
+      "ctr": 0.1053,
+      "position": 69.6,
       "incidents": [
+        "Google de-indexed 11 of 12 indexed hub/category pages between URL-Inspection sweeps (Aug 25 -> 27), without re-crawling",
         "Archive write burst stalled: 14 h on Aug 26, 10 h on Aug 27, with every surface answering 200",
         "Write burst restored to ~2/hour and made phase-independent (e1b4cfb)"
       ]
+    },
+    {
+      "date": "2026-08-28",
+      "clicks": 1,
+      "impressions": 6,
+      "ctr": 0.1667,
+      "position": 75.5,
+      "incidents": []
+    },
+    {
+      "date": "2026-08-29",
+      "clicks": 0,
+      "impressions": 7,
+      "ctr": 0,
+      "position": 68,
+      "incidents": [
+        "Live story revalidation window rotated so all 726 live stories stay fresh (a0d26f0)"
+      ]
+    },
+    {
+      "date": "2026-08-30",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 50.5,
+      "incidents": []
+    },
+    {
+      "date": "2026-08-31",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": []
     }
   ]
 }

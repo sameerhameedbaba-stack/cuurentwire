@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-27T21:32:29.835Z",
+  "generatedAt": "2026-08-31T14:43:42.342Z",
   "window": {
-    "startDate": "2026-07-31",
-    "endDate": "2026-08-27",
+    "startDate": "2026-08-04",
+    "endDate": "2026-08-31",
     "days": 28
   },
   "webQueries": [
@@ -101,6 +101,12 @@
       "impressions": 3,
       "clicks": 0,
       "position": 97.3
+    },
+    {
+      "query": "sigal chattah",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 68.3
     },
     {
       "query": "what is the hurricane called right now",
@@ -247,12 +253,6 @@
       "position": 57
     },
     {
-      "query": "sigal chattah",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 58.5
-    },
-    {
       "query": "telus outagw",
       "impressions": 2,
       "clicks": 0,
@@ -299,6 +299,12 @@
       "impressions": 2,
       "clicks": 0,
       "position": 81
+    },
+    {
+      "query": "what's the current national debt",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 84.5
     },
     {
       "query": "who will be florida's next governor",
@@ -455,6 +461,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 50
+    },
+    {
+      "query": "cancer vacines",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 87
     },
     {
       "query": "category 1 hurricane",
@@ -649,6 +661,12 @@
       "position": 83
     },
     {
+      "query": "earthquake aftershocks today",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 91
+    },
+    {
       "query": "elijah manley x",
       "impressions": 1,
       "clicks": 0,
@@ -793,6 +811,12 @@
       "position": 14
     },
     {
+      "query": "how many aftershocks today",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 87
+    },
+    {
       "query": "how many americans are vaccinated",
       "impressions": 1,
       "clicks": 0,
@@ -851,6 +875,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 60
+    },
+    {
+      "query": "is america heading towards socialism",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 86
     },
     {
       "query": "is congress on a break",
@@ -1061,6 +1091,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 98
+    },
+    {
+      "query": "most recent hurricane in us",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 81
     },
     {
       "query": "moversedge comcast",
@@ -1609,12 +1645,6 @@
       "position": 100
     },
     {
-      "query": "what's the current national debt",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 85
-    },
-    {
       "query": "what's the current us debt",
       "impressions": 1,
       "clicks": 0,
@@ -1661,6 +1691,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 94
+    },
+    {
+      "query": "who discovered otter",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 100
     },
     {
       "query": "who owns oncourse home solutions",
@@ -1945,8 +1981,8 @@
     }
   ],
   "counts": {
-    "webRows": 292,
+    "webRows": 298,
     "newsRows": 0,
-    "pageQueryRows": 299
+    "pageQueryRows": 305
   }
 }
