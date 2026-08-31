@@ -1,5 +1,33 @@
 # SEO Backlog
 
+**CHANNELS SESSION 2026-09-01 (owner clicking, live-verified): items 3, 4
+and 5 of the shift queue below are DONE or resolved.**
+- **Bluesky: LIVE end-to-end.** @currentwire.bsky.social (login
+  support@currentwire.us), profile + brand avatar set, first post verified
+  on the public API (SCOTUS-ballroom story, link card + thumbnail).
+  `bluesky-post.yml` posts the newest unshared /rss story every 3 h
+  (~8/day ceiling, stateless dedup via own feed). Secret
+  BLUESKY_APP_PASSWORD took three attempts to land — the workflow's
+  publicly-readable assert step (2a37b2f) is how a missing secret is
+  diagnosed without log access; keep that pattern. Manual fire: touch
+  `.github/triggers/bluesky` and push.
+- **Newsletter: form LIVE sitewide** (footer, plain HTML POST to
+  Buttondown — no key, no client JS). Buttondown account `currentwire`
+  (login support@currentwire.us, mail at mail.hostinger.com) is in
+  standard new-sender review, "a few hours to a day"; review form
+  submitted 2026-09-01. Subscribers can sign up NOW; sending unlocks on
+  approval. THEN: daily RSS-to-email automation (paid feature or API —
+  check API availability on free tier once approved; the /settings/api
+  URL 404s while under review).
+- **Telegram: SKIPPED by owner** ("skip telegram") — do not re-raise
+  unless the owner does.
+- **Bing PubHub: DOES NOT EXIST anymore** (bing.com/pubhub redirects
+  REDIRERR to the homepage) — Bing news inclusion is automatic via
+  Webmaster signals, already in place. Do not hunt for an application.
+- Daily loop: verify one bluesky-post run per day is green and eventually
+  add its referral traffic to the weekly scoreboard; watch the Buttondown
+  approval email in the owner conversation (owner checks mail, not us).
+
 **STRATEGY SHIFT 2026-09-01 (owner-directed: "include changing strategy. i
 wont wanna fail") — see the new section at the top of `seo/STRATEGY.md`; it
 REPRIORITIZES this backlog and sits ABOVE the 2026-08-31 ranking below.**
