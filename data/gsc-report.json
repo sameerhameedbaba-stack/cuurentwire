@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T14:43:42.342Z",
+  "generatedAt": "2026-08-31T15:21:11.642Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
@@ -1192,21 +1192,21 @@
     }
   },
   "liveCoverage": {
-    "clusters": 742,
-    "singleSource": 710,
-    "twoSource": 18,
-    "threeSource": 9,
-    "fourPlus": 5,
-    "multiSourcePct": 4.3,
-    "threePlusPct": 1.9,
-    "fourPlusPct": 0.7,
+    "clusters": 738,
+    "singleSource": 699,
+    "twoSource": 28,
+    "threeSource": 7,
+    "fourPlus": 4,
+    "multiSourcePct": 5.3,
+    "threePlusPct": 1.5,
+    "fourPlusPct": 0.5,
     "medianIndependentPublications": 1,
     "meanIndependentPublications": 1.08,
-    "pressReleasePct": 0.5,
+    "pressReleasePct": 0.4,
     "opinionPct": 1.2,
-    "generalCategoryPct": 21.2
+    "generalCategoryPct": 20.9
   },
-  "liveDatasetVersion": "20260831T143945Z-55f517",
-  "ledgerStories": 3876,
+  "liveDatasetVersion": "20260831T150653Z-b3e0f8",
+  "ledgerStories": 3976,
   "warnings": []
 }
