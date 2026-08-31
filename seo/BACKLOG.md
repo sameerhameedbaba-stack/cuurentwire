@@ -156,6 +156,21 @@ the Monday schedules simply did not fire.
 authenticated issue reads and `gh run` inspection), but it is **no longer
 blocking anything**.
 
+**The trigger immediately exposed a latent bug worth keeping in mind.** Both
+workflows fired correctly and both FAILED — every data step succeeded and only
+the commit-back failed. Each ended in a bare `git push`, so a concurrent write
+to `main` rejects it non-fast-forward and the run **discards work that already
+cost real quota** (a Search Console API pull; a full Playwright measurement).
+It was latent for as long as the two ran alone on Mondays 23 minutes apart;
+firing both in one push, with a docs push landing between them, made three
+writers on one branch. Both now rebase onto `origin/main` and retry 5 times
+with jittered backoff, and emit `::error::` naming the work as *generated but
+unsaved* if they truly cannot land.
+
+*Worth generalising: a scheduled job that writes back to the repo is a writer
+on a shared branch, and "it has never collided" is a property of the schedule,
+not of the job. Any new workflow that commits results needs this loop.*
+
 **The GSC dashboards were never blocked — do not report them as blocked again.**
 Search Console answers "you don't have access to this property" on the default
 Chrome profile because the property belongs to `ovyajewels@gmail.com`, not
