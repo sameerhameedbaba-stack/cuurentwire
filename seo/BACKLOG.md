@@ -110,11 +110,29 @@ crawlable, citable value a fix creates per unit of risk.
    which is the cost control the playbook protects. Recorded with its number so
    a future run can decide; do not ship it without re-reading that constraint.
 
-**FRESH GSC READ 2026-08-31 (dashboard, not the API file) — it corrects a
-framing this backlog has carried for a week.** Search performance, 28 days
-through Aug 29: **32 clicks / 1,940 impressions / 1.6% CTR / position 32.7 /
-298 queries**, against the 08-21 baseline of 12 / 1,080 / 1.1% / 21.3. Clicks
-+167%, impressions +80%. **Milestone M1 (100 clicks/28d) is at 32.**
+**FRESH GSC 2026-08-31 — workflow data (`30ed70f`), and the 28-day rollup is
+MISLEADING. Read the weekly trend, not the window.** 28 days: 32 clicks /
+1,943 impressions / 1.6% CTR / position 32.7 / 298 queries, against the 08-21
+baseline of 12 / 1,080 / 1.1% / 21.3. That looks like growth and is not:
+
+| Week | Clicks | Impressions |
+|---|---|---|
+| Aug 15-21 | 26 | **1,641** |
+| Aug 22-28 | 6 | **282** |
+
+**-83% impressions, -77% clicks week over week.** 1,641 of the 28-day total's
+1,943 impressions (84%) come from Aug 15-21, before the outages; the peak day
+was Aug 16 at 438. Daily since: 19 (Aug 27), 6, 7, 2, 0 — `lagDays: 3`, so the
+last three firm up later, but Aug 27-28 do not. `explained: true` (the incident
+ledger covers it) means explained, **not over**. Milestone M1 reads 32 and is
+moving away on the current rate. **A future run must not quote the 28-day
+rollup as a trend — this one nearly did.**
+
+Striking distance came back **unchanged** on fresh data: same 26 entries, same
+top three (espn nba coverage cuts 69i/0c pos 9; jd vance 19i pos 7.2; trump bbc
+14i pos 12.4). Stable across four days, which strengthens the CTR case.
+`newsRows: 0` confirmed fresh. Indexation sweep unchanged: `indexed 1,
+not-crawled 22, crawled-not-indexed 11`.
 
 Page indexing report, same session: **Indexed 1,520.** Not indexed 793 —
 Discovered-not-indexed **429**, noindex-by-design 211, 404 **69**, redirect 69,
