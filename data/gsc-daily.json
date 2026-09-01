@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-08-31T15:21:11.642Z",
+  "generatedAt": "2026-09-01T22:35:43.668Z",
   "window": {
-    "startDate": "2026-08-04",
-    "endDate": "2026-08-31",
+    "startDate": "2026-08-05",
+    "endDate": "2026-09-01",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
     "insufficient": false,
     "window": {
-      "from": "2026-08-22",
-      "to": "2026-08-28"
+      "from": "2026-08-23",
+      "to": "2026-08-29"
     },
     "clicks": {
-      "current": 6,
-      "prior": 26,
-      "deltaPct": -76.9
+      "current": 4,
+      "prior": 25,
+      "deltaPct": -84
     },
     "impressions": {
-      "current": 282,
-      "prior": 1641,
-      "deltaPct": -82.8
+      "current": 234,
+      "prior": 1611,
+      "deltaPct": -85.5
     },
     "explained": true
   },
@@ -188,18 +188,30 @@
     {
       "date": "2026-08-30",
       "clicks": 0,
-      "impressions": 2,
+      "impressions": 9,
       "ctr": 0,
-      "position": 50.5,
+      "position": 81.1,
       "incidents": []
     },
     {
       "date": "2026-08-31",
+      "clicks": 1,
+      "impressions": 4,
+      "ctr": 0.25,
+      "position": 63,
+      "incidents": [
+        "Production stopped shipping code: every Vercel deploy fails since 2026-08-31 21:39 UTC (site itself stays up)"
+      ]
+    },
+    {
+      "date": "2026-09-01",
       "clicks": 0,
       "impressions": 0,
       "ctr": 0,
       "position": 0,
-      "incidents": []
+      "incidents": [
+        "News-sitemap canonical URL was 308-ing to a merged-away duplicate; archive row cache re-keyed per story (53ad4b1)"
+      ]
     }
   ]
 }

@@ -1,44 +1,44 @@
 {
-  "generatedAt": "2026-08-31T15:21:11.642Z",
+  "generatedAt": "2026-09-01T22:35:43.668Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-08-04",
-    "endDate": "2026-08-31",
+    "startDate": "2026-08-05",
+    "endDate": "2026-09-01",
     "days": 28
   },
   "minSampleImpressions": 100,
   "surfaces": {
     "web": {
-      "rows": 589,
+      "rows": 590,
       "total": {
-        "urls": 589,
-        "impressions": 2067,
-        "clicks": 45,
-        "ctr": 0.0218,
-        "avgPosition": 31.2,
-        "impressionsPerUrl": 3.51,
+        "urls": 590,
+        "impressions": 2078,
+        "clicks": 46,
+        "ctr": 0.0221,
+        "avgPosition": 31.5,
+        "impressionsPerUrl": 3.52,
         "clicksPerUrl": 0.08,
         "sufficientSample": true
       },
       "templates": {
         "home": {
           "urls": 1,
-          "impressions": 31,
-          "clicks": 7,
-          "ctr": 0.2258,
-          "avgPosition": 10.8,
-          "impressionsPerUrl": 31,
-          "clicksPerUrl": 7,
+          "impressions": 32,
+          "clicks": 8,
+          "ctr": 0.25,
+          "avgPosition": 10.5,
+          "impressionsPerUrl": 32,
+          "clicksPerUrl": 8,
           "sufficientSample": false
         },
         "story": {
-          "urls": 552,
-          "impressions": 1858,
+          "urls": 553,
+          "impressions": 1868,
           "clicks": 23,
-          "ctr": 0.0124,
-          "avgPosition": 31.9,
-          "impressionsPerUrl": 3.37,
+          "ctr": 0.0123,
+          "avgPosition": 32.2,
+          "impressionsPerUrl": 3.38,
           "clicksPerUrl": 0.04,
           "sufficientSample": true
         },
@@ -769,7 +769,7 @@
     "method": "day-granular GSC data; hours = end of first impression day (UTC) minus publishedAt (upper bound)",
     "windowDays": 14,
     "minStoryAgeHours": 72,
-    "eligibleStories": 3223,
+    "eligibleStories": 3260,
     "discoveredStories": 0,
     "discoveredPct": 0,
     "within24hPct": 0,
@@ -779,13 +779,13 @@
   },
   "storiesBySourceCount": {
     "1": {
-      "urls": 488,
-      "impressions": 1605,
+      "urls": 489,
+      "impressions": 1615,
       "clicks": 22,
-      "ctr": 0.0137,
-      "avgPosition": 28.9,
-      "impressionsPerUrl": 3.29,
-      "clicksPerUrl": 0.05,
+      "ctr": 0.0136,
+      "avgPosition": 29.3,
+      "impressionsPerUrl": 3.3,
+      "clicksPerUrl": 0.04,
       "sufficientSample": true
     },
     "2": {
@@ -850,13 +850,13 @@
     }
   },
   "archiveSources": {
-    "requestedIds": 514,
-    "matchedIds": 514,
+    "requestedIds": 515,
+    "matchedIds": 515,
     "chunks": 3,
     "failedChunks": 0
   },
   "urlSignals": {
-    "stories": 514,
+    "stories": 515,
     "truncated": false,
     "written": true
   },
@@ -893,9 +893,9 @@
     },
     {
       "url": "https://currentwire.us/",
-      "impressions": 31,
-      "clicks": 7,
-      "position": 10.8
+      "impressions": 32,
+      "clicks": 8,
+      "position": 10.5
     },
     {
       "url": "https://currentwire.us/story/why-americans-now-hate-each-other-more-than-ever-c7c39f3dad971",
@@ -920,6 +920,12 @@
       "impressions": 21,
       "clicks": 1,
       "position": 12.7
+    },
+    {
+      "url": "https://currentwire.us/story/congress-breaks-for-summer-recess-with-little-to-show-c4e2a216c4c37",
+      "impressions": 21,
+      "clicks": 0,
+      "position": 77.5
     },
     {
       "url": "https://currentwire.us/story/federal-surveillance-operation-targeted-progressive-groups-unions-in-minnesota-d-c81212c04f1c5",
@@ -956,12 +962,6 @@
       "impressions": 20,
       "clicks": 0,
       "position": 8.4
-    },
-    {
-      "url": "https://currentwire.us/story/congress-breaks-for-summer-recess-with-little-to-show-c4e2a216c4c37",
-      "impressions": 18,
-      "clicks": 0,
-      "position": 75.3
     },
     {
       "url": "https://currentwire.us/story/days-long-telus-outage-leaves-calgary-residents-frustrated-cc663e07c79fd",
@@ -1060,6 +1060,12 @@
       "position": 8.3
     },
     {
+      "url": "https://currentwire.us/story/trump-rips-fox-news-anchor-shannon-bream-beyond-redemption-c6c48e936f079",
+      "impressions": 10,
+      "clicks": 0,
+      "position": 56.8
+    },
+    {
       "url": "https://currentwire.us/story/u-s-and-iran-miss-peace-talks-deadline-and-alaska-florida-and-wyoming-primaries-cda731d12333e",
       "impressions": 10,
       "clicks": 0,
@@ -1126,12 +1132,6 @@
       "position": 40
     },
     {
-      "url": "https://currentwire.us/story/trump-rips-fox-news-anchor-shannon-bream-beyond-redemption-c6c48e936f079",
-      "impressions": 8,
-      "clicks": 0,
-      "position": 50.1
-    },
-    {
       "url": "https://currentwire.us/sources",
       "impressions": 7,
       "clicks": 2,
@@ -1144,6 +1144,12 @@
       "position": 61.6
     },
     {
+      "url": "https://currentwire.us/story/xteinks-tiny-e-readers-are-getting-access-to-free-books-through-libby-c151451d01913",
+      "impressions": 7,
+      "clicks": 1,
+      "position": 29
+    },
+    {
       "url": "https://currentwire.us/terms",
       "impressions": 7,
       "clicks": 1,
@@ -1154,12 +1160,6 @@
       "impressions": 7,
       "clicks": 0,
       "position": 4.9
-    },
-    {
-      "url": "https://currentwire.us/privacy",
-      "impressions": 7,
-      "clicks": 0,
-      "position": 6.6
     }
   ],
   "queries": {
@@ -1171,42 +1171,42 @@
   },
   "daily": {
     "written": true,
-    "days": 19,
+    "days": 20,
     "trend": {
       "insufficient": false,
       "window": {
-        "from": "2026-08-22",
-        "to": "2026-08-28"
+        "from": "2026-08-23",
+        "to": "2026-08-29"
       },
       "clicks": {
-        "current": 6,
-        "prior": 26,
-        "deltaPct": -76.9
+        "current": 4,
+        "prior": 25,
+        "deltaPct": -84
       },
       "impressions": {
-        "current": 282,
-        "prior": 1641,
-        "deltaPct": -82.8
+        "current": 234,
+        "prior": 1611,
+        "deltaPct": -85.5
       },
       "explained": true
     }
   },
   "liveCoverage": {
-    "clusters": 738,
-    "singleSource": 699,
-    "twoSource": 28,
-    "threeSource": 7,
-    "fourPlus": 4,
-    "multiSourcePct": 5.3,
-    "threePlusPct": 1.5,
-    "fourPlusPct": 0.5,
+    "clusters": 756,
+    "singleSource": 725,
+    "twoSource": 22,
+    "threeSource": 3,
+    "fourPlus": 6,
+    "multiSourcePct": 4.1,
+    "threePlusPct": 1.2,
+    "fourPlusPct": 0.8,
     "medianIndependentPublications": 1,
-    "meanIndependentPublications": 1.08,
-    "pressReleasePct": 0.4,
-    "opinionPct": 1.2,
-    "generalCategoryPct": 20.9
+    "meanIndependentPublications": 1.07,
+    "pressReleasePct": 1.3,
+    "opinionPct": 1.1,
+    "generalCategoryPct": 21
   },
-  "liveDatasetVersion": "20260831T150653Z-b3e0f8",
-  "ledgerStories": 3976,
+  "liveDatasetVersion": "20260901T222114Z-1bc7dd",
+  "ledgerStories": 4711,
   "warnings": []
 }
