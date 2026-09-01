@@ -26,6 +26,22 @@ on:
   schedule:
     - cron: "*/30 * * * *"
   workflow_dispatch:
+  # On-demand independent probe: change .github/triggers/uptime (a timestamp
+  # line) and push. Added 2026-09-02, when the daily loop's own verification
+  # polling tripped Vercel's bot mitigation and every surface — including
+  # robots.txt and all three sitemaps — answered 403
+  # `X-Vercel-Mitigated: challenge` from this machine's IP. That is
+  # indistinguishable from an outage when you only have one vantage point,
+  # and the standing alerting rule makes an outage the run's only priority,
+  # so guessing wrong is expensive in both directions. This workflow probes
+  # from GitHub's IPs, which is exactly the second opinion that was missing;
+  # the schedule fires irregularly (21:34, 18:42, 15:03, 10:21 on 2026-09-01),
+  # so waiting for the next one is not an answer.
+  # .github is excluded from vercel.json's ignoreCommand, so this never
+  # triggers a deploy.
+  push:
+    paths:
+      - ".github/triggers/uptime"
 
 permissions:
   issues: write
