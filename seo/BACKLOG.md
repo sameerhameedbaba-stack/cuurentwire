@@ -64,6 +64,65 @@ crawlable, citable value a fix creates per unit of risk.
 
 ## Ranked now — rebuilt from 2026-08-31 evidence
 
+**0a. `archive-sitemap.xml` HAS NEVER BEEN PROCESSED BY GOOGLE — 13,593 URLs,
+92% of everything this site publishes. OWNER ACTION, 30 seconds.** Found
+2026-08-31 only because the owner pushed back on an indexing figure in the
+weekly report. GSC's Sitemaps report lists **two** sitemaps:
+
+```
+news-sitemap.xml    Submitted Aug 14   Last read Aug 24   618 discovered
+sitemap.xml         Submitted Aug 14   Last read Aug 24   335 discovered
+                                                    total 953
+GSC indexed pages                                         951
+archive-sitemap.xml  13,593 URLs  in robots.txt  ABSENT FROM GSC
+```
+
+**953 submitted, 951 indexed.** That is not proof of causation — Google knows
+~1,700 URLs beyond the sitemaps — but indexation tracking submitted-sitemap
+membership to within 0.2% is the strongest lever on this board. Both sitemaps
+were also **last read Aug 24, seven days ago**.
+
+`PLAYBOOK.md`'s coverage map has asserted since 2026-08-24 that all three are
+submitted. **Every run since verified that the file serves 200, which is not
+the same question.** Fix: submit `https://currentwire.us/archive-sitemap.xml`
+in GSC → Sitemaps → "Add a new sitemap". Cannot be automated from here — the
+extension cannot click Search Console's controls (see below) — and the loop
+must not assume it is done: **re-check the Sitemaps report reads three rows.**
+
+*Honest caveat to weigh first: Google is already declining pages it has
+crawled (item 0b). Submitting 13,593 more thin URLs to a site with a value
+problem may grow the "Discovered/Crawled – not indexed" buckets rather than
+the indexed one. It is still worth doing — Google cannot index what it has not
+been told about — but expect it to expose the value problem, not solve it.*
+
+**0b. Google is de-indexing the site at scale, and it accelerated this week.**
+GSC Page indexing (`Last update: 8/28`): **951 indexed, 1,720 not indexed.**
+The bucket that moved is **"Crawled – currently not indexed": 10 → 562** —
+Google fetched those pages and declined them. "Discovered – not indexed"
+429 → 785. This is Google's own quality verdict, and it correlates exactly
+with the −83% week-over-week impression collapse.
+
+**Checked, and it is NOT the site noindexing itself:** the thin-story policy
+(`lib/seo/story-indexing.ts`) noindexes single-source stories past a 14-day
+window with zero GSC impressions, and the site turned 14 days old during this
+window — the obvious suspect. Probed the **33 oldest archived story URLs**
+live: **33 of 33 serve `index, follow`**, and "Excluded by noindex" is flat at
+211 (the deliberate ones). Do not re-investigate the thin-story policy as the
+cause.
+
+This is STRATEGY BET 2 arriving as a measurement instead of a thesis: an
+aggregator's thin pages are being refused at scale. It makes item 1 (durable
+hub value) the response, not a nice-to-have — but nothing on this list fixes
+a value verdict quickly, and the report should stop implying otherwise.
+
+**0c. Nothing in this repo watches indexation or sitemap processing.** Which is
+how 0a went unnoticed for a week and 0b for days. `seo-health.mjs` checks that
+sitemaps serve 200 and parse; no check asks *did Google read it* or *is the
+indexed count falling*. The GSC API exposes both (`sitemaps.list` gives
+`lastDownloaded` and `contents`; the indexation sweep already runs). Add both
+to `gsc.yml` with a fail on: a sitemap unread for >72 h, or indexed pages down
+>10% week over week. **This is the item that would have caught the other two.**
+
 1. **Topic hubs carry nothing durable, and collapse to noindex when the news
    cycle moves on.** NEW, and it is the week's clearest measured gap. Live
    today: `/topic/artificial-intelligence` 2,012 words / 33 links / indexable,

@@ -142,7 +142,7 @@ reach ALL search engines, not just Google, at $0 and zero recurring effort.
 
 | Engine | How results arrive | Status |
 |---|---|---|
-| Google (Search + News + Discover) | GSC-verified; sitemap.xml + news-sitemap.xml + archive-sitemap.xml submitted; News eligibility is automatic (no submission program exists anymore) | ✅ automatic |
+| Google (Search + News + Discover) | GSC-verified; **only sitemap.xml and news-sitemap.xml are actually submitted — corrected 2026-08-31**; archive-sitemap.xml (13,593 URLs) is advertised in robots.txt and has NEVER been processed by Google (BACKLOG 0a); News eligibility is automatic (no submission program exists anymore) | ⚠️ **partial — owner action open** |
 | Bing | Bing Webmaster Tools verified (GSC import, 2026-08-19), 3 sitemaps submitted; IndexNow pings every new story within ~30 min | ✅ automatic |
 | DuckDuckGo | Sources results from Bing — covered by the Bing work above; no own submission program | ✅ via Bing |
 | Yahoo | Powered by Bing | ✅ via Bing |
@@ -150,8 +150,14 @@ reach ALL search engines, not just Google, at $0 and zero recurring effort.
 | Brave Search | Independent index built from user browsing (Web Discovery); no submission program exists — nothing to do | ✅ nothing possible |
 | AI engines (ChatGPT, Perplexity, Claude, Gemini) | robots.txt allows all crawlers (verified: User-Agent * / Allow /); llms.txt published; citable permanent URLs | ✅ automatic |
 
-Maintenance: the daily seo-health check already verifies robots.txt, the three
-sitemaps, and the IndexNow key file — any regression here fails loudly.
+Maintenance: the daily seo-health check verifies that robots.txt, the three
+sitemaps and the IndexNow key file **serve 200 and parse**. **That is a check on
+our server, not on Google.** It cannot tell whether Google has read a sitemap,
+and on 2026-08-31 it had been passing for a week while archive-sitemap.xml —
+92% of the site's URLs — sat unprocessed and the other two went unread for
+seven days. Use GSC's `sitemaps.list` (`lastDownloaded`, `contents`) for the
+question this table actually claims to answer. See
+`MEMORY/2026-08-31-serving-200-is-not-being-read.md`.
 
 Re-verified 2026-08-24 by fetch, before that day's outage: `robots.txt` 200
 advertising all three sitemaps with `User-Agent: *` / `Allow: /`,
