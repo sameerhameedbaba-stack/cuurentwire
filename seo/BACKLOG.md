@@ -405,6 +405,55 @@ commit SHA in a response header or a tiny `/api/version` and fail when it has
 not changed across a deploy that should have changed it. That is the check
 whose absence made a 24-hour shipping outage invisible.
 
+## 00b. Three `data/` files are compiled into the app, and `data/` is excluded from deploys — OPEN
+
+Found 2026-09-02 as a side-effect of item 00. `vercel.json`'s ignoreCommand has
+excluded `data` since 2026-08-24 (ISR cost control — report commits were
+deploying ~12×/day and every deploy wipes the ISR cache; the playbook protects
+this and it must NOT simply be dropped). But three files under `data/` are
+**static imports compiled into the bundle**:
+
+| file | imported by | governs |
+|---|---|---|
+| `data/gsc-url-signals.json` | `lib/seo/gsc-signals.ts` | the thin-story **noindex** policy |
+| `data/lost-stories.json` | `lib/news/story-resolution.ts` | tombstoned 404s vs crawl-poisoning 500s |
+| `data/benchmark-history.json` | `app/admin/status/page.tsx` | admin display only |
+
+`scripts/gsc-report.mjs` writes nothing outside `data/`, so **the weekly GSC
+commit never deploys.** Verified by evaluating the real ignoreCommand against
+the last three gsc-bot commits — `520caef`, `30ed70f`, `e9f6a36` — all exit
+**0 = skip**. `lib/seo/gsc-signals.ts` asserted the exact opposite in a comment
+("the weekly commit triggers a deploy and every page sees the same report");
+that comment is corrected in this run's commit.
+
+**What it actually costs.** Production serves whatever copy of these files was
+compiled into the last build that shipped for some *other* reason. For the GSC
+signals the staleness fallback fails safe — a deployed report past
+`GSC_SIGNALS_MAX_AGE_DAYS` (14) counts as NO data and the policy noindexes
+nothing — so the thin-story policy is mostly **inert**, not wrong. That also
+reconciles a loose end in item 0b: the 33-URL sweep that found "33 of 33 serve
+`index, follow`" is exactly what an inert policy looks like, so it is weaker
+evidence of "the site is not noindexing itself" than it was read as. For
+`lost-stories.json` the failure is sharper: a tombstone commit touching only
+`data/` would never take effect, and today's worked only because it happened to
+touch `tests/` too.
+
+**The fix, and why it is not shipped today.** Do not drop `:(exclude)data`.
+AND a second check onto the ignoreCommand so it skips only when both are quiet:
+
+```
+git diff --quiet PREV HEAD -- . ':(exclude)seo' ':(exclude)docs' \
+  ':(exclude)data' ':(exclude).github' ':(exclude)*.md' \
+&& git diff --quiet PREV HEAD -- data/lost-stories.json \
+     data/gsc-url-signals.json data/benchmark-history.json
+```
+
+Deliberately **not shipped 2026-09-02**: deploys were already failing that day
+(item 00), and changing deploy configuration during a deploy incident adds a
+second variable to a problem that has only one. Ship it once builds are green,
+and verify by making a `data/gsc-url-signals.json`-only commit and confirming
+it deploys.
+
 **SHIPPED 2026-09-02 (`6c63626`) — the dead-image placeholder every image
 shipped and one image showed.** The homepage's known 9.3 s of pre-paint main
 thread (item 3) had no named cause; splitting the document instead of guessing

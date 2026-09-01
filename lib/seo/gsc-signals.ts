@@ -8,8 +8,32 @@ import signalsFile from "@/data/gsc-url-signals.json";
  * and lists every /story/ URL that earned at least one impression on the
  * web or news surface in the last 28 days, keyed by the cluster id at the
  * end of the URL, as `[impressions, clicks]` sums across the two surfaces.
- * The app imports it statically, so the weekly commit triggers a deploy and
- * every page sees the same report.
+ * The app imports it statically — but the weekly commit does NOT trigger a
+ * deploy, and this comment claimed the opposite until 2026-09-02.
+ * `vercel.json`'s ignoreCommand has excluded `data` since 2026-08-24 (ISR
+ * cost control: report commits were deploying ~12x/day and every deploy wipes
+ * the ISR cache), and `scripts/gsc-report.mjs` writes nothing outside `data/`,
+ * so the gsc-bot commit evaluates to "skip build". Verified against the last
+ * three: 520caef, 30ed70f and e9f6a36 all exit 0 (skip).
+ *
+ * So what production actually serves is whatever copy of this file was
+ * compiled into the last build that shipped for some OTHER reason. The
+ * staleness fallback below is therefore load-bearing rather than defensive,
+ * and it fails safe: a deployed report past GSC_SIGNALS_MAX_AGE_DAYS counts as
+ * NO data and the policy stops noindexing anything. The cost is that the
+ * thin-story policy is usually inert, not that it noindexes wrongly.
+ *
+ * The fix is NOT to drop `:(exclude)data` — that re-creates the 2026-08-24
+ * cost blowout. It is to re-include only the three files compiled into the
+ * app, by ANDing a second check onto the ignoreCommand:
+ *
+ *   … ':(exclude)data' … && git diff --quiet PREV HEAD --
+ *       data/lost-stories.json data/gsc-url-signals.json
+ *       data/benchmark-history.json
+ *
+ * which skips only when both are quiet. Filed in seo/BACKLOG.md; deliberately
+ * not shipped on 2026-09-02 because deploys were already failing that day and
+ * changing deploy config mid-incident adds a second variable.
  *
  * The thin-story index policy (lib/seo/story-indexing.ts) consumes it in
  * two ways: a story Google showed to anyone is protected from noindex, and
