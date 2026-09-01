@@ -1,5 +1,5 @@
 {
-  "provenance": "Stories first seen 2026-08-19..21 whose archive rows were never written because the Neon egress outage was rejecting all queries (seo/BACKLOG.md item 1; data 2026-08-20/21). Their URLs served a permanent retriable 500 via the batched-write shield in lib/news/story-resolution.ts, which poisoned crawl health after the outage ended. Listed ids answer a clean 404 instead. Extracted from data/url-ledger.json (lastOk < 2026-08-22, firstSeen in the outage window) on 2026-08-25.",
+  "provenance": "Stories first seen 2026-08-19..21 whose archive rows were never written because the Neon egress outage was rejecting all queries (seo/BACKLOG.md item 1; data 2026-08-20/21). Their URLs served a permanent retriable 500 via the batched-write shield in lib/news/story-resolution.ts, which poisoned crawl health after the outage ended. Listed ids answer a clean 404 instead. Extracted from data/url-ledger.json (lastOk < 2026-08-22, firstSeen in the outage window) on 2026-08-25. CORRECTED 2026-09-02: two ids were missing because the extraction filtered on lastOk < 2026-08-22, and in JS `null < \"2026-08-22\"` is false — so URLs that had NEVER answered 200 (lastOk: null), the most certainly-dead cases of all, were the exact ones the filter skipped. ccddfbfe6be27 (firstSeen 2026-08-20T21:53:36.200Z) and cf6482c8299dc (firstSeen 2026-08-20T22:18:06.000Z) both carry lastOk: null in data/url-ledger.json and had served a 500 for 12 days, keeping .github/workflows/url-survival.yml permanently red (auto-alert issue #6) and poisoning crawl health on two URLs. Any future extraction must treat lastOk == null as never-alive, not as not-matching.",
   "ids": [
     "c0016f37d6306",
     "c04cdbcddc61d",
@@ -172,6 +172,7 @@
     "ccb5a711ea3c7",
     "ccb9d93691635",
     "ccd48ec784c12",
+    "ccddfbfe6be27",
     "cce61d8707797",
     "ccf685a3d4237",
     "ccf9f5d610e0b",
@@ -195,6 +196,7 @@
     "cefa5a28676cd",
     "cf344793bfb50",
     "cf419c0af3c1f",
+    "cf6482c8299dc",
     "cf692f6546fc2",
     "cf6fd64bdb1c0",
     "cf83b9e4e5273",

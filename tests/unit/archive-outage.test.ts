@@ -188,6 +188,33 @@ describe("resolveStoryRequest during an archive outage", () => {
     expect(cleanMiss.kind).toBe("not-found");
   });
 
+  it("tombstones the outage URLs that NEVER answered 200, not just the ones that stopped", async () => {
+    // The 2026-08-25 extraction filtered data/url-ledger.json on
+    // `lastOk < "2026-08-22"`, and in JS `null < "2026-08-22"` is FALSE — so
+    // URLs carrying `lastOk: null`, the ones that never served a single 200
+    // and are therefore the most certainly dead, were exactly the ones the
+    // filter skipped. Two survived that way and served a 500 for twelve days,
+    // holding url-survival.yml permanently red (auto-alert #6) so a genuine
+    // new failure could not have been seen. Tombstoned 2026-09-02.
+    for (const id of ["ccddfbfe6be27", "cf6482c8299dc"]) {
+      const resolution = await resolveStoryRequest(`a-retired-headline-${id}`, lookups());
+      expect(resolution.kind, `${id} must answer a clean 404, not a 500`).toBe("not-found");
+    }
+    // The same probe run also reported c09b64edf8f88 as unavailable, and it
+    // must NOT be tombstoned: the ledger shows lastOk 2026-09-01T11:43:09.260Z,
+    // so it was alive that very run and the failure was a transient fetch
+    // error. Tombstoning a live story would 404 real content permanently.
+    const live = await resolveStoryRequest(
+      "palestinian-woman-and-nbc-news-team-attacked-c09b64edf8f88",
+      lookups({
+        getArchived: async () => {
+          throw new ArchiveUnavailableError("story lookup", new Error("timeout"));
+        },
+      }),
+    );
+    expect(live.kind).not.toBe("not-found");
+  });
+
   it("an archive that ANSWERS 'no such story' ALSO refuses to 404 a published-looking slug", async () => {
     // Premise change, 2026-08-22. This case asserted "not-found" while every
     // 5-minute refresh wrote straight through to Postgres, so an archive that

@@ -179,6 +179,28 @@ to `gsc.yml` with a fail on: a sitemap unread for >72 h, or indexed pages down
    bounces, so it is an owner-visible decision, not a silent one.
    **Discover eligibility depends on LCP < 2.5 s and this is nowhere near it**,
    which is why it outranks the CTR work below.
+
+   **PARTLY ADDRESSED 2026-09-02 (`6c63626`) — and the payload was measured
+   properly for the first time, which corrects two numbers in this item.**
+   Splitting the homepage document by section: **62% of it (213,382 of 343,323
+   bytes) is the RSC flight payload**, not markup — the serialized React tree
+   Next embeds and parses on the main thread during hydration. And the page
+   carries **270 links, not 60**. The "60-link payload" thread above was
+   sized against the wrong number; re-derive before acting on it.
+
+   Shipped from that: the dead-image placeholder was crossing the client
+   boundary as a rendered node, so ~1,045 bytes of SVG shipped per image to
+   show one — 6.6% of document bytes across nine pages (see the shipped block
+   below). **This is a contribution, not the fix**: 25 KB off a 343 KB page
+   does not move a 9.7 s `domInteractive`, and no run should report LCP as
+   solved on it. The remaining threads are unchanged — (a) how much of the
+   270-link payload must be in the first response, (b) `gtag.js` off
+   `afterInteractive` (still an owner-visible decision, not a silent one) —
+   plus a new (c): the flight payload is ~55% of every page, so the general
+   question is which server-rendered subtrees must cross the client boundary
+   at all. `ShareActions`, `NavBar`, `MobileMenu`, `ThemeToggle` and
+   `MastheadDate` are the only other client components; they are few and
+   small, so (c) is likely a small board, worth one measurement pass.
 4. **CTR rescue on the pages that already rank** — unchanged since 08-25, still
    509 query impressions to 3 clicks, and still the item with the most direct
    evidence. Named targets and guardrails in the 08-28 status block below.
@@ -326,6 +348,153 @@ and the second one is `/u/1/`.** Use
 Verified 2026-08-31: Manual actions **no issues detected**, Security issues
 **no issues detected**, and the full Crawl stats report (item 4 above) — the
 first time any run has read all three.
+
+## 00. PRODUCTION HAS NOT SHIPPED CODE SINCE 2026-08-31 21:39 UTC — OWNER ACTION, VERCEL DASHBOARD
+
+**The site is UP and healthy. It just cannot deploy, and nothing noticed for
+over 24 hours.** Found 2026-09-02 while trying to verify that day's own fix.
+
+Proof, and it is not inference. `components/layout/Footer.tsx:38` renders
+`<NewsletterSignup />` **unconditionally** — no env flag, no condition — and it
+was added by `72e30e7` at 2026-08-31 21:39 UTC. Production's footer renders
+everything around it (Corrections, Editorial Standards, Methodology, News Desk,
+the wordmark, the tagline) and the form's own label, `Daily briefing by email`,
+appears **zero** times in the served HTML. Second, independent check: the
+homepage's `/_next/static/immutable/chunks/*.js` filenames are **byte-identical
+before and after** today's push — a rebuild cannot leave content-hashed chunk
+names unchanged.
+
+**Code commits that never reached production** (the rest touched only `seo/`,
+`data/` or `.github/`, which `vercel.json`'s ignoreCommand correctly skips):
+
+| commit | UTC | what is not live |
+|---|---|---|
+| `72e30e7` | 08-31 21:39 | newsletter signup form in the sitewide footer |
+| `53ad4b1` | 08-31 22:27 | archive-row cache re-key — **yesterday's fix** |
+| `6c63626` | 09-01 22:03 | flight-payload placeholder fix — today's |
+
+**This retroactively breaks a verification claim, and the loop should own it.**
+The 2026-09-01 report marked `53ad4b1` SHIPPED and "verified live" because the
+frozen `308` was gone afterwards. That report also wrote down, correctly, that
+*"a deploy wipes the ISR cache, so the frozen 308 would have cleared on any
+deploy"* — and the actual explanation is worse than the caveat it hedged
+against: there was no deploy, and the symptom cleared for some third reason.
+The mechanism is still proven by its unit tests; **the live claim was wrong.**
+
+**It is not the code.** `ci.yml` — typecheck, lint, unit tests AND
+`npm run build` — is `success` on every one of these commits, including today's.
+The failure is on Vercel's side and is invisible from here.
+
+**Why nothing caught it, which is the part to fix:**
+1. `uptime.yml`, `seo-health.yml` and `url-survival.yml` all probe **the site**,
+   and the site is fine — it serves fresh news the whole time, because the cron
+   and ISR keep feeding a *stale build*. No check asks "is production running
+   the commit I pushed?"
+2. The GitHub deployments API is useless here: **two** Vercel projects
+   (`currentwire` and `cuurentwire`) both report `failure` for **all 30** recent
+   deployments, so "failure" has meant nothing for days and cannot be alerted on.
+
+**OWNER ACTION (~2 minutes, only you can do it):** open the Vercel dashboard →
+the CurrentWire project → Deployments, open the newest failed one and read the
+build log. Also check Settings → Git for whether two projects are still wired to
+this repo and disconnect the stale one. Push notification sent 2026-09-02.
+
+**Automatable follow-up for the next run, once deploys work again:** have
+`uptime.yml` assert a build identity, not just liveness — e.g. expose the
+commit SHA in a response header or a tiny `/api/version` and fail when it has
+not changed across a deploy that should have changed it. That is the check
+whose absence made a 24-hour shipping outage invisible.
+
+**SHIPPED 2026-09-02 (`6c63626`) — the dead-image placeholder every image
+shipped and one image showed.** The homepage's known 9.3 s of pre-paint main
+thread (item 3) had no named cause; splitting the document instead of guessing
+found one. **62% of the homepage HTML (213,382 of 343,323 bytes) is the RSC
+flight payload**, not markup — the serialized React tree Next embeds and parses
+on the main thread during hydration — and its key census pointed straight at
+the defect: 112 `stroke`, 84 `x1`/`y1`/`x2`/`y2`, 29 `cx`/`cy`, i.e. ~28 copies
+of line-and-circle geometry on a page that displays one placeholder.
+
+Cause: **every prop a Server Component passes to a Client Component is
+serialized into the flight payload, rendered or not.** `RemoteImage` is a
+Client Component and `StoryImage` handed it
+`fallback={<CategoryPlaceholder …/>}` — a ~1,045-byte element tree per image,
+to be shown only if that publisher's CDN had killed the asset. Measured live
+before the deploy, counting the escaped fingerprint (in the payload) against
+the unescaped one (in the markup):
+
+```
+/                                28 serialized,  1 shown
+/top-100                         25 serialized,  0 shown
+/most-covered                    25 serialized,  0 shown
+/topic/artificial-intelligence   31 serialized, 17 shown
+/politics /technology /us         4 serialized,  0 shown  (each)
+                     120.4 KB of 1,833 KB across nine pages = 6.6% of bytes
+```
+
+`RemoteImage` now takes the resolved category **label** (~26 bytes) and renders
+the art itself. Passing the `CategoryId` instead — the obvious alternative —
+would have pulled `config/categories.ts`, 26 KB of classifier keyword
+dictionaries, into the browser bundle and lost more than it saved; the label is
+resolved server-side deliberately.
+
+**Guarded twice, and the reason is worth keeping.** The natural guard is an
+e2e payload assertion, and it passes for the wrong reason: with no news API key
+the dev server Playwright drives serves fixture stories whose art is all LOCAL
+placeholder SVG, so `RemoteImage` never renders in CI and the assertion is
+vacuous. `tests/unit/story-image-flight-payload.test.ts` drives the remote
+branch directly and fails naming the offending prop; proved by reintroducing
+the defect and watching it fail. Both are in the tree.
+
+**STATUS: MERGED, NOT LIVE — do not mark SHIPPED.** Item 00 above: production
+has not deployed since 2026-08-31 21:39 UTC, so this commit is on `main` and in
+CI but is not serving. Re-measured live at 22:2x UTC after the deploy window,
+and the pre-fix numbers came back **unchanged** — `/` 28 serialized, `/top-100`
+25, `/most-covered` 25 — which is itself part of the evidence for item 00.
+**The next run must re-run this measurement once deploys work and only then
+flip this to SHIPPED**; the expected result is serialized ≈ shown on every row.
+
+**Honest scope even once it lands: this is a contribution to item 3, not a fix
+for it.** ~25 KB off a 343 KB page does not move a 9.7 s `domInteractive`, and
+no run should report LCP as solved on it.
+
+**NEW, OPEN 2026-09-02 — the deploy signal this repo exposes is a constant
+`failure`, so nothing can tell a broken deploy from a good one.** Found while
+trying to confirm `6c63626` had shipped. GitHub's deployments API lists **two**
+Vercel project integrations on this repo — `Production – currentwire` and
+`Production – cuurentwire` (the typo spelling) — and **both report `failure`
+for every recent production deployment**, including `a065053` and `0fa5ae6`,
+which demonstrably shipped and were verified live by the runs that pushed them.
+Each status lands within a second of the deployment being created, far too fast
+to be a build result.
+
+Consequences, both bad: a run cannot use the deployments API to know when its
+own push is live (this run tried and was misled), and **a genuinely failed
+deploy would look exactly like every successful one**, so nothing alerts. The
+site being correct today rests on Vercel's real project deploying fine and the
+GitHub-side status being noise.
+
+Not fixed here because the cause is in Vercel project settings, not the repo:
+most likely one dead/duplicate project integration still wired to the repo, and
+possibly a broken status callback on the live one. **Owner-adjacent** — it
+needs the Vercel dashboard (Settings → Git) to see which projects are connected
+and disconnect the stale one. Cheap and worth doing; until then, verify deploys
+by fetching the site, never by reading deployment status.
+
+**NEW, OPEN 2026-09-02 — this loop can rate-limit itself off its own site, and
+it looks exactly like an outage.** Polling the homepage for a deploy (a
+40-iteration loop with no sleep, then one every 15 s, on top of ~20 measurement
+fetches) made Vercel's bot mitigation answer **403 `X-Vercel-Mitigated:
+challenge` on every surface** — `/`, `robots.txt`, `sitemap.xml`,
+`news-sitemap.xml`, `archive-sitemap.xml`, `/rss` — for a browser UA, a
+Googlebot UA and plain curl alike, serving a "Vercel Security Checkpoint"
+interstitial. Mitigated: `uptime.yml` now takes a push-path trigger
+(`81f0270`) so any run can get a second opinion from GitHub's IPs in about a
+minute instead of guessing or waiting out an irregular schedule. Two open
+questions a later run should answer, neither urgent: whether
+`scripts/seo-health.mjs` (which chases every news-sitemap URL — 740 today) is
+close to the same threshold, and whether the mitigation rule has any chance of
+catching real crawlers. Full write-up:
+`MEMORY/2026-09-02-verifying-too-hard-looks-exactly-like-an-outage.md`.
 
 **NEW, OPEN 2026-09-01 — the news-sitemap merge gate reads standing through a
 30-minute cache whose key cannot see a merge.** Found by the post-fix
