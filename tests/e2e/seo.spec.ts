@@ -287,3 +287,34 @@ test.describe("homepage LCP image budget", () => {
     expect(eager.length).toBe(1);
   });
 });
+
+test.describe("flight payload budget", () => {
+  // Every prop a Server Component hands to a Client Component is serialized
+  // into the RSC flight payload embedded in the HTML, and parsed on the main
+  // thread during hydration. `RemoteImage` is a Client Component, and it used
+  // to take its dead-image placeholder as a pre-rendered `ReactNode`: on
+  // 2026-09-02 that put 25 copies of a ~1,045-byte SVG element tree in the
+  // homepage HTML to render exactly ONE of them, 6.6% of document bytes
+  // across nine sampled pages. It now takes the category label as a string.
+  //
+  // The placeholder viewBox is the fingerprint, and it appears in two forms:
+  // unescaped in the markup (a placeholder actually being shown, because that
+  // story has no artwork) and escaped inside the flight payload's JS string
+  // literals (the serialized element tree). A shown placeholder legitimately
+  // accounts for one of each. Anything serialized BEYOND what is shown is a
+  // tree sent to the browser that no viewer can ever see — which is exactly
+  // the regression: measured 2026-09-02 at 28 serialized against 1 shown on
+  // `/`, and 25 against 0 on both `/top-100` and `/most-covered`.
+  const SHOWN = 'viewBox="0 0 400 225"';
+  const SERIALIZED = '\\"viewBox\\":\\"0 0 400 225\\"';
+  for (const path of ["/", "/top-100", "/most-covered"]) {
+    test(`${path} serializes no placeholder it cannot show`, async ({ request }) => {
+      const html = await (await request.get(path)).text();
+      const shown = html.split(SHOWN).length - 1;
+      const serialized = html.split(SERIALIZED).length - 1;
+      // Slack of 1: React may emit a subtree by lazy reference ("$L5c") and
+      // resolve it in a later chunk, which can shift the count by one.
+      expect(serialized).toBeLessThanOrEqual(shown + 1);
+    });
+  }
+});

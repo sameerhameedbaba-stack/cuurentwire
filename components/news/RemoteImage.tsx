@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { isOptimizableImageHost } from "@/config/image-hosts";
+import { CategoryPlaceholderArt } from "./CategoryPlaceholderArt";
 
 /**
  * Remote publisher image with a staged client-side fallback.
@@ -25,10 +26,14 @@ import { isOptimizableImageHost } from "@/config/image-hosts";
  *     URL rather than to placeholder art — a broken or blank hero for a month
  *     would cost more LCP than the optimizer ever saved.
  *   "failed" — the raw URL errored too: the publisher CDN has killed the
- *     hotlinked asset (archived stories do this eventually). Swap in
- *     `fallback`, the category placeholder the server-component caller
- *     (StoryImage) passes down already rendered, so a dead URL degrades to the
- *     same art as a missing one instead of a broken image frame.
+ *     hotlinked asset (archived stories do this eventually). Swap in the
+ *     category placeholder, so a dead URL degrades to the same art as a
+ *     missing one instead of a broken image frame. The caller passes only the
+ *     resolved category LABEL: this is a Client Component, so every prop is
+ *     serialized into the RSC flight payload embedded in the HTML, and the
+ *     art used to travel as a pre-rendered `ReactNode` — ~1,045 bytes per
+ *     image, on every image, to render at most one of them (see
+ *     CategoryPlaceholderArt for the measurements).
  *
  * `onError` requires a client component (docs:
  * 01-app/03-api-reference/02-components/image.md). An image that failed
@@ -47,7 +52,7 @@ export function RemoteImage({
   priority = false,
   eager = false,
   optimize = false,
-  fallback,
+  fallbackLabel,
 }: {
   src: string;
   alt: string;
@@ -62,8 +67,11 @@ export function RemoteImage({
    * every optimized source costs transformation quota.
    */
   optimize?: boolean;
-  /** Server-rendered placeholder shown when the upstream image is dead. */
-  fallback: ReactNode;
+  /**
+   * Category label for the placeholder shown when the upstream image is dead.
+   * A string, not a rendered node — see the delivery-mode note above.
+   */
+  fallbackLabel: string;
 }) {
   const imgRef = useRef<HTMLImageElement | null>(null);
   // Pure function of props, so server and client agree on the first render.
@@ -81,7 +89,7 @@ export function RemoteImage({
     if (img && img.complete && img.naturalWidth === 0) degrade();
   }, [degrade]);
 
-  if (mode === "failed") return <>{fallback}</>;
+  if (mode === "failed") return <CategoryPlaceholderArt label={fallbackLabel} />;
 
   return (
     <Image
