@@ -92,7 +92,29 @@ site dark) — the difference is that this time it is scheduled, visible in
 advance, and preventable.
 
 **OWNER ACTION (only you can — it is a billing setting):** Vercel → Settings →
-Billing → Spend Management → Configure → raise the On-Demand Budget. Keep
+Billing → Spend Management → Configure → **set the On-Demand Budget to $45**.
+
+**Why $45, and why a bigger number does not mean a bigger bill.** The budget is
+not a spending plan — Vercel charges actual usage, so the number only decides
+*when the site is switched off*. Sizing it:
+
+| scenario | on-demand for the full cycle |
+|---|---|
+| nothing improves ($2.65/day × 21.5 days + $5.42) | **~$62** |
+| duplicate cron was the doubling (burn halves) | **~$34** |
+| that, plus the Observability cut | **~$25** |
+
+$45 covers the two realistic scenarios outright, and even in the do-nothing case
+buys **~15 days** of runway — far more than the ~3 days needed to measure the
+post-deletion burn and act. It also still bounds a runaway bug at $45 rather
+than removing the ceiling. **Do not** raise it above ~$50 and **do not** turn
+Pause Projects off; an unbounded cap on a site that has twice run away is the
+one genuinely dangerous setting here.
+
+**The target to hold us to: $0 on-demand.** Every cycle includes $20 of credit.
+At today's $2.65/day the month costs ~$82; at **under $0.65/day the credit
+covers everything** and the true bill returns to the $20 subscription. That is
+the number the next runs are working toward, not "afford $62". Keep
 Notifications on. **Do not turn Pause Projects off casually** — it is the only
 thing standing between a runaway bug and an unbounded bill; raising the number
 is the safer move than removing the cap.
