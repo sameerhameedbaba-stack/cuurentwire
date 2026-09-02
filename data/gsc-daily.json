@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-09-01T22:35:43.668Z",
+  "generatedAt": "2026-09-02T22:12:31.395Z",
   "window": {
-    "startDate": "2026-08-05",
-    "endDate": "2026-09-01",
+    "startDate": "2026-08-06",
+    "endDate": "2026-09-02",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
     "insufficient": false,
     "window": {
-      "from": "2026-08-23",
-      "to": "2026-08-29"
+      "from": "2026-08-24",
+      "to": "2026-08-30"
     },
     "clicks": {
       "current": 4,
-      "prior": 25,
-      "deltaPct": -84
+      "prior": 22,
+      "deltaPct": -81.8
     },
     "impressions": {
-      "current": 234,
-      "prior": 1611,
-      "deltaPct": -85.5
+      "current": 202,
+      "prior": 1214,
+      "deltaPct": -83.4
     },
     "explained": true
   },
@@ -211,6 +211,17 @@
       "position": 0,
       "incidents": [
         "News-sitemap canonical URL was 308-ing to a merged-away duplicate; archive row cache re-keyed per story (53ad4b1)"
+      ]
+    },
+    {
+      "date": "2026-09-02",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 9,
+      "incidents": [
+        "Dead-image placeholder removed from the RSC flight payload of every image (6c63626) - MERGED, NOT LIVE",
+        "Vercel bot mitigation 403-challenged the SEO loop's own IP for ~15+ min (self-inflicted, not an outage)"
       ]
     }
   ]

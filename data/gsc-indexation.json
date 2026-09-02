@@ -1,12 +1,11 @@
 {
-  "generatedAt": "2026-09-01T22:39:31.986Z",
+  "generatedAt": "2026-09-02T22:16:10.055Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "counts": {
     "indexed": 1,
-    "not-crawled": 21,
-    "crawled-not-indexed": 11,
-    "error": 1
+    "not-crawled": 22,
+    "crawled-not-indexed": 11
   },
   "rows": [
     {
@@ -236,8 +235,12 @@
     },
     {
       "path": "/housing",
-      "bucket": "error",
-      "error": "500: Internal error encountered."
+      "bucket": "not-crawled",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "indexingState": "INDEXING_STATE_UNSPECIFIED",
+      "lastCrawlTime": null,
+      "googleCanonical": null
     },
     {
       "path": "/jobs",
