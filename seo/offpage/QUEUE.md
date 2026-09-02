@@ -7,10 +7,12 @@ Paste-ready standing texts (name, tagline, descriptions, category, email) are
 in PLAYBOOK.md — copy from there wherever a form asks. Contact email for all
 submissions: **support@currentwire.us**.
 
-Status 2026-09-03: **two placements are live** — SaaSHub and the Product Hunt
-launch (1 upvote, but a permanent backlink). Everything else submitted is
-sitting in someone else's review queue and needs no owner time. This week is
-deliberately light.
+Status 2026-09-03 (evening): **two placements are live** — SaaSHub and the
+Product Hunt launch (1 upvote, but a permanent backlink). Everything else
+submitted is sitting in someone else's review queue and needs no owner time.
+**This week the owner's list is empty**, and that is the honest state, not a
+gap: Source of Sources is down at their end, and the X/Facebook/LinkedIn
+question was answered by looking rather than by deciding.
 
 > **This file is subordinate to `seo/STRATEGY.md`.** The 2026-08-24 red-team
 > round cut several tactics permanently. If an item here ever contradicts
@@ -19,38 +21,29 @@ deliberately light.
 
 ## Your 15 minutes this week
 
-### 1. Source of Sources — sign up (~2 min)
-https://www.sourceofsources.com/ — pulled forward from Sprint 2 so the
-8-week trial clock starts sooner. Free, no account, no dashboard: you just
-subscribe and journalist queries arrive by email 2-3x/day.
+**Nothing this week.** Both items that were on this list earlier today are
+closed — one was done for you, one is blocked by somebody else's broken
+server. Details below so no future run re-adds them blindly.
 
-- Sign up as a **source/expert**, with **support@currentwire.us**.
-- Reply under **your own real name**, as the operator of an automated
-  news-ranking system. Never reply "as CurrentWire" and never imply an
-  editorial desk.
-- **Only answer queries genuinely about news aggregation, media tech, or
-  how ranking/attribution works.** SOS has zero tolerance: one off-topic
-  pitch is an immediate permanent ban. If nothing fits in a given week,
-  answer nothing — that is the correct outcome, not a wasted week.
-- Kill gate: if 0 placements after 8 weeks (~2026-10-29), unsubscribe.
+### ~~Source of Sources signup~~ — BLOCKED, not your fault (re-check next week)
+Their whole site is down: every path returns "Index file not found" and
+`/index.html` returns 403 Forbidden — a file-permission misconfiguration on
+their host, verified in Chrome 2026-09-03. Signup is impossible for anyone
+right now. The service is not dead (domain and files exist), so this stays
+queued. If it is still broken by ~2026-09-24, drop it.
 
-### 2. Social profiles — just answer yes or no (~1 min, or ~10 if yes)
-This has been open for two weeks and is now blocking two small things at once.
-None of the three profiles exists today: `linkedin.com/company/currentwire`
-returns 404, `facebook.com/currentwire` is an unrelated handle
-(@current.wire.3), and `x.com/currentwire` cannot be checked automatically
-because X blocks bots — only you can look.
-
-- **If yes** (create any of them, free): tell me which, and I will add
-  `sameAs` to the Organization schema and prepare bios/posts.
-- **If no**: say so and I will delete the dead references in `config/site.ts`
-  and stop re-checking them every week.
-
-Either answer also settles a live loose end: `config/site.ts:94` sets
-`twitterHandle: "@currentwire"`, which `app/layout.tsx:51` really does put in
-the site's Twitter card — so every page currently credits an X account that
-may not exist. Harmless, but wrong until you decide. **Only create what you
-will actually keep.**
+### ~~Social profiles decision~~ — mostly ANSWERED by checking, not by you
+- **X: settled, the answer is no.** `x.com/currentwire` is taken by an
+  unrelated dormant Tamil-language account registered in 2017. It is not
+  available. **This was also a live bug** — the site was putting `@currentwire`
+  in every page's Twitter card, crediting that stranger. Fixed and shipped
+  2026-09-03, all gates green. Nothing owed.
+- **Facebook: not obtainable** as `/currentwire` — it redirects to an
+  unrelated personal profile (@current.wire.3).
+- **LinkedIn: free if you want it.** `linkedin.com/company/currentwire` is
+  unclaimed. This is the only piece still open, and it is genuinely optional —
+  a company page you never post to is worth roughly nothing. Create it only if
+  you will actually use it; tell me and I will add `sameAs` then.
 
 ## Nothing owed — waiting on other people
 

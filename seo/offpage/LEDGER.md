@@ -328,3 +328,52 @@ Harm is near-zero (X just shows no attribution) and it becomes correct the
 moment the owner makes the account, so it is tied to the social decision
 below rather than changed unilaterally — removing it now would only have to
 be reverted. No code changes this run; docs only.
+
+### 2026-09-03 (same day — owner asked to do it in Chrome; two of three items changed)
+
+Driving the real browser rather than WebFetch overturned two things this loop
+had been recording wrongly for weeks. Nothing was submitted, created or posted
+— the owner performs those; these were reads.
+
+**1. x.com/currentwire is TAKEN, and the site was crediting it.** Three
+previous runs recorded this handle as "unverifiable — X blocks automated
+fetches" and moved on. Logged-in Chrome loads it fine: it is a real, unrelated
+account — **கரண்ட் கம்பி (@CurrentWire), joined October 2017, 1 post,
+1 follower**, a dormant Tamil-language profile. The handle is not available
+and never will be.
+
+That turned a "benign loose end" into a live defect: `config/site.ts` set
+`seo.twitterHandle: "@currentwire"` and `app/layout.tsx` fed it to the
+sitewide Twitter card as `twitter.site`, so **every page was attributing
+CurrentWire to a stranger's account.** Fixed and shipped the same day (commit
+"fix(seo): stop crediting a stranger's X account on every page"): `site:`
+removed, and the x/facebook/linkedin URLs dropped from `siteConfig.social`.
+All five gates green — tsc clean, 976 vitest, eslint 0 errors, build ok,
+119 playwright. OrganizationJsonLd untouched, still no `sameAs`, still correct.
+
+Lesson for future runs: "X blocks bots" is a reason to open a browser, not a
+reason to record the question as permanently unanswerable. Three weeks of
+"unverifiable" hid a real bug that took one page load to find.
+
+Also re-confirmed in the same pass:
+- `linkedin.com/company/currentwire` → "This LinkedIn Page isn't available."
+  The vanity URL is free if the owner ever wants it.
+- `facebook.com/currentwire` → redirects to **@current.wire.3**, an unrelated
+  personal profile. Not obtainable as-is.
+
+**2. Source of Sources is DOWN — this week's #1 task is impossible.** The
+signup recommended hours earlier cannot be done by anyone right now.
+`sourceofsources.com`, `www.sourceofsources.com`, `/reporter/` and `/confirm/`
+all return **"Index file not found"**, and `/index.html` returns **403
+Forbidden** ("the file should be world-readable"). That is a file-permission
+misconfiguration on their TigerTech host, not a dead service — the domain
+resolves and the files exist. WebFetch had returned a bare 403 that read like
+ordinary bot-blocking, which is how it got recommended in the first place.
+
+Treat as a temporary outage: re-check next week, keep it queued, do not
+replace it. If it is still broken in 2-3 weeks, drop it.
+
+Net effect on the owner's checklist: **item 1 blocked upstream, item 2 answered
+by the browser.** The X question no longer needs an owner decision — the answer
+is no. Only the LinkedIn/Facebook create-or-not call is still open, and it is
+genuinely optional.
