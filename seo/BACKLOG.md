@@ -405,6 +405,75 @@ commit SHA in a response header or a tiny `/api/version` and fail when it has
 not changed across a deploy that should have changed it. That is the check
 whose absence made a 24-hour shipping outage invisible.
 
+### Detector SHIPPED 2026-09-03 — `deploy-watch.yml` (the follow-up above, done better)
+
+**The outage itself is still OPEN and still owner-only.** What is now closed is
+the blindness: `.github/workflows/deploy-watch.yml` + `scripts/deploy-watch.mjs`
+run every 3 hours and open an `[auto-alert]` issue when pushed commits are not
+reaching production.
+
+**It needed no `/api/version` after all, and that matters.** The proposal above
+would have required *shipping a change to detect that changes cannot ship* —
+circular, and dead on arrival during the very outage it was for. Instead it
+reads GitHub's deployments API, which needs nothing from the site.
+
+**This corrects a factual claim in item 00 as written.** That entry says the
+deployments API "is useless here: both projects report `failure` for all 30
+recent deployments, including ones that demonstrably shipped." Re-measured
+2026-09-03, one status call per deployment:
+
+```
+f8805af  2026-08-31T12:45:29Z  Production – currentwire   success   <- what production serves
+4b64c6e  2026-08-28T22:35:31Z  Production – currentwire   success
+72e30e7  2026-08-31T21:39:53Z  Production – cuurentwire   failure   <- first one that did not
+…every deployment after 72e30e7                            failure
+```
+
+The signal is clean and always was. The 09-02 run appears to have read the
+deployment *records* without resolving each one's status, so everything looked
+alike. Nothing else in item 00 changes — the site is up, CI is green, and only
+the Vercel dashboard can say why a build fails.
+
+**Which build production is serving, pinned exactly** (better evidence than the
+absent-footer argument, which only proves "not the newest"): `f8805af` touched
+`public/llms.txt`, a byte-comparable static asset. Live `/llms.txt` is
+byte-identical to the repo at `f8805af` and differs from `f8805af^`. Production
+is running `f8805af`, from **2026-08-31 12:43 UTC**.
+
+**One more fact for the owner, and it narrows the dashboard hunt a lot:** every
+failing deployment's status is written **0–1 seconds** after the deployment
+record is created, whereas `f8805af`'s success came ~99 s after its push. A
+Vercel build cannot install dependencies and run `next build` in under a
+second. **No build is being attempted** — the deployment is rejected up front.
+So the answer is unlikely to be in the build log at all; it is more likely a
+project/account-level condition (billing state, a paused project, a broken Git
+connection, a deployment limit). Look at the deployment's *error banner* and at
+Settings → Git / the account's billing state before scrolling build output.
+
+Detector verified 2026-09-03 against a stub replaying the real recorded API
+shapes: outage → exit 1 naming the stranded commits, healthy → exit 0, dead
+endpoint → exit 2 (deliberately distinct: a rate limit must never page the
+owner as an outage), preview deployments ignored. Unit tests:
+`tests/unit/deploy-watch-lib.test.ts` (15 cases).
+
+## 00c. The newsletter form was blocked by our own CSP — SHIPPED 2026-09-03 (merged, not live)
+
+Found this run by reading production's response headers. The sitewide CSP said
+`form-action 'self'` while `components/layout/NewsletterSignup.tsx` posts to
+`https://buttondown.com/...`. Browsers block a cross-origin form submission the
+`form-action` directive does not name, and **nothing is logged server-side** —
+the footer signup would have subscribed nobody, silently, from the moment it
+went live. It has never actually run in a browser, because it has never shipped
+(item 00), so no one would have noticed until subscriber counts stayed at zero.
+
+Fixed in `config/csp.ts` (extracted from `next.config.ts` so the policy is
+testable at all). The guard in `tests/unit/csp.test.ts` reads the form's own
+`action` attribute out of the component and requires the policy to name that
+origin, so switching providers cannot silently re-open it; proved by restoring
+the defect and watching it fail. Verified on a real local production build:
+`form-action 'self' https://buttondown.com` served, form rendered. **Not
+verifiable on production until deploys work.**
+
 ## 00b. Three `data/` files are compiled into the app, and `data/` is excluded from deploys — OPEN
 
 Found 2026-09-02 as a side-effect of item 00. `vercel.json`'s ignoreCommand has
