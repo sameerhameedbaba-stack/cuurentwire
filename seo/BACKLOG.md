@@ -64,6 +64,44 @@ crawlable, citable value a fix creates per unit of risk.
 
 ## Ranked now — rebuilt from 2026-08-31 evidence
 
+## 00e. Vercel spend is tracking ~4x the subscription — WATCH, do not act yet
+
+Read from the Vercel usage page 2026-09-03 (cycle **Aug 24 – Sep 24**, ~9.4 of
+31 days elapsed), first time these numbers have been pulled since Pro was bought:
+
+| Line | Usage | Charge |
+|---|---|---|
+| Observability Events | 7.21M | **$8.66** |
+| ISR Writes | 1.57M | $6.30 |
+| Build CPU Minutes | 7 hours | $1.48 |
+| ISR Reads | 468.39K | $0.19 |
+| Image Optimization (3 lines) | — | $0.03 |
+| **Infrastructure subtotal** | | **$25.22** |
+| Credits applied | | −$20.00 |
+| Pro subscription | | $20.00 |
+
+**The $20 included credit is fully consumed with 21 days left in the cycle**
+(on-demand charges $5.21 and rising). At ~$2.68/day of infrastructure the cycle
+projects to roughly **$83 infrastructure** — about **$63 on-demand on top of the
+$20 subscription**.
+
+Two things to weigh before anyone changes a setting:
+
+- **The largest line is Observability Events ($8.66), not ISR Writes.** That is
+  telemetry about the app, not the app serving readers — and it outranks the ISR
+  writes the playbook's cost discipline has been watching. Probably the cheapest
+  thing to turn down, and it costs no reader-facing behaviour.
+- **The projection is not a measurement.** This cycle contains the 402 outage,
+  49 hours of failing deployments (7 hours of Build CPU, much of it on builds
+  that crashed) and unusually heavy verification traffic from these runs. A
+  flat-rate extrapolation over an atypical 9 days is weak evidence.
+- Item **00d** (the duplicate `cuurentwire` project building on every push) feeds
+  directly into the Build CPU line and is the first thing to fix here.
+
+Per the playbook a new quota wall is **logged for the owner, not paid past**;
+nothing was changed on the account. **Action: the Monday deep run re-reads this
+against a full week of normal operation before recommending anything.**
+
 **0a. `archive-sitemap.xml` HAS NEVER BEEN PROCESSED BY GOOGLE — 13,593 URLs,
 92% of everything this site publishes. OWNER ACTION, 30 seconds.** Found
 2026-08-31 only because the owner pushed back on an indexing figure in the
