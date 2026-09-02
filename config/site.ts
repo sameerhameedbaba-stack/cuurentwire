@@ -16,10 +16,14 @@ export const siteConfig = {
   contactEmail: process.env.CONTACT_EMAIL ?? "contact@currentwire.us",
   correctionsEmail: process.env.CORRECTIONS_EMAIL ?? "corrections@currentwire.us",
   publishersEmail: process.env.PUBLISHERS_EMAIL ?? "publishers@currentwire.us",
+  // No x/facebook/linkedin entries: CurrentWire has no social profiles, and
+  // the three placeholder handles that used to sit here were all verified
+  // wrong on 2026-09-03 (seo/offpage/LEDGER.md). x.com/currentwire is a
+  // stranger's dormant account, facebook.com/currentwire redirects to an
+  // unrelated profile, and the LinkedIn page 404s. Add entries here only
+  // once a profile actually exists, and add `sameAs` to OrganizationJsonLd
+  // in the same change.
   social: {
-    x: "https://x.com/currentwire",
-    facebook: "https://facebook.com/currentwire",
-    linkedin: "https://linkedin.com/company/currentwire",
     rss: "/rss",
   },
   colors: {
@@ -91,7 +95,6 @@ export const siteConfig = {
     defaultTitle: "Top News Today — US & Canada Headlines, Ranked | CurrentWire",
     defaultDescription:
       "The top 100 current news stories across the United States and Canada, continuously refreshed, intelligently ranked, deduplicated and transparently attributed.",
-    twitterHandle: "@currentwire",
   },
 } as const;
 

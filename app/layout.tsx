@@ -46,9 +46,12 @@ export const metadata: Metadata = {
       },
     ],
   },
+  // No `site:` handle. It read "@currentwire" until 2026-09-03, which is a
+  // real but unrelated X account (a dormant Tamil-language profile registered
+  // in 2017), so every page was attributing CurrentWire to a stranger. The
+  // handle is not obtainable; restore this only if a real profile is created.
   twitter: {
     card: "summary_large_image",
-    site: siteConfig.seo.twitterHandle,
     images: ["/opengraph-image.png"],
   },
   alternates: {
