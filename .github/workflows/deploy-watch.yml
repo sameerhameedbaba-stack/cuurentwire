@@ -1,0 +1,130 @@
+name: Deploy watch
+
+# Is production running the code we pushed?
+#
+# Every other check in this repo probes the SITE — uptime.yml, seo-health.yml,
+# url-survival.yml — and a shipping outage is invisible to all of them, because
+# the site stays healthy through one: the 15-minute cron and ISR keep pouring
+# fresh news into whatever bundle last shipped. That is how deploys failing from
+# 2026-08-31 21:39 UTC went unseen for two days while every probe stayed green
+# and two days of fixes sat merged but not live.
+#
+# This asks the other question. It reads GitHub's deployments API (written by
+# the Vercel integration) and fails when a failed deployment stands with no
+# successful one after it. It needs nothing from the site — no /api/version, no
+# build stamp — which is the point: it has to work WHILE deploys are broken, so
+# it cannot depend on shipping anything first.
+#
+# On failure it opens/updates one "[auto-alert]" issue (issue mail is the only
+# delivery channel that has ever reached the owner) and closes it on recovery,
+# so an open alert always means broken right now.
+# $0 — GitHub's own API, no keys, no external services.
+
+on:
+  schedule:
+    # Every 3 hours. A shipping outage is not urgent by the minute — nothing
+    # breaks for readers — but two days of silence is what this exists to end.
+    - cron: "23 */3 * * *"
+  workflow_dispatch:
+  push:
+    # On-demand check after a push: touch .github/triggers/deploy-watch.
+    # Vercel writes the deployment status ~10-100s after a push, so the job
+    # waits before reading rather than racing it.
+    paths:
+      - ".github/triggers/deploy-watch"
+      - ".github/workflows/deploy-watch.yml"
+      - "scripts/deploy-watch*.mjs"
+
+permissions:
+  contents: read
+  deployments: read
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Let the newest deployment settle
+        if: github.event_name == 'push'
+        run: sleep 120
+      # Exit 1 = production is not shipping. Exit 2 = the API could not be read,
+      # which is NOT evidence of an outage and must never page the owner as one.
+      # The job still goes red for both; only exit 1 opens the issue.
+      - name: Check that pushed commits reached production
+        id: watch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          node scripts/deploy-watch.mjs
+          code=$?
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Open or update the alert issue
+        if: steps.watch.outputs.code == '1'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "[auto-alert] production is not shipping pushed code";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              "Commits have been pushed to `main` that did NOT reach production.",
+              "",
+              "The site is probably fine — it keeps serving the last build that succeeded,",
+              "kept fresh by the cron — so every other alert will stay green. What is broken",
+              "is the pipeline: merged fixes are not live.",
+              "",
+              "Only the Vercel dashboard can say why a build fails:",
+              "Vercel -> CurrentWire -> Deployments -> open the newest failed one -> read the log.",
+              "",
+              `Which commits, and for how long: ${runUrl}`,
+            ].join("\n");
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find((i) => i.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body: `Still not shipping.\n\n${body}`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title, body,
+              });
+            }
+      - name: Close the alert issue on recovery
+        if: steps.watch.outputs.code == '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "[auto-alert] production is not shipping pushed code";
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find((i) => i.title === title);
+            if (existing) {
+              const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `Recovered — production is shipping pushed code again. Log: ${runUrl}. Closing.`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, state: "closed",
+              });
+            }
+      - name: Reflect the verdict in the job result
+        if: steps.watch.outputs.code != '0'
+        run: |
+          if [ "${{ steps.watch.outputs.code }}" = "2" ]; then
+            echo "::warning::Deploy watch could not read the deployments API — no verdict, no alert."
+          else
+            echo "::error::Production is not shipping pushed code."
+          fi
+          exit 1
