@@ -25,7 +25,20 @@ Format: date | what | live URL | notes. Only entries verified live belong here.
   with no owner action needed. Alternatives page:
   https://www.saashub.com/currentwire-alternatives
 
+- 2026-09-01 | **Product Hunt launch — LIVE, permanent listing + backlink** |
+  https://www.producthunt.com/products/currentwire (post:
+  https://www.producthunt.com/posts/currentwire) | launched on schedule under
+  maker @lavita1. Outcome verified 2026-09-03: **1 upvote, 2 followers, 1
+  comment** (the owner's pinned first comment), no daily rank. Traffic/
+  attention value: none. Asset value: a permanent listing on a high-authority
+  domain linking to `https://currentwire.us/?ref=producthunt`, plus the
+  company-info row and the RSS link in the first comment. Second verified
+  off-page placement. **Nothing further owed — do not re-launch.**
+
 ## Scheduled
+
+- ~~**Product Hunt launch — SCHEDULED for 2026-09-01**~~ — **LAUNCHED, see
+  "Verified live" above.** Kept for the build record only.
 
 - **Product Hunt launch — SCHEDULED for 2026-09-01, 12:01 AM PDT**
   (12:31 PM IST) for 24 hours. Account @lavita1. Draft built 2026-08-27:
@@ -246,3 +259,72 @@ choice ("whatever is good for the business").
 - Note for the owner: the PH account is **@lavita1** (created via
   ovyajewels@gmail.com). That handle, not "CurrentWire", is the public maker
   identity on the launch. Worth a look before 2026-09-01 if that is not wanted.
+
+### 2026-09-03 (weekly run — the Product Hunt launch happened; the queue was out of date)
+
+**Product Hunt: LAUNCHED 2026-09-01, and it is now a permanent backlink.**
+The scheduled launch went out. Public result, read from the live pages:
+- Product page https://www.producthunt.com/products/currentwire and post
+  https://www.producthunt.com/posts/currentwire are both live.
+- **1 upvote, 2 followers, 1 comment** (the owner's pinned first comment,
+  posted 2026-08-28, intact including the RSS link). No daily rank.
+- The link is live in three places on the post: a "Visit website" button to
+  `https://currentwire.us/?ref=producthunt`, the company-info row, and the
+  RSS URL inside the first comment.
+
+Honest reading: as a traffic or attention event it did nothing — 1 upvote is
+noise. As an asset it delivered exactly what STRATEGY.md predicted when the
+red-team cut it as an SEO item ("nofollow, wrong audience"): a permanent,
+legitimate listing page on a high-authority domain. Nothing further is owed
+here, and no follow-up campaign is worth owner time. Do not re-launch.
+
+**The queue had drifted out of sync with STRATEGY.md, and this run nearly
+acted on it.** QUEUE.md still listed **Show HN** under "Later (when you have
+time)" with a drafted title. STRATEGY.md (2026-08-24, red-team round)
+explicitly cuts it: *"Cut by red-team, recorded so no run resurrects them:
+Product Hunt launch, Show HN, Reddit aging + r/dataisbeautiful, comparison
+pages, Qwoted/Help-a-B2B-Writer"* — and separately bans new directories
+("No paid platforms, **no new directories**"). Show HN was about to be this
+week's #1 recommendation before that check. QUEUE.md is rewritten this run so
+the cut items are named as cut, in the queue itself, not only in STRATEGY.md.
+
+**Google Publisher Center: already DONE, and QUEUE.md described it wrongly.**
+QUEUE.md filed it under "Verified dead ends"; seo/BACKLOG.md records the
+publication "CurrentWire" was created by the owner 2026-08-24 under the
+`ovyajewels@gmail.com` account, auto-suggested from the verified GSC property,
+US/English. Both statements had a true half: *submitting to be included in
+Google News* is retired (eligibility is automatic), but *claiming a
+publication* is still live and was done. Corrected in QUEUE.md.
+
+**Progress checks — nothing else moved.**
+- SaaSHub: still live, verified badge, links to currentwire.us. Unchanged.
+  Not yet indexed by search engines (`site:saashub.com currentwire` → nothing).
+- Curlie: curlie.org search for "currentwire" → no results. Still queued.
+- Feedspot: the USA news websites page lists 90 sites, none of them
+  CurrentWire. 14 days in, no signal.
+- Journalist's Toolbox: no listing.
+- **All 5 listicle pitches: still no additions, no replies visible.** Web
+  searches for "currentwire.us" and for CurrentWire in best-aggregator lists
+  return only CurrentWire's own pages plus unrelated `-wire` brands
+  (Loudwire, GeekWire, UWIRE, Sidewire). Zero third-party mentions anywhere.
+- **Web mentions: still zero.** Two weeks after the first placement went
+  live, no external page mentions CurrentWire.
+
+**Social profiles: unchanged, no `sameAs` added (correct).**
+`linkedin.com/company/currentwire` → HTTP 404. `facebook.com/currentwire` →
+still the unrelated handle @current.wire.3. `x.com/currentwire` → X blocks
+automated fetches, unverifiable from here. `lib/seo/structured-data.tsx:64`
+still carries the comment explaining why there is no sameAs.
+
+**Checked and clean:** `config/site.ts:19-22` defines `social.x`, `.facebook`
+and `.linkedin` pointing at those non-existent profiles, so this run grepped
+for consumers. **`site.social` is never read anywhere in the codebase** — the
+site renders no links to them. No broken outbound links, no bug, no change.
+
+**One live loose end, flagged not fixed:** `config/site.ts:94` sets
+`seo.twitterHandle: "@currentwire"`, and `app/layout.tsx:51` does put it in
+the Twitter card as `twitter.site`. That claims a handle nobody has created.
+Harm is near-zero (X just shows no attribution) and it becomes correct the
+moment the owner makes the account, so it is tied to the social decision
+below rather than changed unilaterally — removing it now would only have to
+be reverted. No code changes this run; docs only.
