@@ -1,29 +1,12 @@
 import type { NextConfig } from "next";
+import { buildContentSecurityPolicy } from "./config/csp";
 import { OPTIMIZED_IMAGE_HOSTS } from "./config/image-hosts";
 
-// 'unsafe-inline' for scripts/styles is required because Next.js emits inline
-// bootstrap scripts and the theme pre-paint script in app/layout.tsx is inline
-// (no nonce middleware). Dev additionally needs 'unsafe-eval' for HMR.
 const isDev = process.env.NODE_ENV === "development";
-// Google Analytics domains join the policy only when a measurement ID is
-// configured at build time — without one the GoogleAnalytics component
-// renders nothing and the CSP stays minimal. gtag.js loads from
-// googletagmanager.com; hits beacon to the google-analytics collect
-// endpoints, which shard across regional subdomains (region1., etc.).
 const gaEnabled = Boolean(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID);
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}${gaEnabled ? " https://www.googletagmanager.com" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  // Publisher imagery loads from arbitrary https news CDNs (see images below).
-  "img-src 'self' https: data:",
-  "font-src 'self' data:",
-  `connect-src 'self'${gaEnabled ? " https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com" : ""}`,
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'none'",
-].join("; ");
+// The policy itself lives in config/csp.ts so it can be unit-tested; see the
+// note there about form-action and the newsletter.
+const contentSecurityPolicy = buildContentSecurityPolicy({ isDev, gaEnabled });
 
 const securityHeaders = [
   { key: "Content-Security-Policy", value: contentSecurityPolicy },
