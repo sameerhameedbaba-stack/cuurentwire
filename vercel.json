@@ -1,5 +1,5 @@
 {
-  "ignoreCommand": "git diff --quiet ${VERCEL_GIT_PREVIOUS_SHA:-HEAD^} HEAD -- . ':(exclude)seo' ':(exclude)docs' ':(exclude)data' ':(exclude).github' ':(exclude)*.md'",
+  "ignoreCommand": "bash scripts/vercel-ignore-build.sh",
   "crons": [
     {
       "path": "/api/cron/news-refresh",
