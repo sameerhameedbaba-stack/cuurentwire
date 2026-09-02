@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-01T12:00:01.370Z",
+  "ranAt": "2026-09-02T11:43:00.287Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,146 +16,79 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 722,
-    "cardsWithId": 722,
-    "cardsWithCategory": 640,
-    "cardsWithCountry": 310,
-    "cardsWithSources": 112,
-    "storyPagesFetched": 380,
-    "storyErrors": [
-      {
-        "clusterId": "ca4b8ca24c37d",
-        "repeat": 1,
-        "error": "TimeoutError: The operation was aborted due to timeout"
-      },
-      {
-        "clusterId": "ccfb9e1cb732e",
-        "repeat": 1,
-        "error": "TimeoutError: The operation was aborted due to timeout"
-      },
-      {
-        "clusterId": "ccd39e1dc0c76",
-        "repeat": 1,
-        "error": "TimeoutError: The operation was aborted due to timeout"
-      },
-      {
-        "clusterId": "c39cf3256dcb9",
-        "repeat": 1,
-        "error": "TimeoutError: The operation was aborted due to timeout"
-      },
-      {
-        "clusterId": "c247fca7f4a59",
-        "repeat": 1,
-        "error": "TimeoutError: The operation was aborted due to timeout"
-      },
-      {
-        "clusterId": "c7f8e5d5fe3bc",
-        "repeat": 1,
-        "error": "TimeoutError: The operation was aborted due to timeout"
-      }
-    ],
-    "uniqueClusters": 196
+    "cards": 724,
+    "cardsWithId": 724,
+    "cardsWithCategory": 642,
+    "cardsWithCountry": 312,
+    "cardsWithSources": 96,
+    "storyPagesFetched": 404,
+    "storyErrors": [],
+    "uniqueClusters": 202
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.886,
-    "country": 0.429,
-    "sources": 0.155
+    "category": 0.887,
+    "country": 0.431,
+    "sources": 0.133
   },
   "versionsSeen": [
-    "20260901T115352Z-1d48c9",
-    "20260901T114043Z-62502a",
-    "20260901T115031Z-1be721",
-    "20260901T120009Z-7daa16",
-    "20260901T120010Z-71474b",
-    "20260901T114339Z-79a28b",
-    "20260901T120023Z-5adddd",
-    "20260901T120024Z-cad334",
-    "20260901T120025Z-6dd19a",
-    "20260901T120025Z-f342a1",
-    "20260901T115111Z-1b3a69",
-    "20260901T120027Z-8ea733",
-    "20260901T115129Z-270c1b",
-    "20260901T115249Z-e8141d",
-    "20260901T115119Z-c8b252",
-    "20260901T115131Z-61bd82",
-    "20260901T104516Z-c62400",
-    "20260901T114910Z-ffd4e5",
-    "20260901T114747Z-812e9b",
-    "20260901T114905Z-b0f9ae",
-    "20260901T115128Z-75f7fc",
-    "20260901T114755Z-8a3a1f",
-    "20260901T115131Z-9e08b0",
-    "20260901T115202Z-7658ad",
-    "20260901T115120Z-bd8559",
-    "20260901T115327Z-a01233",
-    "20260901T120038Z-997bf0",
-    "20260901T120042Z-1b979f",
-    "20260901T114745Z-e0e28b",
-    "20260901T114846Z-1d5e2c",
-    "20260901T115347Z-73f6b4",
-    "20260901T115228Z-7583c5",
-    "20260901T115156Z-5f5a34",
-    "20260901T115014Z-680133",
-    "20260901T115007Z-89892f",
-    "20260901T115227Z-07486a",
-    "20260901T115302Z-bfe55e",
-    "20260901T115208Z-fd478a",
-    "archive:2026-09-01T10:25:05.706Z",
-    "20260901T120020Z-efb864",
-    "20260901T120044Z-1768c4",
-    "20260901T120022Z-a6f331",
-    "20260901T120009Z-00b676",
-    "20260901T120008Z-71474b",
-    "20260901T120010Z-cb745f",
-    "20260901T120011Z-cb745f",
-    "20260901T120009Z-a67713"
+    "20260902T113021Z-47a15e",
+    "20260902T112022Z-5fcd06",
+    "20260902T113616Z-71392a",
+    "20260902T110521Z-e7a38b",
+    "20260902T113010Z-141bea",
+    "20260902T113219Z-5743a7",
+    "20260902T113351Z-bd6e8c",
+    "20260902T113051Z-8a662d",
+    "20260902T112853Z-0ab7ba",
+    "20260902T113451Z-96622b",
+    "20260902T113108Z-7bee2a",
+    "20260902T113232Z-39cac1",
+    "20260902T113238Z-3e95e7",
+    "20260902T113320Z-7a3220",
+    "20260902T113231Z-39cac1",
+    "20260902T113246Z-dfcbb5",
+    "20260902T113319Z-29d34f",
+    "20260902T112925Z-6507ed",
+    "20260902T113517Z-147cd7",
+    "20260902T113412Z-6f2a42",
+    "20260902T113439Z-86bd57",
+    "20260902T113505Z-d07ffb",
+    "20260902T113231Z-c56510",
+    "20260902T113121Z-8156e4",
+    "20260902T113511Z-44dcb5",
+    "20260902T113548Z-c4de60",
+    "20260902T113046Z-601c7f",
+    "20260902T113500Z-1203cd",
+    "20260902T113532Z-977d96",
+    "20260902T113523Z-55695e",
+    "20260902T112950Z-e4eb3e",
+    "20260902T113527Z-7320e0",
+    "20260902T113232Z-84b0f4",
+    "20260902T112934Z-ceb78a",
+    "20260902T113341Z-fab6bf",
+    "20260902T113336Z-9bb6b4",
+    "20260902T112819Z-33c37e",
+    "20260902T113412Z-c0caca"
   ],
   "violations": [],
-  "findingsTotal": 1,
-  "findingsByCause": {
-    "list-side staleness": 1
-  },
-  "findings": [
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c1674eb451b99",
-      "storySurface": "/story/liberals-sweep-all-three-federal-byelections-c1674eb451b99 (r1)",
-      "storyVersion": "archive:2026-09-01T10:25:05.706Z",
-      "liveVersionAtRender": "20260901T114745Z-e0e28b",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
-      "listSurfaces": [
-        "/elections (r1)",
-        "/elections (r2)"
-      ]
-    }
-  ],
+  "findingsTotal": 0,
+  "findingsByCause": {},
+  "findings": [],
   "stampCoverage": 1,
   "warningsTotal": 1,
   "warnings": [
     {
       "type": "cross-version-drift",
-      "clusterId": "c39cf3256dcb9",
+      "clusterId": "c56e0e1a28e70",
       "field": "sources",
       "values": [
         {
-          "version": "20260901T115352Z-1d48c9",
+          "version": "20260902T110521Z-e7a38b",
           "value": 2
         },
         {
-          "version": "20260901T114043Z-62502a",
-          "value": 2
-        },
-        {
-          "version": "20260901T120020Z-efb864",
-          "value": 3
-        },
-        {
-          "version": "20260901T120044Z-1768c4",
-          "value": 3
-        },
-        {
-          "version": "20260901T120022Z-a6f331",
+          "version": "20260902T113523Z-55695e",
           "value": 3
         }
       ]
