@@ -392,3 +392,15 @@ the stranger's X account right now, and will keep doing so until the owner
 clears the Vercel deploy blocker.** This does not add a new owner task — it
 adds urgency to the one already filed as BACKLOG item 00, which is a
 dashboard-only fix nobody but the owner can perform.
+
+**UPDATE, same evening — the X fix is LIVE.** The "merged but not serving"
+note above is superseded. BACKLOG item 00 was resolved by `94c7246` (authored
+by the parallel daily run, not this one): the deploy deadlock was our own
+`vercel.json` ignoreCommand crashing on a shallow clone, not a Vercel account
+problem. Confirmed in the Vercel dashboard — `94c7246` **Ready** and badged
+**Production**, with every deployment beneath it `Error` at 4-5 s — and against
+production itself: `https://currentwire.us/` no longer serves
+`<meta name="twitter:site" content="@currentwire">`.
+
+**CurrentWire has stopped crediting the stranger's X account.** Off-page state
+is now fully shipped, with nothing stranded.

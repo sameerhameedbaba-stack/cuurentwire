@@ -349,7 +349,42 @@ Verified 2026-08-31: Manual actions **no issues detected**, Security issues
 **no issues detected**, and the full Crawl stats report (item 4 above) — the
 first time any run has read all three.
 
-## 00. PRODUCTION HAS NOT SHIPPED CODE SINCE 2026-08-31 21:39 UTC — OWNER ACTION, VERCEL DASHBOARD
+## 00. PRODUCTION HAS NOT SHIPPED CODE SINCE 2026-08-31 21:39 UTC — **CLOSED 2026-09-03, VERIFIED LIVE**
+
+**RESOLVED. Production is shipping again, and it needed no owner action after
+all.** The cause was ours, not Vercel's: `vercel.json`'s inline ignoreCommand
+diffed against `VERCEL_GIT_PREVIOUS_SHA` (the last *successful* deploy), Vercel
+builds from a shallow clone, and once `f8805af` aged out of that clone git
+answered `fatal: bad object` and exited 128. Vercel reads any exit code other
+than 0/1 as a build error — so the deploy failed, the last successful deploy
+stayed `f8805af`, and the next deploy diffed against the same missing object.
+A self-locking deadlock. Fixed by `94c7246`, which moves the logic into
+`scripts/vercel-ignore-build.sh` and guarantees it can only ever exit 0 or 1.
+
+That also explains the 4–7 second failures this entry flagged as "no build is
+being attempted" — correct observation, and the ignoreCommand crash is why.
+
+**Verified live 2026-09-03 in the Vercel dashboard and against production**
+(not inferred — the whole point of this entry):
+- `currentwire` → Deployments: `94c7246` **Ready**, badged **Production**.
+  Every deployment beneath it is `Error` at 4–5 s, back through `f8805af`.
+- Production no longer serves `<meta name="twitter:site" content="@currentwire">`
+  (the `1425534` fix, stranded 27 minutes).
+- `Daily briefing by email` now appears in the served HTML — the footer
+  newsletter form from `72e30e7`, stranded since 08-31. **This entry's own
+  staleness probe now passes.**
+- Response headers carry `form-action 'self' https://buttondown.com`, so 00c
+  is live too and the signup will actually submit.
+
+All three days of stranded commits shipped in one build. The remaining item
+below (two projects wired to one repo) is unchanged and still worth doing —
+`cuurentwire` builds on every push and bills against the same on-demand
+budget — but it is now a cost cleanup, not an outage.
+
+<details>
+<summary>Original entry, kept for the record</summary>
+
+### (as filed 2026-09-02) PRODUCTION HAS NOT SHIPPED CODE SINCE 2026-08-31 21:39 UTC
 
 **The site is UP and healthy. It just cannot deploy, and nothing noticed for
 over 24 hours.** Found 2026-09-02 while trying to verify that day's own fix.
@@ -456,7 +491,9 @@ endpoint → exit 2 (deliberately distinct: a rate limit must never page the
 owner as an outage), preview deployments ignored. Unit tests:
 `tests/unit/deploy-watch-lib.test.ts` (15 cases).
 
-## 00c. The newsletter form was blocked by our own CSP — SHIPPED 2026-09-03 (merged, not live)
+</details>
+
+## 00c. The newsletter form was blocked by our own CSP — SHIPPED 2026-09-03, **NOW LIVE**
 
 Found this run by reading production's response headers. The sitewide CSP said
 `form-action 'self'` while `components/layout/NewsletterSignup.tsx` posts to
@@ -471,8 +508,11 @@ testable at all). The guard in `tests/unit/csp.test.ts` reads the form's own
 `action` attribute out of the component and requires the policy to name that
 origin, so switching providers cannot silently re-open it; proved by restoring
 the defect and watching it fail. Verified on a real local production build:
-`form-action 'self' https://buttondown.com` served, form rendered. **Not
-verifiable on production until deploys work.**
+`form-action 'self' https://buttondown.com` served, form rendered.
+**Confirmed on production 2026-09-03** once item 00 cleared: live response
+headers carry `form-action 'self' https://buttondown.com`, and the footer form
+renders. It has still never been submitted by a real visitor, so the first
+actual subscription remains unproven.
 
 ## 00b. Three `data/` files are compiled into the app, and `data/` is excluded from deploys — OPEN
 
