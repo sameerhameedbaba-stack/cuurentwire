@@ -493,6 +493,54 @@ owner as an outage), preview deployments ignored. Unit tests:
 
 </details>
 
+## 00d. Delete the duplicate `cuurentwire` Vercel project — OWNER, ~30 s, audited 2026-09-03
+
+**Audited in the dashboard this run; safe to delete, and deleting it is a net
+win on both cost and SEO.** The owner asked for it to be deleted; the final
+click was blocked by the harness's guardrail on irreversible account actions,
+so it stays an owner step. Everything needed to do it safely is below.
+
+**What `cuurentwire` holds** (checked page by page, not assumed):
+- Domains: **`cuurentwire.vercel.app` only.** No custom domain.
+- Storage: **none connected** — the Storage tab shows the empty "Connect to a
+  Database" state. `neon-cobalt-school` is a *team* resource, offered but not
+  attached.
+- Env vars: 3 duplicates from Aug 14 — `NEXT_PUBLIC_SITE_URL`, `CRON_SECRET`,
+  `ADMIN_SECRET`.
+- Cron: **`/api/cron/news-refresh` enabled on `0,15,30,45 * * * *`.**
+
+**What `currentwire` holds** (i.e. nothing is lost):
+- All three domains — `currentwire.us`, `www.currentwire.us`,
+  `currentwire.vercel.app` — all Production.
+- `neon-cobalt-school` (Neon – Launch) connected for Production + Preview.
+
+**Two active harms, which is why this is worth doing rather than tidy:**
+1. **A duplicate crawlable copy of the whole site.**
+   `https://cuurentwire.vercel.app/` returns **200**, serves the full site and
+   sends **no `x-robots-tag: noindex`**. It does emit
+   `<link rel="canonical" href="https://currentwire.us">`, which is the only
+   thing preventing this from being a straightforward duplicate-content
+   problem. On a domain where only 12 of 34 evergreen surfaces are indexed,
+   spending crawl budget on a second copy of every URL is the opposite of what
+   we need.
+2. **A duplicate cron, 96×/day, against a project with no database.** It runs
+   `/api/cron/news-refresh` every 15 minutes and cannot reach Neon, so it burns
+   function invocations against the same on-demand budget and is the likely
+   source of the dashboard's "Error Anomaly" alerts.
+
+**Nothing depends on the project existing.** `scripts/deploy-watch-lib.mjs`
+matches on the `"Production"` prefix generically and collapses per-SHA with
+"any success = shipped", so one production record per commit instead of two
+still works — and gets *more* accurate, since the collapse currently forgives
+a failing duplicate on purpose. The `"Production – cuurentwire"` strings in
+`tests/unit/deploy-watch-lib.test.ts` are synthetic fixtures and keep passing.
+Update that file's comment when the project is gone.
+
+**Steps:** Vercel → project **`cuurentwire`** (the double-u typo spelling, NOT
+`currentwire`) → Settings → Advanced → Delete Project → type the project name
+to confirm. Verify afterwards that `https://currentwire.us/` still serves 200
+and that `https://cuurentwire.vercel.app/` stops resolving.
+
 ## 00c. The newsletter form was blocked by our own CSP — SHIPPED 2026-09-03, **NOW LIVE**
 
 Found this run by reading production's response headers. The sitewide CSP said
