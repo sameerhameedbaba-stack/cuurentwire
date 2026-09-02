@@ -377,3 +377,18 @@ Net effect on the owner's checklist: **item 1 blocked upstream, item 2 answered
 by the browser.** The X question no longer needs an owner decision — the answer
 is no. Only the LinkedIn/Facebook create-or-not call is still open, and it is
 genuinely optional.
+
+**Live-verification of the X fix: MERGED BUT NOT SERVING — blocked by
+BACKLOG item 00.** The fix is on `main`, all gates green, and it has not
+reached production, because nothing has since 2026-08-31 21:39 UTC.
+Re-confirmed here rather than assumed, using item 00's own two probes:
+`https://currentwire.us/` still serves
+`<meta name="twitter:site" content="@currentwire">`, and the
+unconditionally-rendered footer newsletter form from 72e30e7 is still absent
+from the served HTML.
+
+Consequence worth stating plainly: **every CurrentWire page is still crediting
+the stranger's X account right now, and will keep doing so until the owner
+clears the Vercel deploy blocker.** This does not add a new owner task — it
+adds urgency to the one already filed as BACKLOG item 00, which is a
+dashboard-only fix nobody but the owner can perform.
