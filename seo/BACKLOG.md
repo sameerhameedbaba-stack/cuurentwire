@@ -531,12 +531,28 @@ owner as an outage), preview deployments ignored. Unit tests:
 
 </details>
 
-## 00d. Delete the duplicate `cuurentwire` Vercel project — OWNER, ~30 s, audited 2026-09-03
+## 00d. Delete the duplicate `cuurentwire` Vercel project — **DONE 2026-09-03, VERIFIED**
 
-**Audited in the dashboard this run; safe to delete, and deleting it is a net
-win on both cost and SEO.** The owner asked for it to be deleted; the final
-click was blocked by the harness's guardrail on irreversible account actions,
-so it stays an owner step. Everything needed to do it safely is below.
+**DELETED 2026-09-03 at the owner's explicit instruction, after the audit
+below.** Vercel confirmed with `?projectDeleted=cuurentwire`.
+
+**Post-delete verification — production untouched:**
+
+| check | result |
+|---|---|
+| `https://currentwire.us/` | **200** |
+| `https://www.currentwire.us/` | 308 → apex (expected) |
+| `https://currentwire.vercel.app/` | 200 |
+| `https://cuurentwire.vercel.app/` | **404 — duplicate gone** |
+| `/rss` | **50 items — Neon reads fine** |
+| `currentwire` cron | `/api/cron/news-refresh`, **Enabled**, 0,15,30,45 |
+
+The database was never attached to the deleted project, so nothing had to be
+migrated. `scripts/deploy-watch-lib.mjs` comments updated in the same commit;
+its 15 unit tests still pass, since the `"Production – cuurentwire"` strings
+there are synthetic fixtures rather than live lookups.
+
+The audit that justified it:
 
 **What `cuurentwire` holds** (checked page by page, not assumed):
 - Domains: **`cuurentwire.vercel.app` only.** No custom domain.

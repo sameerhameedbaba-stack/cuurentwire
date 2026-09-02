@@ -29,9 +29,11 @@ export const FAILED_STATES = new Set(["failure", "error"]);
 export const SUCCESS_STATE = "success";
 
 /**
- * Vercel names its environments "Production – <project>". Two projects
- * (`currentwire` and `cuurentwire`) are still wired to this repo, so a single
- * commit produces two Production records; only previews are filtered out here.
+ * Vercel names its environments "Production – <project>". The duplicate
+ * `cuurentwire` project was deleted 2026-09-03 (backlog 00d), so a commit now
+ * produces ONE Production record; only previews are filtered out here. The
+ * prefix match is deliberately generic so a renamed or re-added project keeps
+ * working without a code change.
  */
 export function isProductionEnvironment(environment) {
   return typeof environment === "string" && environment.startsWith("Production");
@@ -41,10 +43,11 @@ export function isProductionEnvironment(environment) {
  * Collapse deployment records to one verdict per commit.
  *
  * A commit counts as SHIPPED when any of its production deployments
- * succeeded. That deliberately forgives the duplicate-project mixup (backlog
- * item 00): if the stale project fails while the serving one succeeds, the
- * code is live and alarming would be a false positive. In every failure
- * observed so far both projects agree, so nothing real is hidden by this.
+ * succeeded. With the duplicate project gone (backlog 00d) there is normally
+ * only one record per commit, so this is now a plain read of that record —
+ * and the signal is strictly sharper than before, since a failing duplicate
+ * can no longer mask anything. The any-success rule is kept because it is the
+ * correct semantics if a second project is ever wired up again.
  *
  * @param {Array<{sha: string, environment: string, createdAt: string, state: string|null}>} entries
  * @returns {Array<{sha: string, at: string, state: "success"|"failure"|"pending"}>} newest first
