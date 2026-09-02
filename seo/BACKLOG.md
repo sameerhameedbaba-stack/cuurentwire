@@ -64,7 +64,102 @@ crawlable, citable value a fix creates per unit of risk.
 
 ## Ranked now — rebuilt from 2026-08-31 evidence
 
-## 00e. Vercel spend is tracking ~4x the subscription — WATCH, do not act yet
+## 00e. SCHEDULED OUTAGE: the site auto-pauses when on-demand hits $10 — OWNER, URGENT
+
+**Re-read 2026-09-03 with the Spend Management panel open, and it is worse than
+"watch". This is a dated, self-inflicted outage.**
+
+```
+On-Demand Budget    $5.42 / $10 (54%)
+Notifications       On
+Pause Projects      On
+```
+
+The dialog's own wording: *"Pause Production Deployments — Pause production
+deployments for all projects on this team, **making them unavailable to
+visitors**."* So the budget is not a warning line, it is a **kill switch**, and
+the site is 54% of the way to it with **21 days left in the cycle**.
+
+**Timing.** The $20 included credit is fully spent. Infrastructure has run
+$25.22 over ~9.5 days (~$2.65/day), and every dollar from here is on-demand.
+$4.58 of headroom ÷ ~$2.65/day = **~1.7 days**. On-demand was observed moving
+$5.21 → $5.32 → $5.42 within ~40 minutes of this run (usage lags up to an hour,
+so treat that as noisy, not as a $7/day rate). Either way the site pauses on
+roughly **2026-09-04/05** unless the budget is raised or the burn drops.
+
+This is the same failure class as 2026-08-24 (`402 DEPLOYMENT_DISABLED`, whole
+site dark) — the difference is that this time it is scheduled, visible in
+advance, and preventable.
+
+**OWNER ACTION (only you can — it is a billing setting):** Vercel → Settings →
+Billing → Spend Management → Configure → raise the On-Demand Budget. Keep
+Notifications on. **Do not turn Pause Projects off casually** — it is the only
+thing standing between a runaway bug and an unbounded bill; raising the number
+is the safer move than removing the cap.
+
+**But raising it by $10 is not a fix.** At the current rate the full cycle needs
+roughly **$62 of on-demand** on top of the $20 subscription. A $20 budget buys
+about four more days. The burn rate itself has to come down — that is our work,
+not the owner's, and it is the rest of this item.
+
+### Where the money actually goes (cycle to date)
+
+| Line | Usage | Charge | Share |
+|---|---|---|---|
+| Observability Events | 7.21M | **$8.66** | 34% |
+| ISR Writes | 1.57M | **$6.30** | 25% |
+| Fluid Active CPU | 45 h | **$5.83** | 23% |
+| Build CPU Minutes | 7 h | $1.48 | 6% |
+| Fast Origin Transfer | 21 GB | $1.26 | 5% |
+| Fluid Provisioned Memory | 115.19 GB·h | $1.22 | 5% |
+| Function Invocations | 394.93K | $0.24 | 1% |
+| ISR Reads / images / edge CPU | — | $0.24 | 1% |
+| **Infrastructure** | | **$25.22** | |
+
+Within-plan and costing nothing: Fast Data Transfer 11 GB / 1 TB, Edge Requests
+819.18K / 10M. The problem is compute and cache writes, not bandwidth.
+
+### The lever to check first: the duplicate project was running everything twice
+
+`cuurentwire` was deleted 2026-09-03 (item 00d). It was a second project on the
+same repo — so it built on every push **and carried the same `vercel.json`,
+including the `crons` block**. If its cron was live, the 15-minute refresh has
+been running **twice an hour, every hour**, doubling the ISR writes, function
+invocations and Fluid CPU that make up 48% of the bill.
+
+**That is a hypothesis, not a finding** — it was not verified before the project
+was deleted, and it cannot be now. But it predicts something testable: the daily
+burn should drop sharply from 2026-09-03. **The next run must read
+on-demand charges again and compare $/day before and after the deletion.** If it
+roughly halves, the spend problem is largely already solved and the budget
+question shrinks with it.
+
+### Cuts available if it does not halve, cheapest first
+
+1. **Observability Events, $8.66 and the single largest line.** Telemetry about
+   the app, with zero reader-facing value, billed at $1.20/1M. Turning it down
+   is a project setting — **needs the owner's say-so, not a code change**.
+2. **ISR Writes, 1.57M ≈ 165K/day across ~15K URLs** — about 11 regenerations
+   per URL per day, which is far more than the content changes. Worth measuring
+   against the revalidate TTLs. **Handle with care**: the playbook's ISR cost
+   discipline warns that tightening these to chase TTFB re-created the
+   2026-08-24 outage, so this needs measurement first, not intuition.
+3. **Fluid Active CPU, 45 h** — falls with (2), since most of it is rendering.
+
+### Automating this so it never surprises anyone again
+
+Reading these numbers currently requires the owner's Chrome. A free Vercel
+**read-only API token** (owner creates once, ~1 minute) would let a GitHub
+Action pull on-demand charges daily and open an `[auto-alert]` issue at, say,
+70% of budget — the same pattern as `deploy-watch.yml`. Worth the one-time ask:
+without it, "are we about to be paused?" is only answerable by a human opening a
+dashboard, which is exactly the kind of dependency this project keeps getting
+burned by.
+
+<details>
+<summary>Original framing (2026-09-03, before the Spend Management panel was read)</summary>
+
+### Vercel spend is tracking ~4x the subscription — WATCH, do not act yet
 
 Read from the Vercel usage page 2026-09-03 (cycle **Aug 24 – Sep 24**, ~9.4 of
 31 days elapsed), first time these numbers have been pulled since Pro was bought:
@@ -101,6 +196,9 @@ Two things to weigh before anyone changes a setting:
 Per the playbook a new quota wall is **logged for the owner, not paid past**;
 nothing was changed on the account. **Action: the Monday deep run re-reads this
 against a full week of normal operation before recommending anything.**
+
+
+</details>
 
 **0a. `archive-sitemap.xml` HAS NEVER BEEN PROCESSED BY GOOGLE — 13,593 URLs,
 92% of everything this site publishes. OWNER ACTION, 30 seconds.** Found
