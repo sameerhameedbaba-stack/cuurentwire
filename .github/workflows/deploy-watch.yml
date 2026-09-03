@@ -45,6 +45,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: the watch asks git for the newest commit that would
+          # actually trigger a build (a skipped build writes no deployment
+          # record, so judging plain HEAD manufactured [auto-alert] #9). With a
+          # shallow clone git finds nothing, the silence rule stands down and
+          # the check degrades to the failed-deploy rule alone — safe, but blind
+          # to a disconnected integration.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -60,9 +68,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +e
-          node scripts/deploy-watch.mjs
-          code=$?
+          node scripts/deploy-watch.mjs 2>&1 | tee /tmp/deploy-watch.log
+          code=${PIPESTATUS[0]}
           echo "code=$code" >> "$GITHUB_OUTPUT"
+          # The verdict line, forwarded into the alert so the issue says what is
+          # actually wrong. The old body told the owner to go read a Vercel build
+          # log unconditionally — and when the silence rule fired on a build that
+          # never ran, that log was empty (2026-09-04, [auto-alert] #9).
+          {
+            echo "summary<<EOF"
+            grep -E "^(Production|Vercel created)" /tmp/deploy-watch.log | head -3
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
           exit 0
       - name: Open or update the alert issue
         if: steps.watch.outputs.code == '1'
@@ -71,17 +88,28 @@ jobs:
           script: |
             const title = "[auto-alert] production is not shipping pushed code";
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const verdict = `${{ steps.watch.outputs.summary }}`.trim();
             const body = [
-              "Commits have been pushed to `main` that did NOT reach production.",
+              "Code pushed to `main` did NOT reach production.",
               "",
-              "The site is probably fine — it keeps serving the last build that succeeded,",
-              "kept fresh by the cron — so every other alert will stay green. What is broken",
-              "is the pipeline: merged fixes are not live.",
+              "**What the check found:**",
+              "```",
+              verdict || "(verdict line unavailable — see the run log)",
+              "```",
               "",
-              "Only the Vercel dashboard can say why a build fails:",
-              "Vercel -> CurrentWire -> Deployments -> open the newest failed one -> read the log.",
+              "The site itself is probably fine — it keeps serving the last build that",
+              "succeeded, kept fresh by the cron — so every other alert stays green.",
               "",
-              `Which commits, and for how long: ${runUrl}`,
+              "Commits touching only `seo/`, `docs/`, `data/`, `.github/` or `*.md` are",
+              "skipped by design and produce no deployment record; this check ignores them,",
+              "so an alert here always concerns a real code change.",
+              "",
+              "If the line above says a deployment FAILED: Vercel -> currentwire ->",
+              "Deployments -> open the newest failed one -> read the build log.",
+              "If it says NO deployment was created: the GitHub<->Vercel integration is",
+              "disconnected — Vercel -> currentwire -> Settings -> Git.",
+              "",
+              `Full detail: ${runUrl}`,
             ].join("\n");
             const { data: issues } = await github.rest.issues.listForRepo({
               owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
@@ -119,12 +147,17 @@ jobs:
                 issue_number: existing.number, state: "closed",
               });
             }
+      # Exit 2 (could-not-check) stays GREEN with a warning annotation. It used
+      # to go red exactly like exit 1, which made "not shipping" and "GitHub
+      # rate-limited us" indistinguishable at a glance — and a red run that
+      # means nothing is how a real one gets ignored. In CI the job token lifts
+      # the rate limit to 1000/h, so exit 2 there means GitHub itself is down.
       - name: Reflect the verdict in the job result
         if: steps.watch.outputs.code != '0'
         run: |
           if [ "${{ steps.watch.outputs.code }}" = "2" ]; then
-            echo "::warning::Deploy watch could not read the deployments API — no verdict, no alert."
-          else
-            echo "::error::Production is not shipping pushed code."
+            echo "::warning::Deploy watch could not read the deployments API — no verdict, no alert, not an outage."
+            exit 0
           fi
+          echo "::error::Production is not shipping pushed code."
           exit 1

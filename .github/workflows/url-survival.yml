@@ -100,17 +100,42 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add data/url-ledger.json
           git diff --cached --quiet || git commit -m "chore: url survival ledger $(date -u +%F)"
-          git push
-      - name: Re-enable sibling scheduled workflows
+          # A bare `git push` loses to any concurrent write to main and throws
+          # away a measurement that took 16 minutes of probing to produce — and
+          # then reports the whole run as failed, so the check looks broken
+          # while it is actually passing. Measured cost: data/url-ledger.json
+          # went 32 h without an update while every daily run "failed"
+          # (2026-09-02 -> 09-04). gsc.yml and cwv.yml were fixed for this on
+          # 2026-08-31; these two workflows, which are the ones that actually
+          # collide at 06:17/06:47, were not. Rebase and retry.
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then break; fi
+            if [ "$attempt" = "5" ]; then
+              echo "::error::push rejected 5 times; the survival ledger is measured but unsaved"
+              exit 1
+            fi
+            echo "push rejected (attempt $attempt) — rebasing onto origin/main"
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort; exit 1; }
+            sleep $((RANDOM % 5 + 3))
+          done
+      - name: Re-enable every scheduled workflow
         # GitHub auto-disables scheduled workflows on public repos after 60
         # days of repository inactivity. This workflow commits daily, so it
-        # runs as long as anything does — have it re-arm the other probes so
-        # none of them can stop silently. Best-effort by design.
+        # runs as long as anything does — have it re-arm the others so none can
+        # stop silently. Best-effort by design.
+        #
+        # Fixed 2026-09-04: the list covered 3 of the 9 workflows, leaving
+        # uptime (the outage detector), gsc, bluesky-post, deploy-watch and
+        # this workflow itself unprotected — and if THIS one were ever
+        # disabled the whole mechanism died with it. surface-coherence.yml now
+        # carries the same step, so the two re-arm each other and no single
+        # disable can take the guard down.
         if: always()
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh workflow enable surface-coherence.yml || true
-          gh workflow enable seo-health.yml || true
-          gh workflow enable cwv.yml || true
+          for wf in surface-coherence seo-health cwv uptime gsc bluesky-post deploy-watch url-survival; do
+            gh workflow enable "$wf.yml" || true
+          done

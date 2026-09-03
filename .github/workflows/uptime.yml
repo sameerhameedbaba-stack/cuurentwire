@@ -1,6 +1,22 @@
 name: Uptime probe
 
-# Every 30 minutes: is production actually up AND serving real, fresh news?
+# Is production actually up AND serving real, fresh news?
+#
+# CADENCE, MEASURED — read this before trusting any detection-time claim.
+# This asked for */30 and GitHub delivered one run every 3.62 h: 59 scheduled
+# runs over 210.1 h (13.8% of nominal), with observed gaps of 12.50, 10.55 and
+# 9.69 hours. GitHub documents scheduled runs as best-effort and drops them
+# under load, worst at the top of the hour; */30 on a public repo is a request,
+# not a promise, and the header used to state it as one. Asking hourly at an
+# odd minute is delivered far more reliably than */30 at :00 and :30, so that
+# is what it now asks for — fewer requested runs, more actual ones.
+#
+# What that means for the thresholds below, honestly: they are correct as
+# STALENESS limits (45 min of dataset age really is three missed refreshes)
+# but they are NOT detection-time guarantees. A fault that self-heals inside
+# one gap is missed entirely. This probe is a safety net for sustained
+# breakage, not a minute-resolution monitor, and nothing here should be quoted
+# as "we detect outages within 30 minutes".
 # "Fresh" means two independent things and both are checked: the dataset the
 # pages render from (the cw-dataset-version stamp) and the permanent archive
 # behind it (the newest news-sitemap publication_date). 2026-08-26 proved
@@ -24,7 +40,10 @@ name: Uptime probe
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    # Hourly at :17 — deliberately off the top of the hour, where GitHub sheds
+    # the most scheduled load. See the measured-cadence note in the header:
+    # this is a request GitHub may still drop, not a guarantee.
+    - cron: "17 * * * *"
   workflow_dispatch:
   # On-demand independent probe: change .github/triggers/uptime (a timestamp
   # line) and push. Added 2026-09-02, when the daily loop's own verification

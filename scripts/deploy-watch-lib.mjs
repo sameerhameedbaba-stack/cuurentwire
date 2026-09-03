@@ -22,6 +22,30 @@
  * shapes; scripts/deploy-watch.mjs does the fetching.
  */
 
+/**
+ * The pathspecs vercel.json's ignoreCommand excludes from "did the code
+ * change?" — mirrored from scripts/vercel-ignore-build.sh, which stays the
+ * single authority because it is load-bearing for deploys and must remain
+ * trivially simple. tests/unit/deploy-watch-lib.test.ts parses that script and
+ * fails if these two lists ever drift, so the mirror cannot rot silently.
+ *
+ * Why the watch needs them at all (2026-09-04): a build the ignore rule SKIPS
+ * produces no GitHub deployment record whatsoever. The silence rule below read
+ * that absence as "the Vercel integration is disconnected" and opened
+ * [auto-alert] #9 — a false alarm whose body sent the owner to read the log of
+ * a build that never ran. Report commits touching only seo/ and data/ land
+ * ~12x/day, so HEAD is usually a skipped commit and this alarm was on its way
+ * to permanently red. The watch must therefore judge the newest commit that
+ * WOULD have triggered a build, never merely the newest commit.
+ */
+export const BUILD_EXCLUDED_PATHSPECS = Object.freeze([
+  "seo",
+  "docs",
+  "data",
+  ".github",
+  "*.md",
+]);
+
 /** GitHub deployment states that mean "this attempt is over, and it lost". */
 export const FAILED_STATES = new Set(["failure", "error"]);
 
@@ -81,22 +105,36 @@ export function collapseBySha(entries) {
  * A second, independent rule catches the blind spot in the first: if the Vercel
  * integration is disconnected it stops writing records altogether, the newest
  * one stays `success` forever, and rule one goes permanently green while
- * nothing ships. So a HEAD commit older than `silenceHours` with no deployment
- * record at all is also an alarm. Every push observed creates a record —
- * including ones vercel.json's ignoreCommand skips — so silence really is
- * abnormal.
+ * nothing ships. So a DEPLOYABLE commit older than `silenceHours` with no
+ * deployment record after it is also an alarm.
+ *
+ * `deployableHeadAt` must be the commit date of the newest commit that would
+ * actually trigger a build — NOT the newest commit on main. A skipped build
+ * writes no record, so judging plain HEAD makes routine report commits look
+ * like a dead integration (see BUILD_EXCLUDED_PATHSPECS above; this was
+ * [auto-alert] #9). When the caller cannot determine it — no git history in a
+ * shallow clone, say — it passes null and this rule stands down rather than
+ * guessing, because a false alarm here costs the owner a wasted dashboard trip
+ * and costs this check its credibility.
  *
  * @param {Array<{sha: string, environment: string, createdAt: string, state: string|null}>} entries
- * @param {{now?: Date, headCommitAt?: string|null, silenceHours?: number}} [options]
+ * @param {{now?: Date, deployableHeadAt?: string|null, silenceHours?: number}} [options]
  */
-export function assessDeploys(entries, { now = new Date(), headCommitAt = null, silenceHours = 2 } = {}) {
+export function assessDeploys(entries, { now = new Date(), deployableHeadAt = null, silenceHours = 2 } = {}) {
+  const headCommitAt = deployableHeadAt;
   const commits = collapseBySha(entries);
   const settled = commits.filter((c) => c.state !== "pending");
 
   const newestRecordAt = commits[0]?.at ?? null;
   const headAgeHours = headCommitAt ? (now.getTime() - new Date(headCommitAt).getTime()) / 3_600_000 : null;
+  // Compare INSTANTS, never strings. Deployment timestamps arrive from GitHub
+  // as UTC "Z" but a commit date can arrive in any offset ("+05:30"), and
+  // lexicographic order across mixed offsets is simply wrong — it inverted this
+  // very verdict in testing on 2026-09-04.
+  const recordIsOlderThanHead =
+    !newestRecordAt || Date.parse(newestRecordAt) < Date.parse(headCommitAt ?? "");
   // Only judge silence once the commit has had well past a build's head start.
-  if (headCommitAt && headAgeHours > silenceHours && (!newestRecordAt || newestRecordAt < headCommitAt)) {
+  if (headCommitAt && headAgeHours > silenceHours && recordIsOlderThanHead) {
     return {
       ok: false,
       inconclusive: false,
@@ -104,7 +142,7 @@ export function assessDeploys(entries, { now = new Date(), headCommitAt = null, 
       hoursSinceSuccess: null,
       failingShas: [],
       summary:
-        `Vercel created no deployment at all for the newest commit on main (pushed ${formatHours(headAgeHours)} ago). ` +
+        `Vercel created no deployment at all for the newest code-changing commit on main (pushed ${formatHours(headAgeHours)} ago). ` +
         "The GitHub integration looks disconnected — that ships nothing while every site probe stays green.",
     };
   }

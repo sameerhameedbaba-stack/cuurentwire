@@ -1,6 +1,9 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import {
+  BUILD_EXCLUDED_PATHSPECS,
   assessDeploys,
   collapseBySha,
   formatHours,
@@ -136,7 +139,7 @@ describe("assessDeploys — the integration-went-silent rule", () => {
     // record stays `success` forever while nothing ships.
     const verdict = assessDeploys(bothProjects("aaa", "2026-09-01T10:00:00Z", "success"), {
       now: new Date("2026-09-03T12:00:00Z"),
-      headCommitAt: "2026-09-03T08:00:00Z",
+      deployableHeadAt: "2026-09-03T08:00:00Z",
     });
     expect(verdict.ok).toBe(false);
     expect(verdict.summary).toContain("no deployment at all");
@@ -145,7 +148,7 @@ describe("assessDeploys — the integration-went-silent rule", () => {
   it("gives a fresh push time to produce its record before judging", () => {
     const verdict = assessDeploys(bothProjects("aaa", "2026-09-01T10:00:00Z", "success"), {
       now: new Date("2026-09-03T12:00:00Z"),
-      headCommitAt: "2026-09-03T11:59:00Z",
+      deployableHeadAt: "2026-09-03T11:59:00Z",
     });
     expect(verdict.ok).toBe(true);
   });
@@ -153,7 +156,7 @@ describe("assessDeploys — the integration-went-silent rule", () => {
   it("stays quiet when the newest commit already has its record", () => {
     const verdict = assessDeploys(bothProjects("aaa", "2026-09-03T08:00:30Z", "success"), {
       now: new Date("2026-09-03T12:00:00Z"),
-      headCommitAt: "2026-09-03T08:00:00Z",
+      deployableHeadAt: "2026-09-03T08:00:00Z",
     });
     expect(verdict.ok).toBe(true);
   });
@@ -165,11 +168,84 @@ describe("assessDeploys — the integration-went-silent rule", () => {
         ...bothProjects("bbb", "2026-09-03T08:00:30Z", "failure"),
         ...bothProjects("aaa", "2026-09-01T10:00:00Z", "success"),
       ],
-      { now: new Date("2026-09-03T12:00:00Z"), headCommitAt: "2026-09-03T08:00:00Z" },
+      { now: new Date("2026-09-03T12:00:00Z"), deployableHeadAt: "2026-09-03T08:00:00Z" },
     );
     expect(verdict.ok).toBe(false);
     expect(verdict.summary).toContain("cannot ship code");
     expect(verdict.failingShas).toEqual(["bbb"]);
+  });
+});
+
+describe("assessDeploys — skipped builds are not a silent integration", () => {
+  // The defect this suite exists for. A build the ignoreCommand skips writes
+  // NO deployment record, and seo/ and data/ report commits land ~12x/day, so
+  // the newest commit on main is usually one of them. Judging plain HEAD read
+  // that ordinary silence as a dead integration and opened [auto-alert] #9
+  // against a build that never ran. The caller must pass the newest
+  // CODE-CHANGING commit instead; these cases pin that contract.
+  it("stays quiet when the newest commits are report-only and the last code change shipped", () => {
+    const verdict = assessDeploys(bothProjects("aaa", "2026-09-03T08:00:30Z", "success"), {
+      now: new Date("2026-09-04T20:00:00Z"),
+      // 36 h of seo/ and data/ commits since, none of which Vercel builds.
+      deployableHeadAt: "2026-09-03T08:00:00Z",
+    });
+    expect(verdict.ok).toBe(true);
+    expect(verdict.summary).toContain("Production is shipping");
+  });
+
+  it("still catches a genuinely silent integration on a code commit", () => {
+    const verdict = assessDeploys(bothProjects("aaa", "2026-09-01T10:00:00Z", "success"), {
+      now: new Date("2026-09-04T20:00:00Z"),
+      deployableHeadAt: "2026-09-04T08:00:00Z",
+    });
+    expect(verdict.ok).toBe(false);
+    expect(verdict.summary).toContain("no deployment at all");
+  });
+
+  it("judges the same instant identically however its offset is written", () => {
+    // The bug this pins, caught in verification on 2026-09-04 before shipping:
+    // git prints the commit date in the committer's offset, GitHub prints UTC,
+    // and the rule compared them as strings. "2026-09-02T22:56:44Z" sorts below
+    // the SAME instant written "2026-09-03T04:26:44+05:30", so a shipped commit
+    // read as a dead integration.
+    const record = bothProjects("aaa", "2026-09-02T22:56:44Z", "success");
+    const now = new Date("2026-09-03T20:00:00Z");
+    const asUtc = assessDeploys(record, { now, deployableHeadAt: "2026-09-02T22:56:44Z" });
+    const asOffset = assessDeploys(record, { now, deployableHeadAt: "2026-09-03T04:26:44+05:30" });
+    expect(asUtc.ok).toBe(true);
+    expect(asOffset.ok).toBe(true);
+    expect(asOffset.summary).toBe(asUtc.summary);
+  });
+
+  it("stands down instead of guessing when git could not answer", () => {
+    // Shallow clone, or no code commit in range: null must never alarm.
+    const verdict = assessDeploys(bothProjects("aaa", "2026-09-01T10:00:00Z", "success"), {
+      now: new Date("2026-09-04T20:00:00Z"),
+      deployableHeadAt: null,
+    });
+    expect(verdict.ok).toBe(true);
+  });
+});
+
+describe("BUILD_EXCLUDED_PATHSPECS", () => {
+  it("matches scripts/vercel-ignore-build.sh exactly", () => {
+    // Two places decide "would this commit trigger a build?": the shell script
+    // Vercel runs, and the watch that judges the result. The shell script stays
+    // the authority (it is load-bearing for deploys and must stay simple), so
+    // this test is what stops the mirror rotting. If it fails, the watch is
+    // about to alarm on commits Vercel skips, or miss ones it builds.
+    const script = readFileSync(
+      new URL("../../scripts/vercel-ignore-build.sh", import.meta.url),
+      "utf8",
+    );
+    // Comment lines only — the header quotes the old inline command verbatim,
+    // pathspecs and all, so matching the whole file reads history as config.
+    const executable = script
+      .split("\n")
+      .filter((line) => !line.trimStart().startsWith("#"))
+      .join("\n");
+    const fromScript = [...executable.matchAll(/':\(exclude\)([^']+)'/g)].map((m) => m[1]);
+    expect(fromScript).toEqual([...BUILD_EXCLUDED_PATHSPECS]);
   });
 });
 

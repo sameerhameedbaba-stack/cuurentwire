@@ -104,4 +104,32 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add data/coherence-report.json
           git diff --cached --quiet || git commit -m "chore: surface coherence report $(date -u +%F)"
-          git push
+          # Same lost-push race as url-survival.yml (both run ~06:17-06:47 and
+          # both push to main); gsc.yml and cwv.yml already carry this loop.
+          # A bare push discards the report AND fails the run, so the probe
+          # reads as broken while it is passing.
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then break; fi
+            if [ "$attempt" = "5" ]; then
+              echo "::error::push rejected 5 times; the coherence report is measured but unsaved"
+              exit 1
+            fi
+            echo "push rejected (attempt $attempt) — rebasing onto origin/main"
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort; exit 1; }
+            sleep $((RANDOM % 5 + 3))
+          done
+      - name: Re-enable every scheduled workflow
+        # The second half of the anti-auto-disable guard (the first is in
+        # url-survival.yml). Two independent daily workflows re-arm the whole
+        # set, including each other, so no single workflow being disabled can
+        # take the mechanism down with it — which is exactly what the
+        # single-workflow version risked until 2026-09-04.
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for wf in url-survival seo-health cwv uptime gsc bluesky-post deploy-watch surface-coherence; do
+            gh workflow enable "$wf.yml" || true
+          done
