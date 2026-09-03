@@ -103,5 +103,28 @@
       "medianWidth": 1000,
       "pctWidth1200OfPublisher": 38.6
     }
+  },
+  {
+    "date": "2026-09-03T21:27:15.855Z",
+    "sampled": 120,
+    "og": {
+      "pctWithImage": 93.3,
+      "pctWidth1200": 93.3,
+      "pctPixels300k": 93.3,
+      "pctWide16x9": 93.3,
+      "pctBroken": 6.7,
+      "medianWidth": 1200
+    },
+    "hero": {
+      "pctPublisherImage": 73.3,
+      "pctPlaceholder": 0,
+      "pctNone": 20,
+      "pctWidth1200": 24.2,
+      "pctPixels300k": 58.3,
+      "pctWide16x9": 47.5,
+      "pctBroken": 7.5,
+      "medianWidth": 976,
+      "pctWidth1200OfPublisher": 33
+    }
   }
 ]
