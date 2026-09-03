@@ -318,8 +318,26 @@ against a full week of normal operation before recommending anything.**
 
 </details>
 
-**0a. `archive-sitemap.xml` HAS NEVER BEEN PROCESSED BY GOOGLE — 16,869 URLs (re-measured live 2026-09-03; the 13,593 figure quoted here for days was three thousand light),
-92% of everything this site publishes. OWNER ACTION, 30 seconds.** Found
+**0a. CLOSED 2026-09-04 — SUBMITTED AND ALREADY READ.** The owner said "access
+chrome and get it done", so this was submitted through Search Console
+(sc-domain:currentwire.us, OVYA account, authuser=1) rather than left on the
+owner's list. Google accepted it and read it the SAME DAY: the Sitemaps report
+now shows `https://currentwire.us/archive-sitemap.xml` — Submitted Sep 4,
+Last read Sep 4, **Status Success, 16,973 pages discovered**. Sitemap-submitted
+URLs went from 953 (618 + 335) to **17,926**, an 18x increase in what Google
+knows about through sitemaps.
+
+Do not mistake this for an indexing win yet: *discovered* is not *indexed*.
+Google now has the URLs and will crawl and judge them over weeks; the
+indexation number is the one to watch, and page value still governs the
+outcome. What is closed is the 17-day blind spot where 92% of the site was
+invisible to Google's sitemap pipeline. Re-check the Sitemaps report and the
+Pages report weekly from here.
+
+The original finding, kept for the record:
+
+**`archive-sitemap.xml` HAD NEVER BEEN PROCESSED BY GOOGLE — 16,869 URLs (re-measured live 2026-09-03; the 13,593 figure quoted here for days was three thousand light),
+92% of everything this site publishes.** Found
 2026-08-31 only because the owner pushed back on an indexing figure in the
 weekly report. GSC's Sitemaps report lists **two** sitemaps:
 
