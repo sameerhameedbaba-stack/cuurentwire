@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-02T11:43:00.287Z",
+  "ranAt": "2026-09-03T11:42:42.804Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,80 +16,181 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 724,
-    "cardsWithId": 724,
-    "cardsWithCategory": 642,
-    "cardsWithCountry": 312,
-    "cardsWithSources": 96,
-    "storyPagesFetched": 404,
+    "cards": 726,
+    "cardsWithId": 726,
+    "cardsWithCategory": 644,
+    "cardsWithCountry": 298,
+    "cardsWithSources": 94,
+    "storyPagesFetched": 392,
     "storyErrors": [],
-    "uniqueClusters": 202
+    "uniqueClusters": 196
   },
   "coverage": {
     "clusterId": 1,
     "category": 0.887,
-    "country": 0.431,
-    "sources": 0.133
+    "country": 0.41,
+    "sources": 0.129
   },
   "versionsSeen": [
-    "20260902T113021Z-47a15e",
-    "20260902T112022Z-5fcd06",
-    "20260902T113616Z-71392a",
-    "20260902T110521Z-e7a38b",
-    "20260902T113010Z-141bea",
-    "20260902T113219Z-5743a7",
-    "20260902T113351Z-bd6e8c",
-    "20260902T113051Z-8a662d",
-    "20260902T112853Z-0ab7ba",
-    "20260902T113451Z-96622b",
-    "20260902T113108Z-7bee2a",
-    "20260902T113232Z-39cac1",
-    "20260902T113238Z-3e95e7",
-    "20260902T113320Z-7a3220",
-    "20260902T113231Z-39cac1",
-    "20260902T113246Z-dfcbb5",
-    "20260902T113319Z-29d34f",
-    "20260902T112925Z-6507ed",
-    "20260902T113517Z-147cd7",
-    "20260902T113412Z-6f2a42",
-    "20260902T113439Z-86bd57",
-    "20260902T113505Z-d07ffb",
-    "20260902T113231Z-c56510",
-    "20260902T113121Z-8156e4",
-    "20260902T113511Z-44dcb5",
-    "20260902T113548Z-c4de60",
-    "20260902T113046Z-601c7f",
-    "20260902T113500Z-1203cd",
-    "20260902T113532Z-977d96",
-    "20260902T113523Z-55695e",
-    "20260902T112950Z-e4eb3e",
-    "20260902T113527Z-7320e0",
-    "20260902T113232Z-84b0f4",
-    "20260902T112934Z-ceb78a",
-    "20260902T113341Z-fab6bf",
-    "20260902T113336Z-9bb6b4",
-    "20260902T112819Z-33c37e",
-    "20260902T113412Z-c0caca"
+    "20260903T113015Z-4cf0fc",
+    "20260903T113754Z-203915",
+    "20260903T114241Z-ec135f",
+    "20260903T113747Z-78524b",
+    "20260903T112715Z-d63bd7",
+    "20260903T113308Z-9a04c1",
+    "20260903T114253Z-aa3e22",
+    "20260903T114252Z-aa3e22",
+    "20260903T114248Z-bbec7d",
+    "20260903T113046Z-c4ec0b",
+    "20260903T114253Z-07945d",
+    "20260903T114254Z-07945d",
+    "20260903T114252Z-07945d",
+    "20260903T114253Z-f9ac27",
+    "20260903T114301Z-fb2185",
+    "20260903T114309Z-f9d6a0",
+    "20260903T114306Z-f15b34",
+    "archive:2026-09-03T10:25:06.067Z",
+    "archive:2026-09-03T11:30:00.292Z",
+    "20260903T114308Z-b01a44",
+    "20260903T110521Z-accd37",
+    "20260903T081021Z-9a6993",
+    "20260903T075514Z-5f8688",
+    "20260903T090522Z-b1627e",
+    "20260903T114322Z-fe4d0c",
+    "20260903T114320Z-0fb5a6",
+    "20260903T114331Z-df8a12",
+    "20260903T103013Z-c5e787",
+    "20260903T114332Z-7016a3",
+    "20260903T114331Z-7016a3",
+    "20260903T110018Z-f6dd0c",
+    "20260903T114340Z-eee780",
+    "20260903T104516Z-cb4a4c",
+    "20260903T112029Z-86a0b5",
+    "20260903T100522Z-a0e6bb",
+    "20260903T090018Z-1cb4b3",
+    "20260903T080014Z-bf9a20",
+    "20260903T035013Z-e5e25f",
+    "20260903T073518Z-227f20",
+    "20260903T065521Z-95cb2d",
+    "20260903T114254Z-be33a4",
+    "20260903T114350Z-37abda",
+    "20260903T114350Z-b9b879"
   ],
   "violations": [],
-  "findingsTotal": 0,
-  "findingsByCause": {},
-  "findings": [],
+  "findingsTotal": 5,
+  "findingsByCause": {
+    "list-side staleness": 5
+  },
+  "findings": [
+    {
+      "type": "archive-vs-live",
+      "clusterId": "cc23888ef8654",
+      "storySurface": "/story/humanoids-dominate-the-headlines-but-specialized-physical-ai-captures-value-in-1-cc23888ef8654 (r1)",
+      "storyVersion": "archive:2026-09-03T10:25:06.067Z",
+      "liveVersionAtRender": "20260903T114301Z-fb2185",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/ (r1)",
+        "/ (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "cf90c45fe4201",
+      "storySurface": "/story/aecom-selected-to-design-pure-water-silicon-valley-demonstration-facility-cf90c45fe4201 (r1)",
+      "storyVersion": "archive:2026-09-03T11:30:00.292Z",
+      "liveVersionAtRender": "20260903T114306Z-b5ddf4",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/ (r1)",
+        "/ (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c798dd0e7ce68",
+      "storySurface": "/story/wood-mackenzie-natural-carbon-sinks-absorb-40-of-human-co2-emissions-and-are-not-c798dd0e7ce68 (r1)",
+      "storyVersion": "archive:2026-09-03T11:30:00.292Z",
+      "liveVersionAtRender": "20260903T114308Z-b01a44",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/us (r1)",
+        "/latest (r1)",
+        "/us (r2)",
+        "/latest (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "cb509fbbb110e",
+      "storySurface": "/story/miniluxe-announces-new-mansfield-studio-opening-through-joint-venture-with-entre-cb509fbbb110e (r1)",
+      "storyVersion": "archive:2026-09-03T11:30:00.292Z",
+      "liveVersionAtRender": "20260903T114308Z-b01a44",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/us (r1)",
+        "/latest (r1)",
+        "/business (r1)",
+        "/us (r2)",
+        "/latest (r2)",
+        "/business (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c085d04d02eba",
+      "storySurface": "/story/stallion-completes-ground-gravity-identifies-three-new-priority-target-areas-at-c085d04d02eba (r1)",
+      "storyVersion": "archive:2026-09-03T11:30:00.292Z",
+      "liveVersionAtRender": "20260903T114308Z-b01a44",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/canada (r1)",
+        "/latest (r1)",
+        "/business (r1)",
+        "/canada (r2)",
+        "/latest (r2)",
+        "/business (r2)"
+      ]
+    }
+  ],
   "stampCoverage": 1,
-  "warningsTotal": 1,
+  "warningsTotal": 2,
   "warnings": [
     {
       "type": "cross-version-drift",
-      "clusterId": "c56e0e1a28e70",
+      "clusterId": "c6f6dcadc62b0",
       "field": "sources",
       "values": [
         {
-          "version": "20260902T110521Z-e7a38b",
-          "value": 2
+          "version": "20260903T113015Z-4cf0fc",
+          "value": 10
         },
         {
-          "version": "20260902T113523Z-55695e",
-          "value": 3
+          "version": "20260903T113754Z-203915",
+          "value": 11
+        },
+        {
+          "version": "20260903T114241Z-ec135f",
+          "value": 11
+        },
+        {
+          "version": "20260903T113308Z-9a04c1",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "type": "cross-version-drift",
+      "clusterId": "c211d9a6c7aea",
+      "field": "category",
+      "values": [
+        {
+          "version": "20260903T113754Z-203915",
+          "value": "business"
+        },
+        {
+          "version": "20260903T114331Z-df8a12",
+          "value": "politics"
         }
       ]
     }
