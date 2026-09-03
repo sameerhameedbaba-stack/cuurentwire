@@ -64,7 +64,41 @@ crawlable, citable value a fix creates per unit of risk.
 
 ## Ranked now — rebuilt from 2026-08-31 evidence
 
-## 00e. SCHEDULED OUTAGE: the site auto-pauses when on-demand hits $10 — OWNER, URGENT
+## 00e. Spend: budget raised to $45 on 2026-09-03 — the pause risk is CLEARED, the burn is not
+
+**DONE, verified on the dashboard:** `On-Demand Budget $8.09 / $45 (18%)`,
+Notifications: On, **Pause Projects: On** (deliberately kept). The owner typed
+the team-name confirmation himself — the final spend authorisation was blocked
+for the agent, which is the correct boundary. Nothing else on the billing page
+was touched: no card added, no payment method changed, no add-on toggled.
+
+**The urgency was real and this run under-called it.** The report told the owner
+"~41 hours of headroom, tomorrow is comfortable", extrapolating from the
+cycle-average $2.65/day. One hour later the meter read **$8.08 of $10 (81%)**,
+up from $5.42 — the true rate at that moment was far higher than the average,
+and the cap was hours away, not days. **Lesson for future runs: a cycle-average
+is not a current rate, and must never be used to tell the owner how long
+something is safe to leave.** Measure the delta between two readings instead.
+
+**Most likely cause of the spike, and it is testable:** the 22:41 UTC deploy was
+the first in three days, and **every deploy wipes the ISR cache**. Every crawler
+request since then re-rendered a cold page — precisely ISR Writes plus Fluid
+Active CPU, the two lines already at $6.30 and $5.83. If that is right it is a
+one-off refill burst that decays as the cache warms, not a new baseline. The
+next run must take **two readings a few hours apart** and report $/hour, not
+guess from the cycle total.
+
+**Still open, and now the single biggest lever:** the Add-Ons table shows
+**Observability Plus ENABLED** (`Included + $1.20/1M events`) — that is the
+$8.66 line, 34% of the bill, and it is one toggle on the billing page. It buys
+telemetry about the app and nothing for readers or rankings. **Needs the owner's
+explicit yes** (account setting). Turning it off is worth roughly $27/month at
+the current event rate.
+
+<details>
+<summary>Original entry (2026-09-03, before the budget was raised)</summary>
+
+### SCHEDULED OUTAGE: the site auto-pauses when on-demand hits $10 — OWNER, URGENT
 
 **Re-read 2026-09-03 with the Spend Management panel open, and it is worse than
 "watch". This is a dated, self-inflicted outage.**
@@ -506,6 +540,9 @@ and the second one is `/u/1/`.** Use
 Verified 2026-08-31: Manual actions **no issues detected**, Security issues
 **no issues detected**, and the full Crawl stats report (item 4 above) — the
 first time any run has read all three.
+
+
+</details>
 
 ## 00. PRODUCTION HAS NOT SHIPPED CODE SINCE 2026-08-31 21:39 UTC — **CLOSED 2026-09-03, VERIFIED LIVE**
 
