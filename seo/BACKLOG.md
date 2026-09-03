@@ -82,6 +82,63 @@ its interaction list):
 - `/publishers` + disclose the `WEEK_ROWS_LIMIT` cap currently published as a
   story count on /reports/media-coverage.
 
+**NEW FINDING 2026-09-04, FIXED THE SAME RUN — the Bluesky poster shared one
+story twice because a rewritten headline gives it a new URL.** The daily
+channel check read the live feed and found
+"Gloria Steinem, trailblazing journalist and activist, dies at 92" (11:27 UTC)
+and "Feminist icon Gloria Steinem dies at 92" (16:33 UTC) posted five hours
+apart. They are ONE story: both URLs end `-c6f6dcadc62b0`. Dedup is stateless
+and reads the account's own feed, but it compared **URL strings**, and a story
+slug is derived from its headline, so a rewrite reads as a new story. Costs a
+slot out of the ~8/day ceiling and shows followers the same story twice.
+
+Fixed by keying the ledger on the cluster id (`dedupKey` in the new
+`scripts/bluesky-post-lib.mjs`) — the same fix `archiveRowCacheKey` made for
+the archive row cache on 2026-09-01, resting on the same verified property:
+every published story slug ends with its own cluster id. A URL with no
+well-formed token keeps its normalised URL as its key, so section pages and
+external links behave exactly as before. Five tests, including a drift guard
+that parses `CLUSTER_ID_RE` out of `lib/database/archive.ts`, because the
+poster runs under plain node in CI and cannot import the TypeScript module.
+
+**Not yet verified live** — the proof is the absence of a duplicate over the
+next rewrite, so the next run should re-read the feed rather than assume it.
+
+**NEW FINDING 2026-09-04 (daily crawl sample) — the classifier ignores the
+source article URL, which is the highest-precision free signal available.**
+`lib/news/classification/category.ts` reads headline and description text only
+(grep: the file contains no reference to a source URL). Publishers put their
+own section in the path, and it is editor-assigned rather than inferred.
+
+Unambiguous case, live now:
+- <https://currentwire.us/story/alternative-transfer-awards-left-on-the-shelf-best-bargain-hunters-top-data-pick-c121fa07b0722>
+  `articleSection` = **Culture**. Its only source is
+  `espn.com/**soccer**/story/...` and the piece hands out football transfer-window
+  awards. The text-only vocabulary sees "awards", "trophies" and "left on the
+  shelf" and lands in Culture; the word soccer never appears in headline or
+  description, so the sports keyword list at config/categories.ts:294 cannot
+  fire.
+
+Probable second case: <https://www.theverge.com/**tech**/988648/ugreen-magflow-pro-magnetic-wireless-power-bank-10k-liquid-cooling>
+(a gadget review) is filed **Business**.
+
+**Rate, stated honestly.** 38 stories sampled from the news sitemap; 10 carried
+a recognisable section token in a source URL; 4 of those disagreed with our
+section. Only 2 of the 4 are defects — the other two are an Nvidia/Hugging
+Face acquisition and an AI-in-schools ban, where business and technology are
+both defensible, and multi-source stories legitimately span sections. So this
+is roughly a 5% defect rate on a 38-story sample, which is a signal to
+investigate, NOT a measured site-wide rate.
+
+**Where the fix goes:** `lib/news/` with benchmark coverage, never the
+templates. Treat the URL path as one weighted signal, not an override — a
+publisher section is a hint about the desk, not about the story, and
+`/news/` or `/2026/09/` paths carry nothing. Build the labelled set from URL
+paths first and check it against the existing classification benchmarks before
+changing any weight. Sits with the other classifier items above, AFTER
+`generalOrphanPct` instrumentation, because the same measurement harness will
+tell us whether this is 5% or 0.5% of the corpus.
+
 **CHANNELS SESSION 2026-09-01 (owner clicking, live-verified): items 3, 4
 and 5 of the shift queue below are DONE or resolved.**
 - **Bluesky: LIVE end-to-end.** @currentwire.bsky.social (login
@@ -644,6 +701,8 @@ first time any run has read all three.
 
 </details>
 
+</details>
+
 ## 00. PRODUCTION HAS NOT SHIPPED CODE SINCE 2026-08-31 21:39 UTC — **CLOSED 2026-09-03, VERIFIED LIVE**
 
 **RESOLVED. Production is shipping again, and it needed no owner action after
@@ -873,7 +932,44 @@ headers carry `form-action 'self' https://buttondown.com`, and the footer form
 renders. It has still never been submitted by a real visitor, so the first
 actual subscription remains unproven.
 
-## 00b. Three `data/` files are compiled into the app, and `data/` is excluded from deploys — OPEN
+## 00b. Three `data/` files are compiled into the app, and `data/` is excluded
+from deploys — **SHIPPED 2026-09-04 (`0058fa6`)**
+
+`scripts/vercel-ignore-build.sh` now ANDs a second diff over
+`COMPILED_DATA_FILES` (the three files below), so a commit touching only one
+of them builds while `:(exclude)data` still swallows the ~12x/day report
+commits. Boundary measured with the real script against real history, before
+and after:
+
+| commit | touches | before | after |
+|---|---|---|---|
+| `9ee4cc9` `bf493b7` `520caef` | `data/gsc-url-signals.json` (+ other data/) | **0 = skip** | **1 = build** |
+| `593e369` | `data/lost-stories.json` + `tests/` | 1 = build | 1 = build |
+| `c7f2825` | `data/cwv-history.json` (not compiled in) | 0 = skip | **0 = skip** |
+| `70facbf` | `.github/triggers/cwv` | 0 = skip | **0 = skip** |
+
+The cost control is intact: the two files that are not compiled into the
+bundle still skip. The three that are changed 13 times between them in the 30
+days to 2026-09-04, so the price is about one extra deploy a fortnight.
+
+`scripts/deploy-watch-lib.mjs` mirrors the new list as
+`BUILD_INCLUDED_DATA_FILES` and the existing drift test now parses BOTH lists
+out of the shell script — without that, the watch would stop expecting a
+deployment record for a commit Vercel does build, which is the same false-alarm
+class as [auto-alert] #9. Three new behavioural tests drive the real script
+over a throwaway repo: compiled-in data file builds, tombstone-only commit
+builds, other-data-file still skips.
+
+Two comments that asserted the wrong thing are corrected rather than deleted:
+`lib/seo/gsc-signals.ts` (which described the gap) and
+`.github/workflows/gsc.yml`, which claimed the weekly commit "triggers a
+Vercel deploy — that is intended". It did not, from 2026-08-24 until this
+commit; it does now.
+
+<details>
+<summary>Original entry (2026-09-02)</summary>
+
+### Three `data/` files are compiled into the app, and `data/` is excluded from deploys
 
 Found 2026-09-02 as a side-effect of item 00. `vercel.json`'s ignoreCommand has
 excluded `data` since 2026-08-24 (ISR cost control — report commits were

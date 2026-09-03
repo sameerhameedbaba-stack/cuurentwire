@@ -5,6 +5,9 @@
  * feed that the account has not already posted. Dedup is stateless — the
  * account's own recent feed is the ledger (the story URL lives in each
  * post's external-embed uri), so there is no state file and no commit-back.
+ * The ledger is keyed by CLUSTER ID rather than URL, because a rewritten
+ * headline gives the same story a new slug — see dedupKey in
+ * scripts/bluesky-post-lib.mjs.
  *
  * The post is the story headline plus a link card (title, description and
  * og:image thumbnail from the story page). Own headlines, own site, ~8
@@ -24,6 +27,8 @@
 
 const PDS = "https://bsky.social";
 const IDENTIFIER = process.env.BLUESKY_IDENTIFIER || "currentwire.bsky.social";
+import { dedupKey } from "./bluesky-post-lib.mjs";
+
 const SITE = (process.env.SITE_ORIGIN || "https://currentwire.us").replace(/\/$/, "");
 const PASSWORD = process.env.BLUESKY_APP_PASSWORD;
 
@@ -166,10 +171,13 @@ const feed = await xrpc("GET", "app.bsky.feed.getAuthorFeed", {
   token: session.accessJwt,
   params: { actor: session.did, limit: String(FEED_DEPTH) },
 });
+// Keyed by cluster id, not URL: a story reappears in /rss under a new slug
+// whenever its headline is rewritten, and comparing URLs posted one such story
+// twice in five hours on 2026-09-03. See dedupKey.
 const alreadyPosted = new Set();
 for (const entry of feed.feed ?? []) {
   const uri = entry?.post?.record?.embed?.external?.uri ?? entry?.post?.embed?.external?.uri;
-  if (uri) alreadyPosted.add(uri.replace(/\/$/, ""));
+  if (uri) alreadyPosted.add(dedupKey(uri));
 }
 
 const rssResponse = await fetch(`${SITE}/rss`);
@@ -193,9 +201,7 @@ if (items.length === 0) {
   process.exit(1);
 }
 
-const candidate = items.find(
-  (item) => !alreadyPosted.has(item.link.replace(/\/$/, "")),
-);
+const candidate = items.find((item) => !alreadyPosted.has(dedupKey(item.link)));
 if (!candidate) {
   console.log("bluesky-post: nothing new to post — all fresh stories already shared.");
   process.exit(0);
