@@ -42,3 +42,26 @@ Two things this made cheap, worth copying:
 Related: `2026-08-28-every-cached-response-needs-an-owner.md` (same route, the
 invalidation half of the problem — this is the key half),
 `2026-08-21-the-instrument-breaks-first-and-quietly.md`.
+
+## Seen again 2026-09-04, and it is not a cache lesson
+
+The Bluesky poster dedups by reading its own recent feed and skipping any story
+it has already shared. That ledger was keyed by **URL**, and a story slug is
+derived from its headline. When the Gloria Steinem obituary was retitled, the
+same story reappeared in `/rss` under a new URL and was posted a second time,
+five hours after the first — both URLs ending `-c6f6dcadc62b0`, both visible on
+the public feed.
+
+Same shape, no cache anywhere: an identity question ("have I already handled
+this story?") answered with the **string that happened to name it this time**.
+The fix was the same one line of thinking — key on the cluster id — and the
+same guard against over-matching: a URL with no well-formed token keeps its own
+key, because a dedup that collides silences the feed, which is worse than a
+duplicate.
+
+So generalise the rule past caching: **whenever code asks "is this the same
+thing I saw before?", the key must be the thing's identity, not any label that
+can be rewritten.** Slugs, titles, display names and URLs are all labels. In
+this codebase the identity is the cluster id, and every published story slug
+ends with one.
+
