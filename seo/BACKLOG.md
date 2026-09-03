@@ -1,5 +1,67 @@
 # SEO Backlog
 
+**REPAIR SESSION 2026-09-04 (owner: "get everything fixed... do not create
+more problems while fixing the existing ones"). Everything below is verified
+against production or against a reproduction, never against a write-up.**
+
+SHIPPED AND VERIFIED:
+1. `8a32620` — four monitoring defects. The [auto-alert] #9 false alarm
+   (a build the ignoreCommand SKIPS writes no deployment record; the silence
+   rule read that as a dead integration and sent the owner to read a log of a
+   build that never ran). The watch now judges the newest CODE-CHANGING commit
+   via git, using a mirror of the ignore script's pathspecs guarded by a
+   drift test. **A bug this fix introduced was caught in verification before
+   shipping**: git emits the commit date in the committer's offset while
+   GitHub emits UTC, and the rule compared them as strings, which inverted the
+   verdict on real data — both ends fixed, pinned by a test. Also: exit 2
+   (could-not-check) no longer goes red like exit 1; the lost-push race that
+   was discarding a url-survival/surface-coherence measurement per day; the
+   anti-auto-disable guard extended from 3 of 9 workflows to all 9 from two
+   mutually-protecting workflows. Verified: deploy-watch run #7 success, zero
+   open auto-alert issues.
+2. `b8e33e7` — four wrong figures corrected, including one asserted in code
+   (`seo-health.mjs` claimed sharding was "years away ... ~5,000 URLs of
+   runway"; it is weeks). See the correction block on the growth item below.
+3. `26b3148` — three on-page defects:
+   - **Story meta descriptions collapsing to 2-9 characters.** Leading
+     abbreviations ("U.S.", "Rep.") break the sentence regex so it starts
+     mid-token. Reproduced exactly, then fixed by asserting prefix + substance
+     invariants rather than guessing an abbreviation list. All 8 pre-existing
+     assertions untouched; 4 new tests.
+   - **The LCP element started at opacity 0.** `.section-in` on the homepage
+     hero section meant Chrome would not name it as LCP until the fade
+     finished. **Measured PSI-to-PSI (never mixed with the local Playwright
+     probe): before 5,951 / 6,052 / 6,720 ms; after 3,030 / 4,127 ms — every
+     after-run faster than every before-run; score 71/71/58 -> 84/74.** Still
+     above the ~2,500 ms Discover threshold, so this item stays open.
+   - The archive sitemap's silent 50,000 truncation now logs.
+4. Stale 10-day-old git worktree removed (was polluting lint and grep). It was
+   clean with no unique commits — checked before removing.
+
+VERIFIED **NOT** A DEFECT — do not "fix" these:
+- Trust-page masthead showing a stale date. It is a Client Component using
+  America/New_York; a real browser renders it correctly and it matched ET
+  exactly when checked. Only `curl` (no JS) sees the build-time value.
+
+NEXT, IN THE RELEASE-RISK REVIEW'S ORDER (do not reorder without re-reading
+its interaction list):
+- Hub/report description literals over 160 chars (unasserted, low risk).
+- Briefing description ceiling — BLOCKED until a headline-preservation test
+  exists; as specified it is a measured production break.
+- Story `<title>` clamp — deliberately last of the copy set, no measured loss.
+- Classifier: instrument `generalOrphanPct` first, then hub vocabulary
+  (a TAG, cannot change `articleSection`). Singleton category inheritance is
+  LAST and blocked on narrowing the `history` clause.
+- Archive sitemap: **shard routes additively first**, while the flat urlset
+  still serves; flip `/archive-sitemap.xml` to a `<sitemapindex>` and rewrite
+  the seo-health assertion in ONE commit. **Do NOT use Next's
+  `generateSitemaps`**: it binds only to the `sitemap.(js|ts)` convention,
+  forces `/.../sitemap/[id].xml`, and its generated wrapper hardcodes a 200
+  with `must-revalidate` — there is no path to the 503 + Retry-After outage
+  contract this route gained after 2026-08-21.
+- `/publishers` + disclose the `WEEK_ROWS_LIMIT` cap currently published as a
+  story count on /reports/media-coverage.
+
 **CHANNELS SESSION 2026-09-01 (owner clicking, live-verified): items 3, 4
 and 5 of the shift queue below are DONE or resolved.**
 - **Bluesky: LIVE end-to-end.** @currentwire.bsky.social (login
