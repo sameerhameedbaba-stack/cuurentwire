@@ -18,7 +18,11 @@ name: GSC template report
 # impression). The `git add data/gsc-*.json` glob below already covers the
 # signals file. NOTE: the app imports data/gsc-url-signals.json statically,
 # so the weekly gsc-bot commit of it triggers a Vercel deploy — that is
-# intended (it is how fresh search signals reach production).
+# intended (it is how fresh search signals reach production). That sentence
+# was FALSE from 2026-08-24 to 2026-09-04: vercel.json excluded data/ outright,
+# so this commit skipped the build and the signals never shipped on their own
+# (backlog 00b, fixed in 0058fa6). It is true again now, and
+# tests/unit/vercel-ignore-build.test.ts is what keeps it true.
 #
 # Needs ONE owner step: the GSC_SERVICE_ACCOUNT_JSON repository secret (a
 # Google service-account key added as a restricted user of the Search
