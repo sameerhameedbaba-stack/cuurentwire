@@ -124,4 +124,36 @@ describe("metaDescription", () => {
     const text = "First sentence here. Second sentence here. Third one here.";
     expect(metaDescription(text, 25)).toBe("First sentence here.");
   });
+
+  // Live defect, measured on indexed story pages 2026-09-04: a summary opening
+  // with an abbreviation returned a 2-character description. The sentence regex
+  // cannot start a match on "U.S." so it began mid-token at "S. ".
+  it("never returns a fragment when the text opens with an abbreviation", () => {
+    const text =
+      "U.S. Immigration officials said the policy would take effect immediately, according to a statement released Tuesday afternoon in Washington and confirmed by two senior officials.";
+    const out = metaDescription(text);
+    expect(out).not.toBe("S.");
+    expect(out.startsWith("U.S.")).toBe(true);
+    expect(out.length).toBeGreaterThanOrEqual(40);
+  });
+
+  it("rejects a prefix that is technically correct but useless", () => {
+    // "Rep." IS a real prefix, so a prefix check alone would accept it.
+    const text =
+      "Rep. Johnson introduced the measure on Monday after weeks of negotiation with colleagues across the aisle, setting up a vote that could come as early as next week.";
+    const out = metaDescription(text);
+    expect(out).not.toBe("Rep.");
+    expect(out.length).toBeGreaterThanOrEqual(40);
+  });
+
+  it("holds a length floor for every realistic summary", () => {
+    // The observed live failures were 2, 7, 9, 13 and 15 characters.
+    const openings = ["U.S.", "Rep.", "Sen.", "St. Louis", "Dr.", "Mt.", "Jan."];
+    for (const opening of openings) {
+      const text = `${opening} something happened here today and the story continued at considerable length afterwards, with several further developments reported by the evening.`;
+      const out = metaDescription(text);
+      expect(out.length, `opening ${opening} produced ${JSON.stringify(out)}`).toBeGreaterThanOrEqual(40);
+      expect(text.startsWith(out.replace(/…$/, "").trimEnd())).toBe(true);
+    }
+  });
 });

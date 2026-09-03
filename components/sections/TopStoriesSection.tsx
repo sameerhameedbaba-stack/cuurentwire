@@ -38,7 +38,19 @@ export function TopStoriesSection({
   // to supply an LCP candidate when it does not.
   const eagerThumbnails = hero.imageUrl ? 0 : EAGER_THUMBNAILS;
   return (
-    <section aria-labelledby="top-stories-heading" className="section-in">
+    // No `section-in` here, deliberately. That class fades the section from
+    // opacity 0, and Chrome will not name a zero-opacity element as the LCP
+    // element — so the hero image's bytes landed 0.5-2.1s before the metric
+    // could even start counting, on the one page where LCP is measured
+    // (PSI 6,052ms vs the ~2,500ms Google Discover needs). Measured
+    // 2026-09-04: patching this single declaration on the otherwise-untouched
+    // live page was the only one of seven ablations that moved the metric.
+    // The content is server-rendered and already in the HTML, so the fade
+    // bought nothing on first paint — it only hid content that was ready.
+    // The other 24 `.section-in` wrappers are below the fold and keep the
+    // effect; do NOT "fix" this by editing @keyframes section-in, which
+    // components/layout/MobileMenu.tsx also uses.
+    <section aria-labelledby="top-stories-heading">
       <div className="sr-only">
         <h2 id="top-stories-heading">Top stories</h2>
       </div>

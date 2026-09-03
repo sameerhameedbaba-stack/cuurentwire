@@ -85,8 +85,25 @@ export function metaDescription(text: string, maxLength = 155): string {
   if (clean.length <= maxLength) return clean;
 
   // Sentence ends: . ! ? optionally followed by a closing quote/bracket, then
-  // whitespace. Decimals and common abbreviations keep their following token,
-  // so a split there simply yields a longer "sentence" — never a wrong cut.
+  // whitespace.
+  //
+  // The comment here used to claim "common abbreviations keep their following
+  // token, so a split there simply yields a longer sentence — never a wrong
+  // cut". That was false: there is no abbreviation handling at all, and a
+  // LEADING abbreviation breaks the pattern outright. `[^.!?]+` cannot include
+  // the '.' in "U.S.", so no match can begin at index 0; the engine advances
+  // and the first successful match starts mid-token, yielding "S. ". The loop
+  // accepts it (2 <= 155) and stops on the long remainder.
+  //
+  // Measured live on indexed story pages 2026-09-04: descriptions of "S."
+  // (2 chars), ", Sept." (7), "Some Jan." (9), plus 13- and 15-char cases in a
+  // 40-page sample — on the site's only click-earning surface. No unit test
+  // covered a leading abbreviation, which is why CI never saw it.
+  //
+  // Rather than teach the regex an abbreviation list (a large, locale-shaped
+  // guess), the two invariants a real sentence split must satisfy are asserted
+  // and anything else falls through to the ellipsis truncation below, which is
+  // always safe and always starts at the beginning of the text.
   const sentences = clean.match(/[^.!?]+(?:[.!?]+["')\]]*\s+|[.!?]+$)/g);
   if (sentences) {
     let out = "";
@@ -96,7 +113,13 @@ export function metaDescription(text: string, maxLength = 155): string {
       out = next + " ";
     }
     const kept = out.trim();
-    if (kept) return kept;
+    // 1. It must start where the text starts. A result that is not a prefix
+    //    means the split silently dropped leading words ("S." from "U.S.").
+    // 2. It must be substantive. A 4-character "Rep." IS a prefix and still
+    //    makes a useless snippet. The floor tracks maxLength so a deliberately
+    //    tiny budget still gets its one short sentence.
+    const floor = Math.min(25, Math.floor(maxLength * 0.8));
+    if (kept && kept.length >= floor && clean.startsWith(kept)) return kept;
   }
   return truncate(clean, maxLength).replace(/[\s,;:\-–—]+…$/, "…");
 }
