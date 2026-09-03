@@ -376,9 +376,17 @@ if (archive.status === 503) {
     "0 entries with a 200 — the route believes the archive is EMPTY rather than unreachable, so DATABASE_URL is probably unset on the deployment (an unreachable DB now answers 503)",
   );
 } else if (archiveCount > ARCHIVE_SHARD_AT) {
-  // Sitemaps cap at 50,000 URLs. Sharding via generateSitemaps is years away
-  // at the current rate, so instead of leaving "shard it someday" on a human
-  // to-do list, this alarm fires with ~5,000 URLs of runway.
+  // Sitemaps cap at 50,000 URLs, and this alarm fires ~5,000 short of it.
+  //
+  // CORRECTED 2026-09-03: this comment used to assert that sharding was "years
+  // away at the current rate". That was written from a 701/day reading taken
+  // during a lull and never re-measured. Measured live 2026-09-03:
+  // 16,869 URLs, and per-day <lastmod> counts of 1,608 / 1,621 / 1,627 for
+  // 2026-09-01/02/03 — the rate roughly DOUBLED on the day the growth alarm
+  // was downgraded to a watch item. At ~1,620/day this fail() lands about
+  // 2026-09-21 and the protocol cap about 2026-09-24. "Years" was three weeks.
+  // An unverified estimate written into code as fact is exactly the failure
+  // class seo/MEMORY keeps a file about; re-measure before trusting a runway.
   fail(
     "archive-sitemap size",
     `${archiveCount} URLs > ${ARCHIVE_SHARD_AT} — shard /archive-sitemap.xml with generateSitemaps before it hits the 50,000 cap`,

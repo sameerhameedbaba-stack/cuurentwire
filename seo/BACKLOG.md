@@ -56,7 +56,7 @@ clicks/impressions/position, Bing + AI numbers, newsletter subs,
 referrals); between scoreboards, contact the owner only for outages or
 decisions. Checkpoints: Sep 8 (Google slide stopped?), Oct 15 (M1).
 
-**PRIORITIES REBUILT 2026-08-31 (weekly deep run, score 86 -> 86/100).**
+**PRIORITIES REBUILT 2026-08-31 (weekly deep run, score 87 -> 83/100 — the run was revised DOWN twice; the earlier "86 -> 86" written here was never corrected and stood wrong for four days).**
 Everything below the "Ranked now" block is the accumulated record and its
 verdicts still stand — several of them are refutations that cost a run each, so
 read before re-opening anything. Ranking rule unchanged: how much indexable,
@@ -256,7 +256,7 @@ against a full week of normal operation before recommending anything.**
 
 </details>
 
-**0a. `archive-sitemap.xml` HAS NEVER BEEN PROCESSED BY GOOGLE — 13,593 URLs,
+**0a. `archive-sitemap.xml` HAS NEVER BEEN PROCESSED BY GOOGLE — 16,869 URLs (re-measured live 2026-09-03; the 13,593 figure quoted here for days was three thousand light),
 92% of everything this site publishes. OWNER ACTION, 30 seconds.** Found
 2026-08-31 only because the owner pushed back on an indexing figure in the
 weekly report. GSC's Sitemaps report lists **two** sitemaps:
@@ -266,7 +266,7 @@ news-sitemap.xml    Submitted Aug 14   Last read Aug 24   618 discovered
 sitemap.xml         Submitted Aug 14   Last read Aug 24   335 discovered
                                                     total 953
 GSC indexed pages                                         951
-archive-sitemap.xml  13,593 URLs  in robots.txt  ABSENT FROM GSC
+archive-sitemap.xml  16,869 URLs         in robots.txt      ABSENT FROM GSC
 ```
 
 **953 submitted, 951 indexed.** That is not proof of causation — Google knows
@@ -282,7 +282,7 @@ extension cannot click Search Console's controls (see below) — and the loop
 must not assume it is done: **re-check the Sitemaps report reads three rows.**
 
 *Honest caveat to weigh first: Google is already declining pages it has
-crawled (item 0b). Submitting 13,593 more thin URLs to a site with a value
+crawled (item 0b). Submitting 16,869 more thin URLs to a site with a value
 problem may grow the "Discovered/Crawled – not indexed" buckets rather than
 the indexed one. It is still worth doing — Google cannot index what it has not
 been told about — but expect it to expose the value problem, not solve it.*
@@ -408,7 +408,7 @@ to `gsc.yml` with a fail on: a sitemap unread for >72 h, or indexed pages down
    DEMAND on a young domain" and shipped story->hub links on that theory —
    this is the first direct evidence, and it says the theory was right.
    **Next step is measurement, not a build:** the file-type row does not say
-   *which* files, and the obvious suspects (a 2.4 MB `archive-sitemap.xml`
+   *which* files, and the obvious suspects (a 3.27 MB `archive-sitemap.xml` (measured 2026-09-03)
    growing daily, three sitemaps, RSS + 11 category feeds, a per-story Satori
    OG render) are all cheap to check. If it is the sitemaps, the `s-maxage`
    lever parked in item 0b stops being theoretical. The Desktop/Smartphone
@@ -2173,6 +2173,19 @@ for that reason.**
   The health check fails above 45,000, which at this rate is **~46 days out
   (mid-October)**, not the ~30 days feared. Back to a watch item; re-measure
   monthly.
+
+  > **THIS READING WAS WRONG, corrected 2026-09-03 with a live measurement.**
+  > The 701/day figure was taken during a lull and the promised monthly
+  > re-measurement was never scheduled, so nothing would have caught it.
+  > Measured live today: **16,869 URLs, 3.27 MB**, with per-day `<lastmod>`
+  > counts of **1,608 (Sep 1) / 1,621 (Sep 2) / 1,627 (Sep 3)** — the rate
+  > roughly DOUBLED on the very day this was downgraded to a watch item. At
+  > ~1,620/day the 45,000 hard `fail()` in `scripts/seo-health.mjs` lands
+  > around **2026-09-21** and the 50,000 protocol cap around **2026-09-24**.
+  > That is ~17 days, not six weeks, and it will take the daily health gate
+  > red with it. The code comment guarding it claimed sharding was "years
+  > away" with "~5,000 URLs of runway"; that is corrected in place.
+  > **Promoted from a watch item to scheduled work.**
 - **Publisher image weight drifted up, then came back.** `seo-health`
   passes. 2026-08-24: 15 images, 1,503 KB, median 52 KB, **max 448 KB**.
   **2026-08-25: 15 images, 1,410 KB, median 74 KB, max 235 KB** — the
