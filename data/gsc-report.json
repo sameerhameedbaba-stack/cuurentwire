@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-02T22:12:31.395Z",
+  "generatedAt": "2026-09-03T22:22:44.466Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-08-06",
-    "endDate": "2026-09-02",
+    "startDate": "2026-08-07",
+    "endDate": "2026-09-03",
     "days": 28
   },
   "minSampleImpressions": 100,
@@ -769,7 +769,7 @@
     "method": "day-granular GSC data; hours = end of first impression day (UTC) minus publishedAt (upper bound)",
     "windowDays": 14,
     "minStoryAgeHours": 72,
-    "eligibleStories": 3484,
+    "eligibleStories": 4000,
     "discoveredStories": 0,
     "discoveredPct": 0,
     "within24hPct": 0,
@@ -1171,42 +1171,42 @@
   },
   "daily": {
     "written": true,
-    "days": 21,
+    "days": 22,
     "trend": {
       "insufficient": false,
       "window": {
-        "from": "2026-08-24",
-        "to": "2026-08-30"
+        "from": "2026-08-25",
+        "to": "2026-08-31"
       },
       "clicks": {
         "current": 4,
-        "prior": 22,
-        "deltaPct": -81.8
+        "prior": 21,
+        "deltaPct": -81
       },
       "impressions": {
-        "current": 202,
-        "prior": 1214,
-        "deltaPct": -83.4
+        "current": 157,
+        "prior": 1010,
+        "deltaPct": -84.5
       },
       "explained": true
     }
   },
   "liveCoverage": {
-    "clusters": 751,
-    "singleSource": 704,
-    "twoSource": 35,
-    "threeSource": 6,
-    "fourPlus": 6,
-    "multiSourcePct": 6.3,
-    "threePlusPct": 1.6,
-    "fourPlusPct": 0.8,
+    "clusters": 753,
+    "singleSource": 717,
+    "twoSource": 27,
+    "threeSource": 4,
+    "fourPlus": 5,
+    "multiSourcePct": 4.8,
+    "threePlusPct": 1.2,
+    "fourPlusPct": 0.7,
     "medianIndependentPublications": 1,
-    "meanIndependentPublications": 1.09,
-    "pressReleasePct": 0.7,
+    "meanIndependentPublications": 1.08,
+    "pressReleasePct": 1.2,
     "opinionPct": 0.8,
-    "generalCategoryPct": 22.2
+    "generalCategoryPct": 22.6
   },
-  "liveDatasetVersion": "20260902T220041Z-c10574",
-  "ledgerStories": 5397,
+  "liveDatasetVersion": "20260903T222026Z-a2bbcf",
+  "ledgerStories": 6069,
   "warnings": []
 }

@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-09-02T22:12:31.395Z",
+  "generatedAt": "2026-09-03T22:22:44.466Z",
   "window": {
-    "startDate": "2026-08-06",
-    "endDate": "2026-09-02",
+    "startDate": "2026-08-07",
+    "endDate": "2026-09-03",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
     "insufficient": false,
     "window": {
-      "from": "2026-08-24",
-      "to": "2026-08-30"
+      "from": "2026-08-25",
+      "to": "2026-08-31"
     },
     "clicks": {
       "current": 4,
-      "prior": 22,
-      "deltaPct": -81.8
+      "prior": 21,
+      "deltaPct": -81
     },
     "impressions": {
-      "current": 202,
-      "prior": 1214,
-      "deltaPct": -83.4
+      "current": 157,
+      "prior": 1010,
+      "deltaPct": -84.5
     },
     "explained": true
   },
@@ -200,7 +200,7 @@
       "ctr": 0.25,
       "position": 63,
       "incidents": [
-        "Production stopped shipping code: every Vercel deploy fails since 2026-08-31 21:39 UTC (site itself stays up)"
+        "Production stopped shipping code for 49h: vercel.json ignoreCommand crashed on a shallow clone (RESOLVED 2026-09-02 22:41 UTC)"
       ]
     },
     {
@@ -210,7 +210,8 @@
       "ctr": 0,
       "position": 0,
       "incidents": [
-        "News-sitemap canonical URL was 308-ing to a merged-away duplicate; archive row cache re-keyed per story (53ad4b1)"
+        "News-sitemap canonical URL was 308-ing to a merged-away duplicate; archive row cache re-keyed per story (53ad4b1)",
+        "Production stopped shipping code for 49h: vercel.json ignoreCommand crashed on a shallow clone (RESOLVED 2026-09-02 22:41 UTC)"
       ]
     },
     {
@@ -221,8 +222,18 @@
       "position": 9,
       "incidents": [
         "Dead-image placeholder removed from the RSC flight payload of every image (6c63626) - MERGED, NOT LIVE",
-        "Vercel bot mitigation 403-challenged the SEO loop's own IP for ~15+ min (self-inflicted, not an outage)"
+        "Vercel bot mitigation 403-challenged the SEO loop's own IP for ~15+ min (self-inflicted, not an outage)",
+        "Production stopped shipping code for 49h: vercel.json ignoreCommand crashed on a shallow clone (RESOLVED 2026-09-02 22:41 UTC)",
+        "49h of stranded fixes all went live at once (94c7246)"
       ]
+    },
+    {
+      "date": "2026-09-03",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": []
     }
   ]
 }
