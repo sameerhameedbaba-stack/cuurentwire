@@ -24,6 +24,7 @@ import { promisify } from "node:util";
 
 import {
   BUILD_EXCLUDED_PATHSPECS,
+  BUILD_INCLUDED_DATA_FILES,
   assessDeploys,
   formatHours,
   isProductionEnvironment,
@@ -34,34 +35,43 @@ const execFileAsync = promisify(execFile);
 /**
  * The commit date of the newest commit that would actually trigger a build —
  * i.e. one touching something outside the paths vercel.json's ignoreCommand
- * skips. Skipped builds write no deployment record, so judging plain HEAD
+ * skips, OR one of the data files compiled into the bundle that override those
+ * exclusions. Skipped builds write no deployment record, so judging plain HEAD
  * turns every routine report commit into "the integration is disconnected"
  * (that was [auto-alert] #9, opened against a build that never ran).
  *
- * Returns null when git cannot answer — a shallow clone with no such commit in
- * range, or no git at all. Null makes the silence rule stand down rather than
- * guess: this repo has already paid for one alarm that cried wolf.
+ * Two queries, not one, because the two halves of the rule cannot be expressed
+ * as a single pathspec set: ':(exclude)data' would hide the very files the
+ * second half is about. The newer of the two answers wins.
+ *
+ * Returns null when git cannot answer — a shallow clone with no such commit
+ * in range, or no git at all. Null makes the silence rule stand down rather
+ * than guess: this repo has already paid for one alarm that cried wolf.
  */
+async function newestCommitDateFor(pathspecs) {
+  const { stdout } = await execFileAsync("git", ["log", "-1", "--format=%cI", "--", ...pathspecs], {
+    cwd: process.cwd(),
+  });
+  const date = stdout.trim();
+  if (date === "") return null;
+  // git prints ISO 8601 in the COMMITTER's offset ("+05:30"), while every
+  // GitHub timestamp is UTC "Z". Returning it raw made a lexicographic
+  // comparison in the lib read 22:56Z as older than the same instant written
+  // 04:26+05:30 and invert the verdict. Normalise here; the lib now also
+  // compares instants rather than strings, so both ends are safe.
+  const parsed = new Date(date);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
 async function newestDeployableCommitDate() {
-  const args = [
-    "log",
-    "-1",
-    "--format=%cI",
-    "--",
-    ".",
-    ...BUILD_EXCLUDED_PATHSPECS.map((p) => `:(exclude)${p}`),
-  ];
   try {
-    const { stdout } = await execFileAsync("git", args, { cwd: process.cwd() });
-    const date = stdout.trim();
-    if (date === "") return null;
-    // git prints ISO 8601 in the COMMITTER's offset ("+05:30"), while every
-    // GitHub timestamp is UTC "Z". Returning it raw made a lexicographic
-    // comparison in the lib read 22:56Z as older than the same instant written
-    // 04:26+05:30 and invert the verdict. Normalise here; the lib now also
-    // compares instants rather than strings, so both ends are safe.
-    const parsed = new Date(date);
-    return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+    const dates = await Promise.all([
+      newestCommitDateFor([".", ...BUILD_EXCLUDED_PATHSPECS.map((p) => `:(exclude)${p}`)]),
+      newestCommitDateFor([...BUILD_INCLUDED_DATA_FILES]),
+    ]);
+    const known = dates.filter((d) => d !== null);
+    if (known.length === 0) return null;
+    return known.reduce((a, b) => (new Date(a) >= new Date(b) ? a : b));
   } catch (error) {
     console.error(`Could not determine the newest code-changing commit: ${error.message}`);
     return null;

@@ -46,6 +46,22 @@ export const BUILD_EXCLUDED_PATHSPECS = Object.freeze([
   "*.md",
 ]);
 
+/**
+ * ...and the files those exclusions do NOT get to swallow: three files under
+ * data/ are static imports compiled into the bundle, so the ignore script
+ * builds when one of them changes (backlog 00b, fixed 2026-09-04). Mirrored
+ * from the same script and guarded by the same drift test.
+ *
+ * The watch needs them for the same reason it needs the exclusions: a commit
+ * that WOULD trigger a build must count as code-changing, or the silence rule
+ * stops expecting a deployment record that Vercel is in fact about to write.
+ */
+export const BUILD_INCLUDED_DATA_FILES = Object.freeze([
+  "data/gsc-url-signals.json",
+  "data/lost-stories.json",
+  "data/benchmark-history.json",
+]);
+
 /** GitHub deployment states that mean "this attempt is over, and it lost". */
 export const FAILED_STATES = new Set(["failure", "error"]);
 

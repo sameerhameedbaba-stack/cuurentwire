@@ -94,6 +94,38 @@ describe("vercel ignore build step", () => {
     expect(run(base)).toBe(0);
   });
 
+  it("builds when a compiled-in data file changed, though data/ is excluded", () => {
+    // backlog 00b. data/ is excluded as an ISR cost control, but three files
+    // under it are static imports compiled into the bundle, so a commit that
+    // only touches one of them still has to ship. Measured before this rule
+    // existed, by running this script against real history: the GSC commits
+    // 9ee4cc9, bf493b7 and 520caef each rewrote data/gsc-url-signals.json and
+    // each exited 0 = skip, so the noindex policy those files govern never
+    // reached production on its own.
+    const base = git(["rev-parse", "HEAD"]);
+    commit("data/gsc-url-signals.json", '{"generatedAt":"2026-09-04"}\n', "chore: gsc report");
+    expect(run(base)).toBe(1);
+  });
+
+  it("builds for a tombstone commit that touches nothing but data/", () => {
+    // The sharper half of the same defect: 593e369 shipped its two tombstones
+    // only because it happened to touch tests/ as well. Without that accident
+    // the two URLs would have gone on answering 500 to crawlers.
+    const base = git(["rev-parse", "HEAD"]);
+    commit("data/lost-stories.json", '["c123"]\n', "fix(archive): tombstone");
+    expect(run(base)).toBe(1);
+  });
+
+  it("still skips a data/ commit that touches no compiled-in file", () => {
+    // The boundary the rule moves, asserted from the other side. Report and
+    // measurement files under data/ land ~12x/day and every deploy wipes the
+    // ISR cache; widening the rule to all of data/ would have re-created the
+    // cost problem the exclusion exists to solve.
+    const base = git(["rev-parse", "HEAD"]);
+    commit("data/cwv-history.json", "[]\n", "chore: cwv history");
+    expect(run(base)).toBe(0);
+  });
+
   it("falls back to HEAD^ when Vercel supplies no previous sha", () => {
     // First-ever deployment of a project: the variable is absent entirely.
     commit("app/page.tsx", "export default function P() { return <p/> }\n", "feat: another");

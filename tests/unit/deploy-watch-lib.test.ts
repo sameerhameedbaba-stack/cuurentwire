@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   BUILD_EXCLUDED_PATHSPECS,
+  BUILD_INCLUDED_DATA_FILES,
   assessDeploys,
   collapseBySha,
   formatHours,
@@ -246,6 +247,24 @@ describe("BUILD_EXCLUDED_PATHSPECS", () => {
       .join("\n");
     const fromScript = [...executable.matchAll(/':\(exclude\)([^']+)'/g)].map((m) => m[1]);
     expect(fromScript).toEqual([...BUILD_EXCLUDED_PATHSPECS]);
+  });
+
+  it("mirrors the compiled-in data files the script refuses to skip", () => {
+    // The other half of the same rule (backlog 00b): data/ is excluded, but a
+    // change to one of these three files builds anyway, because they are
+    // compiled into the bundle. If this list drifts, the watch stops expecting
+    // a deployment record for a commit Vercel does build.
+    const script = readFileSync(
+      new URL("../../scripts/vercel-ignore-build.sh", import.meta.url),
+      "utf8",
+    );
+    const assignment = script
+      .split("\n")
+      .filter((line) => !line.trimStart().startsWith("#"))
+      .find((line) => line.startsWith("COMPILED_DATA_FILES="));
+    expect(assignment).toBeDefined();
+    const fromScript = assignment!.replace(/^COMPILED_DATA_FILES="|"$/g, "").split(" ");
+    expect(fromScript).toEqual([...BUILD_INCLUDED_DATA_FILES]);
   });
 });
 
