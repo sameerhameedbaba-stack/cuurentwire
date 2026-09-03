@@ -1,5 +1,25 @@
 # SEO Backlog
 
+> **PRECEDENCE, for the scheduled runs.** This file now carries several dated
+> blocks, each with its own list. They are NOT alternatives — read them in this
+> order and the first one that speaks wins:
+>
+> 1. **REPAIR SESSION 2026-09-04** (immediately below) — the current work
+>    queue is its "NEXT, IN THE RELEASE-RISK REVIEW'S ORDER" list, and its
+>    "VERIFIED NOT A DEFECT" list is binding: do not re-open those.
+> 2. **STRATEGY SHIFT 2026-09-01** — the strategic frame (Google is a
+>    background re-earn; Bing/AI, owned audience, distribution and speed carry
+>    the next six weeks). Its 1-6 list is superseded on ordering by (1) but
+>    still governs WHY an item matters.
+> 3. **PRIORITIES REBUILT 2026-08-31** and everything below it — the standing
+>    record. Its verdicts hold unless a later block overturns them; several are
+>    refutations that cost a full run each, so read before re-opening anything.
+>
+> The single rule that outranks all of the above: **do not create a new
+> problem while fixing an old one.** Verify the outcome, never a proxy; test
+> the boundary a change moves; never claim a fix without evidence from the
+> same run.
+
 **REPAIR SESSION 2026-09-04 (owner: "get everything fixed... do not create
 more problems while fixing the existing ones"). Everything below is verified
 against production or against a reproduction, never against a write-up.**
