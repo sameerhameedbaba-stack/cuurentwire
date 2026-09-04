@@ -65,7 +65,19 @@ VERIFIED **NOT** A DEFECT — do not "fix" these:
 
 NEXT, IN THE RELEASE-RISK REVIEW'S ORDER (do not reorder without re-reading
 its interaction list):
-- Hub/report description literals over 160 chars (unasserted, low risk).
+- ~~Hub/report description literals over 160 chars~~ **SHIPPED AND VERIFIED
+  LIVE 2026-09-05 (`7dd1930`)**. Eleven literals trimmed to 150-160 and
+  measured on production after the deploy: /energy 156, /obituaries 155,
+  /money 157, /weather 158, /autos 158, /travel 156, /elections 158,
+  /immigration 154, /most-covered 152, /top-10 155, /reports/media-coverage
+  156 (live HTML, entity-encoded, so the decoded strings are shorter still).
+  Ceiling now asserted by `tests/unit/meta-description-length.test.ts`, with
+  a negative control run before commit. **The interaction that made this more
+  than a copy edit:** `components/hubs/HubPage.tsx:76` renders the same hub
+  string as the visible intro paragraph under the h1, so every rewrite had to
+  survive as on-page copy, not just as metadata — checked live on /energy,
+  /obituaries and /money. /briefing is EXEMPT in the test and its literal is
+  untouched (see the blocked item below).
 - Briefing description ceiling — BLOCKED until a headline-preservation test
   exists; as specified it is a measured production break.
 - Story `<title>` clamp — deliberately last of the copy set, no measured loss.
@@ -103,6 +115,46 @@ poster runs under plain node in CI and cannot import the TypeScript module.
 
 **Not yet verified live** — the proof is the absence of a duplicate over the
 next rewrite, so the next run should re-read the feed rather than assume it.
+
+**NEW FINDING 2026-09-05 — the archive-sitemap growth rate asserted in
+`scripts/seo-health.mjs` is derived from a proxy, and the sharding deadline
+built on it is probably weeks too early.** The comment corrected on 2026-09-03
+put the rate at ~1,620/day and the `fail()` at ~2026-09-21, reading it off
+**per-day `<lastmod>` counts** in the archive sitemap. Measured today:
+per-day `<lastmod>` for 2026-09-01/02/03/04 is 1,607 / 1,614 / 1,668 /
+**1,486** — but the sitemap TOTAL went 16,973 (measured live 2026-09-03
+22:05 UTC) to **17,366** (measured live 2026-09-04 21:55 UTC), a net
+**+393**. A `lastmod` is a modification date, so 1,486 rows carrying today's
+date over a day that added 393 URLs means the figure counts re-modified (and
+possibly tombstoned) rows, not new ones. It cannot be a net-growth rate.
+
+Runway to the `ARCHIVE_SHARD_AT = 45_000` `fail()` (27,634 URLs left)
+depends entirely on which window is used: **~70 days at 393/day** (last 24 h),
+**~26 days at 1,081/day** (the 09-02 -> 09-05 average, 3,242 over 3 days),
+~17 days at the 1,620/day now written in the code. Deliberately NOT rewriting
+the comment today: one clean 24-hour delta is exactly the sample size that
+produced the wrong number the first time, and the same file already carries a
+memory note about an unverified estimate written into code as fact. **What the
+next runs owe:** record the archive-sitemap TOTAL every run so a real series
+accumulates, and re-derive the rate from totals only. The additive shard
+routes stay the plan and stay ahead of every one of these dates.
+
+**NEW FINDING 2026-09-05 — the Playwright gate is flaky under full parallel
+load, which makes it a gate nobody will trust.** Three consecutive full
+`npx playwright test` runs on the same tree produced three DIFFERENT single
+failures — `top-10.spec.ts:26` (a 404 assertion), `seo.spec.ts:311`
+(/most-covered flight-payload budget, mobile), `top-10.spec.ts:18` (section
+titles) — and every one of them passed on a targeted re-run seconds later. A
+clean-tree run of the same test also passed, so nothing reproduces in either
+direction. None of the three assert on anything the day's diff touched (grep:
+no test references the changed strings), and the shared trait is that all
+three hit the preview server with live data under parallel workers. Left
+unfixed, this trains the loop to wave through a real failure as "probably
+flaky" — the same instrument-trust failure as
+`seo/MEMORY/2026-08-21-the-instrument-breaks-first-and-quietly.md`. Next step
+is measurement, not a rewrite: capture which worker/route races (likely
+server warm-up or data changing mid-run) before touching retries, because
+setting `retries` first would hide the evidence.
 
 **NEW FINDING 2026-09-04 (daily crawl sample) — the classifier ignores the
 source article URL, which is the highest-precision free signal available.**
