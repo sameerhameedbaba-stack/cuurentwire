@@ -42,7 +42,7 @@ const TITLE = "Most Covered Stories";
 // name, same idiom as the category pages.
 const META_TITLE = "Biggest News Stories Right Now — Ranked by Publisher Coverage";
 const DESCRIPTION =
-  "The current stories being reported by the most publishers at once — ranked by how many distinct outlets are covering each event, which is a measure of breadth, not of importance.";
+  "The current stories being reported by the most publishers at once — ranked by how many distinct outlets are covering each event, a measure of breadth.";
 
 /** Publications CurrentWire recognizes and tiers by authority (config/sources.ts). */
 const TRACKED_PUBLISHERS = TRACKED_PUBLISHER_COUNT;

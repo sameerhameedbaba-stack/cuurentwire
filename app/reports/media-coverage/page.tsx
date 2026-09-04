@@ -24,7 +24,7 @@ export const revalidate = 1800;
 // "most covered news stories this week" SERP; the data is literally that.
 const TITLE = "The Most Covered News Stories";
 const DESCRIPTION =
-  "Weekly statistics from CurrentWire's own coverage data for US and Canada news: the stories the most publications covered, how fast coverage spread, category and geography mix, and which publishers joined multi-publication stories.";
+  "Weekly statistics from CurrentWire's own coverage data: the US and Canada stories the most publications covered, how fast coverage spread, and the mix.";
 
 export const metadata: Metadata = pageMetadata({
   title: `${TITLE} — US & Canada News, This Week`,

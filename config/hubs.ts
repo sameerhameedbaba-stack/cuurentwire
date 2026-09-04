@@ -77,7 +77,7 @@ export const HUBS: Record<HubId, HubDefinition> = {
     label: "Elections 2026",
     title: "Election News 2026 — Midterms, Races and Polls",
     description:
-      "The 2026 midterm elections and every race that matters: Senate, House and governor contests, primaries, polls, candidates, ballots and voting rules in the US and Canada.",
+      "The 2026 midterm elections and every race that matters: Senate, House and governor contests, primaries, polls, candidates, ballots and voting rules in the US.",
     sections: ["politics"],
     keywords: [
       "midterm", "midterms", "election", "elections", "primary election", "primaries",
@@ -96,7 +96,7 @@ export const HUBS: Record<HubId, HubDefinition> = {
     label: "Immigration",
     title: "Immigration News — Border, Deportations, Visas and Asylum",
     description:
-      "Immigration news across the United States and Canada: border enforcement, deportations, asylum, visas, citizenship, refugees and the politics and courts around them.",
+      "Immigration news across the US and Canada: border enforcement, deportations, asylum, visas, citizenship, refugees and the politics and courts around them.",
     sections: ["politics", "world"],
     keywords: [
       "immigration", "immigrant", "immigrants", "migrant", "migrants", "deportation",
@@ -215,7 +215,7 @@ export const HUBS: Record<HubId, HubDefinition> = {
     label: "Money",
     title: "Money & Personal Finance News — Prices, Rates and Taxes",
     description:
-      "Personal finance news that hits your wallet: inflation, interest rates, mortgage and credit-card rates, gas and grocery prices, taxes, Social Security and retirement savings.",
+      "Personal finance news that hits your wallet: inflation, interest rates, mortgage and credit-card rates, gas and grocery prices, taxes and retirement savings.",
     sections: ["business"],
     keywords: [
       "inflation", "interest rate", "interest rates", "rate cut", "rate hike",
@@ -237,7 +237,7 @@ export const HUBS: Record<HubId, HubDefinition> = {
     label: "Weather",
     title: "Weather News — Storms, Heat, Floods and Wildfires",
     description:
-      "Severe weather news: hurricanes, tropical storms, tornadoes, floods, heat waves, wildfires, blizzards and the forecasts and warnings that matter across the US and Canada.",
+      "Severe weather news: hurricanes, tropical storms, tornadoes, floods, heat waves, wildfires, blizzards and the forecasts and warnings across the US and Canada.",
     sections: ["climate"],
     keywords: [
       "hurricane", "hurricanes", "tropical storm", "tropical storms", "tornado",
@@ -259,7 +259,7 @@ export const HUBS: Record<HubId, HubDefinition> = {
     label: "Energy",
     title: "Energy News — Oil, Gas, Power Grid and Renewables",
     description:
-      "Energy news: oil and gas prices, OPEC, pipelines, electricity and the power grid, nuclear, solar and wind power, batteries, utilities and energy policy in the US and Canada.",
+      "Energy news: oil and gas prices, OPEC, pipelines, electricity and the grid, nuclear, solar and wind power, utilities and energy policy in the US and Canada.",
     sections: ["business", "climate"],
     keywords: [
       "oil prices", "oil price", "crude oil", "crude", "opec", "natural gas", "lng",
@@ -302,7 +302,7 @@ export const HUBS: Record<HubId, HubDefinition> = {
     label: "Autos & EVs",
     title: "Auto Industry & EV News — Carmakers, Recalls and Electric Vehicles",
     description:
-      "Auto news: electric vehicles, Tesla, Ford, GM, Stellantis, Toyota and Honda, recalls, car prices and tariffs, self-driving cars and the factories and workers behind them.",
+      "Auto news: electric vehicles, Tesla, Ford, GM, Stellantis, Toyota and Honda, recalls, car prices and tariffs, self-driving cars and the factories behind them.",
     sections: ["business", "technology"],
     keywords: [
       "electric vehicle", "electric vehicles", "ev", "evs", "ev sales", "ev maker",
@@ -322,7 +322,7 @@ export const HUBS: Record<HubId, HubDefinition> = {
     label: "Travel",
     title: "Travel News — Airlines, Airports, Flights and Tourism",
     description:
-      "Travel news: airlines and flight disruptions, airports and the TSA, air traffic control, cruises, passports, travel advisories, tourism and the cost of getting away.",
+      "Travel news: airlines and flight disruptions, airports and the TSA, air traffic control, cruises, passports, travel advisories and the cost of getting away.",
     sections: ["business"],
     keywords: [
       "airline", "airlines", "flight", "flights", "airport", "airports", "tsa",
@@ -344,7 +344,7 @@ export const HUBS: Record<HubId, HubDefinition> = {
     label: "Obituaries",
     title: "Obituaries & Notable Deaths — Who Died Today",
     description:
-      "Notable deaths and obituaries: the actors, musicians, athletes, politicians, scientists and public figures who have died, with coverage from across the US and Canada.",
+      "Notable deaths and obituaries: the actors, musicians, athletes, politicians, scientists and public figures who have died, covered across the US and Canada.",
     sections: ["culture"],
     keywords: [
       "dies at", "dies aged", "dead at", "has died", "passes away", "passed away",

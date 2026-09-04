@@ -18,7 +18,7 @@ export const revalidate = 3600;
 
 const TITLE = "Top 10 News Stories Right Now";
 const DESCRIPTION =
-  "The 10 biggest news stories in the United States and Canada right now — ranked by freshness, coverage breadth, publisher authority and momentum, updated all day.";
+  "The 10 biggest news stories in the United States and Canada right now — ranked by freshness, coverage breadth, publisher authority and momentum, all day.";
 
 /** Ranks 1–4 render above the fold: their thumbnails load eagerly. */
 const EAGER_THUMBNAILS = 4;
