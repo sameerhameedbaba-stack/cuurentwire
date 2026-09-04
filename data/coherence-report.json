@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-03T11:42:42.804Z",
+  "ranAt": "2026-09-04T11:44:13.464Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,181 +16,318 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 726,
-    "cardsWithId": 726,
-    "cardsWithCategory": 644,
-    "cardsWithCountry": 298,
-    "cardsWithSources": 94,
-    "storyPagesFetched": 392,
-    "storyErrors": [],
-    "uniqueClusters": 196
+    "cards": 730,
+    "cardsWithId": 730,
+    "cardsWithCategory": 648,
+    "cardsWithCountry": 310,
+    "cardsWithSources": 86,
+    "storyPagesFetched": 411,
+    "storyErrors": [
+      {
+        "clusterId": "ca58cbd452350",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/story/ais-warning-shot-tech-companies-experts-raise-fears-of-more-rogue-swarms-after-a-ca58cbd452350 responded 500"
+      }
+    ],
+    "uniqueClusters": 233
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.887,
-    "country": 0.41,
-    "sources": 0.129
+    "category": 0.888,
+    "country": 0.425,
+    "sources": 0.118
   },
   "versionsSeen": [
-    "20260903T113015Z-4cf0fc",
-    "20260903T113754Z-203915",
-    "20260903T114241Z-ec135f",
-    "20260903T113747Z-78524b",
-    "20260903T112715Z-d63bd7",
-    "20260903T113308Z-9a04c1",
-    "20260903T114253Z-aa3e22",
-    "20260903T114252Z-aa3e22",
-    "20260903T114248Z-bbec7d",
-    "20260903T113046Z-c4ec0b",
-    "20260903T114253Z-07945d",
-    "20260903T114254Z-07945d",
-    "20260903T114252Z-07945d",
-    "20260903T114253Z-f9ac27",
-    "20260903T114301Z-fb2185",
-    "20260903T114309Z-f9d6a0",
-    "20260903T114306Z-f15b34",
-    "archive:2026-09-03T10:25:06.067Z",
-    "archive:2026-09-03T11:30:00.292Z",
-    "20260903T114308Z-b01a44",
-    "20260903T110521Z-accd37",
-    "20260903T081021Z-9a6993",
-    "20260903T075514Z-5f8688",
-    "20260903T090522Z-b1627e",
-    "20260903T114322Z-fe4d0c",
-    "20260903T114320Z-0fb5a6",
-    "20260903T114331Z-df8a12",
-    "20260903T103013Z-c5e787",
-    "20260903T114332Z-7016a3",
-    "20260903T114331Z-7016a3",
-    "20260903T110018Z-f6dd0c",
-    "20260903T114340Z-eee780",
-    "20260903T104516Z-cb4a4c",
-    "20260903T112029Z-86a0b5",
-    "20260903T100522Z-a0e6bb",
-    "20260903T090018Z-1cb4b3",
-    "20260903T080014Z-bf9a20",
-    "20260903T035013Z-e5e25f",
-    "20260903T073518Z-227f20",
-    "20260903T065521Z-95cb2d",
-    "20260903T114254Z-be33a4",
-    "20260903T114350Z-37abda",
-    "20260903T114350Z-b9b879"
+    "20260904T113020Z-5f78f8",
+    "20260904T101024Z-b4a80c",
+    "20260904T114404Z-b206e8",
+    "20260904T110025Z-8d2fd2",
+    "20260904T080520Z-ee8c49",
+    "20260904T073030Z-fb8626",
+    "20260904T113009Z-e9b286",
+    "20260904T114317Z-452282",
+    "20260904T113838Z-0b2a82",
+    "20260904T113017Z-6ef4b8",
+    "20260904T114421Z-7e50ab",
+    "20260904T113014Z-09769a",
+    "20260904T113256Z-5dcc14",
+    "20260904T114430Z-ac76a2",
+    "20260904T114426Z-fe382e",
+    "archive:2026-09-04T10:30:07.736Z",
+    "20260904T114431Z-5e8b18",
+    "20260904T114430Z-b105d1",
+    "20260904T113130Z-31b0ac",
+    "20260904T113044Z-efc3d4",
+    "20260904T113045Z-960ab0",
+    "20260904T114439Z-54e5e5",
+    "20260904T113048Z-e444b5",
+    "20260904T112956Z-5d0101",
+    "20260904T114259Z-b7af31",
+    "20260904T113048Z-587534",
+    "20260904T114016Z-1bf127",
+    "20260904T113600Z-9b1956",
+    "20260904T113041Z-20b1c1",
+    "20260904T090029Z-a86392",
+    "20260904T114221Z-27311a",
+    "20260904T093525Z-530fd3",
+    "20260904T070011Z-3e37d4",
+    "20260904T075018Z-7b274b",
+    "20260904T050520Z-023627",
+    "20260904T113053Z-e2cf2f",
+    "20260904T113050Z-c070a9",
+    "20260904T113049Z-996f67",
+    "20260904T114431Z-f6b1aa",
+    "20260904T113050Z-b597d9",
+    "20260904T114441Z-226beb",
+    "20260904T113047Z-e6d497",
+    "20260904T113049Z-b8ef8f",
+    "20260904T114423Z-c7398a",
+    "20260904T114450Z-d67f8d",
+    "20260904T114449Z-92b0f7",
+    "20260904T114459Z-f994a8",
+    "20260904T114500Z-f994a8",
+    "20260904T113625Z-d314bd",
+    "20260904T114502Z-1df749",
+    "20260904T114505Z-478f1b",
+    "20260904T103017Z-a9a6b8",
+    "20260904T093030Z-d61808",
+    "20260904T100018Z-9120cc",
+    "archive:2026-09-04T06:00:08.589Z",
+    "20260904T052520Z-ae77ed",
+    "20260904T114243Z-ed1f78",
+    "archive:2026-09-04T04:25:02.576Z",
+    "20260904T113913Z-147d10",
+    "archive:2026-09-04T01:00:02.864Z",
+    "archive:2026-09-03T08:30:26.362Z",
+    "archive:2026-09-03T22:30:23.573Z",
+    "20260904T104521Z-1f89fe",
+    "20260904T113449Z-4d12e8",
+    "archive:2026-09-03T17:00:02.380Z",
+    "20260904T114218Z-2afee4",
+    "20260904T113347Z-886116",
+    "20260904T113757Z-4c7595",
+    "archive:2026-09-04T00:00:14.325Z",
+    "20260904T113352Z-2f18dc",
+    "20260904T043512Z-fbe17d",
+    "archive:2026-09-04T02:25:06.984Z",
+    "20260904T071520Z-091d8c",
+    "20260904T024526Z-894786",
+    "20260904T114517Z-19c8dc",
+    "20260904T095517Z-e7b2d2",
+    "20260904T080015Z-35603e",
+    "20260904T114431Z-b105d1",
+    "20260904T114430Z-5e8b18",
+    "20260904T114449Z-d67f8d",
+    "20260904T114538Z-fc931e",
+    "20260904T114527Z-e21acf",
+    "20260904T114524Z-180234",
+    "20260904T114602Z-a33851",
+    "20260904T114547Z-9c1a34",
+    "20260904T113940Z-56f5eb",
+    "20260904T114509Z-5dda0f",
+    "20260904T114513Z-5af844"
   ],
   "violations": [],
-  "findingsTotal": 5,
+  "findingsTotal": 10,
   "findingsByCause": {
-    "list-side staleness": 5
+    "list-side staleness": 10
   },
   "findings": [
     {
       "type": "archive-vs-live",
-      "clusterId": "cc23888ef8654",
-      "storySurface": "/story/humanoids-dominate-the-headlines-but-specialized-physical-ai-captures-value-in-1-cc23888ef8654 (r1)",
-      "storyVersion": "archive:2026-09-03T10:25:06.067Z",
-      "liveVersionAtRender": "20260903T114301Z-fb2185",
+      "clusterId": "ceec5a4efd680",
+      "storySurface": "/story/jack-mintz-wake-up-canada-trade-diversification-comes-with-a-heavy-economic-cost-ceec5a4efd680 (r1)",
+      "storyVersion": "archive:2026-09-04T10:30:07.736Z",
+      "liveVersionAtRender": "20260904T114434Z-b105d1",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
         "/ (r1)",
+        "/business (r1)",
         "/ (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "cf90c45fe4201",
-      "storySurface": "/story/aecom-selected-to-design-pure-water-silicon-valley-demonstration-facility-cf90c45fe4201 (r1)",
-      "storyVersion": "archive:2026-09-03T11:30:00.292Z",
-      "liveVersionAtRender": "20260903T114306Z-b5ddf4",
+      "clusterId": "cd6b8ea6d29d0",
+      "storySurface": "/story/terence-corcoran-cost-realities-threaten-pipelines-climate-policy-cd6b8ea6d29d0 (r1)",
+      "storyVersion": "archive:2026-09-04T10:30:07.736Z",
+      "liveVersionAtRender": "20260904T114439Z-54e5e5",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
         "/ (r1)",
+        "/politics (r1)",
         "/ (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c798dd0e7ce68",
-      "storySurface": "/story/wood-mackenzie-natural-carbon-sinks-absorb-40-of-human-co2-emissions-and-are-not-c798dd0e7ce68 (r1)",
-      "storyVersion": "archive:2026-09-03T11:30:00.292Z",
-      "liveVersionAtRender": "20260903T114308Z-b01a44",
+      "clusterId": "c055802a58f23",
+      "storySurface": "/story/openai-begins-rollout-of-gpt-6-amid-growing-scrutiny-over-safety-c055802a58f23 (r1)",
+      "storyVersion": "archive:2026-09-04T06:00:08.589Z",
+      "liveVersionAtRender": "20260904T112825Z-3c51fc",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
-        "/us (r1)",
-        "/latest (r1)",
-        "/us (r2)",
-        "/latest (r2)"
+        "/ai (r1)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "cb509fbbb110e",
-      "storySurface": "/story/miniluxe-announces-new-mansfield-studio-opening-through-joint-venture-with-entre-cb509fbbb110e (r1)",
-      "storyVersion": "archive:2026-09-03T11:30:00.292Z",
-      "liveVersionAtRender": "20260903T114308Z-b01a44",
+      "clusterId": "c6bf0c641ce1c",
+      "storySurface": "/story/openai-unveils-gpt-6-astra-amid-rising-scrutiny-and-safety-concerns-c6bf0c641ce1c (r1)",
+      "storyVersion": "archive:2026-09-04T04:25:02.576Z",
+      "liveVersionAtRender": "20260904T113231Z-333cd8",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
-        "/us (r1)",
-        "/latest (r1)",
-        "/business (r1)",
-        "/us (r2)",
-        "/latest (r2)",
-        "/business (r2)"
+        "/ai (r1)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c085d04d02eba",
-      "storySurface": "/story/stallion-completes-ground-gravity-identifies-three-new-priority-target-areas-at-c085d04d02eba (r1)",
-      "storyVersion": "archive:2026-09-03T11:30:00.292Z",
-      "liveVersionAtRender": "20260903T114308Z-b01a44",
+      "clusterId": "c638dda4c8822",
+      "storySurface": "/story/a-shakeout-in-early-stage-ai-may-be-coming-as-vc-money-gets-pickier-on-valuation-c638dda4c8822 (r1)",
+      "storyVersion": "archive:2026-09-04T01:00:02.864Z",
+      "liveVersionAtRender": "20260904T114505Z-478f1b",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
-        "/canada (r1)",
-        "/latest (r1)",
-        "/business (r1)",
-        "/canada (r2)",
-        "/latest (r2)",
-        "/business (r2)"
+        "/ai (r1)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "cb07980604b88",
+      "storySurface": "/story/stat-fda-pilot-offers-generative-ai-medical-devices-a-path-to-patients-before-th-cb07980604b88 (r1)",
+      "storyVersion": "archive:2026-09-03T08:30:26.362Z",
+      "liveVersionAtRender": "20260904T100018Z-9120cc",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/ai (r1)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c4944e35eedc6",
+      "storySurface": "/story/lost-in-the-algorithm-hikers-stranded-on-mt-shasta-after-following-gemini-ais-pl-c4944e35eedc6 (r1)",
+      "storyVersion": "archive:2026-09-03T22:30:23.573Z",
+      "liveVersionAtRender": "20260904T114505Z-478f1b",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/ai (r1)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c35eb35c4274f",
+      "storySurface": "/story/hugging-face-approached-nvidias-huang-weeks-ahead-of-12-9b-acquisition-ceo-tells-c35eb35c4274f (r1)",
+      "storyVersion": "archive:2026-09-03T17:00:02.380Z",
+      "liveVersionAtRender": "20260904T114505Z-478f1b",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/ai (r1)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c0221a2d91547",
+      "storySurface": "/story/some-referendum-ballots-missing-as-albertans-begin-to-receive-mail-in-paperwork-c0221a2d91547 (r1)",
+      "storyVersion": "archive:2026-09-04T00:00:14.325Z",
+      "liveVersionAtRender": "20260904T114505Z-478f1b",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/elections (r1)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c401ca22e89f1",
+      "storySurface": "/story/rep-james-walkinshaw-on-what-usps-whistleblower-told-house-committee-about-new-m-c401ca22e89f1 (r1)",
+      "storyVersion": "archive:2026-09-04T02:25:06.984Z",
+      "liveVersionAtRender": "20260904T110025Z-8d2fd2",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/elections (r1)"
       ]
     }
   ],
   "stampCoverage": 1,
-  "warningsTotal": 2,
+  "warningsTotal": 4,
   "warnings": [
+    {
+      "type": "cross-version-drift",
+      "clusterId": "c9bfe6c0a50db",
+      "field": "sources",
+      "values": [
+        {
+          "version": "20260904T113020Z-5f78f8",
+          "value": 4
+        },
+        {
+          "version": "20260904T101024Z-b4a80c",
+          "value": 3
+        },
+        {
+          "version": "20260904T114404Z-b206e8",
+          "value": 4
+        }
+      ]
+    },
     {
       "type": "cross-version-drift",
       "clusterId": "c6f6dcadc62b0",
       "field": "sources",
       "values": [
         {
-          "version": "20260903T113015Z-4cf0fc",
-          "value": 10
+          "version": "20260904T113020Z-5f78f8",
+          "value": 8
         },
         {
-          "version": "20260903T113754Z-203915",
-          "value": 11
-        },
-        {
-          "version": "20260903T114241Z-ec135f",
-          "value": 11
-        },
-        {
-          "version": "20260903T113308Z-9a04c1",
-          "value": 10
+          "version": "20260904T114404Z-b206e8",
+          "value": 7
         }
       ]
     },
     {
       "type": "cross-version-drift",
-      "clusterId": "c211d9a6c7aea",
+      "clusterId": "cac53e33a4a37",
       "field": "category",
       "values": [
         {
-          "version": "20260903T113754Z-203915",
-          "value": "business"
+          "version": "20260904T114404Z-b206e8",
+          "value": "technology"
         },
         {
-          "version": "20260903T114331Z-df8a12",
-          "value": "politics"
+          "version": "20260904T080520Z-ee8c49",
+          "value": "technology"
+        },
+        {
+          "version": "20260904T050520Z-023627",
+          "value": "technology"
+        },
+        {
+          "version": "20260904T114439Z-54e5e5",
+          "value": "general"
+        }
+      ]
+    },
+    {
+      "type": "cross-version-drift",
+      "clusterId": "c0c9baaed43fe",
+      "field": "sources",
+      "values": [
+        {
+          "version": "20260904T080520Z-ee8c49",
+          "value": 4
+        },
+        {
+          "version": "20260904T100018Z-9120cc",
+          "value": 3
+        },
+        {
+          "version": "20260904T114404Z-b206e8",
+          "value": 3
+        },
+        {
+          "version": "20260904T114505Z-478f1b",
+          "value": 3
         }
       ]
     }
