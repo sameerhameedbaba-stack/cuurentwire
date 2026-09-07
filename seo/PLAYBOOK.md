@@ -135,15 +135,15 @@ concern: never ship anything that measurably regresses CWV.
   competitor content-gap snapshot (free crawls + web search), llms.txt refresh,
   BACKLOG re-prioritization.
 
-## Search engine coverage map (verified 2026-08-24 — keep current)
+## Search engine coverage map (re-verified 2026-09-07 — keep current)
 
 How every engine gets CurrentWire's results. The owner's rule: results must
 reach ALL search engines, not just Google, at $0 and zero recurring effort.
 
 | Engine | How results arrive | Status |
 |---|---|---|
-| Google (Search + News + Discover) | GSC-verified; **only sitemap.xml and news-sitemap.xml are actually submitted — corrected 2026-08-31**; archive-sitemap.xml (13,593 URLs) is advertised in robots.txt and has NEVER been processed by Google (BACKLOG 0a); News eligibility is automatic (no submission program exists anymore) | ⚠️ **partial — owner action open** |
-| Bing | Bing Webmaster Tools verified (GSC import, 2026-08-19), 3 sitemaps submitted; IndexNow pings every new story within ~30 min | ✅ automatic |
+| Google (Search + News + Discover) | GSC-verified; **all three sitemaps are now submitted and all three report Success** (archive-sitemap.xml submitted and read 2026-09-04, 16,973 pages discovered — BACKLOG 0a closed). News eligibility is automatic (no submission program exists anymore). **But submission is not crawling: read live 2026-09-07, `news-sitemap.xml` and `sitemap.xml` were both last read Aug 24 (14 days) and `archive-sitemap.xml` has not been re-read since Sep 4; Crawl stats show total requests 80,800 -> 80,865 over the seven days to Sep 5, against ~15,000/day at the Aug 19 peak.** | ⚠️ **submitted, effectively not crawled** |
+| Bing | Bing Webmaster Tools verified (GSC import, 2026-08-19), 3 sitemaps submitted; IndexNow pings every new story within ~30 min (key file verified 200 serving its own key, 2026-09-07). **Bing PubHub still EXISTS at `bing.com/webmasters/pubhub` — the 2026-09-01 note that it "does not exist anymore" was reading `bing.com/pubhub`, the wrong path — but the page now carries "Bing PubHub is being retired", so the conclusion stands: there is nothing worth applying to.** | ✅ automatic |
 | DuckDuckGo | Sources results from Bing — covered by the Bing work above; no own submission program | ✅ via Bing |
 | Yahoo | Powered by Bing | ✅ via Bing |
 | Yandex, Naver, Seznam | Consume the IndexNow protocol; our single ping to api.indexnow.org distributes to all participating engines | ✅ automatic |

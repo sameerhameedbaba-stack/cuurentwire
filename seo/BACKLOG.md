@@ -4,14 +4,20 @@
 > blocks, each with its own list. They are NOT alternatives — read them in this
 > order and the first one that speaks wins:
 >
-> 1. **REPAIR SESSION 2026-09-04** (immediately below) — the current work
->    queue is its "NEXT, IN THE RELEASE-RISK REVIEW'S ORDER" list, and its
+> 1. **WEEKLY DEEP RUN 2026-09-07** (immediately below) — Googlebot has
+>    effectively stopped crawling the site since Aug 21, measured three ways.
+>    Its diagnosis steps come FIRST, then backlog item 0c. It does **not**
+>    reorder the 09-04 queue below; the ordered engineering list there is
+>    untouched and its recorded interaction notes still govern how each item
+>    ships. It only says what to do before reaching that list.
+> 2. **REPAIR SESSION 2026-09-04** — the engineering work queue is its
+>    "NEXT, IN THE RELEASE-RISK REVIEW'S ORDER" list, unchanged, and its
 >    "VERIFIED NOT A DEFECT" list is binding: do not re-open those.
-> 2. **STRATEGY SHIFT 2026-09-01** — the strategic frame (Google is a
+> 3. **STRATEGY SHIFT 2026-09-01** — the strategic frame (Google is a
 >    background re-earn; Bing/AI, owned audience, distribution and speed carry
 >    the next six weeks). Its 1-6 list is superseded on ordering by (1) but
 >    still governs WHY an item matters.
-> 3. **PRIORITIES REBUILT 2026-08-31** and everything below it — the standing
+> 4. **PRIORITIES REBUILT 2026-08-31** and everything below it — the standing
 >    record. Its verdicts hold unless a later block overturns them; several are
 >    refutations that cost a full run each, so read before re-opening anything.
 >
@@ -19,6 +25,116 @@
 > problem while fixing an old one.** Verify the outcome, never a proxy; test
 > the boundary a change moves; never claim a fix without evidence from the
 > same run.
+
+**WEEKLY DEEP RUN 2026-09-07 — THE TOP OF THIS BOARD IS NOW ONE ITEM, AND IT
+IS NOT ON THE LIST BELOW.**
+
+**GOOGLEBOT HAS EFFECTIVELY STOPPED CRAWLING THE SITE, AND HAS SINCE AUG 21.**
+Measured live 2026-09-07 in three independent places:
+- GSC Crawl stats (last updated 9/5): total requests **80,800 -> 80,865 over
+  seven days**, against ~15,000/day at the Aug 19 peak. The chart falls off a
+  cliff on Aug 21 and sits on the zero line every day through Sep 5. Every
+  breakdown row (by response / purpose / file type / Googlebot type) is
+  **byte-identical** to the 2026-08-31 reading.
+- GSC Sitemaps report: `news-sitemap.xml` and `sitemap.xml` **last read
+  Aug 24 — fourteen days**; `archive-sitemap.xml` read Sep 4, not since.
+- `data/gsc-daily.json` (pulled 13:02 UTC today): impressions 0, 1, 2, 0, 1, 1,
+  0 for Sep 1-7. **23 impressions and 3 clicks in seven days.**
+
+Manual actions and Security issues are both **no issues detected**, so this is
+not a penalty. The site is up, fast enough to serve, publishing every 15
+minutes and passing 24/24 seo-health checks. It is simply not being fetched.
+
+**Everything else on this board is downstream of this.** LCP, hub content,
+descriptions, titles, sharding, CTR — none of them can produce a visitor while
+Google is not crawling. Do not spend a run on them ahead of this.
+
+**NEXT STEP IS DIAGNOSIS, NOT A BUILD** (and it needs the owner's Chrome,
+`ovyajewels@gmail.com` / OVYA, `authuser=1`):
+1. URL Inspection -> **Live test** on `/` and two story URLs. It is the only
+   tool that makes Googlebot fetch on demand and report what it saw.
+2. Crawl stats -> **by response**, read day by day across Aug 19-24, to see
+   what Googlebot met when it backed off.
+3. Settings -> crawl rate, to see whether Google is limiting itself.
+The Aug 19-21 Neon 5xx window and the Aug 24 402 outage are the obvious
+suspects — a crawler that meets 5xx across a whole site backs off hard — but
+that is a **hypothesis**, and this file has been burned before by a hypothesis
+published as a finding.
+
+**AND THE MONITORING ITEM THAT WOULD HAVE CAUGHT IT IS STILL NOT BUILT.**
+Item **0c** (a fail on a sitemap unread >72 h, or indexed pages down >10% week
+over week) was filed 2026-08-31 as "the item that would have caught the other
+two". It has now been the answer to two consecutive weeks' worst finding. It is
+one step in `gsc.yml` against `sitemaps.list`. **Promote it: it is the first
+piece of work any run should do after the diagnosis above.**
+
+**The 08-31 weekly read this exact crawl-stats report and missed it**, because
+it scored the facet on the breakdown percentages and never read the chart. Two
+weekly scores were assigned on top of a crawl collapse that was already ten
+days old.
+
+**Corrections this run, each measured:**
+- **Archive sharding is NOT weeks away.** Measured from sitemap TOTALS:
+  16,973 (09-03 22:05Z) -> 17,366 (09-04 21:55Z) -> **17,716** (09-07 12:41Z);
+  +743 over 86.6 h = **206/day**, cross-checked against Google's own
+  "16,973 pages discovered" for Sep 4. At 206/day the 27,284 URLs of headroom
+  are **~132 days** (mid-January 2027); even at the fastest window observed
+  (396/day) it is ~69 days. The `2026-09-21` written into `seo-health.mjs` and
+  the `2026-09-24` in the run brief both came from per-day `<lastmod>` counts,
+  which measure modification, not growth. The comment now carries the series.
+  Shard routes stay the plan and stay additive; they are no longer urgent.
+- **Bing PubHub EXISTS**, at `bing.com/webmasters/pubhub` — the 09-01 note said
+  it "does not exist anymore" after reading `bing.com/pubhub`, the wrong path.
+  The conclusion is unchanged for a better reason: the page carries **"Bing
+  PubHub is being retired."** Still nothing to apply to.
+- **CTR rescue drops out of near-term.** Striking distance is unchanged (26
+  entries, same top three, stable five days) but those impressions are a 28-day
+  rollup dominated by Aug 15-21. At 23 impressions a week, a better CTR share
+  cannot produce a visitor. Keep the item and its targets; stop calling it fast.
+
+**NEW FINDING 2026-09-07, FIXED AND SHIPPED THE SAME RUN (`e4714d1`) — the
+Bluesky cluster-id dedup assumed one story is one cluster, and it is not.**
+Two posts on 2026-09-05 at 15:21Z and 17:25Z carried **byte-identical text**
+("US hits three Iranian oil tankers after saying its warships were targeted")
+under different ids. `/api/stats/archive-sources`: `cfd84c3e6f25d` first seen
+14:25:06Z, `ceee985710f14` first seen 14:30:18Z — two clusters five minutes
+apart for one event — and `cfd84c3e6f25d` is now `merged: true`, 308-ing to the
+other. The merge happened after both posts. Fixed with a second stateless
+ledger keyed on the normalised headline of the account's own recent posts
+(truncated posts match by prefix). Six tests bound both sides: the tanker pair
+must dedupe, and the two genuinely different Ukraine-envoy headlines of
+2026-09-06 must both post. **Not verified live** — the proof is the absence of
+a duplicate on the next split, so re-read the feed rather than assume it.
+
+**NEW FINDING 2026-09-07, FIXED THE SAME RUN (`b2ebf2f`) — the meta-description
+guard shipped on 09-04 only scanned half the code, and `/canada` had been over
+the ceiling the whole time.** Measured live: 161 decoded. The guard matches
+`const DESCRIPTION = "..."`; `/canada` passes its string inline to
+`pageMetadata({ description: "..." })`. Under `app/`: **19 const-form literals,
+5 inline-form**, and the guard saw none of the second group. Its own "the scan
+must be finding something" assertion could not catch it, because the scan WAS
+finding plenty — just never that half. **A coverage floor is not coverage.**
+Fixed: both spellings scanned, floor raised to the 22 measured, `/canada`
+trimmed to 153 and verified on production. Negative control run before commit.
+
+**STILL OPEN, unchanged this week and re-measured:** topic hubs. Of six sampled
+today, five are `noindex` with 0-4 story links — `/topic/donald-trump`,
+`/topic/ukraine`, `/topic/israel`, `/topic/china` (0 links each),
+`/topic/elon-musk` (4) — against `/topic/artificial-intelligence`, indexable
+with 66. Competitor side measured the same day with the SAME script on both
+sides: Ground News `/interest/donald-trump` **4,905 words, indexable** vs our
+**745, noindex**; AllSides 2,992. Their four durable blocks are Covered Most
+By, About prose, Ownership/Factuality ratings, and related Topics — we already
+hold the inputs for three of the four. See item 1 below; it is unchanged and
+now has fresh evidence.
+
+**STILL OPEN, and it is the LCP item refusing to close:** two PSI samples today
+(never mixed with the local probe) read `/` at **6,588 ms** and **4,502 ms**,
+against 3,030 / 4,127 measured on 09-03 right after the opacity-0 fix and the
+pre-fix series of 5,951 / 6,052 / 6,720. The gain is not holding. And
+`/top-100` moved **1,951 -> 5,488 ms in seven minutes**, so PSI's own spread on
+this site is wider than the effect sizes past runs have scored on. **Take at
+least three samples before any LCP claim.**
 
 **REPAIR SESSION 2026-09-04 (owner: "get everything fixed... do not create
 more problems while fixing the existing ones"). Everything below is verified
