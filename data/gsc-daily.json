@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-09-03T22:22:44.466Z",
+  "generatedAt": "2026-09-07T13:02:48.394Z",
   "window": {
-    "startDate": "2026-08-07",
-    "endDate": "2026-09-03",
+    "startDate": "2026-08-11",
+    "endDate": "2026-09-07",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
     "insufficient": false,
     "window": {
-      "from": "2026-08-25",
-      "to": "2026-08-31"
+      "from": "2026-08-29",
+      "to": "2026-09-04"
     },
     "clicks": {
-      "current": 4,
-      "prior": 21,
-      "deltaPct": -81
+      "current": 3,
+      "prior": 6,
+      "deltaPct": -50
     },
     "impressions": {
-      "current": 157,
-      "prior": 1010,
-      "deltaPct": -84.5
+      "current": 23,
+      "prior": 282,
+      "deltaPct": -91.8
     },
     "explained": true
   },
@@ -229,6 +229,41 @@
     },
     {
       "date": "2026-09-03",
+      "clicks": 2,
+      "impressions": 2,
+      "ctr": 1,
+      "position": 1.5,
+      "incidents": []
+    },
+    {
+      "date": "2026-09-04",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Three compiled-in data/ files could not deploy on their own; the ignore rule now builds for them (0058fa6)",
+        "Bluesky poster shared one story twice; ledger re-keyed from URL to cluster id"
+      ]
+    },
+    {
+      "date": "2026-09-05",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 100,
+      "incidents": []
+    },
+    {
+      "date": "2026-09-06",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 62,
+      "incidents": []
+    },
+    {
+      "date": "2026-09-07",
       "clicks": 0,
       "impressions": 0,
       "ctr": 0,

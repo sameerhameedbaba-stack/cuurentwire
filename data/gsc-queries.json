@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-09-03T22:22:44.466Z",
+  "generatedAt": "2026-09-07T13:02:48.394Z",
   "window": {
-    "startDate": "2026-08-07",
-    "endDate": "2026-09-03",
+    "startDate": "2026-08-11",
+    "endDate": "2026-09-07",
     "days": 28
   },
   "webQueries": [
@@ -341,6 +341,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 30
+    },
+    {
+      "query": "7.7 earthquake",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 62
     },
     {
       "query": "abraham lincoln news",
@@ -965,6 +971,12 @@
       "impressions": 1,
       "clicks": 0,
       "position": 48
+    },
+    {
+      "query": "latest current affair",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 100
     },
     {
       "query": "legal residents from mexico deportation",
@@ -1981,8 +1993,8 @@
     }
   ],
   "counts": {
-    "webRows": 298,
+    "webRows": 300,
     "newsRows": 0,
-    "pageQueryRows": 305
+    "pageQueryRows": 307
   }
 }
