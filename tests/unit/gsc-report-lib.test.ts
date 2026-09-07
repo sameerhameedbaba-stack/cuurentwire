@@ -340,6 +340,29 @@ describe("daily series and trend", () => {
     expect(series[1].incidents).toEqual(["db outage"]);
   });
 
+  it("annotates every day from the start of an ongoing incident", () => {
+    // A condition that is still in effect (the crawl collapse, 2026-08-21)
+    // must keep explaining later windows, or `explained` silently goes false
+    // and a run investigates a cause the ledger already records.
+    const series = buildDailySeries(
+      [day("2026-08-20", 0, 1), day("2026-08-21", 0, 1), day("2026-09-05", 0, 0)],
+      [{ date: "2026-08-21", ongoing: true, label: "Googlebot stopped crawling" }],
+    );
+    expect(series.map((d: { incidents: string[] }) => d.incidents.length)).toEqual([0, 1, 1]);
+    expect(trendSummary(buildDailySeries(Array.from({ length: 17 }, (_, i) =>
+      day(`2026-09-${String(i + 1).padStart(2, "0")}`, 0, 1)),
+      [{ date: "2026-08-21", ongoing: true, label: "Googlebot stopped crawling" }],
+    )).explained).toBe(true);
+  });
+
+  it("still ends a closed incident at its end date", () => {
+    const series = buildDailySeries(
+      [day("2026-08-21", 0, 1), day("2026-08-22", 0, 1)],
+      [{ date: "2026-08-20", end: "2026-08-21", label: "db outage" }],
+    );
+    expect(series.map((d: { incidents: string[] }) => d.incidents.length)).toEqual([1, 0]);
+  });
+
   it("drops partial trailing days and compares 7d windows", () => {
     // 17 days: 14 complete after dropping lag 3. Prior week 1 click/day,
     // current week 2 clicks/day -> +100%.

@@ -435,8 +435,14 @@ export function summarizeQueries(webQueryRows, newsQueryRows, pageQueryRows) {
 export const GSC_LAG_DAYS = 3;
 
 export function buildDailySeries(dateRows, incidents) {
+  // `ongoing: true` is an incident with no end yet — it annotates every day
+  // from its start onward. Added 2026-09-08 for the crawl collapse: with
+  // only `date`/`end`, a condition that is still in effect annotates one
+  // single day, so `explained` goes false a week later and the next run
+  // spends itself re-discovering a cause the ledger already holds. An
+  // ongoing incident is closed by giving it an `end`.
   const inRange = (incident, day) =>
-    incident.date <= day && day <= (incident.end ?? incident.date);
+    incident.date <= day && (incident.ongoing === true || day <= (incident.end ?? incident.date));
   return (dateRows ?? [])
     .map((row) => ({
       date: row.keys?.[0] ?? "",
