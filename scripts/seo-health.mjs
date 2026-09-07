@@ -392,14 +392,25 @@ if (archive.status === 503) {
   //   2026-09-03 22:05Z  16,973
   //   2026-09-04 21:55Z  17,366   (+393 over 23.8 h  ->   396/day)
   //   2026-09-07 12:41Z  17,716   (+350 over 62.8 h  ->   134/day)
-  //   full window        +743 over 86.6 h            ->   206/day
+  //   2026-09-07 22:12Z  17,426   (-290 over  9.5 h  -> DECLINE)
   // Cross-check: Google's Sitemaps report read 16,973 pages on Sep 4, which
   // matches the 09-03 reading exactly.
   //
-  // At 206/day the 27,284 URLs of headroom are ~132 days (about 2027-01);
-  // even at the fastest window observed (396/day) it is ~69 days, mid-November.
-  // Every one of those is months later than the 2026-09-21 this file asserted.
-  // Keep appending readings; never quote a runway derived from one delta.
+  // AND THE THIRD READING SETTLES IT: THIS COUNT IS NOT A GROWTH SERIES. The
+  // route lists non-merged stories that the thin-story policy keeps
+  // indexable, and that predicate (archiveSitemapIndexableSql) carries a
+  // ROLLING term — first_seen_at > now() - interval '336 hours' — so a
+  // single-source story with no history and no Search Console signal LEAVES
+  // the sitemap fourteen days after it is first seen, and a merge removes one
+  // permanently. The set therefore falls as well as rises, which is why
+  // 2026-09-07 read 17,716 at 12:41Z and 17,426 nine hours later. No runway
+  // date can be derived from differencing it, at any window size; the two
+  // wrong dates above were both that mistake at different scales. What is
+  // sound: the ceiling is bounded by multi-source and Google-protected
+  // stories, which accumulate, plus at most 336 h of single-source stories —
+  // and the assertion below is on the COUNT, not on a date, so it fires when
+  // it is true and not before. Keep appending readings as a record; do not
+  // publish a projection from them.
   //
   // Do NOT reach for Next's generateSitemaps to fix this (the instruction this
   // message used to give). It binds only to the sitemap.(js|ts) convention,

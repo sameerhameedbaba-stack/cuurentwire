@@ -4,7 +4,11 @@
 > blocks, each with its own list. They are NOT alternatives — read them in this
 > order and the first one that speaks wins:
 >
-> 1. **WEEKLY DEEP RUN 2026-09-07** (immediately below) — Googlebot has
+> 0. **DAILY RUN 2026-09-08** (immediately below) — records only what is now
+>    DONE and one measurement that corrects a projection. It reorders
+>    nothing: the 09-07 block still sets the top of the board, minus the one
+>    item it promoted, which shipped.
+> 1. **WEEKLY DEEP RUN 2026-09-07** — Googlebot has
 >    effectively stopped crawling the site since Aug 21, measured three ways.
 >    Its diagnosis steps come FIRST, then backlog item 0c. It does **not**
 >    reorder the 09-04 queue below; the ordered engineering list there is
@@ -25,6 +29,48 @@
 > problem while fixing an old one.** Verify the outcome, never a proxy; test
 > the boundary a change moves; never claim a fix without evidence from the
 > same run.
+
+**DAILY RUN 2026-09-08 — item 0c is SHIPPED AND VERIFIED LIVE; the top of the
+board is otherwise unchanged.**
+
+- **0c shipped (`1c8e098`).** A daily workflow now asks Search Console when
+  Google last downloaded each sitemap and alarms past 72 h. Verified end to
+  end on the live property, not by a proxy: run #1 failed correctly and opened
+  [issue #11](https://github.com/sameerhameedbaba-stack/cuurentwire/issues/11)
+  reading **news-sitemap 352.3 h unread, sitemap.xml 349.7 h, archive-sitemap
+  96.6 h**, measured 2026-09-07 22:23 UTC. Full write-up at item 0c. The
+  indexed-count half of 0c is not exposed by any Search Console API — the
+  evidence is recorded there and it is refiled as 0c-ii, not silently dropped.
+- **The crawl collapse is now IN the incident ledger and stays there
+  (`0c6e8f6`).** It was measured three ways on 09-07 and never written to
+  `data/incidents.json`, which is the file that stops a future run
+  re-investigating a known cause. Entries only annotated `[date, end]`, so a
+  condition with no end yet marked exactly one day and every later window
+  would have read as an unexplained collapse; `ongoing: true` now annotates
+  from the start until an end closes it. A **fourth** independent measurement
+  turned up while writing it, already in the repo and never read:
+  `data/gsc-indexation.json` (URL Inspection, 09-07 13:06 UTC) shows **22 of
+  34 evergreen surfaces never crawled and the newest `lastCrawlTime` across
+  all 34 is 2026-08-27**.
+- **The archive-sitemap count went DOWN, and that settles the sharding
+  argument.** Measured live 2026-09-07 22:12 UTC: **17,426**, against 17,716
+  at 12:41 UTC the same day — **-290 in 9.5 h**, the first decline in the
+  series. It is not a leak and not an outage: the route lists non-merged
+  stories the thin-story policy keeps indexable, and that predicate carries a
+  **rolling 336-hour term**, so single-source stories with no history and no
+  Search Console signal leave the sitemap fourteen days after they are first
+  seen. **This count therefore falls as well as rises, and no runway date can
+  be derived by differencing it — at any window size.** The two wrong dates
+  this repo has published (2026-09-21, and the run brief's 2026-09-24) were
+  both that mistake. Sharding stays additive-first and is not urgent; the
+  `fail()` is asserted on the COUNT, which is correct as written. Comment in
+  `scripts/seo-health.mjs` corrected with the reading and the mechanism.
+- **The Bluesky headline dedup is still NOT verified live.** The feed was
+  re-read this run (35 posts, 2026-08-31 -> 2026-09-07): the only duplicate
+  pair is the known 09-05 tanker pair the fix was written for, and **exactly
+  one post has gone out since the fix shipped**. One post is not evidence.
+  Re-read the feed next run; the proof is the absence of a duplicate across a
+  headline rewrite, which needs several posts to be possible at all.
 
 **WEEKLY DEEP RUN 2026-09-07 — THE TOP OF THIS BOARD IS NOW ONE ITEM, AND IT
 IS NOT ON THE LIST BELOW.**
@@ -637,13 +683,65 @@ aggregator's thin pages are being refused at scale. It makes item 1 (durable
 hub value) the response, not a nice-to-have — but nothing on this list fixes
 a value verdict quickly, and the report should stop implying otherwise.
 
-**0c. Nothing in this repo watches indexation or sitemap processing.** Which is
-how 0a went unnoticed for a week and 0b for days. `seo-health.mjs` checks that
-sitemaps serve 200 and parse; no check asks *did Google read it* or *is the
-indexed count falling*. The GSC API exposes both (`sitemaps.list` gives
-`lastDownloaded` and `contents`; the indexation sweep already runs). Add both
-to `gsc.yml` with a fail on: a sitemap unread for >72 h, or indexed pages down
->10% week over week. **This is the item that would have caught the other two.**
+**0c. Nothing in this repo watches indexation or sitemap processing.**
+**SHIPPED AND VERIFIED LIVE 2026-09-08 (`1c8e098`) — the sitemap half. The
+indexed-count half is NOT buildable and the reason is recorded below.**
+
+What shipped: `.github/workflows/gsc-crawl-freshness.yml`, daily at 08:25 UTC,
+running `scripts/gsc-crawl-freshness.mjs` against `sitemaps.list` and failing
+when Google has not DOWNLOADED any submitted sitemap in over 72 h. On failure
+it opens one `[auto-alert]` issue (issue creation emails the owner) and closes
+it on the next green run. Eight unit tests on the pure evaluator
+(`scripts/gsc-crawl-freshness-lib.mjs`) pin the boundary at exactly 72 h, keep
+a just-submitted-never-read sitemap from alarming, keep an unparseable
+timestamp reported as `unknown` rather than stale, and fail an empty sitemap
+list.
+
+**Not a step in `gsc.yml`, deliberately, against that file's own instruction:**
+`gsc.yml` runs weekly, and a 72-hour threshold checked once a week is not a
+72-hour threshold. It is also cheap enough to stand alone — one OAuth token
+and one GET, no `npm install`, no file written, no commit, so it never
+triggers a Vercel deploy.
+
+**Verified live, end to end, not by a proxy.** Pushed 2026-09-07 22:23 UTC via
+the new `.github/triggers/crawl-freshness` path; run #1 authenticated to
+Search Console, read the real property and failed — correctly — opening
+[issue #11](https://github.com/sameerhameedbaba-stack/cuurentwire/issues/11)
+with its own measurement:
+
+    STALE  archive-sitemap.xml —  96.6 h unread
+    STALE  news-sitemap.xml    — 352.3 h unread
+    STALE  sitemap.xml         — 349.7 h unread
+
+That alert is TRUE and is expected to stay open until Googlebot returns; it is
+the crawl collapse, now measured to the tenth of an hour by an independent
+fourth instrument. **Do not "fix" the alert by muting it.**
+
+**The boundary this change moved, and the test that now holds it:** GitHub
+auto-disables scheduled workflows after 60 days of repo inactivity, so
+`url-survival.yml` and `surface-coherence.yml` each re-enable every scheduled
+workflow (the 2026-09-04 fix). A tenth workflow makes both lists incomplete
+*silently* — the same gap found by hand that day. Both lists updated, and
+`tests/unit/gsc-crawl-freshness.test.ts` now reads `.github/workflows/`,
+derives the scheduled set and asserts both lists equal it. Run as a negative
+control before the lists were fixed: it failed, on exactly those two
+assertions.
+
+**The indexed-pages half cannot be built as specified, and this is the
+evidence.** "Indexed pages down >10% week over week" needs the Page-indexing
+count, and Search Console does not expose it: there is no Index-Coverage
+endpoint in the v3 or v1 API, and the `contents[].indexed` field that
+`sitemaps.list` returns is the deprecated one that reports 0 for every
+property. The closest available signal already runs weekly —
+`scripts/gsc-indexation-check.mjs` inspects ~34 evergreen URLs and buckets
+them (indexed / crawled-not-indexed / not-crawled) into
+`data/gsc-indexation.json`. Turning that into a WoW alarm is a real item, but
+it is a 34-URL SAMPLE of evergreen surfaces, not the indexed count, and must
+never be reported as one. **Filed as 0c-ii; not started.**
+
+*(For the record, that sample was already carrying the crawl collapse unread:
+the file pulled 2026-09-07 13:06 UTC shows 22 of 34 surfaces never crawled and
+the newest `lastCrawlTime` across all 34 is 2026-08-27.)*
 
 1. **Topic hubs carry nothing durable, and collapse to noindex when the news
    cycle moves on.** NEW, and it is the week's clearest measured gap. Live
