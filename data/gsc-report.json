@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T13:02:48.394Z",
+  "generatedAt": "2026-09-07T13:39:11.445Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
@@ -769,7 +769,7 @@
     "method": "day-granular GSC data; hours = end of first impression day (UTC) minus publishedAt (upper bound)",
     "windowDays": 14,
     "minStoryAgeHours": 72,
-    "eligibleStories": 4536,
+    "eligibleStories": 4535,
     "discoveredStories": 0,
     "discoveredPct": 0,
     "within24hPct": 0,
@@ -1192,21 +1192,21 @@
     }
   },
   "liveCoverage": {
-    "clusters": 757,
-    "singleSource": 723,
-    "twoSource": 28,
-    "threeSource": 1,
-    "fourPlus": 5,
-    "multiSourcePct": 4.5,
-    "threePlusPct": 0.8,
-    "fourPlusPct": 0.7,
+    "clusters": 740,
+    "singleSource": 703,
+    "twoSource": 29,
+    "threeSource": 2,
+    "fourPlus": 6,
+    "multiSourcePct": 5,
+    "threePlusPct": 1.1,
+    "fourPlusPct": 0.8,
     "medianIndependentPublications": 1,
-    "meanIndependentPublications": 1.07,
+    "meanIndependentPublications": 1.09,
     "pressReleasePct": 0.5,
     "opinionPct": 0.9,
-    "generalCategoryPct": 22.1
+    "generalCategoryPct": 21.4
   },
-  "liveDatasetVersion": "20260907T125056Z-080577",
-  "ledgerStories": 6658,
+  "liveDatasetVersion": "20260907T133206Z-a83112",
+  "ledgerStories": 6729,
   "warnings": []
 }
