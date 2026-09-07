@@ -38,3 +38,49 @@ export function dedupKey(url) {
   const token = normalised.slice(normalised.lastIndexOf("-") + 1).toLowerCase();
   return CLUSTER_ID_RE.test(token) ? token : normalised;
 }
+
+/**
+ * The normalised form of a post's headline, used as a SECOND dedup key
+ * alongside dedupKey.
+ *
+ * THE BUG THIS FIXES (measured on the live account 2026-09-07). Keying on the
+ * cluster id closed the headline-rewrite duplicate, but it assumed one story is
+ * one cluster. It is not: on 2026-09-05 the archive opened `cfd84c3e6f25d`
+ * at 14:25:06Z and `ceee985710f14` at 14:30:18Z for the SAME event, five
+ * minutes apart, and the poster shared both — at 15:21Z and 17:25Z, with
+ * byte-identical text, "US hits three Iranian oil tankers after saying its
+ * warships were targeted". The archive itself agreed later: `cfd84c3e6f25d` is
+ * now `merged: true` and 308s to the other's canonical slug. Two distinct
+ * cluster ids at post time, so dedupKey could not see it.
+ *
+ * The headline the poster is about to publish is a signal it already holds, and
+ * two of our own stories carrying the identical headline are the same event.
+ * A false skip costs nothing worse than posting the next story instead.
+ */
+export function headlineKey(text) {
+  return String(text ?? "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/…$/, "")
+    .trim();
+}
+
+/**
+ * True when `title` is already represented in `postedTexts` (the text of the
+ * account's own recent posts).
+ *
+ * A stored post may have been truncated to the 280-grapheme post limit, in
+ * which case it ends in an ellipsis and is a PREFIX of the full headline — so
+ * a truncated entry matches by prefix and a whole one matches exactly. Anything
+ * looser would let one long headline swallow unrelated stories.
+ */
+export function headlineAlreadyPosted(postedTexts, title) {
+  const key = headlineKey(title);
+  if (!key) return false;
+  return (postedTexts ?? []).some((posted) => {
+    const stored = headlineKey(posted);
+    if (!stored) return false;
+    return String(posted).trimEnd().endsWith("…") ? key.startsWith(stored) : key === stored;
+  });
+}

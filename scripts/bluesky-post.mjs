@@ -27,7 +27,7 @@
 
 const PDS = "https://bsky.social";
 const IDENTIFIER = process.env.BLUESKY_IDENTIFIER || "currentwire.bsky.social";
-import { dedupKey } from "./bluesky-post-lib.mjs";
+import { dedupKey, headlineAlreadyPosted } from "./bluesky-post-lib.mjs";
 
 const SITE = (process.env.SITE_ORIGIN || "https://currentwire.us").replace(/\/$/, "");
 const PASSWORD = process.env.BLUESKY_APP_PASSWORD;
@@ -175,9 +175,17 @@ const feed = await xrpc("GET", "app.bsky.feed.getAuthorFeed", {
 // whenever its headline is rewritten, and comparing URLs posted one such story
 // twice in five hours on 2026-09-03. See dedupKey.
 const alreadyPosted = new Set();
+// The headline text of each recent post is a SECOND ledger. Two clusters can
+// open five minutes apart for one event and only merge later, so at post time
+// their ids differ and dedupKey cannot see the duplicate — but the headline is
+// byte-identical. Measured on the live account 2026-09-05; see
+// headlineAlreadyPosted.
+const postedTexts = [];
 for (const entry of feed.feed ?? []) {
   const uri = entry?.post?.record?.embed?.external?.uri ?? entry?.post?.embed?.external?.uri;
   if (uri) alreadyPosted.add(dedupKey(uri));
+  const text = entry?.post?.record?.text;
+  if (text) postedTexts.push(text);
 }
 
 const rssResponse = await fetch(`${SITE}/rss`);
@@ -189,7 +197,7 @@ const items = [...rss.matchAll(/<item>([\s\S]*?)<\/item>/g)]
 
 console.log(
   `bluesky-post: rss ${rssResponse.status}, ${items.length} parsed items, ` +
-    `${alreadyPosted.size} urls in the posted ledger`,
+    `${alreadyPosted.size} cluster ids and ${postedTexts.length} headlines in the posted ledger`,
 );
 if (items.length === 0) {
   // A feed that yields nothing is a broken fetch, not a quiet day — fail
@@ -201,7 +209,9 @@ if (items.length === 0) {
   process.exit(1);
 }
 
-const candidate = items.find((item) => !alreadyPosted.has(dedupKey(item.link)));
+const candidate = items.find(
+  (item) => !alreadyPosted.has(dedupKey(item.link)) && !headlineAlreadyPosted(postedTexts, item.title),
+);
 if (!candidate) {
   console.log("bluesky-post: nothing new to post — all fresh stories already shared.");
   process.exit(0);
