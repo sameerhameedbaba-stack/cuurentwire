@@ -128,13 +128,18 @@ By, About prose, Ownership/Factuality ratings, and related Topics — we already
 hold the inputs for three of the four. See item 1 below; it is unchanged and
 now has fresh evidence.
 
-**STILL OPEN, and it is the LCP item refusing to close:** two PSI samples today
-(never mixed with the local probe) read `/` at **6,588 ms** and **4,502 ms**,
-against 3,030 / 4,127 measured on 09-03 right after the opacity-0 fix and the
-pre-fix series of 5,951 / 6,052 / 6,720. The gain is not holding. And
-`/top-100` moved **1,951 -> 5,488 ms in seven minutes**, so PSI's own spread on
-this site is wider than the effect sizes past runs have scored on. **Take at
-least three samples before any LCP claim.**
+**STILL OPEN, and the instrument is the finding:** three PSI samples today
+(never mixed with the local probe), inside 27 minutes on an unchanged page, read
+`/` at **6,588 / 4,502 / 3,227 ms** — mean 4,772, against the pre-fix mean of
+6,241 (5,951 / 6,052 / 6,720) and the 3,579 measured on 09-03 right after the
+opacity-0 fix. `/top-100` spans **1,951 -> 5,851 ms** in the same window.
+So: the homepage is genuinely better than the number 08-31 was scored on,
+genuinely worse than 09-04 implied, and **no reading today met the 2,500 ms
+Discover threshold**. PSI's spread on this site is wider than every effect size
+past runs have scored on it — including the 08-31 -2 and the 09-04 improvement
+claim, both written from single samples. **The rule from here: no LCP claim
+from fewer than three samples.** This run scored the facet -1 on n=2 and
+corrected it to flat when the third arrived; the correction is in the report.
 
 **REPAIR SESSION 2026-09-04 (owner: "get everything fixed... do not create
 more problems while fixing the existing ones"). Everything below is verified
