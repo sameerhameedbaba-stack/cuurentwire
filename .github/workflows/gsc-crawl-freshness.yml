@@ -1,0 +1,126 @@
+name: Google crawl freshness
+
+# Daily: ask Search Console when Google last DOWNLOADED each submitted
+# sitemap, and alarm when any of them has gone unread for over 72 hours.
+# seo/BACKLOG.md item 0c.
+#
+# This is the only monitor in the repo that watches GOOGLE's behaviour
+# instead of ours. seo-health, uptime, url-survival and surface-coherence all
+# probe what the site serves, and all four were green every day through the
+# crawl collapse found on 2026-09-07: news-sitemap.xml and sitemap.xml went
+# unread from Aug 24 to Sep 7 with 24/24 health checks passing the whole
+# time. A sitemap serving 200 is not a sitemap being read.
+#
+# Deliberately separate from gsc.yml, which is weekly: a 72-hour threshold
+# checked once a week is not a 72-hour threshold. It is also cheap enough to
+# run daily — one OAuth token and one GET, no npm install, no file written,
+# no commit, so it never triggers a Vercel deploy.
+#
+# Needs the same GSC_SERVICE_ACCOUNT_JSON secret as gsc.yml. Without it the
+# script prints "skipped" and exits 0, so this workflow stays green.
+#
+# Exit codes: 1 = a sitemap is stale (alert); 2 = the check itself could not
+# run (API/auth failure) — reported as a distinct, quieter state, because
+# "could not check" is not "Google stopped reading" (deploy-watch learned
+# this on 2026-09-04).
+
+on:
+  schedule:
+    - cron: "25 8 * * *"
+  workflow_dispatch:
+  # Manual trigger needing no `gh` auth — see .github/triggers/README.md.
+  push:
+    paths:
+      - ".github/triggers/crawl-freshness"
+
+permissions:
+  contents: read
+  issues: write # open/close the [auto-alert] issue below
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # No npm install: the script uses only fetch and node:crypto.
+      - name: Check sitemap read freshness
+        id: check
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+        # The output is teed so the alert issue can quote which sitemap went
+        # unread and for how long, instead of only linking the run.
+        run: |
+          set -o pipefail
+          status=0
+          node scripts/gsc-crawl-freshness.mjs 2>&1 | tee freshness.log || status=$?
+          {
+            echo "details<<DETAILS_EOF"
+            tail -n 30 freshness.log
+            echo "DETAILS_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          # Exit 2 (could not check) must not open an alert issue claiming
+          # Google stopped reading, and must not close one either.
+          if [ "$status" = "2" ]; then
+            echo "::warning::crawl-freshness could not be checked this run"
+            exit 0
+          fi
+          exit "$status"
+      - name: Open or update the alert issue
+        if: failure()
+        uses: actions/github-script@v7
+        env:
+          DETAILS: ${{ steps.check.outputs.details }}
+        with:
+          script: |
+            const title = "[auto-alert] Google has not read a sitemap in over 72h";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              "Search Console reports that Google has not downloaded one or more of this site's sitemaps for over 72 hours.",
+              "The site can be perfectly healthy and still be unread — this checks Google's behaviour, not ours.",
+              "```",
+              process.env.DETAILS || "(no details captured)",
+              "```",
+              `Run: ${runUrl}`,
+            ].join("\n");
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find((i) => i.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body: `Still unread.\n${body}`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title, body,
+              });
+            }
+      - name: Close the alert issue on recovery
+        # `success()` alone would also fire on the exit-2 path, which exits 0
+        # deliberately; a check that could not run must never report recovery.
+        if: success() && steps.check.outputs.status == '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "[auto-alert] Google has not read a sitemap in over 72h";
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find((i) => i.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number,
+                body: "Recovered — Google has read every submitted sitemap inside the window. Closing.",
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, state: "closed",
+              });
+            }

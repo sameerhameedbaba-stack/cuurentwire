@@ -130,6 +130,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for wf in url-survival seo-health cwv uptime gsc bluesky-post deploy-watch surface-coherence; do
+          for wf in url-survival seo-health cwv uptime gsc gsc-crawl-freshness bluesky-post deploy-watch surface-coherence; do
             gh workflow enable "$wf.yml" || true
           done

@@ -30,3 +30,7 @@ Usage:
 
     date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/triggers/gsc
     git commit -am "chore: trigger gsc report" && git push
+
+`crawl-freshness` (added 2026-09-08) fires the daily Google crawl-freshness
+monitor — the one check that reads Google's behaviour (when it last
+downloaded each sitemap) rather than what this site serves.
