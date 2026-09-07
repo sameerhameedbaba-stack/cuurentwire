@@ -38,7 +38,21 @@ function pageFiles(dir: string): string[] {
   return found;
 }
 
-const DESCRIPTION_LITERAL = /const\s+(?:DESCRIPTION|META_DESCRIPTION)\s*=\s*\n?\s*"([^"]*)"/g;
+/**
+ * Two spellings, because the guard scanning only one is how /canada served a
+ * 161-character description for four days after the 2026-09-04 sweep "fixed
+ * every literal". Some pages hoist the string to a `const DESCRIPTION`; others
+ * pass it inline to pageMetadata({ description: "..." }). The scan below has to
+ * find both, and MIN_LITERALS has to be tight enough that dropping either form
+ * fails the test rather than quietly shrinking its coverage.
+ */
+const DESCRIPTION_LITERALS = [
+  /const\s+(?:DESCRIPTION|META_DESCRIPTION)\s*=\s*\n?\s*"([^"]*)"/g,
+  /\bdescription:\s*\n?\s*"([^"]*)"/g,
+];
+
+/** Measured 2026-09-07: 19 const-form and 5 inline-form literals under app/. */
+const MIN_LITERALS = 22;
 
 describe("meta description length", () => {
   it("every topic hub description fits what Google renders", () => {
@@ -53,13 +67,17 @@ describe("meta description length", () => {
     for (const file of pageFiles(APP_DIR)) {
       const route = relative(APP_DIR, file).split(sep).join("/");
       if (EXEMPT_PAGES.has(route)) continue;
-      for (const match of readFileSync(file, "utf8").matchAll(DESCRIPTION_LITERAL)) {
-        found.push(route);
-        expect(match[1].length, `${route} description is ${match[1].length} chars`).toBeLessThanOrEqual(MAX_CHARS);
+      const source = readFileSync(file, "utf8");
+      for (const pattern of DESCRIPTION_LITERALS) {
+        for (const match of source.matchAll(pattern)) {
+          found.push(route);
+          expect(match[1].length, `${route} description is ${match[1].length} chars`).toBeLessThanOrEqual(MAX_CHARS);
+        }
       }
     }
     // The scan must actually be finding literals — a regex that silently
-    // stops matching would turn this whole test into a no-op.
-    expect(found.length).toBeGreaterThan(10);
+    // stops matching would turn this whole test into a no-op, and one that
+    // only ever knew about half the spellings already did.
+    expect(found.length).toBeGreaterThanOrEqual(MIN_LITERALS);
   });
 });

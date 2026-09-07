@@ -378,18 +378,40 @@ if (archive.status === 503) {
 } else if (archiveCount > ARCHIVE_SHARD_AT) {
   // Sitemaps cap at 50,000 URLs, and this alarm fires ~5,000 short of it.
   //
-  // CORRECTED 2026-09-03: this comment used to assert that sharding was "years
-  // away at the current rate". That was written from a 701/day reading taken
-  // during a lull and never re-measured. Measured live 2026-09-03:
-  // 16,869 URLs, and per-day <lastmod> counts of 1,608 / 1,621 / 1,627 for
-  // 2026-09-01/02/03 — the rate roughly DOUBLED on the day the growth alarm
-  // was downgraded to a watch item. At ~1,620/day this fail() lands about
-  // 2026-09-21 and the protocol cap about 2026-09-24. "Years" was three weeks.
-  // An unverified estimate written into code as fact is exactly the failure
-  // class seo/MEMORY keeps a file about; re-measure before trusting a runway.
+  // RUNWAY, MEASURED FROM TOTALS — the series, not a single derived rate.
+  //
+  // This comment has been wrong twice, in opposite directions, and both times
+  // because a rate was inferred rather than measured. It first asserted
+  // sharding was "years away" from a 701/day reading taken during a lull. It
+  // was then "corrected" on 2026-09-03 to ~1,620/day, putting this fail() at
+  // about 2026-09-21 — but that figure was read off per-day <lastmod> counts,
+  // and a lastmod is a MODIFICATION date, so it counts re-stamped and
+  // tombstoned rows, not new URLs. It cannot be a net-growth rate.
+  //
+  // What is actually measured, live, from the sitemap TOTAL:
+  //   2026-09-03 22:05Z  16,973
+  //   2026-09-04 21:55Z  17,366   (+393 over 23.8 h  ->   396/day)
+  //   2026-09-07 12:41Z  17,716   (+350 over 62.8 h  ->   134/day)
+  //   full window        +743 over 86.6 h            ->   206/day
+  // Cross-check: Google's Sitemaps report read 16,973 pages on Sep 4, which
+  // matches the 09-03 reading exactly.
+  //
+  // At 206/day the 27,284 URLs of headroom are ~132 days (about 2027-01);
+  // even at the fastest window observed (396/day) it is ~69 days, mid-November.
+  // Every one of those is months later than the 2026-09-21 this file asserted.
+  // Keep appending readings; never quote a runway derived from one delta.
+  //
+  // Do NOT reach for Next's generateSitemaps to fix this (the instruction this
+  // message used to give). It binds only to the sitemap.(js|ts) convention,
+  // forces /.../sitemap/[id].xml, and its generated wrapper hardcodes a 200 —
+  // which would destroy the 503 + Retry-After outage contract the
+  // archive-sitemap route gained after 2026-08-21. Add shard routes
+  // ADDITIVELY while the flat urlset still serves, then flip
+  // /archive-sitemap.xml to a <sitemapindex> and rewrite this assertion in ONE
+  // commit.
   fail(
     "archive-sitemap size",
-    `${archiveCount} URLs > ${ARCHIVE_SHARD_AT} — shard /archive-sitemap.xml with generateSitemaps before it hits the 50,000 cap`,
+    `${archiveCount} URLs > ${ARCHIVE_SHARD_AT} — add shard routes additively, then flip /archive-sitemap.xml to a <sitemapindex> in one commit (NOT generateSitemaps: it cannot serve the 503 outage contract)`,
   );
 } else ok("archive-sitemap.xml", `${archiveCount} permanent story URLs`);
 
