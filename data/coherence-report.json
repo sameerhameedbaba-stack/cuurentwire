@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-07T13:00:26.171Z",
+  "ranAt": "2026-09-08T11:43:50.937Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,110 +16,109 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 720,
-    "cardsWithId": 720,
-    "cardsWithCategory": 638,
-    "cardsWithCountry": 250,
-    "cardsWithSources": 100,
-    "storyPagesFetched": 400,
-    "storyErrors": [],
-    "uniqueClusters": 200
+    "cards": 694,
+    "cardsWithId": 694,
+    "cardsWithCategory": 612,
+    "cardsWithCountry": 292,
+    "cardsWithSources": 90,
+    "storyPagesFetched": 370,
+    "storyErrors": [
+      {
+        "clusterId": "c5ca249c504b7",
+        "repeat": 1,
+        "error": "TimeoutError: The operation was aborted due to timeout"
+      },
+      {
+        "clusterId": "c831c43aae535",
+        "repeat": 1,
+        "error": "TimeoutError: The operation was aborted due to timeout"
+      },
+      {
+        "clusterId": "c287a3790c4ea",
+        "repeat": 1,
+        "error": "TimeoutError: The operation was aborted due to timeout"
+      },
+      {
+        "clusterId": "c60e12d3260ea",
+        "repeat": 1,
+        "error": "TimeoutError: The operation was aborted due to timeout"
+      }
+    ],
+    "uniqueClusters": 187
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.886,
-    "country": 0.347,
-    "sources": 0.139
+    "category": 0.882,
+    "country": 0.421,
+    "sources": 0.13
   },
   "versionsSeen": [
-    "20260907T130019Z-936f58",
-    "20260907T123020Z-6e8c17",
-    "20260907T130023Z-8f7208",
-    "20260907T124214Z-f9017c",
-    "20260907T124752Z-b6bba6",
-    "archive:2026-09-07T13:00:02.598Z",
-    "20260907T124335Z-623d28",
-    "20260907T124408Z-190020",
-    "20260907T124112Z-c430e5",
-    "20260907T124247Z-69f8ca",
-    "20260907T124112Z-46c4c8",
-    "20260907T124323Z-6b80c0",
-    "20260907T124155Z-ef7f4e",
-    "20260907T090019Z-e0b082",
-    "20260907T041014Z-96ab8b",
-    "20260907T124658Z-66c02c",
-    "20260907T124900Z-66f561",
-    "20260907T124559Z-a21254",
-    "20260907T093018Z-1c3e57",
-    "20260907T124714Z-13078c",
-    "20260907T124733Z-72d657",
-    "20260907T124445Z-c82741",
-    "20260907T124831Z-e8a9ac",
-    "20260907T124445Z-7ea681",
-    "20260907T124459Z-63aae1",
-    "20260907T124556Z-b61e72",
-    "20260907T124600Z-195d86",
-    "20260907T124651Z-c5fe46",
-    "20260907T084517Z-1769f7",
-    "archive:2026-09-07T08:30:33.027Z",
-    "20260907T124445Z-6fc636",
-    "20260907T124117Z-57f28f",
-    "20260907T124152Z-08ea60",
-    "20260907T124159Z-cf24c4",
-    "20260907T124212Z-f9017c",
-    "20260907T124221Z-be3abb",
-    "20260907T124211Z-422cf9",
-    "archive:2026-09-07T11:00:07.396Z",
-    "archive:2026-09-07T10:30:02.860Z",
-    "20260907T124327Z-5755b3",
-    "20260907T124533Z-eda1a4",
-    "20260907T124423Z-562ddc",
-    "20260907T124554Z-8d900e",
-    "20260907T124228Z-3d72c3",
-    "20260907T124247Z-aa3ecd",
-    "20260907T124302Z-e71415",
-    "20260907T124613Z-e0007a",
-    "20260907T124424Z-383262",
-    "20260907T124519Z-757b62",
-    "20260907T124516Z-5c8b2a",
-    "20260907T124738Z-2fb9a3",
-    "20260907T124114Z-dfc81b",
-    "20260907T124242Z-4d1da5",
-    "20260907T125058Z-1bf2eb",
-    "20260907T125138Z-fc389d",
-    "20260907T124423Z-383262",
-    "20260907T124959Z-f1a02a",
-    "20260907T124607Z-7ec921",
-    "20260907T124632Z-e96633",
-    "20260907T124830Z-59521e",
-    "20260907T125135Z-0f680c",
-    "20260907T124841Z-04d9aa",
-    "20260907T125004Z-c7a717",
-    "20260907T124927Z-fb38e1",
-    "20260907T124854Z-b993cf",
-    "20260907T125005Z-4c2eef",
-    "20260907T124935Z-285fdb",
-    "20260907T124357Z-b97ef7",
-    "20260907T125040Z-4390cf",
-    "20260907T124747Z-49b148",
-    "20260907T124720Z-611668",
-    "20260907T124802Z-55b50f",
-    "20260907T124747Z-ba5b7d",
-    "20260907T125017Z-23d63d"
+    "20260908T113016Z-c37ab7",
+    "20260908T112800Z-9686a4",
+    "20260908T114353Z-cff164",
+    "20260908T113340Z-82d5f6",
+    "20260908T113337Z-6dd645",
+    "20260908T112749Z-a451b8",
+    "20260908T113009Z-184e69",
+    "20260908T114358Z-325e9c",
+    "20260908T114407Z-f5d29d",
+    "20260908T113505Z-3783e7",
+    "20260908T113058Z-eed4b8",
+    "20260908T113025Z-879224",
+    "20260908T113732Z-3e6293",
+    "20260908T113023Z-7b7e20",
+    "20260908T112932Z-b16f3a",
+    "20260908T112951Z-59b976",
+    "20260908T114359Z-85179c",
+    "20260908T104517Z-96b542",
+    "20260908T113732Z-ef34bc",
+    "20260908T113024Z-d5282a",
+    "20260908T113049Z-3d1d4f",
+    "20260908T112922Z-2d9488",
+    "archive:2026-09-08T11:00:18.505Z",
+    "20260908T114029Z-878732",
+    "20260908T113806Z-bcf7bd",
+    "20260908T114016Z-ba68f5",
+    "20260908T094518Z-71902a",
+    "20260908T113036Z-c1fff8",
+    "20260908T112852Z-dd37e6",
+    "20260908T114424Z-993b79",
+    "20260908T114420Z-2402dc",
+    "20260908T114443Z-9df251",
+    "20260908T114034Z-c9042a",
+    "20260908T114032Z-ee1201",
+    "20260908T112943Z-763f03",
+    "20260908T114040Z-126d37",
+    "20260908T114444Z-b6e27e",
+    "20260908T113729Z-b19923",
+    "20260908T113037Z-e3eb97",
+    "20260908T112913Z-252e18",
+    "20260908T110519Z-da05b6",
+    "archive:2026-09-08T09:25:06.834Z",
+    "20260908T113013Z-6a7d62",
+    "archive:2026-09-08T08:25:05.823Z",
+    "20260908T063510Z-1e5d36",
+    "20260908T090514Z-fe55e9",
+    "20260908T113803Z-54dc52",
+    "20260908T073019Z-a461f6",
+    "20260908T060020Z-d34600",
+    "20260908T044519Z-d66317",
+    "archive:2026-09-08T11:30:06.927Z",
+    "20260908T114433Z-1e0116",
+    "archive:2026-09-08T05:55:07.285Z"
   ],
   "violations": [],
-  "findingsTotal": 4,
+  "findingsTotal": 5,
   "findingsByCause": {
-    "list-side staleness": 3,
-    "story-side staleness": 1
+    "list-side staleness": 5
   },
   "findings": [
     {
       "type": "archive-vs-live",
-      "clusterId": "cb346e5a21237",
-      "storySurface": "/story/were-all-in-crisis-populist-far-right-trend-sweeping-across-europe-cb346e5a21237 (r1)",
-      "storyVersion": "archive:2026-09-07T13:00:02.598Z",
-      "liveVersionAtRender": "20260907T130023Z-8f7208",
+      "clusterId": "cafcf59b3a3da",
+      "storySurface": "/story/sherri-shepherd-heading-to-broadway-as-the-genie-in-disneys-aladdin-cafcf59b3a3da (r1)",
+      "storyVersion": "archive:2026-09-08T11:00:18.505Z",
+      "liveVersionAtRender": "20260908T114407Z-f5d29d",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
         "/ (r1)",
@@ -128,47 +127,55 @@
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c5bf8525b60e2",
-      "storySurface": "/story/fantasy-football-draft-guide-c5bf8525b60e2 (r1)",
-      "storyVersion": "archive:2026-09-07T08:30:33.027Z",
-      "liveVersionAtRender": "20260907T124106Z-c165c8",
-      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
+      "clusterId": "cbf17f79b29f6",
+      "storySurface": "/story/palestine-weekly-israeli-ministers-push-for-depopulation-of-gaza-cbf17f79b29f6 (r2)",
+      "storyVersion": "archive:2026-09-08T05:55:07.285Z",
+      "liveVersionAtRender": "20260908T114444Z-b6e27e",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
-        "/latest (r1)",
-        "/latest (r2)"
+        "/politics (r1)",
+        "/politics (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c418b0205a2b2",
-      "storySurface": "/story/lebanon-president-calls-for-us-help-after-deadly-israeli-strikes-c418b0205a2b2 (r1)",
-      "storyVersion": "archive:2026-09-07T11:00:07.396Z",
-      "liveVersionAtRender": "20260907T130023Z-8f7208",
+      "clusterId": "c3324b7efbc99",
+      "storySurface": "/story/captain-america-star-chris-evans-sells-his-l-a-home-but-at-1-million-under-askin-c3324b7efbc99 (r1)",
+      "storyVersion": "archive:2026-09-08T09:25:06.834Z",
+      "liveVersionAtRender": "20260908T114444Z-b6e27e",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
-        "/politics (r1)",
         "/business (r1)",
-        "/politics (r2)",
         "/business (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "cd5d7f2bb099a",
-      "storySurface": "/story/jubilation-and-pain-german-far-right-marches-to-victory-in-key-state-election-cd5d7f2bb099a (r1)",
-      "storyVersion": "archive:2026-09-07T10:30:02.860Z",
-      "liveVersionAtRender": "20260907T130023Z-8f7208",
+      "clusterId": "ce13618f27782",
+      "storySurface": "/story/french-ai-startup-mistral-valued-at-over-21-billion-euros-after-latest-funding-ce13618f27782 (r1)",
+      "storyVersion": "archive:2026-09-08T08:25:05.823Z",
+      "liveVersionAtRender": "20260908T114444Z-b6e27e",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
-        "/politics (r1)",
+        "/ai (r1)",
+        "/ai (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c3d2c26aa8c59",
+      "storySurface": "/story/trumps-first-major-midterm-money-move-a-10-million-texas-senate-ad-blitz-c3d2c26aa8c59 (r1)",
+      "storyVersion": "archive:2026-09-08T11:30:06.927Z",
+      "liveVersionAtRender": "20260908T113024Z-d5282a",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
         "/elections (r1)",
-        "/politics (r2)",
         "/elections (r2)"
       ]
     }
   ],
   "stampCoverage": 1,
-  "warningsTotal": 5,
+  "warningsTotal": 1,
   "warnings": [
     {
       "type": "cross-version-drift",
@@ -176,92 +183,16 @@
       "field": "sources",
       "values": [
         {
-          "version": "20260907T130019Z-936f58",
-          "value": 3
+          "version": "20260908T113016Z-c37ab7",
+          "value": 6
         },
         {
-          "version": "20260907T123020Z-6e8c17",
-          "value": 2
+          "version": "20260908T112749Z-a451b8",
+          "value": 6
         },
         {
-          "version": "20260907T130023Z-8f7208",
-          "value": 3
-        }
-      ]
-    },
-    {
-      "type": "cross-version-drift",
-      "clusterId": "c020cc9f9bb65",
-      "field": "category",
-      "values": [
-        {
-          "version": "20260907T130019Z-936f58",
-          "value": "world"
-        },
-        {
-          "version": "20260907T124214Z-f9017c",
-          "value": "politics"
-        },
-        {
-          "version": "20260907T130023Z-8f7208",
-          "value": "politics"
-        }
-      ]
-    },
-    {
-      "type": "cross-version-drift",
-      "clusterId": "c020cc9f9bb65",
-      "field": "sources",
-      "values": [
-        {
-          "version": "20260907T130019Z-936f58",
-          "value": 11
-        },
-        {
-          "version": "20260907T124214Z-f9017c",
+          "version": "20260908T114407Z-f5d29d",
           "value": 5
-        },
-        {
-          "version": "20260907T130023Z-8f7208",
-          "value": 7
-        }
-      ]
-    },
-    {
-      "type": "cross-version-drift",
-      "clusterId": "cb8d529d381a8",
-      "field": "sources",
-      "values": [
-        {
-          "version": "20260907T130019Z-936f58",
-          "value": 7
-        },
-        {
-          "version": "20260907T123020Z-6e8c17",
-          "value": 8
-        },
-        {
-          "version": "20260907T130023Z-8f7208",
-          "value": 7
-        }
-      ]
-    },
-    {
-      "type": "cross-version-drift",
-      "clusterId": "c45421c44385f",
-      "field": "sources",
-      "values": [
-        {
-          "version": "20260907T130019Z-936f58",
-          "value": 4
-        },
-        {
-          "version": "20260907T123020Z-6e8c17",
-          "value": 5
-        },
-        {
-          "version": "20260907T130023Z-8f7208",
-          "value": 7
         }
       ]
     }
