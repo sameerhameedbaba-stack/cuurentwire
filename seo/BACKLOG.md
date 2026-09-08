@@ -4,7 +4,10 @@
 > blocks, each with its own list. They are NOT alternatives — read them in this
 > order and the first one that speaks wins:
 >
-> 0. **DAILY RUN 2026-09-08** (immediately below) — records only what is now
+> 0. **DAILY RUN 2026-09-09** (immediately below) — records one shipped
+>    instrument, one refuted hypothesis and one new low-rate finding. It
+>    reorders nothing.
+> 0b. **DAILY RUN 2026-09-08** — records only what is now
 >    DONE and one measurement that corrects a projection. It reorders
 >    nothing: the 09-07 block still sets the top of the board, minus the one
 >    item it promoted, which shipped.
@@ -29,6 +32,65 @@
 > problem while fixing an old one.** Verify the outcome, never a proxy; test
 > the boundary a change moves; never claim a fix without evidence from the
 > same run.
+
+**DAILY RUN 2026-09-09 — `generalOrphanPct` is now INSTRUMENTED and measured
+over the whole live corpus; the Googlebot-tarpit hypothesis is REFUTED; the
+top of the board is otherwise unchanged.**
+
+- **Classifier instrumentation SHIPPED (item: "instrument `generalOrphanPct`
+  first").** `scripts/general-orphan-rate.mjs` + `general-orphan-lib.mjs`
+  read the WHOLE news-sitemap corpus and take `articleSection` from each
+  story page's NewsArticle JSON-LD (parsed, never regexed). First measured
+  row, live 2026-09-08 22:54 UTC: **22.7% — 162 general of 715 story pages,
+  0 unread**, series in `data/general-orphan-history.json`. The two previous
+  readings of this figure were 3 of 22 and 9 of 40, sample sizes at which the
+  observation and the benchmark's designed 34.8% sit about one standard error
+  apart; **this one has no sampling error at all**. 22.7% is below the
+  designed rate, so the classifier is operating to contract and the hub-
+  vocabulary item behind it is still not a regression to chase. 30 unit
+  tests, negative control run before commit (9 failed on a deliberately
+  broken lib). It is an INSTRUMENT with no threshold — it fails only when it
+  cannot MEASURE.
+- **Two defects in that instrument were found by running it, not by reading
+  it.** The first live run read 153 of 727 and said only that; a warm re-run
+  read 727 of 727, so the cause was cold ISR entries rendering at the origin
+  under the 30 s ceiling. It now tallies WHY each unread page was unread. It
+  also printed "168 of 727 story pages read" when 727 were read and 168 were
+  general — the count and the denominator were readable as each other. Both
+  fixed, both pinned by a test.
+- **REFUTED, with a control: production is NOT tarpitting Googlebot.** A curl
+  carrying Googlebot's UA takes 7-10 s where a browser UA takes 0.14 s, on a
+  cache HIT of static `/robots.txt`, entirely in TTFB, triggered only by the
+  exact-case string `Googlebot`. Nothing in this repo does it. **But
+  vercel.com, nextjs.org and resend.com all do exactly the same thing
+  (~10.2 s), so it is Vercel-wide reverse-DNS verification of a spoofed
+  crawler from a non-Google IP.** Real Googlebot is not this client. Do not
+  re-open it; do not send the owner to a firewall setting. Memory note:
+  `seo/MEMORY/2026-09-09-the-platform-tarpits-a-spoofed-crawler.md`.
+- **A diagnostic asymmetry worth the owner's two minutes.** Google last read
+  `archive-sitemap.xml` on ~Sep 3-4 but `news-sitemap.xml` and `sitemap.xml`
+  not since Aug 24. The one it read is the one that was newly SUBMITTED on
+  Sep 4. So a fresh submission still pulls a fetch out of Google. Re-
+  submitting the two unread sitemaps in the Search Console UI is a two-click
+  falsifiable experiment and the existing daily monitor reads the answer.
+  The loop cannot do it: every GSC script here holds
+  `.../auth/webmasters.readonly` and `sitemaps.submit` needs the write
+  scope, which needs a new owner consent.
+- **NEW, low-rate: branded/sponsored publisher content is published as a
+  plain NewsArticle.** `/story/mau-y-ricky-reflect-on-family-music-staying-
+  grounded-entre-un-momento-y-otro-bil-c59407e1b71b4` serves a meta
+  description opening "This is sponsored content." and sits in the news
+  sitemap, indexable, with no sponsorship signal in the markup. Prevalence
+  measured the same run: **0 of 40** evenly-sampled news-sitemap stories
+  matched sponsored/advertorial wording, so this is rare, not systemic.
+  Nothing in `lib/`, `app/` or `scripts/` mentions sponsored content at all.
+  Filed, not fixed — it belongs with the classifier/content-quality line.
+- **Bluesky dedup: still not provable, but the window is wider.** Feed re-read
+  live (40 posts, 08-31 -> 09-08). Six posts have gone out since the fix
+  shipped and no duplicate pair appears among them; the only duplicates in
+  the whole window are the two pre-fix pairs (09-03 Steinem, 09-05 tanker).
+  Six posts with no rewrite in them is still not a demonstration. Keep
+  re-reading.
 
 **DAILY RUN 2026-09-08 — item 0c is SHIPPED AND VERIFIED LIVE; the top of the
 board is otherwise unchanged.**
@@ -248,7 +310,9 @@ its interaction list):
 - Briefing description ceiling — BLOCKED until a headline-preservation test
   exists; as specified it is a measured production break.
 - Story `<title>` clamp — deliberately last of the copy set, no measured loss.
-- Classifier: instrument `generalOrphanPct` first, then hub vocabulary
+- ~~Classifier: instrument `generalOrphanPct` first~~ **SHIPPED AND MEASURED
+  2026-09-09 — 22.7% over the full 715-URL live corpus, see the daily block
+  at the top.** Next in this line: hub vocabulary
   (a TAG, cannot change `articleSection`). Singleton category inheritance is
   LAST and blocked on narrowing the `history` clause.
 - Archive sitemap: **shard routes additively first**, while the flat urlset

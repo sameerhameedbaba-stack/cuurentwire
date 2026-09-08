@@ -1,0 +1,54 @@
+[
+  {
+    "measuredAt": "2026-09-08T22:54:28.972Z",
+    "base": "https://currentwire.us",
+    "attempted": 715,
+    "read": 715,
+    "readPct": 100,
+    "orphans": 162,
+    "generalOrphanPct": 22.7,
+    "sections": [
+      {
+        "id": "general",
+        "count": 162
+      },
+      {
+        "id": "politics",
+        "count": 118
+      },
+      {
+        "id": "world",
+        "count": 93
+      },
+      {
+        "id": "business",
+        "count": 78
+      },
+      {
+        "id": "technology",
+        "count": 62
+      },
+      {
+        "id": "sports",
+        "count": 61
+      },
+      {
+        "id": "culture",
+        "count": 47
+      },
+      {
+        "id": "health",
+        "count": 35
+      },
+      {
+        "id": "science",
+        "count": 35
+      },
+      {
+        "id": "climate",
+        "count": 24
+      }
+    ],
+    "measured": true
+  }
+]
