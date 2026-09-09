@@ -1,7 +1,8 @@
 {
-  "provenance": "Stories first seen 2026-08-19..21 whose archive rows were never written because the Neon egress outage was rejecting all queries (seo/BACKLOG.md item 1; data 2026-08-20/21). Their URLs served a permanent retriable 500 via the batched-write shield in lib/news/story-resolution.ts, which poisoned crawl health after the outage ended. Listed ids answer a clean 404 instead. Extracted from data/url-ledger.json (lastOk < 2026-08-22, firstSeen in the outage window) on 2026-08-25. CORRECTED 2026-09-02: two ids were missing because the extraction filtered on lastOk < 2026-08-22, and in JS `null < \"2026-08-22\"` is false — so URLs that had NEVER answered 200 (lastOk: null), the most certainly-dead cases of all, were the exact ones the filter skipped. ccddfbfe6be27 (firstSeen 2026-08-20T21:53:36.200Z) and cf6482c8299dc (firstSeen 2026-08-20T22:18:06.000Z) both carry lastOk: null in data/url-ledger.json and had served a 500 for 12 days, keeping .github/workflows/url-survival.yml permanently red (auto-alert issue #6) and poisoning crawl health on two URLs. Any future extraction must treat lastOk == null as never-alive, not as not-matching.",
+  "provenance": "Stories first seen 2026-08-19..21 whose archive rows were never written because the Neon egress outage was rejecting all queries (seo/BACKLOG.md item 1; data 2026-08-20/21). Their URLs served a permanent retriable 500 via the batched-write shield in lib/news/story-resolution.ts, which poisoned crawl health after the outage ended. Listed ids answer a clean 404 instead. Extracted from data/url-ledger.json (lastOk < 2026-08-22, firstSeen in the outage window) on 2026-08-25. CORRECTED 2026-09-02: two ids were missing because the extraction filtered on lastOk < 2026-08-22, and in JS `null < \"2026-08-22\"` is false — so URLs that had NEVER answered 200 (lastOk: null), the most certainly-dead cases of all, were the exact ones the filter skipped. ccddfbfe6be27 (firstSeen 2026-08-20T21:53:36.200Z) and cf6482c8299dc (firstSeen 2026-08-20T22:18:06.000Z) both carry lastOk: null in data/url-ledger.json and had served a 500 for 12 days, keeping .github/workflows/url-survival.yml permanently red (auto-alert issue #6) and poisoning crawl health on two URLs. Any future extraction must treat lastOk == null as never-alive, not as not-matching. EXTENDED 2026-09-09: four MORE ids joined the list from a different cause. c8ef2d01ebed7, c6663445c2ba7, c02142761b339 and c0f656b8d65b4 entered data/url-ledger.json at 2026-09-09T11:28:51.078Z — the moment scripts/url-survival.mjs read them out of a live sitemap — each with lastOk: null, and opened auto-alert issue #12. Re-measured 2026-09-09 22:10-22:13 UTC, about 11 hours later and far outside the ~30-minute batched-write window the unavailable shield exists for: all four answer 500 by slug AND by /story/<id> (the id path 307s correctly for a known-live story, so the lookup itself works), all four are absent from news-sitemap.xml and archive-sitemap.xml, and /api/stats/archive-sources?ids=... answers 200 with ZERO rows for all four — a live archive saying it has no record, not a 503. They are the first never-alive URLs since 2026-08-21; the ledger holds 11,516 URLs and only 7 with lastOk: null. Cause of the orphaning is NOT yet established: they were advertised in a sitemap and never written to the archive. Tombstoned here to stop a permanent 500 poisoning crawl health, exactly as on 2026-08-25; the write-path question is filed in seo/BACKLOG.md.",
   "ids": [
     "c0016f37d6306",
+    "c02142761b339",
     "c04cdbcddc61d",
     "c0599e57fe7bd",
     "c06e997d80b43",
@@ -13,6 +14,7 @@
     "c0bb75179e153",
     "c0c73b5e37422",
     "c0cd0d5d88104",
+    "c0f656b8d65b4",
     "c0f92256e02f4",
     "c10f6d55077a3",
     "c1316a924b694",
@@ -82,6 +84,7 @@
     "c63fb8e8a1361",
     "c6565fda0247a",
     "c6593d22aa4d8",
+    "c6663445c2ba7",
     "c668f0da2b50d",
     "c69c27a3ec587",
     "c6a73798fa8ae",
@@ -114,6 +117,7 @@
     "c8da831998ba3",
     "c8e6468513bf3",
     "c8e82d1849f2b",
+    "c8ef2d01ebed7",
     "c90c374d562a6",
     "c937fae405e8e",
     "c93d0415e3c2c",

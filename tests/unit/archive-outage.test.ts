@@ -215,6 +215,46 @@ describe("resolveStoryRequest during an archive outage", () => {
     expect(live.kind).not.toBe("not-found");
   });
 
+  it("tombstones the four 2026-09-09 orphans, which never entered the archive at all", async () => {
+    // A different cause from the 2026-08-19..21 outage ids above: the archive
+    // was UP. These four were advertised in a live sitemap at
+    // 2026-09-09T11:28:51.078Z (that timestamp is how scripts/url-survival.mjs
+    // records first sight) with lastOk: null, and 11 hours later — far outside
+    // the ~30-minute batched-write window the "unavailable" shield exists for —
+    // still answered 500 by slug and by /story/<id>, were gone from both
+    // sitemaps, and /api/stats/archive-sources returned 200 with ZERO rows for
+    // all four. A live archive saying "no record" after the write window has
+    // closed is the same permanent 500 that poisoned crawl health in August.
+    for (const id of [
+      "c8ef2d01ebed7",
+      "c6663445c2ba7",
+      "c02142761b339",
+      "c0f656b8d65b4",
+    ]) {
+      const duringOutage = await resolveStoryRequest(
+        `a-published-headline-${id}`,
+        lookups({
+          getArchived: async () => {
+            throw new ArchiveUnavailableError("story lookup", new Error("timeout"));
+          },
+        }),
+      );
+      expect(duringOutage.kind, `${id} must 404 even while the archive is down`).toBe(
+        "not-found",
+      );
+      const cleanMiss = await resolveStoryRequest(`a-published-headline-${id}`, lookups());
+      expect(cleanMiss.kind, `${id} must answer a clean 404, not a 500`).toBe("not-found");
+    }
+    // The bound that keeps this from being a blanket 404: a story that IS live
+    // still wins over the tombstone list, because getLive is consulted first.
+    const stillLive = await resolveStoryRequest("a-published-headline-c8ef2d01ebed7", {
+      ...lookups(),
+      getLive: async () =>
+        ({ id: "c8ef2d01ebed7", slug: "a-published-headline-c8ef2d01ebed7" }) as StoryCluster,
+    });
+    expect(stillLive.kind).toBe("live");
+  });
+
   it("an archive that ANSWERS 'no such story' ALSO refuses to 404 a published-looking slug", async () => {
     // Premise change, 2026-08-22. This case asserted "not-found" while every
     // 5-minute refresh wrote straight through to Postgres, so an archive that
