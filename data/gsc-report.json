@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-07T13:39:11.445Z",
+  "generatedAt": "2026-09-09T22:24:27.833Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-08-11",
-    "endDate": "2026-09-07",
+    "startDate": "2026-08-13",
+    "endDate": "2026-09-09",
     "days": 28
   },
   "minSampleImpressions": 100,
@@ -13,7 +13,7 @@
       "rows": 591,
       "total": {
         "urls": 591,
-        "impressions": 2084,
+        "impressions": 2085,
         "clicks": 48,
         "ctr": 0.023,
         "avgPosition": 31.5,
@@ -54,11 +54,11 @@
         },
         "top-100": {
           "urls": 3,
-          "impressions": 6,
+          "impressions": 7,
           "clicks": 1,
-          "ctr": 0.1667,
-          "avgPosition": 8.3,
-          "impressionsPerUrl": 2,
+          "ctr": 0.1429,
+          "avgPosition": 8.6,
+          "impressionsPerUrl": 2.33,
           "clicksPerUrl": 0.33,
           "sufficientSample": false
         },
@@ -769,7 +769,7 @@
     "method": "day-granular GSC data; hours = end of first impression day (UTC) minus publishedAt (upper bound)",
     "windowDays": 14,
     "minStoryAgeHours": 72,
-    "eligibleStories": 4535,
+    "eligibleStories": 3804,
     "discoveredStories": 0,
     "discoveredPct": 0,
     "within24hPct": 0,
@@ -1171,42 +1171,42 @@
   },
   "daily": {
     "written": true,
-    "days": 26,
+    "days": 28,
     "trend": {
       "insufficient": false,
       "window": {
-        "from": "2026-08-29",
-        "to": "2026-09-04"
+        "from": "2026-08-31",
+        "to": "2026-09-06"
       },
       "clicks": {
         "current": 3,
-        "prior": 6,
-        "deltaPct": -50
+        "prior": 4,
+        "deltaPct": -25
       },
       "impressions": {
-        "current": 23,
-        "prior": 282,
-        "deltaPct": -91.8
+        "current": 9,
+        "prior": 202,
+        "deltaPct": -95.5
       },
       "explained": true
     }
   },
   "liveCoverage": {
-    "clusters": 740,
-    "singleSource": 703,
-    "twoSource": 29,
-    "threeSource": 2,
-    "fourPlus": 6,
-    "multiSourcePct": 5,
-    "threePlusPct": 1.1,
-    "fourPlusPct": 0.8,
+    "clusters": 746,
+    "singleSource": 712,
+    "twoSource": 25,
+    "threeSource": 4,
+    "fourPlus": 5,
+    "multiSourcePct": 4.6,
+    "threePlusPct": 1.2,
+    "fourPlusPct": 0.7,
     "medianIndependentPublications": 1,
-    "meanIndependentPublications": 1.09,
-    "pressReleasePct": 0.5,
-    "opinionPct": 0.9,
-    "generalCategoryPct": 21.4
+    "meanIndependentPublications": 1.07,
+    "pressReleasePct": 0.7,
+    "opinionPct": 0.7,
+    "generalCategoryPct": 22.4
   },
-  "liveDatasetVersion": "20260907T133206Z-a83112",
-  "ledgerStories": 6729,
+  "liveDatasetVersion": "20260909T221842Z-9aa270",
+  "ledgerStories": 7443,
   "warnings": []
 }

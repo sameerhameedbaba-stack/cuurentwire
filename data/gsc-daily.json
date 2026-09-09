@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-09-07T13:39:11.445Z",
+  "generatedAt": "2026-09-09T22:24:27.833Z",
   "window": {
-    "startDate": "2026-08-11",
-    "endDate": "2026-09-07",
+    "startDate": "2026-08-13",
+    "endDate": "2026-09-09",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
     "insufficient": false,
     "window": {
-      "from": "2026-08-29",
-      "to": "2026-09-04"
+      "from": "2026-08-31",
+      "to": "2026-09-06"
     },
     "clicks": {
       "current": 3,
-      "prior": 6,
-      "deltaPct": -50
+      "prior": 4,
+      "deltaPct": -25
     },
     "impressions": {
-      "current": 23,
-      "prior": 282,
-      "deltaPct": -91.8
+      "current": 9,
+      "prior": 202,
+      "deltaPct": -95.5
     },
     "explained": true
   },
@@ -101,7 +101,8 @@
       "ctr": 0.0417,
       "position": 68.8,
       "incidents": [
-        "Neon free-tier egress exhausted: archive reads failing, story URLs 5xx"
+        "Neon free-tier egress exhausted: archive reads failing, story URLs 5xx",
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
       ]
     },
     {
@@ -110,7 +111,9 @@
       "impressions": 55,
       "ctr": 0.0364,
       "position": 70.8,
-      "incidents": []
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
+      ]
     },
     {
       "date": "2026-08-23",
@@ -118,7 +121,9 @@
       "impressions": 41,
       "ctr": 0,
       "position": 79.7,
-      "incidents": []
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
+      ]
     },
     {
       "date": "2026-08-24",
@@ -129,7 +134,8 @@
       "incidents": [
         "Vercel Hobby tier exceeded: whole site 402 for ~37 minutes (13:18-13:55 UTC)",
         "Retitle wave 1 deployed (b33d8c1): homepage, categories, briefing, latest, most-covered",
-        "News-sitemap integrity: listed URLs gated on archive standing (2515c55)"
+        "News-sitemap integrity: listed URLs gated on archive standing (2515c55)",
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
       ]
     },
     {
@@ -140,7 +146,8 @@
       "position": 81.6,
       "incidents": [
         "Snippet/hub deploy (674502f + 23a7b79): breadth descriptions, hub links on stories, schema honesty",
-        "Google de-indexed 11 of 12 indexed hub/category pages between URL-Inspection sweeps (Aug 25 -> 27), without re-crawling"
+        "Google de-indexed 11 of 12 indexed hub/category pages between URL-Inspection sweeps (Aug 25 -> 27), without re-crawling",
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
       ]
     },
     {
@@ -152,7 +159,8 @@
       "incidents": [
         "Google de-indexed 11 of 12 indexed hub/category pages between URL-Inspection sweeps (Aug 25 -> 27), without re-crawling",
         "Redirect loop on a news-sitemap URL found, root-caused and cleared (9fd5991)",
-        "Archive write burst stalled: 14 h on Aug 26, 10 h on Aug 27, with every surface answering 200"
+        "Archive write burst stalled: 14 h on Aug 26, 10 h on Aug 27, with every surface answering 200",
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
       ]
     },
     {
@@ -164,7 +172,8 @@
       "incidents": [
         "Google de-indexed 11 of 12 indexed hub/category pages between URL-Inspection sweeps (Aug 25 -> 27), without re-crawling",
         "Archive write burst stalled: 14 h on Aug 26, 10 h on Aug 27, with every surface answering 200",
-        "Write burst restored to ~2/hour and made phase-independent (e1b4cfb)"
+        "Write burst restored to ~2/hour and made phase-independent (e1b4cfb)",
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
       ]
     },
     {
@@ -173,7 +182,9 @@
       "impressions": 6,
       "ctr": 0.1667,
       "position": 75.5,
-      "incidents": []
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
+      ]
     },
     {
       "date": "2026-08-29",
@@ -182,7 +193,8 @@
       "ctr": 0,
       "position": 68,
       "incidents": [
-        "Live story revalidation window rotated so all 726 live stories stay fresh (a0d26f0)"
+        "Live story revalidation window rotated so all 726 live stories stay fresh (a0d26f0)",
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
       ]
     },
     {
@@ -191,7 +203,9 @@
       "impressions": 9,
       "ctr": 0,
       "position": 81.1,
-      "incidents": []
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
+      ]
     },
     {
       "date": "2026-08-31",
@@ -200,7 +214,8 @@
       "ctr": 0.25,
       "position": 63,
       "incidents": [
-        "Production stopped shipping code for 49h: vercel.json ignoreCommand crashed on a shallow clone (RESOLVED 2026-09-02 22:41 UTC)"
+        "Production stopped shipping code for 49h: vercel.json ignoreCommand crashed on a shallow clone (RESOLVED 2026-09-02 22:41 UTC)",
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
       ]
     },
     {
@@ -211,7 +226,8 @@
       "position": 0,
       "incidents": [
         "News-sitemap canonical URL was 308-ing to a merged-away duplicate; archive row cache re-keyed per story (53ad4b1)",
-        "Production stopped shipping code for 49h: vercel.json ignoreCommand crashed on a shallow clone (RESOLVED 2026-09-02 22:41 UTC)"
+        "Production stopped shipping code for 49h: vercel.json ignoreCommand crashed on a shallow clone (RESOLVED 2026-09-02 22:41 UTC)",
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
       ]
     },
     {
@@ -224,7 +240,8 @@
         "Dead-image placeholder removed from the RSC flight payload of every image (6c63626) - MERGED, NOT LIVE",
         "Vercel bot mitigation 403-challenged the SEO loop's own IP for ~15+ min (self-inflicted, not an outage)",
         "Production stopped shipping code for 49h: vercel.json ignoreCommand crashed on a shallow clone (RESOLVED 2026-09-02 22:41 UTC)",
-        "49h of stranded fixes all went live at once (94c7246)"
+        "49h of stranded fixes all went live at once (94c7246)",
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
       ]
     },
     {
@@ -233,7 +250,9 @@
       "impressions": 2,
       "ctr": 1,
       "position": 1.5,
-      "incidents": []
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
+      ]
     },
     {
       "date": "2026-09-04",
@@ -243,7 +262,8 @@
       "position": 0,
       "incidents": [
         "Three compiled-in data/ files could not deploy on their own; the ignore rule now builds for them (0058fa6)",
-        "Bluesky poster shared one story twice; ledger re-keyed from URL to cluster id"
+        "Bluesky poster shared one story twice; ledger re-keyed from URL to cluster id",
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
       ]
     },
     {
@@ -252,7 +272,9 @@
       "impressions": 1,
       "ctr": 0,
       "position": 100,
-      "incidents": []
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
+      ]
     },
     {
       "date": "2026-09-06",
@@ -260,15 +282,39 @@
       "impressions": 1,
       "ctr": 0,
       "position": 62,
-      "incidents": []
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
+      ]
     },
     {
       "date": "2026-09-07",
       "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 10,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
+      ]
+    },
+    {
+      "date": "2026-09-08",
+      "clicks": 0,
       "impressions": 0,
       "ctr": 0,
       "position": 0,
-      "incidents": []
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
+      ]
+    },
+    {
+      "date": "2026-09-09",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
+      ]
     }
   ]
 }
