@@ -16,15 +16,17 @@ export const siteConfig = {
   contactEmail: process.env.CONTACT_EMAIL ?? "contact@currentwire.us",
   correctionsEmail: process.env.CORRECTIONS_EMAIL ?? "corrections@currentwire.us",
   publishersEmail: process.env.PUBLISHERS_EMAIL ?? "publishers@currentwire.us",
-  // No x/facebook/linkedin entries: CurrentWire has no social profiles, and
-  // the three placeholder handles that used to sit here were all verified
+  // Only profiles that actually exist belong here. No x/facebook/linkedin
+  // entries: the three placeholder handles that used to sit here were all verified
   // wrong on 2026-09-03 (seo/offpage/LEDGER.md). x.com/currentwire is a
   // stranger's dormant account, facebook.com/currentwire redirects to an
   // unrelated profile, and the LinkedIn page 404s. Add entries here only
-  // once a profile actually exists, and add `sameAs` to OrganizationJsonLd
-  // in the same change.
+  // once a profile actually exists, and update `sameAs` in the same change.
+  // Bluesky (created 2026-08-31, auto-posts top stories) is verified live and
+  // is the one profile currently carried into `sameAs`.
   social: {
     rss: "/rss",
+    bluesky: "https://bsky.app/profile/currentwire.bsky.social",
   },
   colors: {
     primaryRed: "#C91920",

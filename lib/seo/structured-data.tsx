@@ -61,9 +61,12 @@ function JsonLd({ data }: { data: object }) {
 
 export function OrganizationJsonLd() {
   // NewsMediaOrganization (an Organization subtype) so the editorial policy
-  // pages are machine-readable E-E-A-T signals. No sameAs: social profiles
-  // are not published on the site, and schema must never claim what we
-  // cannot verify.
+  // pages are machine-readable E-E-A-T signals. `sameAs` lists only profiles
+  // verified to exist and to be ours — schema must never claim what we cannot
+  // verify, which is why this array was empty until Bluesky went live
+  // (2026-08-31; verified again 2026-09-09, 45 posts). It is fed from
+  // siteConfig.social so a profile is never listed in one place and not the
+  // other. See seo/offpage/LEDGER.md for the x/facebook/linkedin verdicts.
   return (
     <JsonLd
       data={{
@@ -74,6 +77,7 @@ export function OrganizationJsonLd() {
         description: siteConfig.description,
         email: siteConfig.contactEmail,
         logo: PUBLISHER_LOGO,
+        sameAs: [siteConfig.social.bluesky],
         publishingPrinciples: `${siteConfig.url}/editorial-standards`,
         correctionsPolicy: `${siteConfig.url}/corrections`,
         masthead: `${siteConfig.url}/news-desk`,
