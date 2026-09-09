@@ -33,6 +33,73 @@
 > the boundary a change moves; never claim a fix without evidence from the
 > same run.
 
+**DAILY RUN 2026-09-09 — a production 5xx was found, fixed and verified live;
+the CAUSE behind it is open and is now the top of the board. Nothing else was
+reordered.**
+
+- **FIXED AND VERIFIED LIVE (`6bbf9f3`): four `/story/` URLs were answering a
+  permanent 500.** auto-alert [issue #12](https://github.com/sameerhameedbaba-stack/cuurentwire/issues/12)
+  (opened 2026-09-09 12:16 UTC) reported them as UNAVAILABLE. Re-measured
+  2026-09-09 22:10-22:13 UTC, ~11 h after the probe and far outside the
+  ~30-minute batched-write window the `unavailable` shield exists for:
+  `c8ef2d01ebed7`, `c6663445c2ba7`, `c02142761b339`, `c0f656b8d65b4` each
+  answered **500 by slug AND by `/story/<id>`** (control: live id
+  `c05a2ccd2dce2` 307s correctly, so the id path works), were **absent from
+  news-sitemap.xml and archive-sitemap.xml**, and
+  `/api/stats/archive-sources?ids=...` answered **200 with ZERO rows** for all
+  four — a live archive saying "no record", not a 503. `data/url-ledger.json`
+  has them at `firstSeen 2026-09-09T11:28:51.078Z` with **`lastOk: null`**:
+  they never served a single 200. Tombstoned into `data/lost-stories.json`,
+  pinned by `tests/unit/archive-outage.test.ts` (which also asserts the bound:
+  a story that IS live still wins over the tombstone list), negative control
+  run before commit. **Verified on production after the deploy: all four now
+  answer 404 by slug and by id, home and a live story still 200.**
+
+- **TOP OF THE BOARD, UNEXPLAINED: why were four stories advertised in a
+  sitemap and never written to the archive, with nothing down?** The tombstone
+  clears the symptom and answers nothing. What is known: they are the **first
+  never-alive URLs since 2026-08-21** (7 of 11,516 ledger entries carry
+  `lastOk: null`: 3 from the August Neon outage, these 4), they arrived as one
+  batch on one day, all four are newswire/corporate press releases (mining
+  drill results, an ASML/Xanadu collaboration), and three of the four companies
+  appear **nowhere** in archive-sitemap.xml, so a same-event cluster merge is
+  not supported by the evidence for those three. What is NOT known: whether the
+  cluster left the live dataset before a persist burst, was filtered out, or
+  something else. **Do not publish a mechanism as a finding until it is
+  measured** — this file has been burned by exactly that before. The cheap next
+  step is instrumentation, not a rewrite: nothing today records when a cluster
+  enters the news sitemap versus when its archive row is written, so the gap
+  that orphans a story is invisible between two daily probe runs.
+
+- **The shield that produced the 500 has no clock in it.** It cannot tell
+  "absent four minutes" from "absent eleven hours" from "absent forever", so
+  the only thing that ever ends the 500 is a human writing the id into
+  `data/lost-stories.json`. Memory note:
+  `seo/MEMORY/2026-09-09-a-window-shield-with-no-expiry-is-permanent.md`.
+  Filed as a design question, deliberately NOT changed today: the shield is
+  correct for the window it was written for, and reordering the tombstone check
+  past the archive lookup would reintroduce the 500-during-outage case the
+  ordering exists to prevent.
+
+- **Everything else measured green this run.** `seo-health.mjs` **ALL CHECKS
+  PASSED** against production, including *all 743 news-sitemap URLs answering
+  200 directly*, so there is no ongoing bleed. Write-path heartbeat: newest
+  news-sitemap `publication_date` **2026-09-09T22:00:22Z**, 13 minutes old at
+  read. **archive-sitemap total: 19,088** (2026-09-09 22:12 UTC) — recorded for
+  the series only; per the 09-08 finding this count falls as well as rises and
+  **no runway date may be derived by differencing it**. GSC decline is
+  `explained: true` against the ongoing 2026-08-21 crawl collapse, so it was
+  not re-investigated; `data/gsc-daily.json` was 2 days stale and `gsc.yml` was
+  dispatched once.
+
+- **Crawl sample clean.** Five URLs (3 newest news-sitemap stories, plus 2
+  sampled deeper, plus `/sports` and `/business`): all 200, all self-canonical,
+  all `index, follow`, JSON-LD parses on every one (NewsArticle +
+  BreadcrumbList). Categories sane, including a soccer story correctly in
+  **Sports** — the counter-case to the 2026-09-04 ESPN-soccer-as-Culture
+  finding. One politics story sits in **General**, which is the known 22.7%
+  general rate, not a new defect.
+
 **DAILY RUN 2026-09-09 — `generalOrphanPct` is now INSTRUMENTED and measured
 over the whole live corpus; the Googlebot-tarpit hypothesis is REFUTED; the
 top of the board is otherwise unchanged.**
@@ -449,6 +516,33 @@ and 5 of the shift queue below are DONE or resolved.**
 - Daily loop: verify one bluesky-post run per day is green and eventually
   add its referral traffic to the weekly scoreboard; watch the Buttondown
   approval email in the owner conversation (owner checks mail, not us).
+
+**CHANNEL MEASUREMENTS 2026-09-09 (weekly off-page run) — three engineering
+items fall out of them. Numbers are from the public APIs, not estimates.**
+- **Bluesky reach is zero, and the cause is fixable.** 45 posts since
+  2026-08-31 (~5/day, newest 1 h old — the poster works), but **0 followers
+  and 2 likes across the last 30 posts.** Every post is headline + external
+  embed with `facets: []`. On Bluesky a post with no followers and no tag
+  facets is delivered to nobody: tag feeds are the only discovery surface a
+  new account has. **Item: emit 1-2 topical hashtags as real
+  `app.bsky.richtext.facet#tag` features** (category-derived, e.g.
+  #Politics/#Canada/#Tech), byte-offset facets, tests on the offset maths.
+  This is our own headlines to a public tag feed — distribution, not bait.
+- **Buttondown RSS-to-email is a $9/month add-on** (verified on
+  buttondown.com/pricing, 2026-09-09: "RSS-to-email support +$9/month"),
+  which fails the $0 guardrail. The API, however, is documented as available
+  on all plans including free. **Item: once the account is approved, send the
+  daily briefing ourselves** — compose from /rss and POST to Buttondown's
+  `/emails` endpoint from a scheduled workflow, key in a GitHub secret.
+  $0, and it also gives us the send window and the template.
+- **Before any Bluesky handle change, harden the identifier.**
+  `scripts/bluesky-post.mjs` logs in with
+  `BLUESKY_IDENTIFIER || "currentwire.bsky.social"`. Claiming the domain
+  handle @currentwire.us (free, DNS TXT `_atproto` = `did=did:plc:...` or
+  a `/.well-known/atproto-did` route) retires that handle and would break
+  the poster. **Item: default the identifier to the DID**
+  `did:plc:b7wtbm3vj6ulk6qfqxa2vgph` (stable across handle changes) and
+  confirm one green scheduled run BEFORE the owner is asked to switch.
 
 **STRATEGY SHIFT 2026-09-01 (owner-directed: "include changing strategy. i
 wont wanna fail") — see the new section at the top of `seo/STRATEGY.md`; it

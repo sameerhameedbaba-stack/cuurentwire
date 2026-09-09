@@ -7,12 +7,11 @@ Paste-ready standing texts (name, tagline, descriptions, category, email) are
 in PLAYBOOK.md — copy from there wherever a form asks. Contact email for all
 submissions: **support@currentwire.us**.
 
-Status 2026-09-03 (evening): **two placements are live** — SaaSHub and the
-Product Hunt launch (1 upvote, but a permanent backlink). Everything else
-submitted is sitting in someone else's review queue and needs no owner time.
-**This week the owner's list is empty**, and that is the honest state, not a
-gap: Source of Sources is down at their end, and the X/Facebook/LinkedIn
-question was answered by looking rather than by deciding.
+Status 2026-09-09 (weekly run): **three placements are live** — SaaSHub, the
+Product Hunt listing, and now the Bluesky account, which is also the site's
+first `sameAs` entry (shipped and verified in production this run). Nothing
+new was submitted anywhere. The one thing blocking the biggest channel is a
+mailbox only the owner can read.
 
 > **This file is subordinate to `seo/STRATEGY.md`.** The 2026-08-24 red-team
 > round cut several tactics permanently. If an item here ever contradicts
@@ -21,44 +20,68 @@ question was answered by looking rather than by deciding.
 
 ## Your 15 minutes this week
 
-**Nothing this week.** Both items that were on this list earlier today are
-closed — one was done for you, one is blocked by somebody else's broken
-server. Details below so no future run re-adds them blindly.
+### 1. Buttondown — is the account approved yet? (~5 min, the only real ask)
+The newsletter has been in "standard new-sender review" since **2026-09-01 —
+nine days**. Buttondown quoted "a few hours to a day". Everything else is
+ready and waiting on it: the signup form is live sitewide (verified in the
+served HTML today), the public page https://buttondown.com/currentwire
+accepts subscribers, and the archive is empty only because the account
+cannot send.
 
-### ~~Source of Sources signup~~ — BLOCKED, not your fault (re-check next week)
-Their whole site is down: every path returns "Index file not found" and
-`/index.html` returns 403 Forbidden — a file-permission misconfiguration on
-their host, verified in Chrome 2026-09-03. Signup is impossible for anyone
-right now. The service is not dead (domain and files exist), so this stays
-queued. If it is still broken by ~2026-09-24, drop it.
+Do this: open https://buttondown.com and log in (support@currentwire.us), or
+search that mailbox for "Buttondown".
+- **If it is approved** — go to https://buttondown.com/requests, create an
+  API key, and send it to me. I will build the daily briefing send.
+- **If it is still under review** — reply to their review email (or use
+  https://buttondown.com/support) and ask for a status; nine days is well
+  past their own quote.
+- **Do NOT buy their RSS-to-email add-on.** It is **+$9/month** (verified on
+  their pricing page today) and we do not need it: their API is available on
+  the free plan, so we send the briefing ourselves for $0.
 
-### ~~Social profiles decision~~ — mostly ANSWERED by checking, not by you
-- **X: settled, the answer is no.** `x.com/currentwire` is taken by an
-  unrelated dormant Tamil-language account registered in 2017. It is not
-  available. **This was also a live bug** — the site was putting `@currentwire`
-  in every page's Twitter card, crediting that stranger. Fixed and shipped
-  2026-09-03, all gates green. Nothing owed.
-- **Facebook: not obtainable** as `/currentwire` — it redirects to an
-  unrelated personal profile (@current.wire.3).
-- **LinkedIn: free if you want it.** `linkedin.com/company/currentwire` is
-  unclaimed. This is the only piece still open, and it is genuinely optional —
-  a company page you never post to is worth roughly nothing. Create it only if
-  you will actually use it; tell me and I will add `sameAs` then.
+### 2. Optional, unchanged: LinkedIn company page
+`linkedin.com/company/currentwire` is still unclaimed and free. Worth doing
+only if you will actually post to it. Tell me if you create it and I will add
+it to `sameAs` alongside Bluesky.
+
+That is the whole list. Nothing else on this board needs a human this week.
+
+## Prepared, waiting on our side (no owner time yet)
+
+- **Bluesky handle → @currentwire.us.** Free, permanent, and it puts the
+  domain on every post. It is NOT ready to click: our poster logs in as
+  `currentwire.bsky.social`, and claiming the domain handle retires that
+  name and would break it. Order of operations is in `seo/BACKLOG.md` —
+  we default the login to the account DID, watch one green scheduled run,
+  and only then does this become a 3-minute owner click.
+- **Bluesky reach is currently zero** — 45 posts, **0 followers**, 2 likes in
+  30 posts. Not an owner problem and not worth owner time: the posts carry no
+  hashtag facets, which is the only way a new account is discovered there.
+  Engineering item, filed in BACKLOG.md.
 
 ## Nothing owed — waiting on other people
 
 No owner action is possible on any of these; the weekly run re-checks them.
 
+- **Source of Sources** — still BLOCKED at their end, one week on.
+  `sourceofsources.com`, `/index.html` and `/reporter/` all returned 403
+  with "Index file not found … should be world-readable" again on 2026-09-09
+  — the identical file-permission misconfiguration seen on 2026-09-03. Nobody
+  can sign up. Keep queued; **if it is still broken on ~2026-09-24, drop it.**
 - **Curlie** — suggested 2026-08-19 to News > Headline_Links. Editor review
-  runs for months. Still not listed as of 2026-09-03.
+  runs for months. curlie.org search for "currentwire" returned nothing again
+  on 2026-09-09.
 - **Feedspot** — free listing submitted 2026-08-20. Their USA news page still
-  lists 90 sites, none of them CurrentWire.
-- **Journalist's Toolbox** — pitched 2026-08-19. No listing; always a long
-  shot (the site has no news-aggregation section).
+  carries no CurrentWire entry (re-fetched 2026-09-09). 20 days in.
+- **Journalist's Toolbox** — pitched 2026-08-19. Re-fetched 2026-09-09, no
+  mention; always a long shot (the site has no news-aggregation section).
 - **5 listicle pitches** — iTechGuides, Wisp, Readless ×2, daily.dev,
-  MediaHacker. Sent 2026-08-19/20. **0 replies, 0 additions after 2 weeks.**
-  Wave 2 is a Sprint 2 item (see below), deliberately data-led rather than a
-  repeat of the same ask.
+  MediaHacker. Sent 2026-08-19/20. **3 weeks: 0 replies, 0 additions — and
+  wave 1 is now provably dead, not merely unanswered.** daily.dev did not
+  ignore its piece: it re-tested and republished the whole list at a new URL
+  (https://daily.dev/blog/best-news-aggregator-apps-tested-compared/) and
+  CurrentWire is not in it. An editor who reworks the article and still leaves
+  us out has answered. Do not re-send wave 1 to anyone.
 
 ## Recurring
 
@@ -76,6 +99,12 @@ From STRATEGY.md's roadmap. Both need assets that do not exist yet:
   again before those pages exist would just be the same failed ask a second
   time. Candidate targets already verified live: seahawkmedia.com,
   nexterwp.com, acmethemes.com, aifreeforever.com, socialwalls.com.
+  **Status 2026-09-09: still blocked, verified by fetch.** `/reports`,
+  `/reports/most-covered` and `/publishers` all return 404 on production.
+  Until they exist there is no data to lead with, and the daily.dev result
+  above says plainly that the non-data ask does not work. Add
+  daily.dev's rewritten URL to the wave-2 target list — a piece its editor
+  actively maintains is a better target than five that sit untouched.
 
 ## Parked (do NOT do yet)
 

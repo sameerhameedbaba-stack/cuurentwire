@@ -35,6 +35,16 @@ Format: date | what | live URL | notes. Only entries verified live belong here.
   company-info row and the RSS link in the first comment. Second verified
   off-page placement. **Nothing further owed — do not re-launch.**
 
+- 2026-09-09 | **Bluesky account — LIVE, and now the site's only `sameAs`** |
+  https://bsky.app/profile/currentwire.bsky.social | created 2026-08-31,
+  DID `did:plc:b7wtbm3vj6ulk6qfqxa2vgph`, posting automatically since. Read
+  from the public API on 2026-09-09: **45 posts**, oldest 2026-08-31T22:19Z,
+  newest 2026-09-09T21:01Z (~1 h before the check), averaging ~5/day against
+  the workflow's 8/day ceiling. Third verified off-page placement, and the
+  first one we control. **Honest counterpart: 0 followers, 2 likes and 0
+  reposts/replies/quotes across the last 30 posts** — the channel publishes
+  reliably and reaches nobody yet; see BACKLOG for the hashtag-facet fix.
+
 ## Scheduled
 
 - ~~**Product Hunt launch — SCHEDULED for 2026-09-01**~~ — **LAUNCHED, see
@@ -404,3 +414,84 @@ production itself: `https://currentwire.us/` no longer serves
 
 **CurrentWire has stopped crediting the stranger's X account.** Off-page state
 is now fully shipped, with nothing stranded.
+
+### 2026-09-09 (weekly off-page run — the first `sameAs` ships; wave 1 is provably dead)
+
+**SHIPPED AND VERIFIED LIVE: OrganizationJsonLd now carries a `sameAs`.**
+The array had been empty since launch on the rule "never claim a profile we
+cannot verify" — every candidate had failed that test (x.com/currentwire is a
+stranger's dormant account, facebook.com/currentwire redirects elsewhere, the
+LinkedIn page 404s). Bluesky is the first one that passes: verified through
+`app.bsky.actor.getProfile` (handle, DID, 45 posts) and by loading
+https://bsky.app/profile/currentwire.bsky.social (og:title "CurrentWire
+(@currentwire.bsky.social)", bio naming currentwire.us) BEFORE writing it into
+the schema. Commit `3d5636a`, fed from `siteConfig.social.bluesky` so the
+profile cannot be listed in one place and missing from the other.
+Gates: tsc clean, eslint 0 errors (1 pre-existing warning), next build ok,
+119 playwright passed. Vitest: 1042 passed, **9 failures all in
+`tests/unit/vercel-ignore-build.test.ts` and all pre-existing** — confirmed
+by stashing this run's diff and re-running on a clean tree, where the same 9
+fail. They are a Windows-local artifact (the suite spawns `bash` and gets a
+null exit status here); CI is green on main for that file. Not this change.
+**Verified in production** after deploy:
+`"sameAs":["https://bsky.app/profile/currentwire.bsky.social"]` is served on
+https://currentwire.us/ .
+
+**Channel numbers for Monday's scoreboard (all read from public APIs today):**
+- **Bluesky:** 45 posts, oldest 2026-08-31T22:19Z, newest 2026-09-09T21:01Z
+  (~1 h old at check time), ~5/day — up from the 2026-09-03 baseline of 14
+  posts. The poster is healthy. **0 followers. 2 likes, 0 reposts, 0 replies,
+  0 quotes across the last 30 posts.** Referral traffic to the site: **not
+  measured this run** — GA4 needs an owner sign-in, so treat referrals as
+  unverified rather than zero.
+- **Newsletter:** still cannot send. Buttondown `currentwire` has been in
+  new-sender review since 2026-09-01 — **9 days** against their own quote of
+  "a few hours to a day". Evidence available from outside the account:
+  https://buttondown.com/currentwire renders with a working subscribe form,
+  and https://buttondown.com/currentwire/archive/ says "This author hasn't
+  published any emails yet." Approval status itself is **unverifiable from
+  here** — the mail lands at support@currentwire.us, which this loop cannot
+  read (the connected Hostinger mailbox is sameer.hb@humanmaximizer.com, a
+  different order). Owner checklist item.
+  Also settled this run: **RSS-to-email is a +$9/month add-on** (quoted on
+  buttondown.com/pricing), which fails the $0 guardrail — but the API is
+  documented as available on all plans including free, so the daily send gets
+  built against `/emails` instead. Filed in BACKLOG.
+- **Product Hunt:** unchanged from the 2026-09-03 reading — **1 upvote, 2
+  followers, 1 comment**, "Visit website" still pointing at
+  `https://currentwire.us/?ref=producthunt`. A static asset, as expected.
+
+**Progress checks — nothing new went live anywhere else.**
+- SaaSHub: still live and Approved at https://www.saashub.com/currentwire,
+  still linking to currentwire.us. Unchanged.
+- **Source of Sources: still broken at their end, one week on.** Re-fetched
+  2026-09-09: `/`, `/index.html` and `/reporter/` all 403 with the same
+  "Index file not found … should be world-readable" body as 2026-09-03. This
+  is their host misconfigured, not bot-blocking. Drop date stands: ~2026-09-24.
+- Curlie: curlie.org search for "currentwire" → nothing. Still queued.
+- Feedspot: no CurrentWire entry on the USA news websites page. 20 days.
+- Journalist's Toolbox: no mention.
+- **Web mentions: still zero.** A search for "currentwire.us" returns only
+  CurrentWire's own pages plus unrelated `-wire` brands (PunditWire, The
+  Daily Wire, a YouTube channel). No third-party page cites the site.
+
+**The listicle result changed from "no answer" to "answered no".** For three
+weeks this ledger recorded wave 1 as un-actioned because the target articles
+had not been edited. That is no longer true of the strongest target:
+**daily.dev re-tested and republished its whole aggregator list at a new URL**
+— https://daily.dev/blog/best-news-aggregator-apps-tested-compared/ ("Tested
+and Compared"), while the pitched URL now 404s — **and CurrentWire is not in
+it.** iTechGuides' pitched URL also 404s now. An editor who rebuilds the piece
+and still leaves us out has given a verdict. Wave 1 is closed; nobody should
+re-send it.
+
+That sharpens the wave-2 rule rather than changing it: **/reports,
+/reports/most-covered and /publishers all still return 404 on production**
+(fetched today), so there is still no data to lead with, and the plain "please
+add my aggregator" ask has now been empirically refused by the one editor who
+was actively working on their list. Wave 2 waits for the pages — and
+daily.dev's new URL belongs on its target list precisely because that editor
+maintains the piece.
+
+**Nothing was submitted, created, posted or emailed this run.** The only
+outward change is the code commit above.
