@@ -4,7 +4,10 @@
 > blocks, each with its own list. They are NOT alternatives — read them in this
 > order and the first one that speaks wins:
 >
-> 0. **DAILY RUN 2026-09-09** (immediately below) — records one shipped
+> 0. **DAILY RUN 2026-09-10** (immediately below) — a production 5xx found,
+>    fixed and verified live, with its CAUSE left open and named as the top of
+>    the board. It reorders nothing else.
+> 0a. **DAILY RUN 2026-09-09** — records one shipped
 >    instrument, one refuted hypothesis and one new low-rate finding. It
 >    reorders nothing.
 > 0b. **DAILY RUN 2026-09-08** — records only what is now
@@ -33,7 +36,7 @@
 > the boundary a change moves; never claim a fix without evidence from the
 > same run.
 
-**DAILY RUN 2026-09-09 — a production 5xx was found, fixed and verified live;
+**DAILY RUN 2026-09-10 — a production 5xx was found, fixed and verified live;
 the CAUSE behind it is open and is now the top of the board. Nothing else was
 reordered.**
 
