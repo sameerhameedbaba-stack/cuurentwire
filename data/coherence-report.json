@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-08T11:43:50.937Z",
+  "ranAt": "2026-09-09T11:50:16.784Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,96 +16,122 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 694,
-    "cardsWithId": 694,
-    "cardsWithCategory": 612,
-    "cardsWithCountry": 292,
-    "cardsWithSources": 90,
-    "storyPagesFetched": 370,
-    "storyErrors": [
-      {
-        "clusterId": "c5ca249c504b7",
-        "repeat": 1,
-        "error": "TimeoutError: The operation was aborted due to timeout"
-      },
-      {
-        "clusterId": "c831c43aae535",
-        "repeat": 1,
-        "error": "TimeoutError: The operation was aborted due to timeout"
-      },
-      {
-        "clusterId": "c287a3790c4ea",
-        "repeat": 1,
-        "error": "TimeoutError: The operation was aborted due to timeout"
-      },
-      {
-        "clusterId": "c60e12d3260ea",
-        "repeat": 1,
-        "error": "TimeoutError: The operation was aborted due to timeout"
-      }
-    ],
-    "uniqueClusters": 187
+    "cards": 724,
+    "cardsWithId": 724,
+    "cardsWithCategory": 642,
+    "cardsWithCountry": 312,
+    "cardsWithSources": 102,
+    "storyPagesFetched": 406,
+    "storyErrors": [],
+    "uniqueClusters": 204
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.882,
-    "country": 0.421,
-    "sources": 0.13
+    "category": 0.887,
+    "country": 0.431,
+    "sources": 0.141
   },
   "versionsSeen": [
-    "20260908T113016Z-c37ab7",
-    "20260908T112800Z-9686a4",
-    "20260908T114353Z-cff164",
-    "20260908T113340Z-82d5f6",
-    "20260908T113337Z-6dd645",
-    "20260908T112749Z-a451b8",
-    "20260908T113009Z-184e69",
-    "20260908T114358Z-325e9c",
-    "20260908T114407Z-f5d29d",
-    "20260908T113505Z-3783e7",
-    "20260908T113058Z-eed4b8",
-    "20260908T113025Z-879224",
-    "20260908T113732Z-3e6293",
-    "20260908T113023Z-7b7e20",
-    "20260908T112932Z-b16f3a",
-    "20260908T112951Z-59b976",
-    "20260908T114359Z-85179c",
-    "20260908T104517Z-96b542",
-    "20260908T113732Z-ef34bc",
-    "20260908T113024Z-d5282a",
-    "20260908T113049Z-3d1d4f",
-    "20260908T112922Z-2d9488",
-    "archive:2026-09-08T11:00:18.505Z",
-    "20260908T114029Z-878732",
-    "20260908T113806Z-bcf7bd",
-    "20260908T114016Z-ba68f5",
-    "20260908T094518Z-71902a",
-    "20260908T113036Z-c1fff8",
-    "20260908T112852Z-dd37e6",
-    "20260908T114424Z-993b79",
-    "20260908T114420Z-2402dc",
-    "20260908T114443Z-9df251",
-    "20260908T114034Z-c9042a",
-    "20260908T114032Z-ee1201",
-    "20260908T112943Z-763f03",
-    "20260908T114040Z-126d37",
-    "20260908T114444Z-b6e27e",
-    "20260908T113729Z-b19923",
-    "20260908T113037Z-e3eb97",
-    "20260908T112913Z-252e18",
-    "20260908T110519Z-da05b6",
-    "archive:2026-09-08T09:25:06.834Z",
-    "20260908T113013Z-6a7d62",
-    "archive:2026-09-08T08:25:05.823Z",
-    "20260908T063510Z-1e5d36",
-    "20260908T090514Z-fe55e9",
-    "20260908T113803Z-54dc52",
-    "20260908T073019Z-a461f6",
-    "20260908T060020Z-d34600",
-    "20260908T044519Z-d66317",
-    "archive:2026-09-08T11:30:06.927Z",
-    "20260908T114433Z-1e0116",
-    "archive:2026-09-08T05:55:07.285Z"
+    "20260909T114617Z-63a01f",
+    "20260909T114025Z-7acced",
+    "20260909T115020Z-0654fe",
+    "20260909T114023Z-6fb235",
+    "20260909T113040Z-4c2feb",
+    "20260909T115023Z-1d244f",
+    "20260909T113116Z-0ced7d",
+    "20260909T113047Z-6dd4ce",
+    "20260909T113032Z-a8b1ca",
+    "20260909T111516Z-441001",
+    "20260909T113446Z-80ad9b",
+    "20260909T114217Z-b5e0a3",
+    "20260909T113431Z-d9d3c6",
+    "20260909T113749Z-6faa87",
+    "20260909T114112Z-de8a06",
+    "20260909T115024Z-d8f556",
+    "20260909T113537Z-a78808",
+    "20260909T113935Z-57c108",
+    "20260909T114650Z-6fcd3a",
+    "20260909T113915Z-7dfcb6",
+    "20260909T113814Z-a22126",
+    "20260909T114655Z-2ca688",
+    "20260909T114118Z-09eb87",
+    "20260909T114028Z-8028ff",
+    "20260909T113610Z-c1e045",
+    "20260909T113948Z-028ee5",
+    "20260909T114652Z-6fcd3a",
+    "20260909T113542Z-c988ca",
+    "20260909T113622Z-caaa58",
+    "20260909T113716Z-e03f23",
+    "20260909T115024Z-1d244f",
+    "20260909T113842Z-db79c4",
+    "20260909T113644Z-fd0ebb",
+    "20260909T113746Z-a5f090",
+    "20260909T113738Z-aa9833",
+    "20260909T113649Z-dcd815",
+    "20260909T113637Z-775f63",
+    "20260909T113856Z-7e5be3",
+    "20260909T113823Z-4472d7",
+    "20260909T113332Z-b99190",
+    "20260909T113346Z-95a4fa",
+    "20260909T113338Z-a110c4",
+    "20260909T114351Z-c9a289",
+    "20260909T114354Z-2cb886",
+    "20260909T113548Z-0bba42",
+    "20260909T113550Z-27d77f",
+    "20260909T114425Z-30b3fa",
+    "20260909T114647Z-433517",
+    "20260909T114356Z-0c930c",
+    "20260909T114352Z-c9a289",
+    "archive:2026-09-09T11:33:08.914Z",
+    "20260909T113739Z-aa9833",
+    "20260909T113308Z-d34b3e",
+    "20260909T081024Z-34d9ca",
+    "20260909T113546Z-f50736",
+    "20260909T113545Z-d7b5e4",
+    "20260909T113546Z-10fc1c",
+    "20260909T114419Z-1b281b",
+    "20260909T113545Z-10fc1c",
+    "20260909T113346Z-b92dff",
+    "20260909T113804Z-73af0a",
+    "20260909T114019Z-38259c",
+    "20260909T113400Z-394cc3",
+    "20260909T113816Z-a22126",
+    "20260909T113834Z-00553c",
+    "20260909T100513Z-9f9fe9",
+    "20260909T110018Z-681789",
+    "20260909T061014Z-f23deb",
+    "20260909T113853Z-193971",
+    "20260909T114036Z-4873f6",
+    "20260909T113623Z-559b14",
+    "20260909T113547Z-f50736",
+    "archive:2026-09-09T11:30:00.311Z",
+    "20260909T113408Z-0aba6a",
+    "20260909T105515Z-9b068b",
+    "20260909T113916Z-4b9db4",
+    "20260909T051513Z-0ac01f",
+    "20260909T113619Z-31bd16",
+    "20260909T102515Z-1bc412",
+    "20260909T103015Z-20d55c",
+    "20260909T040017Z-dbb131",
+    "20260909T115034Z-b826b6",
+    "20260909T115032Z-16d4d6",
+    "20260909T115035Z-94666d",
+    "20260909T115032Z-d212b3",
+    "20260909T115043Z-2db50f",
+    "20260909T115047Z-a0036c",
+    "20260909T115042Z-d93030",
+    "20260909T115048Z-89bfba",
+    "20260909T115047Z-89bfba",
+    "20260909T113954Z-44b3b3",
+    "20260909T114018Z-071ea4",
+    "20260909T040807Z-0674b5",
+    "20260909T115035Z-e77d61",
+    "20260909T115044Z-2db50f",
+    "20260909T115047Z-d978b8",
+    "20260909T115046Z-a0036c",
+    "20260909T115054Z-d15610",
+    "20260909T115048Z-a0036c",
+    "archive:2026-09-09T02:25:09.335Z"
   ],
   "violations": [],
   "findingsTotal": 5,
@@ -115,34 +141,22 @@
   "findings": [
     {
       "type": "archive-vs-live",
-      "clusterId": "cafcf59b3a3da",
-      "storySurface": "/story/sherri-shepherd-heading-to-broadway-as-the-genie-in-disneys-aladdin-cafcf59b3a3da (r1)",
-      "storyVersion": "archive:2026-09-08T11:00:18.505Z",
-      "liveVersionAtRender": "20260908T114407Z-f5d29d",
+      "clusterId": "c2f6d3a888a30",
+      "storySurface": "/story/helus-pharma-to-participate-at-the-h-c-wainwright-28th-annual-global-investment-c2f6d3a888a30 (r1)",
+      "storyVersion": "archive:2026-09-09T11:33:08.914Z",
+      "liveVersionAtRender": "20260909T115024Z-d8f556",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
-        "/ (r1)",
-        "/ (r2)"
+        "/us (r1)",
+        "/us (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "cbf17f79b29f6",
-      "storySurface": "/story/palestine-weekly-israeli-ministers-push-for-depopulation-of-gaza-cbf17f79b29f6 (r2)",
-      "storyVersion": "archive:2026-09-08T05:55:07.285Z",
-      "liveVersionAtRender": "20260908T114444Z-b6e27e",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
-      "listSurfaces": [
-        "/politics (r1)",
-        "/politics (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c3324b7efbc99",
-      "storySurface": "/story/captain-america-star-chris-evans-sells-his-l-a-home-but-at-1-million-under-askin-c3324b7efbc99 (r1)",
-      "storyVersion": "archive:2026-09-08T09:25:06.834Z",
-      "liveVersionAtRender": "20260908T114444Z-b6e27e",
+      "clusterId": "caa6a54cf21b4",
+      "storySurface": "/story/brent-crude-tops-100-for-first-time-since-july-as-u-s-iran-tit-for-tat-strikes-s-caa6a54cf21b4 (r1)",
+      "storyVersion": "archive:2026-09-09T11:30:00.311Z",
+      "liveVersionAtRender": "20260909T113546Z-f50736",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
         "/business (r1)",
@@ -151,22 +165,34 @@
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "ce13618f27782",
-      "storySurface": "/story/french-ai-startup-mistral-valued-at-over-21-billion-euros-after-latest-funding-ce13618f27782 (r1)",
-      "storyVersion": "archive:2026-09-08T08:25:05.823Z",
-      "liveVersionAtRender": "20260908T114444Z-b6e27e",
+      "clusterId": "ce80fc3becc4b",
+      "storySurface": "/story/broncos-country-this-ones-for-you-breckenridge-distillery-kicks-off-another-seas-ce80fc3becc4b (r1)",
+      "storyVersion": "archive:2026-09-09T11:30:00.311Z",
+      "liveVersionAtRender": "20260909T113542Z-c988ca",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
-        "/ai (r1)",
-        "/ai (r2)"
+        "/business (r1)",
+        "/business (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c3d2c26aa8c59",
-      "storySurface": "/story/trumps-first-major-midterm-money-move-a-10-million-texas-senate-ad-blitz-c3d2c26aa8c59 (r1)",
-      "storyVersion": "archive:2026-09-08T11:30:06.927Z",
-      "liveVersionAtRender": "20260908T113024Z-d5282a",
+      "clusterId": "c32c13f78fbbc",
+      "storySurface": "/story/copper-giant-resources-corp-begins-trading-on-otcqx-best-market-c32c13f78fbbc (r1)",
+      "storyVersion": "archive:2026-09-09T11:30:00.311Z",
+      "liveVersionAtRender": "20260909T113537Z-a78808",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/business (r1)",
+        "/business (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c15c54e52ec39",
+      "storySurface": "/story/us-supreme-court-rejects-missouri-republicans-appeal-to-use-trump-backed-congres-c15c54e52ec39 (r2)",
+      "storyVersion": "archive:2026-09-09T02:25:09.335Z",
+      "liveVersionAtRender": "20260909T115048Z-89bfba",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
         "/elections (r1)",
@@ -179,20 +205,36 @@
   "warnings": [
     {
       "type": "cross-version-drift",
-      "clusterId": "c6fc62c81e2e1",
+      "clusterId": "c7591e1e4af5e",
       "field": "sources",
       "values": [
         {
-          "version": "20260908T113016Z-c37ab7",
-          "value": 6
+          "version": "20260909T114617Z-63a01f",
+          "value": 3
         },
         {
-          "version": "20260908T112749Z-a451b8",
-          "value": 6
+          "version": "20260909T114025Z-7acced",
+          "value": 3
         },
         {
-          "version": "20260908T114407Z-f5d29d",
-          "value": 5
+          "version": "20260909T115020Z-0654fe",
+          "value": 3
+        },
+        {
+          "version": "20260909T114023Z-6fb235",
+          "value": 3
+        },
+        {
+          "version": "20260909T115023Z-1d244f",
+          "value": 3
+        },
+        {
+          "version": "20260909T111516Z-441001",
+          "value": 2
+        },
+        {
+          "version": "20260909T115024Z-d8f556",
+          "value": 3
         }
       ]
     }
