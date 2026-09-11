@@ -18,5 +18,25 @@
       }
     },
     "overdueIds": []
+  },
+  {
+    "measuredAt": "2026-09-11T22:50:16.218Z",
+    "graceMinutes": 90,
+    "advertised": 763,
+    "archived": 760,
+    "pending": 3,
+    "overdue": 0,
+    "undated": 0,
+    "bySurface": {
+      "sitemap.xml": {
+        "advertised": 200,
+        "unarchived": 3
+      },
+      "news-sitemap.xml": {
+        "advertised": 758,
+        "unarchived": 0
+      }
+    },
+    "overdueIds": []
   }
 ]
