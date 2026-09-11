@@ -98,6 +98,20 @@ a green `gsc.yml` run that refreshed nothing.**
   a freshness assertion in the workflow — the same shape as item 0c. Next
   run's candidate item.
 
+- **BLUESKY DEDUP: VERIFIED LIVE, item CLOSED.** Carried as "not verified
+  live" since 2026-09-04 because the proof is the absence of a duplicate
+  across a headline rewrite, and no rewrite had been observed among posted
+  stories. Measured this run: of **21 posts carrying a story link since the
+  fix** (`e4714d1`, 2026-09-07 13:20 UTC), each posted URL was re-fetched —
+  **8 answer 307 with the SAME cluster id** (a pure headline rewrite, the
+  exact case `dedupKey` was written for), **9 answer 308 with a DIFFERENT
+  cluster id** (a cluster merge), 4 are unchanged. So **17 of 21 posted
+  stories had their URL change after posting**, and the whole 50-post window
+  (09-01 → 09-11) contains **no duplicate pair except the two known pre-fix
+  ones** (09-03 Steinem, 09-05 tanker). Eight same-id rewrites with no repost
+  is the demonstration. Fold the feed read into the weekly channel check; it
+  no longer needs a daily re-read.
+
 - **Everything else measured green.** `seo-health.mjs` **ALL CHECKS PASSED**
   against production (24 checks), including all **756** news-sitemap URLs
   answering 200 directly. Write-path heartbeat: newest news-sitemap
