@@ -4,7 +4,10 @@
 > blocks, each with its own list. They are NOT alternatives — read them in this
 > order and the first one that speaks wins:
 >
-> 0. **DAILY RUN 2026-09-10** (immediately below) — a production 5xx found,
+> 0. **DAILY RUN 2026-09-11** (immediately below) — the top-of-board CAUSE
+>    question is now instrumented and its SURFACE is measured. It reorders
+>    nothing else.
+> 0-i. **DAILY RUN 2026-09-10** — a production 5xx found,
 >    fixed and verified live, with its CAUSE left open and named as the top of
 >    the board. It reorders nothing else.
 > 0a. **DAILY RUN 2026-09-09** — records one shipped
@@ -35,6 +38,93 @@
 > problem while fixing an old one.** Verify the outcome, never a proxy; test
 > the boundary a change moves; never claim a fix without evidence from the
 > same run.
+
+**DAILY RUN 2026-09-11 — the sitemap-to-archive gap is INSTRUMENTED and the
+orphan SURFACE is measured. Production is clean. One monitoring defect found:
+a green `gsc.yml` run that refreshed nothing.**
+
+- **SHIPPED (`53bf6ad`): `scripts/sitemap-archive-gap.mjs` +
+  `sitemap-archive-gap-lib.mjs`, 24 unit tests.** This is the "cheap next
+  step is instrumentation, not a rewrite" item the 09-10 block named as the
+  answer to the top of the board. For every story URL advertised in either
+  sitemap it asks whether the archive holds a row, and if not, how long it has
+  been advertised: `archived` / `pending` (inside the write window) /
+  `overdue` (an orphan candidate). **INSTRUMENT, NOT A GATE** — a high overdue
+  count never fails the run; exit 1 means the corpus could not be MEASURED. A
+  non-200 from `archive-sources` aborts rather than reporting the whole corpus
+  as orphaned during an archive outage.
+
+- **THE SURFACE IS NOW MEASURED, and it narrows the open question.** Only one
+  of the two sitemaps can advertise an unarchived story, measured live
+  2026-09-11 22:28 UTC over all 760 advertised story ids:
+  - `news-sitemap.xml` — **0 of 739 unarchived.** It is gated on archive
+    standing (2515c55, 2026-08-24), so by construction it cannot carry one.
+  - `sitemap.xml` — **19 of 200 unarchived.** `app/sitemap.ts` is
+    `force-dynamic` over `dataset.clusters.slice(0, 200)`: the LIVE dataset,
+    with no archive gate.
+  **The 19 are not a defect.** Every one was 0.0–0.3 h old and answered
+  **200 by slug / 307 by id** (controls: home 200, live story 200), i.e. the
+  normal batched-write window — `PERSIST_MIN_INTERVAL_MS` 25 min plus a cold
+  window to minute 15 of each 30. **Re-measured seven minutes later at 22:35
+  UTC: 760 of 760 archived, 0 unarchived.** The burst landed and wrote all 19.
+  That is the gap opening and closing, observed directly, and it is the first
+  time this repo has watched it happen.
+
+- **What this does and does not settle.** It settles WHERE an
+  advertised-but-never-archived URL can come from: `sitemap.xml`, during the
+  persist window — which is also the surface `url-survival.mjs` reads, so it
+  is consistent with how the four 09-09 orphans entered `data/url-ledger.json`
+  with `lastOk: null`. It does **NOT** establish that a cluster leaving the
+  live dataset before its burst is what happened on 09-09; that remains
+  unmeasured and is exactly what the `overdue` bucket exists to catch in the
+  act. **Do not write the mechanism up as a finding until an overdue entry is
+  actually observed.**
+
+- **NEW DEFECT, monitoring: `gsc.yml` can report success and refresh
+  nothing.** Run **#15** (2026-09-09 22:24 UTC, dispatched by the 09-10 run
+  for fresher numbers) shows **every step green** — and produced **no commit
+  at all**. Measured: all seven `data/gsc-*.json` files were still at
+  `generatedAt 2026-09-07T13:39:11.445Z` five days later, though
+  `gsc-report.json` writes that field unconditionally at the end of `main()`,
+  so a completed run always produces a diff. The secret is not the problem:
+  `gsc-crawl-freshness.yml` authenticates with the **same**
+  `GSC_SERVICE_ACCOUNT_JSON` and reached Search Console at 2026-09-11 12:53
+  UTC. Re-dispatched this run as a live test — run **#16 committed fresh data
+  normally** (`29e9320`), so the failure is intermittent, not a broken
+  workflow. **Mechanism unproven**: the run logs need an authenticated `gh`
+  and the local token is invalid. **Filed, not fixed.** The durable point is
+  the class: *this workflow has no way to say "I refreshed nothing", and the
+  loop only caught it by comparing `generatedAt` to the calendar.* The fix is
+  a freshness assertion in the workflow — the same shape as item 0c. Next
+  run's candidate item.
+
+- **Everything else measured green.** `seo-health.mjs` **ALL CHECKS PASSED**
+  against production (24 checks), including all **756** news-sitemap URLs
+  answering 200 directly. Write-path heartbeat: newest news-sitemap
+  `publication_date` **2026-09-11T22:00:14Z**, 17.5 min old at read.
+  **archive-sitemap total: 19,785** (2026-09-11 22:3x UTC) — recorded for the
+  series only; per the 09-08 finding this count falls as well as rises and
+  **no runway date may be derived by differencing it**. One open
+  `[auto-alert]`: **#11**, the crawl monitor, correctly still failing —
+  archive-sitemap **183.1 h** unread, news-sitemap **438.8 h**, sitemap.xml
+  **436.2 h** (measured by the monitor 2026-09-11 12:53 UTC). Issue **#12**
+  (the 09-09 orphans) has **closed**.
+
+- **Google: declining, `explained: true`, not re-investigated.** Fresh pull
+  this run (`generatedAt 2026-09-11T22:20:20Z`): last 7 complete days
+  (Sep 2–8) **2 clicks / 6 impressions** against 4 / 86 — −50% / −93.0%,
+  attributed to the ongoing **2026-08-21 Googlebot crawl collapse** already in
+  `data/incidents.json`. The trailing three days are the `lagDays` partial
+  window and are **not** a further collapse.
+
+- **Crawl sample clean.** 5 story pages (3 newest in the news sitemap plus 2
+  sampled deeper) and `/technology`, `/politics`: all **200**, all
+  **self-canonical**, all `index, follow, max-image-preview:large`, JSON-LD
+  **parses** on every one (NewsArticle + BreadcrumbList on stories,
+  BreadcrumbList + ItemList on sections). Sections all sane — Science for a
+  genome study, Business for a Zillow shareholder suit, World ×2, Politics for
+  an Indian-minister protest story. **No General orphan in this sample** and
+  no classifier defect to file.
 
 **DAILY RUN 2026-09-10 — a production 5xx was found, fixed and verified live;
 the CAUSE behind it is open and is now the top of the board. Nothing else was
