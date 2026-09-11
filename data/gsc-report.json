@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-09T22:24:27.833Z",
+  "generatedAt": "2026-09-11T22:20:20.724Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-08-13",
-    "endDate": "2026-09-09",
+    "startDate": "2026-08-15",
+    "endDate": "2026-09-11",
     "days": 28
   },
   "minSampleImpressions": 100,
@@ -13,32 +13,32 @@
       "rows": 591,
       "total": {
         "urls": 591,
-        "impressions": 2085,
+        "impressions": 2074,
         "clicks": 48,
-        "ctr": 0.023,
-        "avgPosition": 31.5,
-        "impressionsPerUrl": 3.53,
+        "ctr": 0.0231,
+        "avgPosition": 31.6,
+        "impressionsPerUrl": 3.51,
         "clicksPerUrl": 0.08,
         "sufficientSample": true
       },
       "templates": {
         "home": {
           "urls": 1,
-          "impressions": 35,
+          "impressions": 26,
           "clicks": 10,
-          "ctr": 0.2857,
-          "avgPosition": 12.6,
-          "impressionsPerUrl": 35,
+          "ctr": 0.3846,
+          "avgPosition": 16.5,
+          "impressionsPerUrl": 26,
           "clicksPerUrl": 10,
           "sufficientSample": false
         },
         "story": {
           "urls": 554,
-          "impressions": 1871,
+          "impressions": 1869,
           "clicks": 23,
           "ctr": 0.0123,
           "avgPosition": 32.2,
-          "impressionsPerUrl": 3.38,
+          "impressionsPerUrl": 3.37,
           "clicksPerUrl": 0.04,
           "sufficientSample": true
         },
@@ -769,7 +769,7 @@
     "method": "day-granular GSC data; hours = end of first impression day (UTC) minus publishedAt (upper bound)",
     "windowDays": 14,
     "minStoryAgeHours": 72,
-    "eligibleStories": 3804,
+    "eligibleStories": 3538,
     "discoveredStories": 0,
     "discoveredPct": 0,
     "within24hPct": 0,
@@ -780,11 +780,11 @@
   "storiesBySourceCount": {
     "1": {
       "urls": 490,
-      "impressions": 1616,
+      "impressions": 1614,
       "clicks": 22,
       "ctr": 0.0136,
-      "avgPosition": 29.2,
-      "impressionsPerUrl": 3.3,
+      "avgPosition": 29.3,
+      "impressionsPerUrl": 3.29,
       "clicksPerUrl": 0.04,
       "sufficientSample": true
     },
@@ -892,16 +892,16 @@
       "position": 65.4
     },
     {
-      "url": "https://currentwire.us/",
-      "impressions": 35,
-      "clicks": 10,
-      "position": 12.6
-    },
-    {
       "url": "https://currentwire.us/story/why-americans-now-hate-each-other-more-than-ever-c7c39f3dad971",
       "impressions": 29,
       "clicks": 0,
       "position": 6.8
+    },
+    {
+      "url": "https://currentwire.us/",
+      "impressions": 26,
+      "clicks": 10,
+      "position": 16.5
     },
     {
       "url": "https://currentwire.us/story/mangione-admits-killing-healthcare-ceo-and-pleads-guilty-to-federal-charges-c29c980e4829c",
@@ -1175,38 +1175,38 @@
     "trend": {
       "insufficient": false,
       "window": {
-        "from": "2026-08-31",
-        "to": "2026-09-06"
+        "from": "2026-09-02",
+        "to": "2026-09-08"
       },
       "clicks": {
-        "current": 3,
+        "current": 2,
         "prior": 4,
-        "deltaPct": -25
+        "deltaPct": -50
       },
       "impressions": {
-        "current": 9,
-        "prior": 202,
-        "deltaPct": -95.5
+        "current": 6,
+        "prior": 86,
+        "deltaPct": -93
       },
       "explained": true
     }
   },
   "liveCoverage": {
-    "clusters": 746,
-    "singleSource": 712,
-    "twoSource": 25,
+    "clusters": 770,
+    "singleSource": 739,
+    "twoSource": 24,
     "threeSource": 4,
-    "fourPlus": 5,
-    "multiSourcePct": 4.6,
-    "threePlusPct": 1.2,
-    "fourPlusPct": 0.7,
+    "fourPlus": 3,
+    "multiSourcePct": 4,
+    "threePlusPct": 0.9,
+    "fourPlusPct": 0.4,
     "medianIndependentPublications": 1,
-    "meanIndependentPublications": 1.07,
-    "pressReleasePct": 0.7,
-    "opinionPct": 0.7,
-    "generalCategoryPct": 22.4
+    "meanIndependentPublications": 1.05,
+    "pressReleasePct": 0.5,
+    "opinionPct": 1.4,
+    "generalCategoryPct": 25.2
   },
-  "liveDatasetVersion": "20260909T221842Z-9aa270",
-  "ledgerStories": 7443,
+  "liveDatasetVersion": "20260911T222022Z-088b88",
+  "ledgerStories": 8189,
   "warnings": []
 }

@@ -1,46 +1,30 @@
 {
-  "generatedAt": "2026-09-09T22:24:27.833Z",
+  "generatedAt": "2026-09-11T22:20:20.724Z",
   "window": {
-    "startDate": "2026-08-13",
-    "endDate": "2026-09-09",
+    "startDate": "2026-08-15",
+    "endDate": "2026-09-11",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
     "insufficient": false,
     "window": {
-      "from": "2026-08-31",
-      "to": "2026-09-06"
+      "from": "2026-09-02",
+      "to": "2026-09-08"
     },
     "clicks": {
-      "current": 3,
+      "current": 2,
       "prior": 4,
-      "deltaPct": -25
+      "deltaPct": -50
     },
     "impressions": {
-      "current": 9,
-      "prior": 202,
-      "deltaPct": -95.5
+      "current": 6,
+      "prior": 86,
+      "deltaPct": -93
     },
     "explained": true
   },
   "days": [
-    {
-      "date": "2026-08-13",
-      "clicks": 0,
-      "impressions": 0,
-      "ctr": 0,
-      "position": 0,
-      "incidents": []
-    },
-    {
-      "date": "2026-08-14",
-      "clicks": 0,
-      "impressions": 11,
-      "ctr": 0,
-      "position": 1.2,
-      "incidents": []
-    },
     {
       "date": "2026-08-15",
       "clicks": 3,
@@ -308,6 +292,27 @@
     },
     {
       "date": "2026-09-09",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Four published /story/ URLs served a permanent 500 for at least 11h with nothing down (FIXED 2026-09-09 22:2xZ, 6bbf9f3)"
+      ]
+    },
+    {
+      "date": "2026-09-10",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
+      ]
+    },
+    {
+      "date": "2026-09-11",
       "clicks": 0,
       "impressions": 0,
       "ctr": 0,
