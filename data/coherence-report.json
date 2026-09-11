@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-10T11:49:04.897Z",
+  "ranAt": "2026-09-11T11:48:02.072Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,318 +16,232 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 726,
-    "cardsWithId": 726,
-    "cardsWithCategory": 644,
-    "cardsWithCountry": 339,
-    "cardsWithSources": 108,
-    "storyPagesFetched": 381,
+    "cards": 718,
+    "cardsWithId": 718,
+    "cardsWithCategory": 636,
+    "cardsWithCountry": 324,
+    "cardsWithSources": 61,
+    "storyPagesFetched": 395,
     "storyErrors": [],
-    "uniqueClusters": 201
+    "uniqueClusters": 200
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.887,
-    "country": 0.467,
-    "sources": 0.149
+    "category": 0.886,
+    "country": 0.451,
+    "sources": 0.085
   },
   "versionsSeen": [
-    "20260910T114617Z-3ab87a",
-    "20260910T111515Z-527a57",
-    "20260910T114907Z-100522",
-    "20260910T113237Z-0eb46e",
-    "20260910T113241Z-6ba834",
-    "20260910T114911Z-52c689",
-    "20260910T113208Z-915d8a",
-    "20260910T113305Z-e4815d",
-    "20260910T114417Z-1ee6b8",
-    "20260910T114911Z-ffdb5d",
-    "20260910T113050Z-b738c1",
-    "20260910T114443Z-88e428",
-    "20260910T113005Z-1190e4",
-    "20260910T114840Z-e0e992",
-    "20260910T114838Z-e0e992",
-    "20260910T113322Z-ba2247",
-    "20260910T114748Z-042b01",
-    "20260910T113055Z-51f5d6",
-    "20260910T113337Z-b65375",
-    "20260910T113533Z-c26eda",
-    "20260910T113636Z-3eed8e",
-    "20260910T113319Z-2b3fe5",
-    "20260910T113328Z-133d09",
-    "20260910T114025Z-0c5f2f",
-    "20260910T114040Z-56da5f",
-    "20260910T113943Z-0d3d97",
-    "20260910T113327Z-8b2e8b",
-    "20260910T113345Z-cd9f39",
-    "20260910T113024Z-5a5e9a",
-    "20260910T113644Z-9c67ec",
-    "20260910T113038Z-a63d74",
-    "20260910T114021Z-fd8973",
-    "20260910T113039Z-82a1f7",
-    "20260910T114025Z-5ede23",
-    "20260910T114928Z-9f1159",
-    "20260910T112717Z-f8e9f1",
-    "20260910T104512Z-f247a6",
-    "20260910T070021Z-a4df84",
-    "20260910T110018Z-7b4a70",
-    "20260910T032017Z-dacd59",
-    "20260910T114529Z-02671c",
-    "20260910T114938Z-afc1f6",
-    "20260910T113339Z-570dd6",
-    "20260910T113343Z-b65375",
-    "20260910T114938Z-3e0d4c",
-    "20260910T114050Z-8371ff",
-    "20260910T114934Z-07d492",
-    "20260910T114433Z-b1ea7a",
-    "20260910T114420Z-77da1a",
-    "20260910T114043Z-7f5133",
-    "20260910T114035Z-87a384",
-    "20260910T114055Z-e23cd8",
-    "20260910T113335Z-c015ee",
-    "archive:2026-09-10T10:30:06.815Z",
-    "20260910T080021Z-33bc0b",
-    "20260910T112815Z-32f300",
-    "20260910T112931Z-1fa515",
-    "20260910T113133Z-b90c76",
-    "20260910T113307Z-e4272d",
-    "20260910T112613Z-7772cb",
-    "20260910T113850Z-1fe718",
-    "20260910T081515Z-829988",
-    "archive:2026-09-10T10:00:42.072Z",
-    "archive:2026-09-10T11:30:00.850Z",
-    "archive:2026-09-10T11:30:00.908Z",
-    "20260910T113320Z-34e2c1",
-    "20260910T113420Z-10426b",
-    "20260910T091512Z-79d493",
-    "20260910T114156Z-b20c6f",
-    "20260910T114958Z-eeb529",
-    "20260910T113123Z-2c0e26",
-    "20260910T114957Z-eeb529",
-    "20260910T114956Z-40a26f",
-    "20260910T114958Z-de2cb0",
-    "20260910T115011Z-e296d8",
-    "20260910T113126Z-04c71d",
-    "20260910T112541Z-32eb14",
-    "20260910T113329Z-3cb3f5",
-    "20260910T103021Z-a6e9e4",
-    "20260910T074517Z-2452f8",
-    "20260910T114907Z-a4ac7f",
-    "20260910T114911Z-b6230d",
-    "20260910T114922Z-801cfb",
-    "20260910T114929Z-eb24ba",
-    "20260910T114930Z-9f1159",
-    "20260910T114930Z-acdbd7",
-    "20260910T114951Z-cdd751",
-    "20260910T114959Z-cfae66",
-    "20260910T114959Z-eeb529",
-    "20260910T115032Z-187d3a",
-    "20260910T115049Z-6f1c7a"
+    "20260911T114223Z-546c29",
+    "20260911T111014Z-c7ecb7",
+    "20260911T114151Z-6d42ef",
+    "20260911T113219Z-45cd0f",
+    "20260911T113444Z-9b45f2",
+    "20260911T113537Z-153883",
+    "20260911T113335Z-141733",
+    "20260911T113345Z-023ae9",
+    "20260911T113828Z-d9e4fb",
+    "20260911T113921Z-8b9612",
+    "20260911T113902Z-b2ca0a",
+    "20260911T113846Z-e768dc",
+    "20260911T113837Z-707022",
+    "20260911T113233Z-8a6382",
+    "20260911T113848Z-1a60d6",
+    "20260911T113602Z-44ad29",
+    "20260911T113848Z-2af6f6",
+    "20260911T113113Z-7f0f41",
+    "20260911T113704Z-972011",
+    "20260911T113229Z-b18616",
+    "20260911T113437Z-d71c44",
+    "20260911T113946Z-762610",
+    "20260911T113849Z-21d395",
+    "archive:2026-09-11T07:30:03.050Z",
+    "20260911T113328Z-760004",
+    "20260911T113933Z-764033",
+    "20260911T113318Z-a73f4d",
+    "20260911T113350Z-846ddd",
+    "20260911T113352Z-ec61ea",
+    "20260911T112957Z-69eac4",
+    "20260911T114120Z-2e9323",
+    "20260911T113847Z-e768dc",
+    "20260911T113853Z-4f7c1e",
+    "20260911T113157Z-14039d",
+    "20260911T113556Z-ec3834",
+    "20260911T113459Z-092353",
+    "20260911T114025Z-da15a9",
+    "20260911T114126Z-773d72",
+    "20260911T113651Z-60a58c",
+    "20260911T113634Z-eb1ef4",
+    "20260911T114124Z-fe1df4",
+    "20260911T114124Z-a6fb37",
+    "20260911T113301Z-309b8b",
+    "20260911T113153Z-79c505",
+    "20260911T113024Z-fb834a",
+    "20260911T113356Z-03511f",
+    "20260911T113958Z-b54b91",
+    "20260911T114024Z-90acf3",
+    "20260911T114154Z-dc14ff",
+    "20260911T114120Z-6b9ab4",
+    "20260911T113607Z-1f009f",
+    "20260911T113930Z-592303",
+    "archive:2026-09-11T10:55:06.688Z",
+    "20260911T113956Z-661de0",
+    "20260911T114054Z-794827",
+    "20260911T114042Z-8016a9",
+    "20260911T114131Z-4a99b7",
+    "20260911T114014Z-e39f55",
+    "20260911T114119Z-2e9323",
+    "20260911T114101Z-c074eb",
+    "20260911T114148Z-75ac38",
+    "20260911T113303Z-021e7e",
+    "20260911T114123Z-a6fb37",
+    "20260911T113920Z-c0be99",
+    "20260911T113442Z-609423",
+    "20260911T113509Z-c32f1f",
+    "archive:2026-09-11T07:00:07.999Z",
+    "20260911T113434Z-e04d9e",
+    "20260911T114024Z-a23d0f"
   ],
-  "violations": [
-    {
-      "type": "category-flap",
-      "clusterId": "cf061a76a9ce0",
-      "sequence": [
-        {
-          "version": "20260910T113241Z-6ba834",
-          "category": "technology"
-        },
-        {
-          "version": "20260910T070021Z-a4df84",
-          "category": "general"
-        },
-        {
-          "version": "20260910T114911Z-b6230d",
-          "category": "technology"
-        }
-      ]
-    },
-    {
-      "type": "category-flap",
-      "clusterId": "ccf4cab25719f",
-      "sequence": [
-        {
-          "version": "20260910T111515Z-527a57",
-          "category": "business"
-        },
-        {
-          "version": "20260910T091512Z-79d493",
-          "category": "technology"
-        },
-        {
-          "version": "20260910T114911Z-ffdb5d",
-          "category": "business"
-        }
-      ]
-    }
-  ],
-  "findingsTotal": 5,
+  "violations": [],
+  "findingsTotal": 10,
   "findingsByCause": {
-    "list-side staleness": 5
+    "story-side staleness": 8,
+    "list-side staleness": 2
   },
   "findings": [
     {
       "type": "archive-vs-live",
-      "clusterId": "cded02ed7ce41",
-      "storySurface": "/story/french-football-federation-pulls-support-from-fifa-head-infantinos-re-election-b-cded02ed7ce41 (r1)",
-      "storyVersion": "archive:2026-09-10T10:30:06.815Z",
-      "liveVersionAtRender": "20260910T112613Z-7772cb",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "clusterId": "ce0c93fabd390",
+      "storySurface": "/story/hurricanes-offense-wows-with-856-yards-42-first-downs-in-77-7-onslaught-ce0c93fabd390 (r1)",
+      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
+      "liveVersionAtRender": "20260911T113933Z-764033",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
       "listSurfaces": [
-        "/politics (r1)",
-        "/elections (r1)"
+        "/ (r1)",
+        "/us (r1)",
+        "/latest (r1)",
+        "/ (r2)",
+        "/us (r2)",
+        "/latest (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c86452216e72a",
-      "storySurface": "/story/trump-promises-5-000-checks-if-republicans-win-the-midterms-he-also-teased-tarif-c86452216e72a (r1)",
-      "storyVersion": "archive:2026-09-10T10:00:42.072Z",
-      "liveVersionAtRender": "20260910T112919Z-24adef",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "clusterId": "ca301e338573e",
+      "storySurface": "/story/report-feds-open-investigation-into-clippers-dealings-with-kawhi-ca301e338573e (r1)",
+      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
+      "liveVersionAtRender": "20260911T113933Z-764033",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
       "listSurfaces": [
-        "/business (r1)"
+        "/ (r1)",
+        "/us (r1)",
+        "/latest (r1)",
+        "/ (r2)",
+        "/us (r2)",
+        "/latest (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c2f1b77c3a1e6",
-      "storySurface": "/story/lahontan-announces-cfo-transition-on-anticipation-of-santa-fe-mine-development-c2f1b77c3a1e6 (r1)",
-      "storyVersion": "archive:2026-09-10T11:30:00.850Z",
-      "liveVersionAtRender": "20260910T113339Z-570dd6",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "clusterId": "ccf056980c0cc",
+      "storySurface": "/story/shanahan-mcvay-brush-off-teams-differing-travel-plans-as-factor-in-game-ccf056980c0cc (r1)",
+      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
+      "liveVersionAtRender": "20260911T113947Z-762610",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
       "listSurfaces": [
-        "/business (r1)"
+        "/us (r1)",
+        "/latest (r1)",
+        "/us (r2)",
+        "/latest (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "cb93d3a4e615f",
-      "storySurface": "/story/anfield-advances-velvet-wood-toward-active-dewatering-with-utah-concept-approval-cb93d3a4e615f (r1)",
-      "storyVersion": "archive:2026-09-10T11:30:00.850Z",
-      "liveVersionAtRender": "20260910T113307Z-e4272d",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "clusterId": "ccdb16e045bc4",
+      "storySurface": "/story/de-garrett-says-hes-not-100-after-dud-in-rams-loss-to-49ers-ccdb16e045bc4 (r1)",
+      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
+      "liveVersionAtRender": "20260911T113933Z-764033",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
       "listSurfaces": [
-        "/business (r1)"
+        "/latest (r1)",
+        "/latest (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c26237f5e9556",
-      "storySurface": "/story/xanadu-and-amd-launch-backline-to-streamline-cpu-gpu-fpga-integration-for-quantu-c26237f5e9556 (r1)",
-      "storyVersion": "archive:2026-09-10T11:30:00.908Z",
-      "liveVersionAtRender": "20260910T113345Z-4aec04",
+      "clusterId": "c72b886c259ed",
+      "storySurface": "/story/rams-nacua-acknowledges-darkest-times-of-his-life-issues-with-alcohol-c72b886c259ed (r1)",
+      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
+      "liveVersionAtRender": "20260911T113957Z-587001",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
+      "listSurfaces": [
+        "/latest (r1)",
+        "/latest (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c8418c7e8e83d",
+      "storySurface": "/story/no-lsu-sanctions-after-sec-expulsion-meeting-c8418c7e8e83d (r1)",
+      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
+      "liveVersionAtRender": "20260911T113956Z-661de0",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
+      "listSurfaces": [
+        "/latest (r1)",
+        "/latest (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "ca55290b0389b",
+      "storySurface": "/story/mlb-power-rankings-which-teams-are-rising-which-are-falling-ca55290b0389b (r1)",
+      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
+      "liveVersionAtRender": "20260911T113946Z-c9f95b",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
+      "listSurfaces": [
+        "/latest (r1)",
+        "/latest (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c84c27cfe1dc1",
+      "storySurface": "/story/transaction-in-own-shares-c84c27cfe1dc1 (r1)",
+      "storyVersion": "archive:2026-09-11T10:55:06.688Z",
+      "liveVersionAtRender": "20260911T113933Z-764033",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
-        "/business (r1)"
+        "/business (r1)",
+        "/business (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c1ae5c502df35",
+      "storySurface": "/story/what-to-know-about-sundays-election-in-sweden-natos-newest-member-c1ae5c502df35 (r1)",
+      "storyVersion": "archive:2026-09-11T07:00:07.999Z",
+      "liveVersionAtRender": "20260911T114223Z-546c29",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/elections (r1)",
+        "/elections (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c7deb1044d9e8",
+      "storySurface": "/story/french-soccer-federation-withdraws-support-for-infantinos-fifa-re-election-bid-c7deb1044d9e8 (r1)",
+      "storyVersion": "archive:2026-09-11T07:00:07.999Z",
+      "liveVersionAtRender": "20260911T084515Z-5b4565",
+      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
+      "listSurfaces": [
+        "/elections (r1)",
+        "/elections (r2)"
       ]
     }
   ],
   "stampCoverage": 1,
-  "warningsTotal": 3,
-  "warnings": [
-    {
-      "type": "cross-version-drift",
-      "clusterId": "c2e1c9d576b36",
-      "field": "sources",
-      "values": [
-        {
-          "version": "20260910T114617Z-3ab87a",
-          "value": 6
-        },
-        {
-          "version": "20260910T111515Z-527a57",
-          "value": 5
-        },
-        {
-          "version": "20260910T114907Z-100522",
-          "value": 6
-        },
-        {
-          "version": "20260910T113237Z-0eb46e",
-          "value": 6
-        },
-        {
-          "version": "20260910T113208Z-915d8a",
-          "value": 6
-        },
-        {
-          "version": "20260910T114907Z-a4ac7f",
-          "value": 6
-        },
-        {
-          "version": "20260910T114911Z-b6230d",
-          "value": 6
-        },
-        {
-          "version": "20260910T114911Z-ffdb5d",
-          "value": 6
-        }
-      ]
-    },
-    {
-      "type": "cross-version-drift",
-      "clusterId": "c7e2ecb8028be",
-      "field": "sources",
-      "values": [
-        {
-          "version": "20260910T114617Z-3ab87a",
-          "value": 3
-        },
-        {
-          "version": "20260910T111515Z-527a57",
-          "value": 2
-        },
-        {
-          "version": "20260910T114907Z-100522",
-          "value": 3
-        },
-        {
-          "version": "20260910T114417Z-1ee6b8",
-          "value": 3
-        },
-        {
-          "version": "20260910T114907Z-a4ac7f",
-          "value": 3
-        }
-      ]
-    },
-    {
-      "type": "cross-version-drift",
-      "clusterId": "c20d8216d65dc",
-      "field": "sources",
-      "values": [
-        {
-          "version": "20260910T114617Z-3ab87a",
-          "value": 5
-        },
-        {
-          "version": "20260910T111515Z-527a57",
-          "value": 6
-        },
-        {
-          "version": "20260910T114907Z-100522",
-          "value": 5
-        },
-        {
-          "version": "20260910T113237Z-0eb46e",
-          "value": 6
-        },
-        {
-          "version": "20260910T114911Z-ffdb5d",
-          "value": 5
-        },
-        {
-          "version": "20260910T114907Z-a4ac7f",
-          "value": 5
-        },
-        {
-          "version": "20260910T114911Z-b6230d",
-          "value": 5
-        }
-      ]
-    }
-  ],
-  "result": "FAIL"
+  "warningsTotal": 0,
+  "warnings": [],
+  "result": "PASS"
 }
