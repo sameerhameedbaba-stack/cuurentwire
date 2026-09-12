@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-11T11:48:02.072Z",
+  "ranAt": "2026-09-12T11:14:51.229Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -16,211 +16,155 @@
   "stats": {
     "pagesFetched": 20,
     "pageErrors": [],
-    "cards": 718,
-    "cardsWithId": 718,
-    "cardsWithCategory": 636,
-    "cardsWithCountry": 324,
-    "cardsWithSources": 61,
-    "storyPagesFetched": 395,
+    "cards": 724,
+    "cardsWithId": 724,
+    "cardsWithCategory": 642,
+    "cardsWithCountry": 342,
+    "cardsWithSources": 70,
+    "storyPagesFetched": 388,
     "storyErrors": [],
-    "uniqueClusters": 200
+    "uniqueClusters": 196
   },
   "coverage": {
     "clusterId": 1,
-    "category": 0.886,
-    "country": 0.451,
-    "sources": 0.085
+    "category": 0.887,
+    "country": 0.472,
+    "sources": 0.097
   },
   "versionsSeen": [
-    "20260911T114223Z-546c29",
-    "20260911T111014Z-c7ecb7",
-    "20260911T114151Z-6d42ef",
-    "20260911T113219Z-45cd0f",
-    "20260911T113444Z-9b45f2",
-    "20260911T113537Z-153883",
-    "20260911T113335Z-141733",
-    "20260911T113345Z-023ae9",
-    "20260911T113828Z-d9e4fb",
-    "20260911T113921Z-8b9612",
-    "20260911T113902Z-b2ca0a",
-    "20260911T113846Z-e768dc",
-    "20260911T113837Z-707022",
-    "20260911T113233Z-8a6382",
-    "20260911T113848Z-1a60d6",
-    "20260911T113602Z-44ad29",
-    "20260911T113848Z-2af6f6",
-    "20260911T113113Z-7f0f41",
-    "20260911T113704Z-972011",
-    "20260911T113229Z-b18616",
-    "20260911T113437Z-d71c44",
-    "20260911T113946Z-762610",
-    "20260911T113849Z-21d395",
-    "archive:2026-09-11T07:30:03.050Z",
-    "20260911T113328Z-760004",
-    "20260911T113933Z-764033",
-    "20260911T113318Z-a73f4d",
-    "20260911T113350Z-846ddd",
-    "20260911T113352Z-ec61ea",
-    "20260911T112957Z-69eac4",
-    "20260911T114120Z-2e9323",
-    "20260911T113847Z-e768dc",
-    "20260911T113853Z-4f7c1e",
-    "20260911T113157Z-14039d",
-    "20260911T113556Z-ec3834",
-    "20260911T113459Z-092353",
-    "20260911T114025Z-da15a9",
-    "20260911T114126Z-773d72",
-    "20260911T113651Z-60a58c",
-    "20260911T113634Z-eb1ef4",
-    "20260911T114124Z-fe1df4",
-    "20260911T114124Z-a6fb37",
-    "20260911T113301Z-309b8b",
-    "20260911T113153Z-79c505",
-    "20260911T113024Z-fb834a",
-    "20260911T113356Z-03511f",
-    "20260911T113958Z-b54b91",
-    "20260911T114024Z-90acf3",
-    "20260911T114154Z-dc14ff",
-    "20260911T114120Z-6b9ab4",
-    "20260911T113607Z-1f009f",
-    "20260911T113930Z-592303",
-    "archive:2026-09-11T10:55:06.688Z",
-    "20260911T113956Z-661de0",
-    "20260911T114054Z-794827",
-    "20260911T114042Z-8016a9",
-    "20260911T114131Z-4a99b7",
-    "20260911T114014Z-e39f55",
-    "20260911T114119Z-2e9323",
-    "20260911T114101Z-c074eb",
-    "20260911T114148Z-75ac38",
-    "20260911T113303Z-021e7e",
-    "20260911T114123Z-a6fb37",
-    "20260911T113920Z-c0be99",
-    "20260911T113442Z-609423",
-    "20260911T113509Z-c32f1f",
-    "archive:2026-09-11T07:00:07.999Z",
-    "20260911T113434Z-e04d9e",
-    "20260911T114024Z-a23d0f"
+    "20260912T110012Z-c0512e",
+    "20260912T104513Z-ef2bf7",
+    "20260912T111454Z-4e9e5f",
+    "20260912T110444Z-c569ff",
+    "20260912T110444Z-b6dfa8",
+    "20260912T111457Z-c50f91",
+    "20260912T110024Z-468dfb",
+    "20260912T110237Z-bccd38",
+    "20260912T110725Z-552d3c",
+    "20260912T110449Z-85f68a",
+    "20260912T110146Z-c4e49f",
+    "20260912T110724Z-cf3b8f",
+    "20260912T110636Z-5f945c",
+    "20260912T110849Z-958afc",
+    "20260912T094517Z-af3245",
+    "20260912T110245Z-9f49e7",
+    "20260912T111501Z-803293",
+    "20260912T083043Z-f417d2",
+    "20260912T110727Z-70de97",
+    "archive:2026-09-12T11:00:38.782Z",
+    "20260912T110736Z-766a12",
+    "20260912T100518Z-344337",
+    "20260912T111508Z-1e32cd",
+    "20260912T111431Z-001076",
+    "20260912T111507Z-1e32cd",
+    "20260912T110447Z-67680f",
+    "20260912T110228Z-4b0a03",
+    "20260912T110442Z-263544",
+    "20260912T110300Z-5a8192",
+    "20260912T110248Z-2f863a",
+    "20260912T111519Z-0ac7dc",
+    "20260912T111528Z-ded4ce",
+    "20260912T111525Z-80cba0",
+    "20260912T111530Z-ded4ce",
+    "archive:2026-09-11T22:30:03.810Z",
+    "20260912T103017Z-4a5b57",
+    "20260912T104513Z-3dd9b8",
+    "archive:2026-09-12T02:25:06.763Z",
+    "20260912T090017Z-150793",
+    "20260912T051512Z-6cbdc1",
+    "20260912T034514Z-a0dac3",
+    "20260912T035517Z-b8c0ce",
+    "20260912T111536Z-77c8aa",
+    "20260912T111547Z-c430eb",
+    "20260912T111546Z-c430eb",
+    "20260912T111548Z-cbe3b3",
+    "20260912T111545Z-c430eb",
+    "20260912T070016Z-a08d5b",
+    "20260912T111546Z-e2bc63",
+    "20260912T111552Z-160307",
+    "20260912T111559Z-ad8603",
+    "20260912T081017Z-dffb5e",
+    "20260912T090521Z-610e76",
+    "archive:2026-09-11T03:55:14.082Z",
+    "20260912T111500Z-fa17fc",
+    "20260912T111520Z-0ac7dc",
+    "20260912T111537Z-64611e",
+    "20260912T111550Z-cbe3b3",
+    "archive:2026-09-12T00:30:08.067Z",
+    "archive:2026-09-11T05:00:03.098Z"
   ],
-  "violations": [],
-  "findingsTotal": 10,
+  "violations": [
+    {
+      "type": "category-flap",
+      "clusterId": "c743368bc2189",
+      "sequence": [
+        {
+          "version": "20260912T110012Z-c0512e",
+          "category": "culture"
+        },
+        {
+          "version": "20260912T104513Z-ef2bf7",
+          "category": "politics"
+        },
+        {
+          "version": "20260912T111454Z-4e9e5f",
+          "category": "culture"
+        }
+      ]
+    }
+  ],
+  "findingsTotal": 6,
   "findingsByCause": {
-    "story-side staleness": 8,
-    "list-side staleness": 2
+    "story-side staleness": 1,
+    "list-side staleness": 5
   },
   "findings": [
     {
       "type": "archive-vs-live",
-      "clusterId": "ce0c93fabd390",
-      "storySurface": "/story/hurricanes-offense-wows-with-856-yards-42-first-downs-in-77-7-onslaught-ce0c93fabd390 (r1)",
-      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
-      "liveVersionAtRender": "20260911T113933Z-764033",
+      "clusterId": "c9d845d231d4d",
+      "storySurface": "/story/a-cancer-survivor-hoped-to-work-then-she-lost-her-medicaid-disability-coverage-c9d845d231d4d (r1)",
+      "storyVersion": "archive:2026-09-12T11:00:38.782Z",
+      "liveVersionAtRender": "20260912T110725Z-552d3c",
       "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
       "listSurfaces": [
-        "/ (r1)",
-        "/us (r1)",
+        "/top-100 (r1)",
         "/latest (r1)",
         "/ (r2)",
-        "/us (r2)",
-        "/latest (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "ca301e338573e",
-      "storySurface": "/story/report-feds-open-investigation-into-clippers-dealings-with-kawhi-ca301e338573e (r1)",
-      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
-      "liveVersionAtRender": "20260911T113933Z-764033",
-      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
-      "listSurfaces": [
-        "/ (r1)",
-        "/us (r1)",
-        "/latest (r1)",
         "/ (r2)",
-        "/us (r2)",
+        "/top-100 (r2)",
         "/latest (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "ccf056980c0cc",
-      "storySurface": "/story/shanahan-mcvay-brush-off-teams-differing-travel-plans-as-factor-in-game-ccf056980c0cc (r1)",
-      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
-      "liveVersionAtRender": "20260911T113947Z-762610",
-      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
-      "listSurfaces": [
-        "/us (r1)",
-        "/latest (r1)",
-        "/us (r2)",
-        "/latest (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "ccdb16e045bc4",
-      "storySurface": "/story/de-garrett-says-hes-not-100-after-dud-in-rams-loss-to-49ers-ccdb16e045bc4 (r1)",
-      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
-      "liveVersionAtRender": "20260911T113933Z-764033",
-      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
-      "listSurfaces": [
-        "/latest (r1)",
-        "/latest (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c72b886c259ed",
-      "storySurface": "/story/rams-nacua-acknowledges-darkest-times-of-his-life-issues-with-alcohol-c72b886c259ed (r1)",
-      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
-      "liveVersionAtRender": "20260911T113957Z-587001",
-      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
-      "listSurfaces": [
-        "/latest (r1)",
-        "/latest (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c8418c7e8e83d",
-      "storySurface": "/story/no-lsu-sanctions-after-sec-expulsion-meeting-c8418c7e8e83d (r1)",
-      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
-      "liveVersionAtRender": "20260911T113956Z-661de0",
-      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
-      "listSurfaces": [
-        "/latest (r1)",
-        "/latest (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "ca55290b0389b",
-      "storySurface": "/story/mlb-power-rankings-which-teams-are-rising-which-are-falling-ca55290b0389b (r1)",
-      "storyVersion": "archive:2026-09-11T07:30:03.050Z",
-      "liveVersionAtRender": "20260911T113946Z-c9f95b",
-      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
-      "listSurfaces": [
-        "/latest (r1)",
-        "/latest (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c84c27cfe1dc1",
-      "storySurface": "/story/transaction-in-own-shares-c84c27cfe1dc1 (r1)",
-      "storyVersion": "archive:2026-09-11T10:55:06.688Z",
-      "liveVersionAtRender": "20260911T113933Z-764033",
+      "clusterId": "cc1d413ebe828",
+      "storySurface": "/story/sebastian-stan-on-why-fjord-is-being-called-a-maga-movie-and-how-making-the-batm-cc1d413ebe828 (r1)",
+      "storyVersion": "archive:2026-09-11T22:30:03.810Z",
+      "liveVersionAtRender": "20260912T111525Z-80cba0",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
-        "/business (r1)",
-        "/business (r2)"
+        "/politics (r1)",
+        "/politics (r2)"
       ]
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c1ae5c502df35",
-      "storySurface": "/story/what-to-know-about-sundays-election-in-sweden-natos-newest-member-c1ae5c502df35 (r1)",
-      "storyVersion": "archive:2026-09-11T07:00:07.999Z",
-      "liveVersionAtRender": "20260911T114223Z-546c29",
+      "clusterId": "c6709a899fe3d",
+      "storySurface": "/story/trump-keeps-touting-5-000-payments-if-republicans-retain-control-of-congress-as-c6709a899fe3d (r1)",
+      "storyVersion": "archive:2026-09-12T02:25:06.763Z",
+      "liveVersionAtRender": "20260912T111530Z-ded4ce",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/politics (r1)",
+        "/politics (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "c5e31a8130830",
+      "storySurface": "/story/recapping-the-republicans-midterm-convention-c5e31a8130830 (r2)",
+      "storyVersion": "archive:2026-09-12T00:30:08.067Z",
+      "liveVersionAtRender": "20260912T111552Z-160307",
       "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
         "/elections (r1)",
@@ -229,11 +173,23 @@
     },
     {
       "type": "archive-vs-live",
-      "clusterId": "c7deb1044d9e8",
-      "storySurface": "/story/french-soccer-federation-withdraws-support-for-infantinos-fifa-re-election-bid-c7deb1044d9e8 (r1)",
-      "storyVersion": "archive:2026-09-11T07:00:07.999Z",
-      "liveVersionAtRender": "20260911T084515Z-5b4565",
-      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
+      "clusterId": "ca709cfd6b508",
+      "storySurface": "/story/im-on-the-ticket-trump-implores-republicans-to-vote-in-november-at-unusual-midte-ca709cfd6b508 (r2)",
+      "storyVersion": "archive:2026-09-11T05:00:03.098Z",
+      "liveVersionAtRender": "20260912T111552Z-160307",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
+      "listSurfaces": [
+        "/elections (r1)",
+        "/elections (r2)"
+      ]
+    },
+    {
+      "type": "archive-vs-live",
+      "clusterId": "cbb03c68ff0d1",
+      "storySurface": "/story/republicans-largely-ignore-the-war-in-iran-at-their-midterm-convention-cbb03c68ff0d1 (r1)",
+      "storyVersion": "archive:2026-09-11T03:55:14.082Z",
+      "liveVersionAtRender": "20260912T111552Z-160307",
+      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
       "listSurfaces": [
         "/elections (r1)",
         "/elections (r2)"
@@ -243,5 +199,5 @@
   "stampCoverage": 1,
   "warningsTotal": 0,
   "warnings": [],
-  "result": "PASS"
+  "result": "FAIL"
 }
