@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-12T11:14:51.229Z",
+  "ranAt": "2026-09-13T12:16:31.468Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -14,188 +14,135 @@
     "/elections"
   ],
   "stats": {
-    "pagesFetched": 20,
-    "pageErrors": [],
-    "cards": 724,
-    "cardsWithId": 724,
-    "cardsWithCategory": 642,
-    "cardsWithCountry": 342,
-    "cardsWithSources": 70,
-    "storyPagesFetched": 388,
+    "pagesFetched": 0,
+    "pageErrors": [
+      {
+        "surface": "/",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/ responded 503"
+      },
+      {
+        "surface": "/top-10",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/top-10 responded 503"
+      },
+      {
+        "surface": "/top-100",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/top-100 responded 503"
+      },
+      {
+        "surface": "/us",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/us responded 503"
+      },
+      {
+        "surface": "/canada",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/canada responded 503"
+      },
+      {
+        "surface": "/latest",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/latest responded 503"
+      },
+      {
+        "surface": "/politics",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/politics responded 503"
+      },
+      {
+        "surface": "/business",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/business responded 503"
+      },
+      {
+        "surface": "/ai",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/ai responded 503"
+      },
+      {
+        "surface": "/elections",
+        "repeat": 1,
+        "error": "Error: https://currentwire.us/elections responded 503"
+      },
+      {
+        "surface": "/",
+        "repeat": 2,
+        "error": "Error: https://currentwire.us/ responded 503"
+      },
+      {
+        "surface": "/top-10",
+        "repeat": 2,
+        "error": "Error: https://currentwire.us/top-10 responded 503"
+      },
+      {
+        "surface": "/top-100",
+        "repeat": 2,
+        "error": "Error: https://currentwire.us/top-100 responded 503"
+      },
+      {
+        "surface": "/us",
+        "repeat": 2,
+        "error": "Error: https://currentwire.us/us responded 503"
+      },
+      {
+        "surface": "/canada",
+        "repeat": 2,
+        "error": "Error: https://currentwire.us/canada responded 503"
+      },
+      {
+        "surface": "/latest",
+        "repeat": 2,
+        "error": "Error: https://currentwire.us/latest responded 503"
+      },
+      {
+        "surface": "/politics",
+        "repeat": 2,
+        "error": "Error: https://currentwire.us/politics responded 503"
+      },
+      {
+        "surface": "/business",
+        "repeat": 2,
+        "error": "Error: https://currentwire.us/business responded 503"
+      },
+      {
+        "surface": "/ai",
+        "repeat": 2,
+        "error": "Error: https://currentwire.us/ai responded 503"
+      },
+      {
+        "surface": "/elections",
+        "repeat": 2,
+        "error": "Error: https://currentwire.us/elections responded 503"
+      }
+    ],
+    "cards": 0,
+    "cardsWithId": 0,
+    "cardsWithCategory": 0,
+    "cardsWithCountry": 0,
+    "cardsWithSources": 0,
+    "storyPagesFetched": 0,
     "storyErrors": [],
-    "uniqueClusters": 196
+    "uniqueClusters": 0
   },
   "coverage": {
-    "clusterId": 1,
-    "category": 0.887,
-    "country": 0.472,
-    "sources": 0.097
+    "clusterId": 0,
+    "category": 0,
+    "country": 0,
+    "sources": 0
   },
-  "versionsSeen": [
-    "20260912T110012Z-c0512e",
-    "20260912T104513Z-ef2bf7",
-    "20260912T111454Z-4e9e5f",
-    "20260912T110444Z-c569ff",
-    "20260912T110444Z-b6dfa8",
-    "20260912T111457Z-c50f91",
-    "20260912T110024Z-468dfb",
-    "20260912T110237Z-bccd38",
-    "20260912T110725Z-552d3c",
-    "20260912T110449Z-85f68a",
-    "20260912T110146Z-c4e49f",
-    "20260912T110724Z-cf3b8f",
-    "20260912T110636Z-5f945c",
-    "20260912T110849Z-958afc",
-    "20260912T094517Z-af3245",
-    "20260912T110245Z-9f49e7",
-    "20260912T111501Z-803293",
-    "20260912T083043Z-f417d2",
-    "20260912T110727Z-70de97",
-    "archive:2026-09-12T11:00:38.782Z",
-    "20260912T110736Z-766a12",
-    "20260912T100518Z-344337",
-    "20260912T111508Z-1e32cd",
-    "20260912T111431Z-001076",
-    "20260912T111507Z-1e32cd",
-    "20260912T110447Z-67680f",
-    "20260912T110228Z-4b0a03",
-    "20260912T110442Z-263544",
-    "20260912T110300Z-5a8192",
-    "20260912T110248Z-2f863a",
-    "20260912T111519Z-0ac7dc",
-    "20260912T111528Z-ded4ce",
-    "20260912T111525Z-80cba0",
-    "20260912T111530Z-ded4ce",
-    "archive:2026-09-11T22:30:03.810Z",
-    "20260912T103017Z-4a5b57",
-    "20260912T104513Z-3dd9b8",
-    "archive:2026-09-12T02:25:06.763Z",
-    "20260912T090017Z-150793",
-    "20260912T051512Z-6cbdc1",
-    "20260912T034514Z-a0dac3",
-    "20260912T035517Z-b8c0ce",
-    "20260912T111536Z-77c8aa",
-    "20260912T111547Z-c430eb",
-    "20260912T111546Z-c430eb",
-    "20260912T111548Z-cbe3b3",
-    "20260912T111545Z-c430eb",
-    "20260912T070016Z-a08d5b",
-    "20260912T111546Z-e2bc63",
-    "20260912T111552Z-160307",
-    "20260912T111559Z-ad8603",
-    "20260912T081017Z-dffb5e",
-    "20260912T090521Z-610e76",
-    "archive:2026-09-11T03:55:14.082Z",
-    "20260912T111500Z-fa17fc",
-    "20260912T111520Z-0ac7dc",
-    "20260912T111537Z-64611e",
-    "20260912T111550Z-cbe3b3",
-    "archive:2026-09-12T00:30:08.067Z",
-    "archive:2026-09-11T05:00:03.098Z"
-  ],
+  "versionsSeen": [],
   "violations": [
     {
-      "type": "category-flap",
-      "clusterId": "c743368bc2189",
-      "sequence": [
-        {
-          "version": "20260912T110012Z-c0512e",
-          "category": "culture"
-        },
-        {
-          "version": "20260912T104513Z-ef2bf7",
-          "category": "politics"
-        },
-        {
-          "version": "20260912T111454Z-4e9e5f",
-          "category": "culture"
-        }
-      ]
+      "type": "extraction-blind",
+      "field": "cards",
+      "coverage": 0
     }
   ],
-  "findingsTotal": 6,
-  "findingsByCause": {
-    "story-side staleness": 1,
-    "list-side staleness": 5
-  },
-  "findings": [
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c9d845d231d4d",
-      "storySurface": "/story/a-cancer-survivor-hoped-to-work-then-she-lost-her-medicaid-disability-coverage-c9d845d231d4d (r1)",
-      "storyVersion": "archive:2026-09-12T11:00:38.782Z",
-      "liveVersionAtRender": "20260912T110725Z-552d3c",
-      "cause": "story-side staleness: an older render, healed by the rotating revalidation window",
-      "listSurfaces": [
-        "/top-100 (r1)",
-        "/latest (r1)",
-        "/ (r2)",
-        "/ (r2)",
-        "/top-100 (r2)",
-        "/latest (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "cc1d413ebe828",
-      "storySurface": "/story/sebastian-stan-on-why-fjord-is-being-called-a-maga-movie-and-how-making-the-batm-cc1d413ebe828 (r1)",
-      "storyVersion": "archive:2026-09-11T22:30:03.810Z",
-      "liveVersionAtRender": "20260912T111525Z-80cba0",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
-      "listSurfaces": [
-        "/politics (r1)",
-        "/politics (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c6709a899fe3d",
-      "storySurface": "/story/trump-keeps-touting-5-000-payments-if-republicans-retain-control-of-congress-as-c6709a899fe3d (r1)",
-      "storyVersion": "archive:2026-09-12T02:25:06.763Z",
-      "liveVersionAtRender": "20260912T111530Z-ded4ce",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
-      "listSurfaces": [
-        "/politics (r1)",
-        "/politics (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "c5e31a8130830",
-      "storySurface": "/story/recapping-the-republicans-midterm-convention-c5e31a8130830 (r2)",
-      "storyVersion": "archive:2026-09-12T00:30:08.067Z",
-      "liveVersionAtRender": "20260912T111552Z-160307",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
-      "listSurfaces": [
-        "/elections (r1)",
-        "/elections (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "ca709cfd6b508",
-      "storySurface": "/story/im-on-the-ticket-trump-implores-republicans-to-vote-in-november-at-unusual-midte-ca709cfd6b508 (r2)",
-      "storyVersion": "archive:2026-09-11T05:00:03.098Z",
-      "liveVersionAtRender": "20260912T111552Z-160307",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
-      "listSurfaces": [
-        "/elections (r1)",
-        "/elections (r2)"
-      ]
-    },
-    {
-      "type": "archive-vs-live",
-      "clusterId": "cbb03c68ff0d1",
-      "storySurface": "/story/republicans-largely-ignore-the-war-in-iran-at-their-midterm-convention-cbb03c68ff0d1 (r1)",
-      "storyVersion": "archive:2026-09-11T03:55:14.082Z",
-      "liveVersionAtRender": "20260912T111552Z-160307",
-      "cause": "list-side staleness: the story page read a NEWER generation that had dropped the cluster",
-      "listSurfaces": [
-        "/elections (r1)",
-        "/elections (r2)"
-      ]
-    }
-  ],
+  "findingsTotal": 0,
+  "findingsByCause": {},
+  "findings": [],
   "stampCoverage": 1,
   "warningsTotal": 0,
   "warnings": [],
