@@ -137,5 +137,12 @@
     "ongoing": true,
     "label": "Search Console ownership record missing: no google-site-verification TXT on currentwire.us; owner account shows no access",
     "detail": "Measured 2026-09-14 ~11:55Z. The authoritative nameservers (aurora/nebula.dns-parking.com, Hostinger) and 8.8.8.8 and 1.1.1.1 all return exactly one TXT at the apex: v=spf1 include:_spf.mail.hostinger.com ~all. The domain property sc-domain:currentwire.us was verified 2026-08-14 by a google-site-verification TXT at Hostinger. Search Console in the owner Chrome, signed in as ovyajewels@gmail.com (the verified owner, avatar checked), answers Oops, you dont have access to this property for both sc-domain:currentwire.us and https://currentwire.us/. When the record was removed is NOT known; the service account still read sitemaps.list on 2026-09-13 13:22Z. Dated to the day it was found, not the day it happened - do not attribute search movement to 2026-09-14. Owner-only fix: Search Console -> add property -> Domain -> copy the TXT -> add it at Hostinger DNS -> Verify. Re-verification restores the existing data."
+  },
+  {
+    "date": "2026-09-14",
+    "kind": "outage",
+    "ongoing": true,
+    "label": "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED (Payment required)",
+    "detail": "Measured this run 2026-09-14 ~19:37 UTC: GET / and GET /archive-sitemap.xml both return HTTP 402 with X-Vercel-Error: DEPLOYMENT_DISABLED and body \"Payment required\" (previously 503 DEPLOYMENT_PAUSED, confirmed as recently as 2026-09-13 per the entry above). DEPLOYMENT_DISABLED with a Payment-required body is the error Vercel serves when a project's deployments are administratively disabled, typically for an unpaid invoice, which is a different mechanism from Pause Projects budget protection. data/incidents.json and seo/MEMORY/2026-09-15-cloud-migration-and-current-state.md both note a final Pro-plan invoice (~$65.91, cycle Aug 24-Sep 24) and Neon marketplace usage ($14.74) were expected to post once after the 2026-09-15 downgrades; whether either is now overdue and triggered this is NOT confirmed - this cloud session has no billing-dashboard access. Owner-only fix: check the Vercel billing dashboard for an outstanding invoice and settle it (this is closing out a charge already accrued under the old plan, not enabling anything new/paid). No code change addresses this - no code is being served. Close with an end date when production answers 200."
   }
 ]
