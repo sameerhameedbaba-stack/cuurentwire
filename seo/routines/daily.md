@@ -12,14 +12,39 @@ routine). It supersedes the retired local scheduled task of the same name.
   the owner's browser goes into the owner checklist at the end of your
   report — never attempt a login or dashboard yourself.
 - FIRST read seo/MEMORY/2026-09-15-cloud-migration-and-current-state.md.
-- **PAUSED-SITE / WATCHDOG MODE:** if https://currentwire.us/ answers 503,
-  do NOT run the full loop. Instead: record the status codes of / and
-  /archive-sitemap.xml; check the google-site-verification TXT record
+- **PAUSED-SITE / WATCHDOG MODE:** if https://currentwire.us/ answers 503
+  **or 402**, do NOT run the full loop. Instead: record the status codes of /
+  and /archive-sitemap.xml; check the google-site-verification TXT record
   (e.g. `dig TXT currentwire.us +short` or an equivalent DNS query) and
   report whether it is present; note the newest data/gsc-*.json numbers with
   the outage caveat; write a SHORT dated seo/reports/<today>.md; commit and
   push it; list owner-only items. A paused day is a quiet report, not an
   error, and never a reason to try to unpause anything.
+- **402 DEPLOYMENT_DISABLED IS EXPECTED UNTIL ~2026-09-24 — DO NOT RAISE A
+  BILLING ALARM.** Verified by the owner on the Vercel dashboard 2026-09-15:
+  there is **no unpaid invoice**; every invoice reads Paid (August: Pro
+  $23.60, Neon marketplace $11.35, Observability $0). The 402 is the free
+  **Hobby-plan usage pause** — the dashboard reads "Paused – Upgrade to
+  resume service" because the Pro-period usage sits over the Hobby caps
+  (Fluid Active CPU 122h33m/4h, ISR Writes 4.8M/200K, Fast Origin Transfer
+  61.56 GB/10 GB, Edge Requests 2.1M/1M, ISR Reads 1.3M/1M, Function
+  Invocations 1.2M/1M). It lifts **by itself at the billing-cycle reset,
+  around 2026-09-24**. The only button Vercel offers is Upgrade, which the
+  owner refuses under the $0 rule.
+  While this window is open, a 402 is **one quiet line in the report and
+  nothing else**: do NOT tell the owner to hunt for a bill, do NOT put it on
+  the owner checklist, do NOT propose Upgrade, and do NOT read "Payment
+  required" in the response body as an unpaid invoice — that body text is
+  Vercel's generic 402 string, not a statement about this account.
+  Re-escalate to the owner ONLY if: (a) production is still 402 after the
+  reset date, (b) the status code or `x-vercel-error` value changes again, or
+  (c) you have same-run evidence contradicting the usage-pause reading. Each
+  is a real change worth a message; the steady state is not.
+  Background, so no run re-derives this: the ~$65.91/$14.74 figures in older
+  notes were *projections* of an in-flight cycle, not amounts billed — the
+  invoices that actually posted are the Paid ones above. See
+  `data/incidents.json` (2026-09-14 outage entry) and
+  `seo/MEMORY/2026-09-15-owner-working-style-and-system-map.md`.
 - Commit and push only files you changed under seo/ and data/. If push is
   refused, put the full report text in your final message and say the push
   failed (that failure itself is an owner-checklist item: grant the cloud
@@ -69,7 +94,9 @@ day where nothing ships and nothing breaks is a GOOD day.
    https://github.com/sameerhameedbaba-stack/cuurentwire/issues and curl
    https://currentwire.us/ and /archive-sitemap.xml. Any 5xx on production
    IS the run's only priority — put it at the top of the report. Never mark
-   an outage day routine.
+   an outage day routine. A **402 inside the known Hobby usage-pause window**
+   (see CLOUD MODE above) is the one exception: it is already explained, so
+   record it in one line and do not escalate it.
 2. **Performance trend.** Read data/gsc-daily.json. Its `trend` compares
    the last 7 COMPLETE days to the prior 7; trailing `lagDays` are partial
    and must NEVER be read as a collapse. If a decline is `explained: true`,

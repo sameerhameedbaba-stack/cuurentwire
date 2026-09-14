@@ -4,10 +4,13 @@
 > blocks, each with its own list. They are NOT alternatives — read them in this
 > order and the first one that speaks wins:
 >
-> 00. **WEEKLY DEEP RUN 2026-09-14** (immediately below) — THE SITE IS DOWN
->    and Google ownership is broken. Both owner-only. Outranks everything.
->    It does not reorder the engineering queue; it says nothing on it can
->    ship or be verified until these two are cleared.
+> 00. **WEEKLY DEEP RUN 2026-09-14** (immediately below, corrected
+>    2026-09-15) — THE SITE IS DOWN on a Hobby-plan usage pause that clears
+>    itself ~2026-09-24; there is NO owner action and NO bill to chase.
+>    Google ownership is FIXED (TXT restored, re-verified). Outranks
+>    everything only in the sense that nothing on the engineering queue can
+>    ship or be verified live until production answers 200 — it does not
+>    reorder that queue.
 > 0. **DAILY RUN 2026-09-11** — the top-of-board CAUSE
 >    question is now instrumented and its SURFACE is measured. It reorders
 >    nothing else.
@@ -43,23 +46,38 @@
 > the boundary a change moves; never claim a fix without evidence from the
 > same run.
 
-**WEEKLY DEEP RUN 2026-09-14 — PRODUCTION IS PAUSED AND THE SEARCH CONSOLE
-OWNERSHIP RECORD IS GONE. Score 81 -> 7/100 as served.**
+**WEEKLY DEEP RUN 2026-09-14 — PRODUCTION IS PAUSED. Score 81 -> 7/100 as
+served.** *(Corrected 2026-09-15: the heading previously also read "AND THE
+SEARCH CONSOLE OWNERSHIP RECORD IS GONE" — that half is FIXED, see below.)*
 
-- **OUTAGE, ongoing, owner-only.** Every URL answers `503 DEPLOYMENT_PAUSED`
-  (no Retry-After) since ~11:49 UTC 2026-09-12 (last green uptime 10:44Z;
-  GitHub deployment status "Deployment was blocked" 11:49Z and again 09-13
-  12:17Z). Auto-alerts #14-#18 all opened correctly. Expected cause: Vercel
-  Spend Management on-demand budget ($10 as of 09-03) with Pause Projects on.
-  NOT CONFIRMED: Vercel is signed out in the owner Chrome. Never suggest
-  turning Pause Projects off. Close the `data/incidents.json` entry with an
-  `end` only after production answers 200.
-- **GOOGLE OWNERSHIP, ongoing, owner-only.** No `google-site-verification`
-  TXT at the authoritative NS (only the Hostinger SPF record), 8.8.8.8 or
-  1.1.1.1. Search Console as ovyajewels@gmail.com (named on the page) says no
-  access for both sc-domain and URL-prefix. Removal date unknown; the service
-  account still read sitemaps.list 09-13 13:22Z. Next run: read issue #11's
-  newest comment to see whether API access has now gone too.
+- **OUTAGE, ongoing, NO OWNER ACTION AVAILABLE — do not raise a bill.**
+  Every URL answered `503 DEPLOYMENT_PAUSED` (no Retry-After) from ~11:49 UTC
+  2026-09-12 (last green uptime 10:44Z; GitHub deployment status "Deployment
+  was blocked" 11:49Z and again 09-13 12:17Z; auto-alerts #14-#18 all opened
+  correctly), then changed to **`402 DEPLOYMENT_DISABLED`** on 2026-09-14
+  (re-measured 21:46 UTC: `/` and `/archive-sitemap.xml` both 402).
+  **CONFIRMED CAUSE, owner-verified on the Vercel dashboard 2026-09-15: the
+  free Hobby-plan USAGE pause.** There is no unpaid invoice — every invoice
+  reads Paid (Aug: Pro $23.60, Neon marketplace $11.35, Observability $0).
+  The dashboard shows "Paused – Upgrade to resume service" against
+  Pro-period usage over the Hobby caps (Fluid Active CPU 122h33m/4h, ISR
+  Writes 4.8M/200K, Fast Origin Transfer 61.56 GB/10 GB, Edge Requests
+  2.1M/1M, ISR Reads 1.3M/1M, Function Invocations 1.2M/1M). **It lifts by
+  itself at the billing-cycle reset, ~2026-09-24.** The only button is
+  Upgrade, refused under the $0 rule. Until the reset this is a known dated
+  state, not an alarm and not an owner checklist item: never suggest paying,
+  upgrading, or turning Pause Projects off, and never read the 402's
+  "Payment required" body as an unpaid invoice. Close the
+  `data/incidents.json` entry with an `end` only after production answers 200.
+- **GOOGLE OWNERSHIP — RESOLVED 2026-09-15, do not re-open without fresh
+  evidence.** The missing `google-site-verification` TXT has been restored by
+  the owner and the property re-verified. Confirmed from the cloud session
+  2026-09-14 21:46 UTC by two independent public resolvers that agree
+  (dns.google, cloudflare-dns.com): the apex now returns
+  `google-site-verification=jXmPQ…D2rY` alongside the Hostinger SPF record,
+  TTL 14400. Apex A still 216.198.79.1, `www` still CNAME to
+  vercel-dns-017.com. The `data/incidents.json` entry is closed with
+  `end: 2026-09-15`. Only re-open on a failing DNS query in the same run.
 - **NEW ITEM, automatable, $0: DNS verification watcher.** A daily assertion
   that the TXT exists (public DNS query, no secret), in
   `gsc-crawl-freshness.yml`. Ranks with the carried `gsc.yml` freshness

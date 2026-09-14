@@ -11,12 +11,18 @@ the routine). It supersedes the retired local scheduled task.
   the owner's PC. Every dashboard-only step below goes to the owner
   checklist — never attempt logins.
 - FIRST read seo/MEMORY/2026-09-15-cloud-migration-and-current-state.md.
-- **PAUSED-SITE MODE:** if https://currentwire.us/ answers 503, produce the
-  weekly scoreboard anyway — status of the pause, days down, the latest GSC
+- **PAUSED-SITE MODE:** if https://currentwire.us/ answers 503 **or 402**,
+  produce the weekly scoreboard anyway — status of the pause, days down, the latest GSC
   numbers WITH the outage caveat, TXT-record presence (DNS query), and the
   single most important owner decision pending. Skip the audit score (say
   "not scored — site paused"), skip PSI, skip anything needing the live
   site. Short, honest, dated seo/reports/<date>-weekly.md; commit and push.
+  A **402 DEPLOYMENT_DISABLED before ~2026-09-24 is the expected Hobby-plan
+  usage pause, NOT an unpaid invoice** (owner-verified on the Vercel
+  dashboard 2026-09-15; all invoices Paid). Report it as a known, dated,
+  self-clearing state — never as a billing alarm, never as an owner action,
+  and never with an Upgrade suggestion. Full rule and re-escalation triggers:
+  seo/routines/daily.md, CLOUD MODE.
 - Commit/push only seo/ and data/ changes; if push fails, include the full
   report in the final message and flag the access problem.
 

@@ -137,15 +137,30 @@ concern: never ship anything that measurably regresses CWV.
 
 ## Search engine coverage map (re-verified 2026-09-07 — keep current)
 
-> **2026-09-14: EVERY ROW BELOW IS CURRENTLY BROKEN.** Measured that day:
-> production has answered `503 X-Vercel-Error: DEPLOYMENT_PAUSED` on every
+> **2026-09-14: EVERY ROW BELOW IS CURRENTLY BROKEN — updated 2026-09-15.**
+> Measured 2026-09-14: production answered `503 DEPLOYMENT_PAUSED` on every
 > URL (robots.txt, all three sitemaps, llms.txt, the IndexNow key file, www)
-> since ~11:49 UTC 2026-09-12. Separately, the `google-site-verification`
-> DNS TXT is **absent** at the authoritative nameservers, and Search Console
-> refuses ovyajewels@gmail.com on the property. Both are owner fixes (Vercel
-> Spend Management; re-add the TXT at Hostinger). Remove this note only after
-> re-verifying each row by fetch and by the GSC property opening. See
-> `data/incidents.json` and `reports/2026-09-14-weekly.md`.
+> from ~11:49 UTC 2026-09-12, then changed to **`402 DEPLOYMENT_DISABLED`**
+> later the same day (re-measured 21:46 UTC: `/` and `/archive-sitemap.xml`
+> both 402).
+>
+> **The 402 is the free Hobby-plan USAGE pause, not an unpaid invoice** —
+> owner-verified on the Vercel dashboard 2026-09-15, every invoice Paid, the
+> dashboard reading "Paused – Upgrade to resume service" against the
+> Pro-period usage. It clears itself at the billing-cycle reset ~2026-09-24
+> and there is **no owner action and no fix to propose** in the meantime
+> (Upgrade is refused under the $0 rule). Do not route this to a billing
+> checklist.
+>
+> **The `google-site-verification` TXT is RESTORED** (owner re-added it and
+> re-verified the property; confirmed 2026-09-14 21:46 UTC from two public
+> resolvers, dns.google and cloudflare-dns.com, both returning
+> `google-site-verification=jXmPQ…D2rY` at the apex). That half of the note
+> is cleared.
+>
+> Remove the rest of this note only after re-verifying each row by fetch once
+> production answers 200. See `data/incidents.json` and
+> `reports/2026-09-15.md`.
 
 How every engine gets CurrentWire's results. The owner's rule: results must
 reach ALL search engines, not just Google, at $0 and zero recurring effort.
@@ -189,6 +204,19 @@ retriable 503 + `Retry-After`. A 402 is not a documented crawl signal at all,
 and no code change can improve it, because no code is being served. A run that
 finds this must treat it as an owner-blocking outage and say so at the top of
 its report — see `seo/BACKLOG.md` item 0.
+
+**Amended 2026-09-15.** "Owner-blocking" does not mean "owner-actionable". A
+402 `DEPLOYMENT_DISABLED` has two different causes and they are not
+interchangeable: the 2026-08-24 instance was a genuine deployment block, while
+the instance running from 2026-09-14 is the **Hobby-plan usage pause**, which
+the owner verified on the dashboard and which lifts on its own at the cycle
+reset (~2026-09-24). The 402 body text "Payment required" is Vercel's generic
+string for the status code and is **not** evidence of an unpaid invoice — this
+account's invoices are all Paid. So: still report a 402 at the top of the run,
+still ship nothing while it holds, but inside a known usage-pause window do
+NOT open a billing item, do NOT ask the owner to check for a bill, and do NOT
+propose Upgrade. The operative rule lives in `seo/routines/daily.md`
+(CLOUD MODE).
 
 ## Owner time budget (standing rule, set 2026-08-19)
 

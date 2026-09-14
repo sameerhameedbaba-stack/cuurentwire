@@ -11,9 +11,11 @@ burns bridges; the owner re-enables it at relaunch.
   browser: you research, verify by fetch, track and prepare — the owner
   clicks. Never create accounts, submit forms, or post to third-party sites.
 - FIRST read seo/MEMORY/2026-09-15-cloud-migration-and-current-state.md.
-- If https://currentwire.us/ answers 503, stop after a two-line report
-  ("site paused; off-page loop idle; nothing pitched") — do not verify
-  links against a dead site, and file nothing.
+- If https://currentwire.us/ answers 503 **or 402**, stop after a two-line
+  report ("site paused; off-page loop idle; nothing pitched") — do not verify
+  links against a dead site, and file nothing. (A 402 before ~2026-09-24 is
+  the known Hobby usage pause, not a billing problem — no alarm, no owner
+  item; see seo/routines/daily.md.)
 
 ## WHY THIS LOOP MATTERS (strategy shift, 2026-09-01)
 

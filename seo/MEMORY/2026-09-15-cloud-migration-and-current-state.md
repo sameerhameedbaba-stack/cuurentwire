@@ -12,9 +12,13 @@ anything dated earlier. Facts below were verified on 2026-09-15.
   ~$66/cycle (Observability Events $23.85, ISR writes $17.66, Fluid CPU
   $14.51, rest small). On Hobby nothing can bill — the project hard-stops at
   free limits instead. NEVER re-enable a paid plan, add-on, trial, or
-  marketplace paid tier. Final Pro invoice (~$65.91, cycle Aug 24–Sep 24)
-  and Neon marketplace usage ($14.74, Sep 1–15) were already accrued and
-  will still appear once — expected, not an incident.
+  marketplace paid tier.
+  **Corrected 2026-09-15 from the dashboard: there is NO outstanding bill.**
+  Every invoice reads Paid — August: Pro $23.60, Neon marketplace $11.35,
+  Observability $0. The "~$65.91 final Pro invoice / $14.74 Neon" figures
+  this memo carried were *projections of an in-flight cycle*, not amounts
+  billed; they never posted as stated. No run should ever send the owner to
+  hunt for an unpaid invoice.
 - **Neon: downgraded Launch → Free, effective 2026-09-15.** The database is
   the Vercel-Marketplace product "neon-cobalt-school" (Neon ID
   misty-butterfly-35277269) under the team's Neon integration — NOT a
@@ -30,19 +34,32 @@ anything dated earlier. Facts below were verified on 2026-09-15.
 
 ## Site status
 
-- **currentwire.us has answered 503 (DEPLOYMENT_PAUSED) since 2026-09-12**
+- **currentwire.us answered 503 (DEPLOYMENT_PAUSED) from 2026-09-12**
   (~11:49 UTC): the Vercel on-demand budget ($45) was reached and Pause
-  Projects fired. After the Hobby downgrade there is no budget left to
-  protect, so **unpausing is now free-safe — but it is an owner/strategy
-  decision, not something a routine does on its own.**
+  Projects fired. **Since 2026-09-14 it answers `402 DEPLOYMENT_DISABLED`
+  instead** (re-measured 2026-09-14 21:46 UTC on `/` and
+  `/archive-sitemap.xml`).
+  **The 402 is the Hobby-plan USAGE pause, not a payment problem** —
+  owner-verified on the dashboard 2026-09-15: "Paused – Upgrade to resume
+  service", driven by Pro-period usage over the Hobby caps (Fluid Active CPU
+  122h33m/4h, ISR Writes 4.8M/200K, Fast Origin Transfer 61.56 GB/10 GB,
+  Edge Requests 2.1M/1M, ISR Reads 1.3M/1M, Function Invocations 1.2M/1M).
+  The 402 body string "Payment required" is Vercel's generic text for the
+  status code and means nothing about this account. **It lifts on its own at
+  the billing-cycle reset, ~2026-09-24**; the only button offered is Upgrade,
+  which the owner refuses under the $0 rule. So there is nothing to unpause
+  and nothing to pay — the live question is only whether the *slim relaunch*
+  is ready before the reset, which is the owner's scope call.
 - Effect already measured in GSC (28-day windows): 2,084 impressions / 48
   clicks / 591 URLs on Sep 7 → 1,296 / 40 / 433 by Sep 14. That collapse is
   the outage, not a penalty — do not misread it in trend analysis.
 - Domain healthy (registered to 2027-08-13, DNS on Vercel, SSL to Nov 11)
-  BUT the **google-site-verification TXT record is missing from Hostinger
-  DNS** → Search Console ownership is at risk. The GSC API still answered on
-  Sep 14 (grace, not safety). Restoring the TXT needs the owner's browser —
-  keep it at the top of the owner checklist until confirmed re-verified.
+  and the **google-site-verification TXT record is RESTORED** (owner re-added
+  it at Hostinger and re-verified the property; confirmed 2026-09-14 21:46
+  UTC by dns.google and cloudflare-dns.com, which agree on
+  `google-site-verification=jXmPQ…D2rY` at the apex, TTL 14400). Search
+  Console ownership is no longer at risk — this is off the owner checklist.
+  Re-open only on a failing DNS query made in the same run.
 
 ## Strategy decisions taken with the owner (2026-09-15)
 
