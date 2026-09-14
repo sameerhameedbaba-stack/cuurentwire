@@ -1,28 +1,16 @@
 {
-  "generatedAt": "2026-09-11T22:20:20.724Z",
+  "generatedAt": "2026-09-14T14:22:29.385Z",
   "window": {
-    "startDate": "2026-08-15",
-    "endDate": "2026-09-11",
+    "startDate": "2026-08-18",
+    "endDate": "2026-09-14",
     "days": 28
   },
   "webQueries": [
-    {
-      "query": "espn nba coverage cuts",
-      "impressions": 69,
-      "clicks": 0,
-      "position": 9
-    },
     {
       "query": "tommy john",
       "impressions": 26,
       "clicks": 0,
       "position": 64.9
-    },
-    {
-      "query": "jd vance hometown book response",
-      "impressions": 19,
-      "clicks": 0,
-      "position": 7.2
     },
     {
       "query": "trump bbc lawsuit judge change",
@@ -37,22 +25,16 @@
       "position": 1
     },
     {
-      "query": "current events",
-      "impressions": 9,
-      "clicks": 0,
-      "position": 96
-    },
-    {
       "query": "moderna vaccine",
       "impressions": 8,
       "clicks": 0,
       "position": 61.6
     },
     {
-      "query": "united healthcare ceo",
-      "impressions": 7,
+      "query": "current events",
+      "impressions": 6,
       "clicks": 0,
-      "position": 60.3
+      "position": 95.7
     },
     {
       "query": "what is the current national debt",
@@ -85,34 +67,16 @@
       "position": 74.8
     },
     {
-      "query": "summer mcintosh 400 free",
-      "impressions": 3,
-      "clicks": 1,
-      "position": 1
-    },
-    {
       "query": "believe the unbelievable in this market — things can be different this time",
       "impressions": 3,
       "clicks": 0,
       "position": 4
     },
     {
-      "query": "curren events",
-      "impressions": 3,
-      "clicks": 0,
-      "position": 97.3
-    },
-    {
       "query": "sigal chattah",
       "impressions": 3,
       "clicks": 0,
       "position": 68.3
-    },
-    {
-      "query": "what is the hurricane called right now",
-      "impressions": 3,
-      "clicks": 0,
-      "position": 77
     },
     {
       "query": "what is us national debt today",
@@ -145,46 +109,16 @@
       "position": 80
     },
     {
-      "query": "august congress recess",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 75.5
-    },
-    {
       "query": "couple skydiving",
       "impressions": 2,
       "clicks": 0,
       "position": 71.5
     },
     {
-      "query": "current affairs in usa",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 70
-    },
-    {
       "query": "dan bilzerian",
       "impressions": 2,
       "clicks": 0,
       "position": 93
-    },
-    {
-      "query": "depleted strategic oil reserve nears level that raises concerns about damage to caverns, operations",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 5.5
-    },
-    {
-      "query": "google gemini adds option to disable ai watermarks",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 72
-    },
-    {
-      "query": "healthcare ceo",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 51.5
     },
     {
       "query": "king's news",
@@ -203,18 +137,6 @@
       "impressions": 2,
       "clicks": 0,
       "position": 63
-    },
-    {
-      "query": "mark zuckerberg ai",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 21.5
-    },
-    {
-      "query": "mlb 3 home runs",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 86.5
     },
     {
       "query": "new ipsos poll",
@@ -241,12 +163,6 @@
       "position": 98
     },
     {
-      "query": "recent events",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 99
-    },
-    {
       "query": "shannon bream",
       "impressions": 2,
       "clicks": 0,
@@ -257,18 +173,6 @@
       "impressions": 2,
       "clicks": 0,
       "position": 60.5
-    },
-    {
-      "query": "the wire by acutus",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 76.5
-    },
-    {
-      "query": "trump orders uss abraham lincoln sailors to sign ndas",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 33
     },
     {
       "query": "tupac autopsy 2026",
@@ -283,16 +187,16 @@
       "position": 82
     },
     {
-      "query": "what is happening with the uss abraham lincoln",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 19
-    },
-    {
       "query": "what is the current us national debt",
       "impressions": 2,
       "clicks": 0,
       "position": 89.5
+    },
+    {
+      "query": "what is the hurricane called right now",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 76
     },
     {
       "query": "what is the national debt now",
@@ -319,24 +223,6 @@
       "position": 61
     },
     {
-      "query": "\"lindsay clancy\" \"august 16, 2026\" trial",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 10
-    },
-    {
-      "query": "$10 million belgium gold stash",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 74
-    },
-    {
-      "query": "1 hurricane",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 57
-    },
-    {
       "query": "3.1kg bladder stone",
       "impressions": 1,
       "clicks": 0,
@@ -347,12 +233,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 62
-    },
-    {
-      "query": "abraham lincoln news",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 12
     },
     {
       "query": "abraham lincoln united states",
@@ -371,18 +251,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 92
-    },
-    {
-      "query": "american missionary",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 71
-    },
-    {
-      "query": "americans hate each other",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 58
     },
     {
       "query": "an autopsy",
@@ -415,22 +283,10 @@
       "position": 63
     },
     {
-      "query": "bae export control violations settlement",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 12
-    },
-    {
       "query": "big bear escape",
       "impressions": 1,
       "clicks": 0,
       "position": 68
-    },
-    {
-      "query": "big island today",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 92
     },
     {
       "query": "breaking news wire",
@@ -443,12 +299,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 85
-    },
-    {
-      "query": "calgary zoo grizzly escape",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 9
     },
     {
       "query": "canada tariff pause",
@@ -475,12 +325,6 @@
       "position": 87
     },
     {
-      "query": "category 1 hurricane",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 90
-    },
-    {
       "query": "cnbc cancer vaccine",
       "impressions": 1,
       "clicks": 0,
@@ -497,24 +341,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 95
-    },
-    {
-      "query": "congress summer break",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 75
-    },
-    {
-      "query": "congressional break",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 80
-    },
-    {
-      "query": "congressional incumbents",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 58
     },
     {
       "query": "cowboys wire",
@@ -535,18 +361,6 @@
       "position": 94
     },
     {
-      "query": "current event",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 99
-    },
-    {
-      "query": "current events speakers",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 64
-    },
-    {
       "query": "current evetns",
       "impressions": 1,
       "clicks": 0,
@@ -565,58 +379,16 @@
       "position": 90
     },
     {
-      "query": "current xmen lineup",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 55
-    },
-    {
-      "query": "david crowley hasan piker",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 11
-    },
-    {
-      "query": "de minimis exemption lawsuit",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 75
-    },
-    {
       "query": "death row ohio",
       "impressions": 1,
       "clicks": 0,
       "position": 59
     },
     {
-      "query": "dei gone",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 83
-    },
-    {
-      "query": "depleted oil fields",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 77
-    },
-    {
-      "query": "dhs airplane",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 63
-    },
-    {
       "query": "did best buy get rid of dei",
       "impressions": 1,
       "clicks": 0,
       "position": 82
-    },
-    {
-      "query": "did congress go on recess",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 68
     },
     {
       "query": "doctors remove 3.1kg stone from man's bladder and claim record",
@@ -637,12 +409,6 @@
       "position": 68
     },
     {
-      "query": "doj appeal",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 16
-    },
-    {
       "query": "doj application to restore gun rights",
       "impressions": 1,
       "clicks": 0,
@@ -650,12 +416,6 @@
     },
     {
       "query": "donald trump abraham lincoln",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 95
-    },
-    {
-      "query": "donald trump lincoln",
       "impressions": 1,
       "clicks": 0,
       "position": 95
@@ -671,12 +431,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 91
-    },
-    {
-      "query": "elijah manley x",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 99
     },
     {
       "query": "execution florida",
@@ -695,12 +449,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 99
-    },
-    {
-      "query": "fda egg recall salmonella",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 36
     },
     {
       "query": "felon gun rights restoration",
@@ -787,34 +535,16 @@
       "position": 64
     },
     {
-      "query": "hawaii hurricane warning",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 76
-    },
-    {
       "query": "health canada store",
       "impressions": 1,
       "clicks": 0,
       "position": 9
     },
     {
-      "query": "health care ceo killer",
+      "query": "healthcare ceo",
       "impressions": 1,
       "clicks": 0,
-      "position": 74
-    },
-    {
-      "query": "hoto soldering",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 10
-    },
-    {
-      "query": "hoto soldering iron",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 14
+      "position": 45
     },
     {
       "query": "how many aftershocks today",
@@ -841,12 +571,6 @@
       "position": 87
     },
     {
-      "query": "how to disable gemini watermark",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 78
-    },
-    {
       "query": "human remains found tucson",
       "impressions": 1,
       "clicks": 0,
@@ -865,18 +589,6 @@
       "position": 24
     },
     {
-      "query": "indian solar mission's new findings throw light on enduring sun mysteries",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 10
-    },
-    {
-      "query": "indian x men",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 59
-    },
-    {
       "query": "ipco investor relations",
       "impressions": 1,
       "clicks": 0,
@@ -887,24 +599,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 86
-    },
-    {
-      "query": "is congress on a break",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 67
-    },
-    {
-      "query": "is congress on break right now",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 54
-    },
-    {
-      "query": "is mark zuckerberg ai",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 32
     },
     {
       "query": "is shannon bream still on fox",
@@ -955,6 +649,12 @@
       "position": 18
     },
     {
+      "query": "jd vance hometown book response",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 5
+    },
+    {
       "query": "jeffrey kuntz trump bbc case",
       "impressions": 1,
       "clicks": 0,
@@ -997,12 +697,6 @@
       "position": 40
     },
     {
-      "query": "lindsay clancy npr",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 17
-    },
-    {
       "query": "lindsey graham sister debate",
       "impressions": 1,
       "clicks": 0,
@@ -1033,34 +727,10 @@
       "position": 51
     },
     {
-      "query": "luigi confessed",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 61
-    },
-    {
-      "query": "luigi mangione why did he do it?",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 54
-    },
-    {
       "query": "man hit by train today",
       "impressions": 1,
       "clicks": 0,
       "position": 38
-    },
-    {
-      "query": "matisse arrested",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 74
-    },
-    {
-      "query": "matisse brazil",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 58
     },
     {
       "query": "miami algae",
@@ -1159,22 +829,10 @@
       "position": 72
     },
     {
-      "query": "news about the uss abraham lincoln",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 12
-    },
-    {
       "query": "news trump cnn",
       "impressions": 1,
       "clicks": 0,
       "position": 98
-    },
-    {
-      "query": "news wire us",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 57
     },
     {
       "query": "next florida governer",
@@ -1219,16 +877,16 @@
       "position": 85
     },
     {
+      "query": "recent events",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 98
+    },
+    {
       "query": "reporter today",
       "impressions": 1,
       "clicks": 0,
       "position": 88
-    },
-    {
-      "query": "roblox senate",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 26
     },
     {
       "query": "shannon bream on fox news",
@@ -1261,18 +919,6 @@
       "position": 92
     },
     {
-      "query": "strait of hormuz israel",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 35
-    },
-    {
-      "query": "teen suspect in virginia campus shooting found hiding in closet",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 26
-    },
-    {
       "query": "the athletic top 100 soccer players",
       "impressions": 1,
       "clicks": 0,
@@ -1289,12 +935,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 64
-    },
-    {
-      "query": "the truth about abraham lincoln",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 58
     },
     {
       "query": "the window broke",
@@ -1405,12 +1045,6 @@
       "position": 1
     },
     {
-      "query": "trump on long island today",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 52
-    },
-    {
       "query": "trump strait of hormuz map",
       "impressions": 1,
       "clicks": 0,
@@ -1421,12 +1055,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 11
-    },
-    {
-      "query": "truthwire news",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 69
     },
     {
       "query": "tupac autopsy leak",
@@ -1447,22 +1075,10 @@
       "position": 95
     },
     {
-      "query": "united healthxare ceo",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 68
-    },
-    {
       "query": "united states vaccination rate",
       "impressions": 1,
       "clicks": 0,
       "position": 99
-    },
-    {
-      "query": "us grounds apache helicopter training flights after deadly crash",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 28
     },
     {
       "query": "us national debt now",
@@ -1495,12 +1111,6 @@
       "position": 55
     },
     {
-      "query": "uss abraham lincoln news",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 20
-    },
-    {
       "query": "vaccine for cancer",
       "impressions": 1,
       "clicks": 0,
@@ -1517,24 +1127,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 58
-    },
-    {
-      "query": "vivek ramaswamy",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 98
-    },
-    {
-      "query": "was luigi mangione justified",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 53
-    },
-    {
-      "query": "what companies are keeping dei",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 55
     },
     {
       "query": "what is national debt today",
@@ -1663,48 +1255,6 @@
       "position": 83
     },
     {
-      "query": "when does congress come back from summer break",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 69
-    },
-    {
-      "query": "when is congress going on recess",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 84
-    },
-    {
-      "query": "when is congress on summer recess",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 73
-    },
-    {
-      "query": "when was the lamborghini revuelto released",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 68
-    },
-    {
-      "query": "when will congress return from recess",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 81
-    },
-    {
-      "query": "white label crypto bank",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 85
-    },
-    {
-      "query": "white label crypto bank company",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 94
-    },
-    {
       "query": "who discovered otter",
       "impressions": 1,
       "clicks": 0,
@@ -1715,30 +1265,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 69
-    },
-    {
-      "query": "who was united healthcare ceo",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 58
-    },
-    {
-      "query": "why americans now hate each other more than ever",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 5
-    },
-    {
-      "query": "why did luigi mangione do it",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 60
-    },
-    {
-      "query": "why did mangione plead guilty",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 47
     },
     {
       "query": "why did tara setmayer leave lincoln project",
@@ -1765,12 +1291,6 @@
       "position": 78
     },
     {
-      "query": "woke 1.0",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 51
-    },
-    {
       "query": "workplace violence news",
       "impressions": 1,
       "clicks": 0,
@@ -1783,22 +1303,10 @@
       "position": 86
     },
     {
-      "query": "x men lineup",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 73
-    },
-    {
       "query": "xsolla news",
       "impressions": 1,
       "clicks": 0,
       "position": 40
-    },
-    {
-      "query": "xteink libby",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 41
     },
     {
       "query": "zz top drummer dies",
@@ -1809,20 +1317,6 @@
   ],
   "newsQueries": [],
   "strikingDistance": [
-    {
-      "page": "/story/as-espn-cuts-familiar-faces-its-retreat-from-serious-nba-coverage-is-complete-c5a295c6ce624",
-      "query": "espn nba coverage cuts",
-      "impressions": 69,
-      "clicks": 0,
-      "position": 9
-    },
-    {
-      "page": "/story/in-jd-vances-hometown-comment-on-his-new-memoir-is-hard-to-find-cb3392289511d",
-      "query": "jd vance hometown book response",
-      "impressions": 19,
-      "clicks": 0,
-      "position": 7.2
-    },
     {
       "page": "/story/judge-swapped-in-trumps-defamation-case-against-bbc-cf03400ab04ec",
       "query": "trump bbc lawsuit judge change",
@@ -1843,41 +1337,6 @@
       "impressions": 2,
       "clicks": 1,
       "position": 8.5
-    },
-    {
-      "page": "/story/depleted-strategic-oil-reserve-nears-level-that-raises-concerns-about-damage-to-c26ae3631e9ff",
-      "query": "depleted strategic oil reserve nears level that raises concerns about damage to caverns, operations",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 5.5
-    },
-    {
-      "page": "/topic/uss-abraham-lincoln",
-      "query": "what is happening with the uss abraham lincoln",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 19
-    },
-    {
-      "page": "/story/bae-systems-to-pay-36m-penalty-after-104-violations-of-us-arms-export-rules-cb57ebcdd9eac",
-      "query": "bae export control violations settlement",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 12
-    },
-    {
-      "page": "/story/crowley-says-he-wont-campaign-with-hasan-piker-cd045b9c607d1",
-      "query": "david crowley hasan piker",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 11
-    },
-    {
-      "page": "/story/doctors-and-women-whove-had-it-call-for-more-attention-on-postpartum-psychosis-c1d5cdedec5d2",
-      "query": "lindsay clancy npr",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 17
     },
     {
       "page": "/story/doctors-remove-3-1kg-stone-from-mans-bladder-and-claim-record-c7f22c6fa3b73",
@@ -1901,39 +1360,11 @@
       "position": 19
     },
     {
-      "page": "/story/fitz-the-grizzly-bear-briefly-escapes-his-enclosure-at-the-calgary-zoo-cd0a516a116e6",
-      "query": "calgary zoo grizzly escape",
+      "page": "/story/in-jd-vances-hometown-comment-on-his-new-memoir-is-hard-to-find-cb3392289511d",
+      "query": "jd vance hometown book response",
       "impressions": 1,
       "clicks": 0,
-      "position": 9
-    },
-    {
-      "page": "/story/gun-law-in-limbo-as-justice-department-holds-off-appeal-c67a04b6dc4e3",
-      "query": "doj appeal",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 16
-    },
-    {
-      "page": "/story/hotos-new-cordless-soldering-iron-heats-up-in-three-seconds-ce869c753dbe5",
-      "query": "hoto soldering",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 10
-    },
-    {
-      "page": "/story/hotos-new-cordless-soldering-iron-heats-up-in-three-seconds-ce869c753dbe5",
-      "query": "hoto soldering iron",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 14
-    },
-    {
-      "page": "/story/indian-solar-missions-new-findings-throw-light-on-enduring-sun-mysteries-c45ab517c7401",
-      "query": "indian solar mission's new findings throw light on enduring sun mysteries",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 10
+      "position": 5
     },
     {
       "page": "/story/jason-arday-cambridge-professor-accused-of-plagiarism-is-found-dead-c6aa5b45e8abd",
@@ -1941,13 +1372,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 18
-    },
-    {
-      "page": "/story/lindsay-clancy-murder-trial-prosecutors-revive-theory-of-faked-suicide-attempt-c99e0fa42db91",
-      "query": "\"lindsay clancy\" \"august 16, 2026\" trial",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 10
     },
     {
       "page": "/story/trump-tells-cnn-reporter-to-be-quiet-during-oval-office-clash-video-cabb65d7dc027",
@@ -1962,39 +1386,11 @@
       "impressions": 1,
       "clicks": 0,
       "position": 9
-    },
-    {
-      "page": "/story/why-americans-now-hate-each-other-more-than-ever-c7c39f3dad971",
-      "query": "why americans now hate each other more than ever",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 5
-    },
-    {
-      "page": "/topic/uss-abraham-lincoln",
-      "query": "abraham lincoln news",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 12
-    },
-    {
-      "page": "/topic/uss-abraham-lincoln",
-      "query": "news about the uss abraham lincoln",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 12
-    },
-    {
-      "page": "/topic/uss-abraham-lincoln",
-      "query": "uss abraham lincoln news",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 20
     }
   ],
   "counts": {
-    "webRows": 300,
+    "webRows": 218,
     "newsRows": 0,
-    "pageQueryRows": 307
+    "pageQueryRows": 223
   }
 }
