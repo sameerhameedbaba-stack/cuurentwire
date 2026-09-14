@@ -4,7 +4,11 @@
 > blocks, each with its own list. They are NOT alternatives — read them in this
 > order and the first one that speaks wins:
 >
-> 0. **DAILY RUN 2026-09-11** (immediately below) — the top-of-board CAUSE
+> 00. **WEEKLY DEEP RUN 2026-09-14** (immediately below) — THE SITE IS DOWN
+>    and Google ownership is broken. Both owner-only. Outranks everything.
+>    It does not reorder the engineering queue; it says nothing on it can
+>    ship or be verified until these two are cleared.
+> 0. **DAILY RUN 2026-09-11** — the top-of-board CAUSE
 >    question is now instrumented and its SURFACE is measured. It reorders
 >    nothing else.
 > 0-i. **DAILY RUN 2026-09-10** — a production 5xx found,
@@ -38,6 +42,38 @@
 > problem while fixing an old one.** Verify the outcome, never a proxy; test
 > the boundary a change moves; never claim a fix without evidence from the
 > same run.
+
+**WEEKLY DEEP RUN 2026-09-14 — PRODUCTION IS PAUSED AND THE SEARCH CONSOLE
+OWNERSHIP RECORD IS GONE. Score 81 -> 7/100 as served.**
+
+- **OUTAGE, ongoing, owner-only.** Every URL answers `503 DEPLOYMENT_PAUSED`
+  (no Retry-After) since ~11:49 UTC 2026-09-12 (last green uptime 10:44Z;
+  GitHub deployment status "Deployment was blocked" 11:49Z and again 09-13
+  12:17Z). Auto-alerts #14-#18 all opened correctly. Expected cause: Vercel
+  Spend Management on-demand budget ($10 as of 09-03) with Pause Projects on.
+  NOT CONFIRMED: Vercel is signed out in the owner Chrome. Never suggest
+  turning Pause Projects off. Close the `data/incidents.json` entry with an
+  `end` only after production answers 200.
+- **GOOGLE OWNERSHIP, ongoing, owner-only.** No `google-site-verification`
+  TXT at the authoritative NS (only the Hostinger SPF record), 8.8.8.8 or
+  1.1.1.1. Search Console as ovyajewels@gmail.com (named on the page) says no
+  access for both sc-domain and URL-prefix. Removal date unknown; the service
+  account still read sitemaps.list 09-13 13:22Z. Next run: read issue #11's
+  newest comment to see whether API access has now gone too.
+- **NEW ITEM, automatable, $0: DNS verification watcher.** A daily assertion
+  that the TXT exists (public DNS query, no secret), in
+  `gsc-crawl-freshness.yml`. Ranks with the carried `gsc.yml` freshness
+  assertion as the first code work once deploys unblock.
+- **Measured this run:** GA4 29 users / 36 sessions Sep 7-13 (AI Assistant 6,
+  Organic Search 1, Organic Social 1); the prior week's 234 users is one Sep 3
+  India Direct burst of ~197 on `/`, so the real baseline is ~35-40/week.
+  Newsletter 0. Bluesky 26 posts Sep 7-12, 0 since the pause, 0 followers.
+  GSC files are the 09-11 pull (Sep 2-8: 2 clicks / 6 impressions). The Monday
+  `gsc.yml` cron had not fired by 11:58Z, the third missed Monday.
+- **Deliberately not done:** PSI (nothing to measure), competitor gap (our
+  side unfetchable), llms.txt, any code push. The archive-sitemap runway was
+  not re-measured (503). The run brief's "2026-09-24" date is refuted per the
+  09-08 finding and should be removed from the brief.
 
 **DAILY RUN 2026-09-11 — the sitemap-to-archive gap is INSTRUMENTED and the
 orphan SURFACE is measured. Production is clean. One monitoring defect found:

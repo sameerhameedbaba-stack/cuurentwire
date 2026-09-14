@@ -137,6 +137,16 @@ concern: never ship anything that measurably regresses CWV.
 
 ## Search engine coverage map (re-verified 2026-09-07 — keep current)
 
+> **2026-09-14: EVERY ROW BELOW IS CURRENTLY BROKEN.** Measured that day:
+> production has answered `503 X-Vercel-Error: DEPLOYMENT_PAUSED` on every
+> URL (robots.txt, all three sitemaps, llms.txt, the IndexNow key file, www)
+> since ~11:49 UTC 2026-09-12. Separately, the `google-site-verification`
+> DNS TXT is **absent** at the authoritative nameservers, and Search Console
+> refuses ovyajewels@gmail.com on the property. Both are owner fixes (Vercel
+> Spend Management; re-add the TXT at Hostinger). Remove this note only after
+> re-verifying each row by fetch and by the GSC property opening. See
+> `data/incidents.json` and `reports/2026-09-14-weekly.md`.
+
 How every engine gets CurrentWire's results. The owner's rule: results must
 reach ALL search engines, not just Google, at $0 and zero recurring effort.
 
