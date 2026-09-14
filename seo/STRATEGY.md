@@ -6,6 +6,73 @@ Techmeme/RCP/1440 — keyword-universe SERP observation, live on-page audit,
 off-page research, distribution audit), then synthesized and adversarially
 red-teamed. Workflow run `wf_87aa6768-498`, this repo's session of 2026-08-24.
 
+## SCOPE DECISION — 2026-09-15, owner-directed (the slim relaunch)
+
+Supersedes the aggregation model on WHAT WE PUBLISH. Everything below in this
+file still governs why a channel matters; this section governs what runs.
+
+**The product.** Ten original articles per day, TOTAL — not ten per vertical.
+Each one is built from a cluster of independent reports on the same event,
+written as original prose from the FACTS those reports agree on.
+
+**"Free range" (owner's term).** Both halves, per the owner: sources that cost
+us nothing AND stories a reader can open without a paywall. Implemented as
+`access: "free" | "metered" | "paywalled"` in `config/sources.ts`; a story
+needs at least two free-to-read independent publications or it does not run.
+Anything unreviewed resolves to `metered`, never `free` — the filter fails
+closed.
+
+**How the article is written.** Original prose from facts, NOT a close
+rewrite. The owner chose this knowing it is more work. Two reasons, both
+material:
+
+- Facts are not copyrightable; a publication's expression of them is. Writing
+  from facts is the lawful path, a reworded merge is not.
+- Google's scaled-content-abuse policy targets exactly the reworded-merge
+  pattern. This domain was already demoted once during its first evaluation
+  (see the 2026-09-01 shift below). A second strike is not survivable.
+
+This is enforced structurally, not by good intentions: the writing step is
+handed an `ArticleBrief` (`lib/editorial/brief.ts`) containing corroborated
+facts, the source list and the rules — and NOT the source article bodies.
+Nobody can rewrite prose they were never given. A test asserts the brief never
+carries source body text; if that test fails, the originality claim is void.
+
+**Keywords (owner: "search how we need to post the content with keywords to
+bring the traffic").** Keyword research happens BEFORE writing and shapes the
+headline and structure — it is never sprinkled over a finished draft, which is
+stuffing. Research budget is $0, so the source is our own Search Console
+data (`data/gsc-queries.json`): 218 real queries with impressions and average
+position. That beats a third-party volume estimate, because it says what THIS
+domain can win, not what the country searches. Priority: striking-distance
+queries (already ranking ~4-20) first, then proven-demand-poor-position, then
+the story's own subjects. When there is no search evidence the brief says so
+and instructs the writer NOT to force a phrase.
+
+**Review model.** Auto-publish only technology, business and science at
+launch. Crime/courts, health and money advice always route to the owner — the
+crime gate deliberately does not try to tell a public figure from a private
+one, because that call is unreliable from a headline and the cost of getting
+it wrong is defaming a real person.
+
+**Why ten is the number.** It is what fits inside the free Hobby caps the
+16k-page aggregator blew through (ISR writes 4.8M against a 200K allowance,
+Fluid CPU 122h against 4h). Ten committed static pages a day is close to zero
+ISR writes and zero per-view DB reads. The volume decision IS the cost
+decision.
+
+**Scaling.** Only on four weeks of evidence: rising impressions/clicks per
+article, no manual actions, spot-checks passing. Widening `LAUNCH_CATEGORIES`
+is an owner decision, never a routine's.
+
+**Still open, not yet built:** the fate of the ~16k existing `/story/` URLs
+(301 or intentional 410 — never a lingering 503/404), the page template and
+publishing path, the corrections policy page, and the daily writing routine
+itself.
+
+**Status 2026-09-15:** the selection layer is built and tested
+(`lib/editorial/`, 52 tests); nothing is deployed, production is still paused.
+
 **This document is the master plan.** Daily/weekly runs execute the current
 sprint's [automated] items via BACKLOG.md and report against §5. PLAYBOOK.md
 hard constraints override anything here. Do not re-derive strategy ad hoc —
