@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-14T13:20:46.656Z",
+  "ranAt": "2026-09-15T12:07:07.492Z",
   "base": "https://currentwire.us",
   "listPages": [
     "/",
@@ -19,102 +19,102 @@
       {
         "surface": "/",
         "repeat": 1,
-        "error": "Error: https://currentwire.us/ responded 503"
+        "error": "Error: https://currentwire.us/ responded 402"
       },
       {
         "surface": "/top-10",
         "repeat": 1,
-        "error": "Error: https://currentwire.us/top-10 responded 503"
+        "error": "Error: https://currentwire.us/top-10 responded 402"
       },
       {
         "surface": "/top-100",
         "repeat": 1,
-        "error": "Error: https://currentwire.us/top-100 responded 503"
+        "error": "Error: https://currentwire.us/top-100 responded 402"
       },
       {
         "surface": "/us",
         "repeat": 1,
-        "error": "Error: https://currentwire.us/us responded 503"
+        "error": "Error: https://currentwire.us/us responded 402"
       },
       {
         "surface": "/canada",
         "repeat": 1,
-        "error": "Error: https://currentwire.us/canada responded 503"
+        "error": "Error: https://currentwire.us/canada responded 402"
       },
       {
         "surface": "/latest",
         "repeat": 1,
-        "error": "Error: https://currentwire.us/latest responded 503"
+        "error": "Error: https://currentwire.us/latest responded 402"
       },
       {
         "surface": "/politics",
         "repeat": 1,
-        "error": "Error: https://currentwire.us/politics responded 503"
+        "error": "Error: https://currentwire.us/politics responded 402"
       },
       {
         "surface": "/business",
         "repeat": 1,
-        "error": "Error: https://currentwire.us/business responded 503"
+        "error": "Error: https://currentwire.us/business responded 402"
       },
       {
         "surface": "/ai",
         "repeat": 1,
-        "error": "Error: https://currentwire.us/ai responded 503"
+        "error": "Error: https://currentwire.us/ai responded 402"
       },
       {
         "surface": "/elections",
         "repeat": 1,
-        "error": "Error: https://currentwire.us/elections responded 503"
+        "error": "Error: https://currentwire.us/elections responded 402"
       },
       {
         "surface": "/",
         "repeat": 2,
-        "error": "Error: https://currentwire.us/ responded 503"
+        "error": "Error: https://currentwire.us/ responded 402"
       },
       {
         "surface": "/top-10",
         "repeat": 2,
-        "error": "Error: https://currentwire.us/top-10 responded 503"
+        "error": "Error: https://currentwire.us/top-10 responded 402"
       },
       {
         "surface": "/top-100",
         "repeat": 2,
-        "error": "Error: https://currentwire.us/top-100 responded 503"
+        "error": "Error: https://currentwire.us/top-100 responded 402"
       },
       {
         "surface": "/us",
         "repeat": 2,
-        "error": "Error: https://currentwire.us/us responded 503"
+        "error": "Error: https://currentwire.us/us responded 402"
       },
       {
         "surface": "/canada",
         "repeat": 2,
-        "error": "Error: https://currentwire.us/canada responded 503"
+        "error": "Error: https://currentwire.us/canada responded 402"
       },
       {
         "surface": "/latest",
         "repeat": 2,
-        "error": "Error: https://currentwire.us/latest responded 503"
+        "error": "Error: https://currentwire.us/latest responded 402"
       },
       {
         "surface": "/politics",
         "repeat": 2,
-        "error": "Error: https://currentwire.us/politics responded 503"
+        "error": "Error: https://currentwire.us/politics responded 402"
       },
       {
         "surface": "/business",
         "repeat": 2,
-        "error": "Error: https://currentwire.us/business responded 503"
+        "error": "Error: https://currentwire.us/business responded 402"
       },
       {
         "surface": "/ai",
         "repeat": 2,
-        "error": "Error: https://currentwire.us/ai responded 503"
+        "error": "Error: https://currentwire.us/ai responded 402"
       },
       {
         "surface": "/elections",
         "repeat": 2,
-        "error": "Error: https://currentwire.us/elections responded 503"
+        "error": "Error: https://currentwire.us/elections responded 402"
       }
     ],
     "cards": 0,
