@@ -3,6 +3,7 @@ import { CATEGORIES, PUBLIC_CATEGORY_IDS } from "@/config/categories";
 import { HUB_IDS } from "@/config/hubs";
 import { siteConfig } from "@/config/site";
 import { getDataset } from "@/lib/cache/store";
+import { getPublishedArticles } from "@/lib/editorial/store";
 import { listBriefingDates } from "@/lib/database/briefing";
 import { hubCounts } from "@/lib/news/hubs";
 import { listActiveSources } from "@/lib/news/queries";
@@ -20,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // sitemap fetch. They are all one link from /archive (listed below), and
   // every story they link to is already in archive-sitemap.xml.
   const staticPaths = [
-    "", "/latest", "/top-10", "/top-100", "/briefing", "/most-covered",
+    "", "/latest", "/articles", "/top-10", "/top-100", "/briefing", "/most-covered",
     "/reports/media-coverage", "/us", "/canada", "/topics",
     "/sources", "/archive", "/about", "/news-desk", "/methodology",
     // Evergreen reference pages. Nested under /methodology so the URL
@@ -49,6 +50,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           ? 0.9
           : 0.6,
   }));
+
+  // Original CurrentWire articles (the slim relaunch). Read from the repo at
+  // build time, so listing them costs nothing — no database, no dataset read.
+  // Priority 0.8: below the ranked collection pages that change hourly, above
+  // the evergreen reference pages, because these are the thing the site is
+  // now actually for.
+  for (const article of getPublishedArticles()) {
+    entries.push({
+      url: `${base}/article/${article.slug}`,
+      lastModified: article.updatedAt ?? article.publishedAt,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    });
+  }
 
   // Weekly Media Coverage Reports: permanent data pages, one per completed
   // ET week (pure date math — no database read for the sitemap).

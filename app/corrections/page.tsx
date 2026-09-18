@@ -20,19 +20,26 @@ export default function CorrectionsPage() {
     <ProsePage
       eyebrow="CurrentWire"
       title="Corrections"
-      intro="Accuracy matters more than speed. When CurrentWire gets something wrong, we want to fix it quickly."
+      intro="Accuracy matters more than speed. When CurrentWire gets something wrong, we correct it on the page and say what changed."
     >
       <h2>What we correct</h2>
+      <p>
+        CurrentWire publishes original articles written by our news desk from
+        reporting by two or more independent publications. When one of those
+        articles is wrong, the error is ours and we fix it on the page.
+      </p>
       <ul>
-        <li>Inaccurate headlines or summaries on CurrentWire story pages</li>
-        <li>Misattributed sources or incorrect publication details</li>
-        <li>Stories grouped together that describe different events</li>
-        <li>Incorrect geographic or category classification</li>
+        <li>Factual errors in a CurrentWire article — names, numbers, dates, places, sequence of events</li>
+        <li>A claim attributed to the wrong publication, or not attributed at all</li>
+        <li>A headline or standfirst that overstates what the reporting supports</li>
+        <li>Broken or wrong links to the publications an article draws on</li>
+        <li>Incorrect category classification</li>
       </ul>
       <p>
-        Errors within a publisher’s original article should be reported to that
-        publisher; we link to original reporting on every story page so you can
-        reach them directly.
+        Errors inside a publisher’s own reporting should be reported to that
+        publisher; we link to every publication an article draws on so you can
+        reach them directly. If their correction changes our article, we update
+        ours too and log it.
       </p>
 
       <h2>How to report an error</h2>
@@ -47,22 +54,35 @@ export default function CorrectionsPage() {
 
       <h2>What happens next</h2>
       <p>
-        We review reports promptly. Material inaccuracies are corrected as soon
-        as they are verified; classification and clustering fixes also feed
-        improvements to the automated systems that caused them — the{" "}
+        We check the report against the publications the article was built
+        from. If it is right, we correct the article and note the change on the
+        article itself — we do not quietly edit a page and leave no trace.
+        Where an error came from an automated step, the fix goes into that step
+        as well, so the same mistake cannot recur: the{" "}
         <Link href="/news-desk">news desk page</Link> describes what those
         systems do, and the <Link href="/methodology">methodology</Link>{" "}
-        documents the signals they use. Our summarization and attribution rules
-        are published in the{" "}
+        documents the signals they use. Our sourcing and attribution rules are
+        published in the{" "}
         <Link href="/editorial-standards">editorial standards</Link>.
       </p>
 
-      <h2>Corrections log</h2>
+      <h2>How a correction appears</h2>
       <p>
-        Corrections that materially change what a story page says will be
-        listed here with the date and what changed. Routine classification and
-        grouping fixes are applied continuously by the automated systems and
-        are not individually logged.
+        Every correction is published on the article it applies to, dated,
+        saying what was wrong and what it now says. The original claim is
+        described rather than silently deleted, so a reader who saw the
+        mistake can tell what changed. Fixing a typo or a dead link is not a
+        correction and is not logged; changing what an article asserts always
+        is.
+      </p>
+
+      <h2>AI assistance</h2>
+      <p>
+        Our articles are written with AI assistance and every one says so. That
+        is not a disclaimer that shifts responsibility: an error in a
+        CurrentWire article is CurrentWire’s error regardless of how the
+        article was drafted, and it is corrected the same way. We do not
+        publish articles under invented human bylines.
       </p>
 
       <p>

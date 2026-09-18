@@ -65,6 +65,7 @@ export const siteConfig = {
         { label: "Elections 2026", href: "/elections" },
       ],
       explore: [
+        { label: "Articles", href: "/articles" },
         { label: "Daily Briefing", href: "/briefing" },
         { label: "Top 10 Today", href: "/top-10" },
         { label: "Top 100", href: "/top-100" },
