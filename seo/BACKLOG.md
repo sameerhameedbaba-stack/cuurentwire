@@ -82,6 +82,26 @@ SEARCH CONSOLE OWNERSHIP RECORD IS GONE" — that half is FIXED, see below.)*
   that the TXT exists (public DNS query, no secret), in
   `gsc-crawl-freshness.yml`. Ranks with the carried `gsc.yml` freshness
   assertion as the first code work once deploys unblock.
+- **NEW FINDING 2026-09-21 (watchdog run, not fixed — needs a live 200 to
+  verify against): `scripts/cwv-check.mjs` measures `/` and `/top-100`
+  unconditionally, with no liveness check.** The 2026-09-14 and 2026-09-21
+  `psi` entries in `data/cwv-history.json` both show `/` and `/top-100`
+  scoring 100/LCP~800ms while production independently confirmed 402
+  `DEPLOYMENT_DISABLED` (78-byte plain-text body) at the same time — PSI is
+  faithfully measuring the tiny error page, which loads instantly and
+  scores perfectly, and that gets recorded as if it were the homepage's
+  vitals. The script already solved this exact class of bug for the third
+  (story) URL via `firstLiveStoryUrl()` (added 2026-08-21, see that
+  function's own comment: "a performance number for an error page is a
+  fabricated metric wearing a real one's label") but never extended the
+  same guard to the two hardcoded surfaces. Fix: probe `/` and `/top-100`
+  for a 200 (manual redirect, same pattern as `firstLiveStoryUrl`) before
+  handing them to `runPsi`/`runPlaywrightProbe`, and skip + warn on
+  non-200 instead of recording it. Rank with other cloud-only script fixes;
+  verify by re-running once production is back to 200 and confirming a
+  non-200 case is skipped (can be tested against a deliberately bad path
+  locally). Until this ships, treat every `psi`/`playwright-chromium` entry
+  for `/` or `/top-100` dated 2026-09-14 through today as not meaningful.
 - **Measured this run:** GA4 29 users / 36 sessions Sep 7-13 (AI Assistant 6,
   Organic Search 1, Organic Social 1); the prior week's 234 users is one Sep 3
   India Direct burst of ~197 on `/`, so the real baseline is ~35-40/week.
