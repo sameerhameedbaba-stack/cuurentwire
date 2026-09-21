@@ -1,82 +1,16 @@
 {
-  "generatedAt": "2026-09-14T14:22:29.385Z",
+  "generatedAt": "2026-09-21T14:30:07.802Z",
   "window": {
-    "startDate": "2026-08-18",
-    "endDate": "2026-09-14",
+    "startDate": "2026-08-25",
+    "endDate": "2026-09-21",
     "days": 28
   },
   "webQueries": [
     {
-      "query": "tommy john",
-      "impressions": 26,
-      "clicks": 0,
-      "position": 64.9
-    },
-    {
-      "query": "trump bbc lawsuit judge change",
-      "impressions": 14,
-      "clicks": 0,
-      "position": 12.4
-    },
-    {
-      "query": "oswaldo pirela ice detention",
-      "impressions": 12,
-      "clicks": 0,
-      "position": 1
-    },
-    {
-      "query": "moderna vaccine",
-      "impressions": 8,
-      "clicks": 0,
-      "position": 61.6
-    },
-    {
-      "query": "current events",
-      "impressions": 6,
-      "clicks": 0,
-      "position": 95.7
-    },
-    {
       "query": "what is the current national debt",
-      "impressions": 6,
-      "clicks": 0,
-      "position": 92.2
-    },
-    {
-      "query": "rise and fall of tony romo",
       "impressions": 5,
       "clicks": 0,
-      "position": 9.6
-    },
-    {
-      "query": "cancer vaccine",
-      "impressions": 4,
-      "clicks": 0,
-      "position": 77
-    },
-    {
-      "query": "cancer vaccines",
-      "impressions": 4,
-      "clicks": 0,
-      "position": 64.3
-    },
-    {
-      "query": "frank beard",
-      "impressions": 4,
-      "clicks": 0,
-      "position": 74.8
-    },
-    {
-      "query": "believe the unbelievable in this market — things can be different this time",
-      "impressions": 3,
-      "clicks": 0,
-      "position": 4
-    },
-    {
-      "query": "sigal chattah",
-      "impressions": 3,
-      "clicks": 0,
-      "position": 68.3
+      "position": 91.6
     },
     {
       "query": "what is us national debt today",
@@ -85,100 +19,22 @@
       "position": 89
     },
     {
-      "query": "wire news",
-      "impressions": 3,
-      "clicks": 0,
-      "position": 75.3
-    },
-    {
-      "query": "the rise and fall of tony romo",
-      "impressions": 2,
-      "clicks": 1,
-      "position": 8.5
-    },
-    {
-      "query": "anti woke companies",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 87.5
-    },
-    {
-      "query": "ap top news",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 80
-    },
-    {
-      "query": "couple skydiving",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 71.5
-    },
-    {
-      "query": "dan bilzerian",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 93
-    },
-    {
-      "query": "king's news",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 92
-    },
-    {
-      "query": "least woke companies",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 60.5
-    },
-    {
-      "query": "lincoln us",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 63
-    },
-    {
-      "query": "new ipsos poll",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 82.5
-    },
-    {
       "query": "playstation speakers",
       "impressions": 2,
       "clicks": 0,
       "position": 54.5
     },
     {
-      "query": "prediction markets cnbc",
+      "query": "sigal chattah",
       "impressions": 2,
       "clicks": 0,
-      "position": 69
+      "position": 87.5
     },
     {
-      "query": "property debt",
+      "query": "tommy john",
       "impressions": 2,
       "clicks": 0,
-      "position": 98
-    },
-    {
-      "query": "shannon bream",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 57
-    },
-    {
-      "query": "telus outagw",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 60.5
-    },
-    {
-      "query": "tupac autopsy 2026",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 34.5
+      "position": 79
     },
     {
       "query": "wayne national forest trump",
@@ -193,12 +49,6 @@
       "position": 89.5
     },
     {
-      "query": "what is the hurricane called right now",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 76
-    },
-    {
       "query": "what is the national debt now",
       "impressions": 2,
       "clicks": 0,
@@ -211,70 +61,16 @@
       "position": 84.5
     },
     {
-      "query": "who will be florida's next governor",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 90.5
-    },
-    {
-      "query": "tupac autopsy photos",
-      "impressions": 1,
-      "clicks": 1,
-      "position": 61
-    },
-    {
-      "query": "3.1kg bladder stone",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 30
-    },
-    {
       "query": "7.7 earthquake",
       "impressions": 1,
       "clicks": 0,
       "position": 62
     },
     {
-      "query": "abraham lincoln united states",
+      "query": "7.7 magnitude earthquake indonesia",
       "impressions": 1,
       "clicks": 0,
-      "position": 48
-    },
-    {
-      "query": "air strikes syria",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 91
-    },
-    {
-      "query": "alaksa governor",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 92
-    },
-    {
-      "query": "an autopsy",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 74
-    },
-    {
-      "query": "anti cancer vaccine therapy",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 100
-    },
-    {
-      "query": "autopsy images",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 81
-    },
-    {
-      "query": "autopsy photos of 2pac",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 38
+      "position": 71
     },
     {
       "query": "autopsy while alive",
@@ -283,40 +79,10 @@
       "position": 63
     },
     {
-      "query": "big bear escape",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 68
-    },
-    {
-      "query": "breaking news wire",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 98
-    },
-    {
-      "query": "calgary telus",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 85
-    },
-    {
       "query": "canada tariff pause",
       "impressions": 1,
       "clicks": 0,
       "position": 76
-    },
-    {
-      "query": "cancer vaccine adjuvant",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 92
-    },
-    {
-      "query": "cancer vaccine melanoma",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 50
     },
     {
       "query": "cancer vacines",
@@ -325,46 +91,10 @@
       "position": 87
     },
     {
-      "query": "cnbc cancer vaccine",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 85
-    },
-    {
-      "query": "cointerpro",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 64
-    },
-    {
-      "query": "companies that kept dei",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 95
-    },
-    {
-      "query": "cowboys wire",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 67
-    },
-    {
       "query": "current amount of national debt",
       "impressions": 1,
       "clicks": 0,
       "position": 87
-    },
-    {
-      "query": "current avents",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 94
-    },
-    {
-      "query": "current evetns",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 98
     },
     {
       "query": "current national debt in the us",
@@ -379,10 +109,10 @@
       "position": 90
     },
     {
-      "query": "death row ohio",
+      "query": "dan bilzerian",
       "impressions": 1,
       "clicks": 0,
-      "position": 59
+      "position": 91
     },
     {
       "query": "did best buy get rid of dei",
@@ -391,58 +121,10 @@
       "position": 82
     },
     {
-      "query": "doctors remove 3.1kg stone from man's bladder and claim record",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 11
-    },
-    {
-      "query": "documents show federal surveillance operation in minnesota targeted progressive groups, unions",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 19
-    },
-    {
-      "query": "does china tax billionaires",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 68
-    },
-    {
-      "query": "doj application to restore gun rights",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 18
-    },
-    {
-      "query": "donald trump abraham lincoln",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 95
-    },
-    {
-      "query": "donalds",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 83
-    },
-    {
       "query": "earthquake aftershocks today",
       "impressions": 1,
       "clicks": 0,
       "position": 91
-    },
-    {
-      "query": "execution florida",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 95
-    },
-    {
-      "query": "execution in florida",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 90
     },
     {
       "query": "famous autopsy images",
@@ -451,76 +133,10 @@
       "position": 99
     },
     {
-      "query": "felon gun rights restoration",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 42
-    },
-    {
-      "query": "florida executes",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 83
-    },
-    {
-      "query": "florida house",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 68
-    },
-    {
-      "query": "florida senate",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 87
-    },
-    {
-      "query": "florida state senate",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 89
-    },
-    {
-      "query": "florida wyoming alaska primary results",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 57
-    },
-    {
-      "query": "four hills betting markets",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 72
-    },
-    {
-      "query": "fox news sunday shannon bream",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 71
-    },
-    {
-      "query": "fox shannon bream",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 27
-    },
-    {
       "query": "full autopsy",
       "impressions": 1,
       "clicks": 0,
       "position": 63
-    },
-    {
-      "query": "future aircraft carrier design",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 44
-    },
-    {
-      "query": "georgia detention watch",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 91
     },
     {
       "query": "governor alaska",
@@ -535,34 +151,10 @@
       "position": 64
     },
     {
-      "query": "health canada store",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 9
-    },
-    {
-      "query": "healthcare ceo",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 45
-    },
-    {
       "query": "how many aftershocks today",
       "impressions": 1,
       "clicks": 0,
       "position": 87
-    },
-    {
-      "query": "how many americans are vaccinated",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 86
-    },
-    {
-      "query": "how much debt has america got",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 91
     },
     {
       "query": "how much is the national debt today",
@@ -571,28 +163,10 @@
       "position": 87
     },
     {
-      "query": "human remains found tucson",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 44
-    },
-    {
       "query": "hurricane warning",
       "impressions": 1,
       "clicks": 0,
       "position": 99
-    },
-    {
-      "query": "incumbent senators who lost primaries",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 24
-    },
-    {
-      "query": "ipco investor relations",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 60
     },
     {
       "query": "is america heading towards socialism",
@@ -601,76 +175,10 @@
       "position": 86
     },
     {
-      "query": "is shannon bream still on fox",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 57
-    },
-    {
-      "query": "is the johnson and johnson vaccine mrna",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 98
-    },
-    {
-      "query": "is the us heading towards socialism",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 79
-    },
-    {
-      "query": "is there a firefighter shortage",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 73
-    },
-    {
       "query": "is there a vaccine for cancer",
       "impressions": 1,
       "clicks": 0,
       "position": 75
-    },
-    {
-      "query": "is trump making money off the presidency",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 95
-    },
-    {
-      "query": "jason arday death",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 54
-    },
-    {
-      "query": "jason arday npr",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 18
-    },
-    {
-      "query": "jd vance hometown book response",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 5
-    },
-    {
-      "query": "jeffrey kuntz trump bbc case",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 48
-    },
-    {
-      "query": "john bolton trump iran",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 63
-    },
-    {
-      "query": "kyler murray week 1",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 48
     },
     {
       "query": "latest current affair",
@@ -679,28 +187,10 @@
       "position": 100
     },
     {
-      "query": "legal residents from mexico deportation",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 96
-    },
-    {
       "query": "lifeguard white nose",
       "impressions": 1,
       "clicks": 0,
       "position": 68
-    },
-    {
-      "query": "lindsay clancy news",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 40
-    },
-    {
-      "query": "lindsey graham sister debate",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 97
     },
     {
       "query": "lions bay, bc",
@@ -709,88 +199,16 @@
       "position": 100
     },
     {
-      "query": "lions bay, british columbia",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 89
-    },
-    {
-      "query": "list of current events",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 100
-    },
-    {
-      "query": "lithuania corgi",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 51
-    },
-    {
-      "query": "man hit by train today",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 38
-    },
-    {
-      "query": "miami algae",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 59
-    },
-    {
       "query": "migrants from mexico to usa",
       "impressions": 1,
       "clicks": 0,
       "position": 85
     },
     {
-      "query": "moderna",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 75
-    },
-    {
-      "query": "moderna cancer cure",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 85
-    },
-    {
-      "query": "moderna mrna skin cancer vaccine",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 74
-    },
-    {
-      "query": "moderna news today",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 92
-    },
-    {
-      "query": "moderna vaccine for melanoma",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 98
-    },
-    {
       "query": "most recent hurricane in us",
       "impressions": 1,
       "clicks": 0,
       "position": 81
-    },
-    {
-      "query": "moversedge comcast",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 43
-    },
-    {
-      "query": "mrna cancer therapy",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 66
     },
     {
       "query": "mrna cancer treatment",
@@ -811,12 +229,6 @@
       "position": 65
     },
     {
-      "query": "name of tropical storm today",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 94
-    },
-    {
       "query": "national forest protection",
       "impressions": 1,
       "clicks": 0,
@@ -835,34 +247,10 @@
       "position": 98
     },
     {
-      "query": "next florida governer",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 99
-    },
-    {
-      "query": "oil discovery",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 98
-    },
-    {
       "query": "our national debt today",
       "impressions": 1,
       "clicks": 0,
       "position": 85
-    },
-    {
-      "query": "pfizer moderna",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 97
-    },
-    {
-      "query": "portland derby 2026",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 66
     },
     {
       "query": "present national debt",
@@ -877,28 +265,10 @@
       "position": 85
     },
     {
-      "query": "recent events",
+      "query": "property debt",
       "impressions": 1,
       "clicks": 0,
-      "position": 98
-    },
-    {
-      "query": "reporter today",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 88
-    },
-    {
-      "query": "shannon bream on fox news",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 67
-    },
-    {
-      "query": "shanon breem",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 54
+      "position": 100
     },
     {
       "query": "sigal chattah us attorney",
@@ -907,34 +277,10 @@
       "position": 65
     },
     {
-      "query": "soapbox derby pdx",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 61
-    },
-    {
-      "query": "socialism in the us today",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 92
-    },
-    {
       "query": "the athletic top 100 soccer players",
       "impressions": 1,
       "clicks": 0,
       "position": 73
-    },
-    {
-      "query": "the current national debt",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 89
-    },
-    {
-      "query": "the current news",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 64
     },
     {
       "query": "the window broke",
@@ -943,88 +289,10 @@
       "position": 66
     },
     {
-      "query": "the ‘betting coup’ shaking up horse racing",
+      "query": "the wire newspaper",
       "impressions": 1,
       "clicks": 0,
-      "position": 75
-    },
-    {
-      "query": "therapeutic cancer vaccines",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 87
-    },
-    {
-      "query": "tommy hjohn",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 70
-    },
-    {
-      "query": "tommy jhon",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 72
-    },
-    {
-      "query": "tommy john baseball",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 85
-    },
-    {
-      "query": "tommy john injury baseball",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 92
-    },
-    {
-      "query": "tommy john player",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 79
-    },
-    {
-      "query": "tommy john yankees",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 58
-    },
-    {
-      "query": "tommy johns",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 77
-    },
-    {
-      "query": "tommy.john",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 49
-    },
-    {
-      "query": "trader joe's coming soon",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 73
-    },
-    {
-      "query": "trader joe's store openings",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 94
-    },
-    {
-      "query": "trader joes opening soon",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 69
-    },
-    {
-      "query": "trump approval rating reuters",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 27
+      "position": 81
     },
     {
       "query": "trump asks supreme court",
@@ -1033,52 +301,10 @@
       "position": 55
     },
     {
-      "query": "trump cnn",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 34
-    },
-    {
-      "query": "trump national forest news",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 1
-    },
-    {
-      "query": "trump strait of hormuz map",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 79
-    },
-    {
-      "query": "trump tells reporter to be quiet",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 11
-    },
-    {
-      "query": "tupac autopsy leak",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 28
-    },
-    {
-      "query": "tupac autopsy photos leaked",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 118
-    },
-    {
       "query": "tupac theory",
       "impressions": 1,
       "clicks": 0,
       "position": 95
-    },
-    {
-      "query": "united states vaccination rate",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 99
     },
     {
       "query": "us national debt now",
@@ -1093,40 +319,10 @@
       "position": 99
     },
     {
-      "query": "us vaccination progress",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 84
-    },
-    {
-      "query": "usa sanctions icc",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 87
-    },
-    {
-      "query": "uss abraham lincoln centcom",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 55
-    },
-    {
-      "query": "vaccine for cancer",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 73
-    },
-    {
       "query": "vaccine rate",
       "impressions": 1,
       "clicks": 0,
       "position": 91
-    },
-    {
-      "query": "virgin mary statue",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 58
     },
     {
       "query": "what is national debt today",
@@ -1157,12 +353,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 93
-    },
-    {
-      "query": "what is the name of the latest hurricane",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 77
     },
     {
       "query": "what is the national debt as of today",
@@ -1213,12 +403,6 @@
       "position": 93
     },
     {
-      "query": "what percentage of the us is vaccinated",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 80
-    },
-    {
       "query": "what was national debt now",
       "impressions": 1,
       "clicks": 0,
@@ -1259,138 +443,13 @@
       "impressions": 1,
       "clicks": 0,
       "position": 100
-    },
-    {
-      "query": "who owns oncourse home solutions",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 69
-    },
-    {
-      "query": "why did tara setmayer leave lincoln project",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 88
-    },
-    {
-      "query": "why did tupac wear a bandana",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 90
-    },
-    {
-      "query": "why is there so much seaweed in miami beach",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 86
-    },
-    {
-      "query": "why is there so much seaweed on miami beach",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 78
-    },
-    {
-      "query": "workplace violence news",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 91
-    },
-    {
-      "query": "wyoming house",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 86
-    },
-    {
-      "query": "xsolla news",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 40
-    },
-    {
-      "query": "zz top drummer dies",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 83
     }
   ],
   "newsQueries": [],
-  "strikingDistance": [
-    {
-      "page": "/story/judge-swapped-in-trumps-defamation-case-against-bbc-cf03400ab04ec",
-      "query": "trump bbc lawsuit judge change",
-      "impressions": 14,
-      "clicks": 0,
-      "position": 12.4
-    },
-    {
-      "page": "/story/the-rise-and-fall-of-tony-romo-what-comes-next-for-cbss-180m-nfl-analyst-c1ba75428433b",
-      "query": "rise and fall of tony romo",
-      "impressions": 5,
-      "clicks": 0,
-      "position": 9.6
-    },
-    {
-      "page": "/story/the-rise-and-fall-of-tony-romo-what-comes-next-for-cbss-180m-nfl-analyst-c1ba75428433b",
-      "query": "the rise and fall of tony romo",
-      "impressions": 2,
-      "clicks": 1,
-      "position": 8.5
-    },
-    {
-      "page": "/story/doctors-remove-3-1kg-stone-from-mans-bladder-and-claim-record-c7f22c6fa3b73",
-      "query": "doctors remove 3.1kg stone from man's bladder and claim record",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 11
-    },
-    {
-      "page": "/story/doj-moves-to-restore-gun-rights-for-some-convicted-of-felonies-c42fdc2dbdedc",
-      "query": "doj application to restore gun rights",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 18
-    },
-    {
-      "page": "/story/federal-surveillance-operation-targeted-progressive-groups-unions-in-minnesota-d-c81212c04f1c5",
-      "query": "documents show federal surveillance operation in minnesota targeted progressive groups, unions",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 19
-    },
-    {
-      "page": "/story/in-jd-vances-hometown-comment-on-his-new-memoir-is-hard-to-find-cb3392289511d",
-      "query": "jd vance hometown book response",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 5
-    },
-    {
-      "page": "/story/jason-arday-cambridge-professor-accused-of-plagiarism-is-found-dead-c6aa5b45e8abd",
-      "query": "jason arday npr",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 18
-    },
-    {
-      "page": "/story/trump-tells-cnn-reporter-to-be-quiet-during-oval-office-clash-video-cabb65d7dc027",
-      "query": "trump tells reporter to be quiet",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 11
-    },
-    {
-      "page": "/story/unauthorized-drugs-seized-from-montreal-store-by-health-canada-c171e055a2287",
-      "query": "health canada store",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 9
-    }
-  ],
+  "strikingDistance": [],
   "counts": {
-    "webRows": 218,
+    "webRows": 73,
     "newsRows": 0,
-    "pageQueryRows": 223
+    "pageQueryRows": 73
   }
 }

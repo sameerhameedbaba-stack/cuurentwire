@@ -1,103 +1,30 @@
 {
-  "generatedAt": "2026-09-14T14:22:29.385Z",
+  "generatedAt": "2026-09-21T14:30:07.802Z",
   "window": {
-    "startDate": "2026-08-18",
-    "endDate": "2026-09-14",
+    "startDate": "2026-08-25",
+    "endDate": "2026-09-21",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
     "insufficient": false,
     "window": {
-      "from": "2026-09-04",
-      "to": "2026-09-10"
+      "from": "2026-09-12",
+      "to": "2026-09-18"
     },
     "clicks": {
       "current": 0,
-      "prior": 4,
-      "deltaPct": -100
+      "prior": 0,
+      "deltaPct": null
     },
     "impressions": {
-      "current": 3,
-      "prior": 29,
-      "deltaPct": -89.7
+      "current": 2,
+      "prior": 3,
+      "deltaPct": -33.3
     },
     "explained": true
   },
   "days": [
-    {
-      "date": "2026-08-18",
-      "clicks": 4,
-      "impressions": 290,
-      "ctr": 0.0138,
-      "position": 21.6,
-      "incidents": []
-    },
-    {
-      "date": "2026-08-19",
-      "clicks": 6,
-      "impressions": 410,
-      "ctr": 0.0146,
-      "position": 21.5,
-      "incidents": [
-        "Neon free-tier egress exhausted: archive reads failing, story URLs 5xx",
-        "ISR enabled on all dynamic routes (3e8397a) — TTFB win, quota burn begins"
-      ]
-    },
-    {
-      "date": "2026-08-20",
-      "clicks": 5,
-      "impressions": 93,
-      "ctr": 0.0538,
-      "position": 49.8,
-      "incidents": [
-        "Neon free-tier egress exhausted: archive reads failing, story URLs 5xx"
-      ]
-    },
-    {
-      "date": "2026-08-21",
-      "clicks": 3,
-      "impressions": 72,
-      "ctr": 0.0417,
-      "position": 68.8,
-      "incidents": [
-        "Neon free-tier egress exhausted: archive reads failing, story URLs 5xx",
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
-      ]
-    },
-    {
-      "date": "2026-08-22",
-      "clicks": 2,
-      "impressions": 55,
-      "ctr": 0.0364,
-      "position": 70.8,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
-      ]
-    },
-    {
-      "date": "2026-08-23",
-      "clicks": 0,
-      "impressions": 41,
-      "ctr": 0,
-      "position": 79.7,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
-      ]
-    },
-    {
-      "date": "2026-08-24",
-      "clicks": 1,
-      "impressions": 49,
-      "ctr": 0.0204,
-      "position": 76.1,
-      "incidents": [
-        "Vercel Hobby tier exceeded: whole site 402 for ~37 minutes (13:18-13:55 UTC)",
-        "Retitle wave 1 deployed (b33d8c1): homepage, categories, briefing, latest, most-covered",
-        "News-sitemap integrity: listed URLs gated on archive standing (2515c55)",
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
-      ]
-    },
     {
       "date": "2026-08-25",
       "clicks": 0,
@@ -317,6 +244,104 @@
       "incidents": [
         "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
         "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)"
+      ]
+    },
+    {
+      "date": "2026-09-14",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Search Console ownership record was missing (no google-site-verification TXT on currentwire.us) - RESOLVED 2026-09-15, TXT restored and resolving",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
+      ]
+    },
+    {
+      "date": "2026-09-15",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Search Console ownership record was missing (no google-site-verification TXT on currentwire.us) - RESOLVED 2026-09-15, TXT restored and resolving",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
+      ]
+    },
+    {
+      "date": "2026-09-16",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
+      ]
+    },
+    {
+      "date": "2026-09-17",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
+      ]
+    },
+    {
+      "date": "2026-09-18",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 7.5,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
+      ]
+    },
+    {
+      "date": "2026-09-19",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 81,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
+      ]
+    },
+    {
+      "date": "2026-09-20",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 71,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
+      ]
+    },
+    {
+      "date": "2026-09-21",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
       ]
     }
   ]

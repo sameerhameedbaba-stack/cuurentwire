@@ -1,45 +1,45 @@
 {
-  "generatedAt": "2026-09-14T14:22:29.385Z",
+  "generatedAt": "2026-09-21T14:30:07.802Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-08-18",
-    "endDate": "2026-09-14",
+    "startDate": "2026-08-25",
+    "endDate": "2026-09-21",
     "days": 28
   },
   "minSampleImpressions": 100,
   "surfaces": {
     "web": {
-      "rows": 433,
+      "rows": 85,
       "total": {
-        "urls": 433,
-        "impressions": 1296,
-        "clicks": 40,
-        "ctr": 0.0309,
-        "avgPosition": 37.7,
-        "impressionsPerUrl": 2.99,
-        "clicksPerUrl": 0.09,
+        "urls": 85,
+        "impressions": 200,
+        "clicks": 6,
+        "ctr": 0.03,
+        "avgPosition": 64,
+        "impressionsPerUrl": 2.35,
+        "clicksPerUrl": 0.07,
         "sufficientSample": true
       },
       "templates": {
         "home": {
           "urls": 1,
-          "impressions": 22,
-          "clicks": 10,
-          "ctr": 0.4545,
-          "avgPosition": 15.4,
-          "impressionsPerUrl": 22,
-          "clicksPerUrl": 10,
+          "impressions": 10,
+          "clicks": 6,
+          "ctr": 0.6,
+          "avgPosition": 20.1,
+          "impressionsPerUrl": 10,
+          "clicksPerUrl": 6,
           "sufficientSample": false
         },
         "story": {
-          "urls": 403,
-          "impressions": 1152,
-          "clicks": 16,
-          "ctr": 0.0139,
-          "avgPosition": 39.7,
-          "impressionsPerUrl": 2.86,
-          "clicksPerUrl": 0.04,
+          "urls": 75,
+          "impressions": 175,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": 71.3,
+          "impressionsPerUrl": 2.33,
+          "clicksPerUrl": 0,
           "sufficientSample": true
         },
         "top-10": {
@@ -53,13 +53,13 @@
           "sufficientSample": false
         },
         "top-100": {
-          "urls": 2,
-          "impressions": 4,
-          "clicks": 1,
-          "ctr": 0.25,
-          "avgPosition": 4.8,
-          "impressionsPerUrl": 2,
-          "clicksPerUrl": 0.5,
+          "urls": 1,
+          "impressions": 1,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": 10,
+          "impressionsPerUrl": 1,
+          "clicksPerUrl": 0,
           "sufficientSample": false
         },
         "briefing": {
@@ -73,22 +73,22 @@
           "sufficientSample": false
         },
         "topic": {
-          "urls": 10,
-          "impressions": 23,
-          "clicks": 2,
-          "ctr": 0.087,
-          "avgPosition": 26.4,
-          "impressionsPerUrl": 2.3,
-          "clicksPerUrl": 0.2,
+          "urls": 1,
+          "impressions": 1,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": 60,
+          "impressionsPerUrl": 1,
+          "clicksPerUrl": 0,
           "sufficientSample": false
         },
         "source": {
-          "urls": 2,
-          "impressions": 7,
+          "urls": 0,
+          "impressions": 0,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 8.1,
-          "impressionsPerUrl": 3.5,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
           "clicksPerUrl": 0,
           "sufficientSample": false
         },
@@ -113,13 +113,13 @@
           "sufficientSample": false
         },
         "section": {
-          "urls": 5,
-          "impressions": 15,
-          "clicks": 2,
-          "ctr": 0.1333,
-          "avgPosition": 12.6,
-          "impressionsPerUrl": 3,
-          "clicksPerUrl": 0.4,
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0,
           "sufficientSample": false
         },
         "hub": {
@@ -144,107 +144,56 @@
         },
         "latest": {
           "urls": 1,
-          "impressions": 23,
-          "clicks": 1,
-          "ctr": 0.0435,
-          "avgPosition": 63.3,
-          "impressionsPerUrl": 23,
-          "clicksPerUrl": 1,
+          "impressions": 1,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": 7,
+          "impressionsPerUrl": 1,
+          "clicksPerUrl": 0,
           "sufficientSample": false
         },
         "country": {
-          "urls": 1,
-          "impressions": 3,
-          "clicks": 1,
-          "ctr": 0.3333,
-          "avgPosition": 4,
-          "impressionsPerUrl": 3,
-          "clicksPerUrl": 1,
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0,
           "sufficientSample": false
         },
         "index": {
-          "urls": 2,
-          "impressions": 10,
-          "clicks": 3,
-          "ctr": 0.3,
-          "avgPosition": 25.7,
-          "impressionsPerUrl": 5,
-          "clicksPerUrl": 1.5,
+          "urls": 0,
+          "impressions": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
+          "clicksPerUrl": 0,
           "sufficientSample": false
         },
         "other": {
           "urls": 6,
-          "impressions": 37,
-          "clicks": 4,
-          "ctr": 0.1081,
-          "avgPosition": 6.9,
-          "impressionsPerUrl": 6.17,
-          "clicksPerUrl": 0.67,
+          "impressions": 12,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": 4,
+          "impressionsPerUrl": 2,
+          "clicksPerUrl": 0,
           "sufficientSample": false
         }
       },
-      "detail": {
-        "/business": {
-          "urls": 1,
-          "impressions": 4,
-          "clicks": 1,
-          "ctr": 0.25,
-          "avgPosition": 21,
-          "impressionsPerUrl": 4,
-          "clicksPerUrl": 1,
-          "sufficientSample": false
-        },
-        "/politics": {
-          "urls": 1,
-          "impressions": 4,
-          "clicks": 0,
-          "ctr": 0,
-          "avgPosition": 3.8,
-          "impressionsPerUrl": 4,
-          "clicksPerUrl": 0,
-          "sufficientSample": false
-        },
-        "/technology": {
-          "urls": 1,
-          "impressions": 3,
-          "clicks": 1,
-          "ctr": 0.3333,
-          "avgPosition": 5,
-          "impressionsPerUrl": 3,
-          "clicksPerUrl": 1,
-          "sufficientSample": false
-        },
-        "/climate": {
-          "urls": 1,
-          "impressions": 2,
-          "clicks": 0,
-          "ctr": 0,
-          "avgPosition": 35.5,
-          "impressionsPerUrl": 2,
-          "clicksPerUrl": 0,
-          "sufficientSample": false
-        },
-        "/culture": {
-          "urls": 1,
-          "impressions": 2,
-          "clicks": 0,
-          "ctr": 0,
-          "avgPosition": 2,
-          "impressionsPerUrl": 2,
-          "clicksPerUrl": 0,
-          "sufficientSample": false
-        }
-      }
+      "detail": {}
     },
     "news": {
-      "rows": 1,
+      "rows": 0,
       "total": {
-        "urls": 1,
-        "impressions": 15,
+        "urls": 0,
+        "impressions": 0,
         "clicks": 0,
         "ctr": 0,
-        "avgPosition": 5.1,
-        "impressionsPerUrl": 15,
+        "avgPosition": null,
+        "impressionsPerUrl": 0,
         "clicksPerUrl": 0,
         "sufficientSample": false
       },
@@ -260,12 +209,12 @@
           "sufficientSample": false
         },
         "story": {
-          "urls": 1,
-          "impressions": 15,
+          "urls": 0,
+          "impressions": 0,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 5.1,
-          "impressionsPerUrl": 15,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
           "clicksPerUrl": 0,
           "sufficientSample": false
         },
@@ -589,16 +538,16 @@
       "detail": {}
     },
     "image": {
-      "rows": 12,
+      "rows": 0,
       "total": {
-        "urls": 12,
-        "impressions": 136,
+        "urls": 0,
+        "impressions": 0,
         "clicks": 0,
         "ctr": 0,
-        "avgPosition": 25.5,
-        "impressionsPerUrl": 11.33,
+        "avgPosition": null,
+        "impressionsPerUrl": 0,
         "clicksPerUrl": 0,
-        "sufficientSample": true
+        "sufficientSample": false
       },
       "templates": {
         "home": {
@@ -612,14 +561,14 @@
           "sufficientSample": false
         },
         "story": {
-          "urls": 12,
-          "impressions": 136,
+          "urls": 0,
+          "impressions": 0,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 25.5,
-          "impressionsPerUrl": 11.33,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
           "clicksPerUrl": 0,
-          "sufficientSample": true
+          "sufficientSample": false
         },
         "top-10": {
           "urls": 0,
@@ -769,7 +718,7 @@
     "method": "day-granular GSC data; hours = end of first impression day (UTC) minus publishedAt (upper bound)",
     "windowDays": 14,
     "minStoryAgeHours": 72,
-    "eligibleStories": 3887,
+    "eligibleStories": 1460,
     "discoveredStories": 0,
     "discoveredPct": 0,
     "within24hPct": 0,
@@ -839,354 +788,354 @@
       "sufficientSample": false
     },
     "unknown": {
-      "urls": 402,
-      "impressions": 1151,
-      "clicks": 16,
-      "ctr": 0.0139,
-      "avgPosition": 39.7,
-      "impressionsPerUrl": 2.86,
-      "clicksPerUrl": 0.04,
+      "urls": 75,
+      "impressions": 175,
+      "clicks": 0,
+      "ctr": 0,
+      "avgPosition": 71.3,
+      "impressionsPerUrl": 2.33,
+      "clicksPerUrl": 0,
       "sufficientSample": true
     }
   },
   "archiveSources": {
-    "requestedIds": 383,
+    "requestedIds": 73,
     "matchedIds": 0,
-    "chunks": 2,
-    "failedChunks": 2
+    "chunks": 1,
+    "failedChunks": 1
   },
   "urlSignals": {
-    "stories": 383,
+    "stories": 73,
     "truncated": false,
     "written": true
   },
   "topUrls": [
     {
       "url": "https://currentwire.us/story/us-gross-national-debt-tops-40tn-for-first-time-c9aba8fc57205",
-      "impressions": 54,
+      "impressions": 48,
       "clicks": 0,
-      "position": 90.5
-    },
-    {
-      "url": "https://currentwire.us/story/tommy-john-pitcher-whose-surgery-changed-baseball-dies-at-age-of-83-c5b4db2199c22",
-      "impressions": 38,
-      "clicks": 0,
-      "position": 65.4
-    },
-    {
-      "url": "https://currentwire.us/story/us-firms-that-kept-dei-policies-despite-go-woke-go-broke-threats-thrived-cb7ef6764e2aa",
-      "impressions": 37,
-      "clicks": 0,
-      "position": 72.5
-    },
-    {
-      "url": "https://currentwire.us/story/mrna-cancer-vaccine-succeeded-in-phase-3-melanoma-trial-moderna-and-merck-say-c3680de3baa62",
-      "impressions": 26,
-      "clicks": 0,
-      "position": 77.5
-    },
-    {
-      "url": "https://currentwire.us/latest",
-      "impressions": 23,
-      "clicks": 1,
-      "position": 63.3
+      "position": 90
     },
     {
       "url": "https://currentwire.us/",
-      "impressions": 22,
-      "clicks": 10,
-      "position": 15.4
+      "impressions": 10,
+      "clicks": 6,
+      "position": 20.1
+    },
+    {
+      "url": "https://currentwire.us/story/mrna-cancer-vaccine-succeeded-in-phase-3-melanoma-trial-moderna-and-merck-say-c3680de3baa62",
+      "impressions": 7,
+      "clicks": 0,
+      "position": 83.9
     },
     {
       "url": "https://currentwire.us/story/us-vaccination-rates-fall-again-as-exemptions-continue-to-rise-cdc-data-shows-c28b48b768f19",
-      "impressions": 21,
+      "impressions": 6,
       "clicks": 0,
-      "position": 86.7
+      "position": 83.5
     },
     {
-      "url": "https://currentwire.us/story/judge-swapped-in-trumps-defamation-case-against-bbc-cf03400ab04ec",
-      "impressions": 20,
+      "url": "https://currentwire.us/story/congress-breaks-for-summer-recess-with-little-to-show-c4e2a216c4c37",
+      "impressions": 4,
       "clicks": 0,
-      "position": 14.6
+      "position": 82.8
     },
     {
-      "url": "https://currentwire.us/story/missed-shifts-were-costly-to-this-mcdonalds-an-app-has-fixed-the-problem-cbf96c09e49d0",
-      "impressions": 20,
-      "clicks": 0,
-      "position": 8.4
-    },
-    {
-      "url": "https://currentwire.us/story/tupac-shakur-autopsy-photos-shown-at-murder-trial-after-some-family-members-leav-ce2f2697263f1",
-      "impressions": 17,
-      "clicks": 1,
-      "position": 61.5
-    },
-    {
-      "url": "https://currentwire.us/story/federal-surveillance-operation-targeted-progressive-groups-unions-in-minnesota-d-c81212c04f1c5",
-      "impressions": 14,
-      "clicks": 0,
-      "position": 9.2
-    },
-    {
-      "url": "https://currentwire.us/story/miniluxe-announces-substantial-issuer-bid-sib-for-up-to-cdn-6-000-000-of-its-cla-c2b6d7bd5c938",
-      "impressions": 13,
+      "url": "https://currentwire.us/story/master-ai-project-management-in-six-hours-with-this-learning-bundle-c26c796b9acc2",
+      "impressions": 4,
       "clicks": 0,
       "position": 6
     },
     {
-      "url": "https://currentwire.us/story/san-diego-padres-minor-league-staffer-detained-by-ice-after-arrest-in-texas-cc09df53eff2e",
-      "impressions": 13,
+      "url": "https://currentwire.us/story/powerful-magnitude-7-7-earthquake-kills-at-least-47-in-indonesia-c2aa6f1aaeac9",
+      "impressions": 4,
       "clicks": 0,
-      "position": 8.2
+      "position": 34
     },
     {
-      "url": "https://currentwire.us/story/living-with-nuns-priced-out-of-d-c-young-women-found-low-rent-with-unlikely-room-cecf1c08eb645",
-      "impressions": 12,
+      "url": "https://currentwire.us/story/trump-moves-to-strip-protections-from-44m-acres-of-national-forest-cebfce1c16374",
+      "impressions": 4,
       "clicks": 0,
-      "position": 6.3
+      "position": 88
     },
     {
-      "url": "https://currentwire.us/story/trump-pauses-new-tariffs-on-canada-for-three-days-saying-deal-close-cb2bc3e84ddcb",
-      "impressions": 11,
+      "url": "https://currentwire.us/story/tupac-shakur-autopsy-photos-shown-at-murder-trial-after-some-family-members-leav-ce2f2697263f1",
+      "impressions": 4,
       "clicks": 0,
-      "position": 57.5
+      "position": 76
     },
     {
-      "url": "https://currentwire.us/about",
-      "impressions": 10,
-      "clicks": 3,
-      "position": 1.8
-    },
-    {
-      "url": "https://currentwire.us/story/the-rise-and-fall-of-tony-romo-what-comes-next-for-cbss-180m-nfl-analyst-c1ba75428433b",
-      "impressions": 10,
-      "clicks": 2,
-      "position": 8.3
-    },
-    {
-      "url": "https://currentwire.us/story/trump-rips-fox-news-anchor-shannon-bream-beyond-redemption-c6c48e936f079",
-      "impressions": 10,
+      "url": "https://currentwire.us/news-desk",
+      "impressions": 3,
       "clicks": 0,
-      "position": 56.8
+      "position": 1.3
     },
     {
-      "url": "https://currentwire.us/story/trump-shows-off-article-on-lower-drug-prices-that-says-biden-deserves-credit-not-c22e7dbc37afd",
-      "impressions": 10,
+      "url": "https://currentwire.us/story/appeals-court-upholds-sigal-chattahs-disqualification-as-us-attorney-in-nevada-c9fde21ea6bad",
+      "impressions": 3,
       "clicks": 0,
-      "position": 10.9
-    },
-    {
-      "url": "https://currentwire.us/story/u-s-and-iran-miss-peace-talks-deadline-and-alaska-florida-and-wyoming-primaries-cda731d12333e",
-      "impressions": 10,
-      "clicks": 0,
-      "position": 6.9
-    },
-    {
-      "url": "https://currentwire.us/story/disney-and-abc-sue-trumps-media-regulator-to-stop-early-licence-renewal-cc7f4873dc654",
-      "impressions": 9,
-      "clicks": 0,
-      "position": 6.1
-    },
-    {
-      "url": "https://currentwire.us/story/irans-other-nuclear-weapons-option-plutonium-bombs-c4544cf3835aa",
-      "impressions": 9,
-      "clicks": 0,
-      "position": 6.2
-    },
-    {
-      "url": "https://currentwire.us/story/are-mass-layoffs-coming-most-states-let-you-check-heres-how-c0a12b597b73a",
-      "impressions": 8,
-      "clicks": 1,
-      "position": 16.5
-    },
-    {
-      "url": "https://currentwire.us/story/moderna-merck-mrna-cancer-vaccine-prevents-melanoma-from-returning-c3680de3baa62",
-      "impressions": 8,
-      "clicks": 0,
-      "position": 66.9
-    },
-    {
-      "url": "https://currentwire.us/story/2026-fc-100-kane-yamal-messi-among-best-mens-soccer-players-c28de32636d70",
-      "impressions": 7,
-      "clicks": 1,
-      "position": 61.6
-    },
-    {
-      "url": "https://currentwire.us/terms",
-      "impressions": 7,
-      "clicks": 1,
-      "position": 5.9
-    },
-    {
-      "url": "https://currentwire.us/privacy",
-      "impressions": 7,
-      "clicks": 0,
-      "position": 6.6
-    },
-    {
-      "url": "https://currentwire.us/story/a-new-normal-miami-faces-worsening-seaweed-problem-as-piles-of-algae-wash-up-on-ca87ee658f391",
-      "impressions": 7,
-      "clicks": 0,
-      "position": 46.3
-    },
-    {
-      "url": "https://currentwire.us/story/comcast-is-turning-millions-of-its-routers-into-motion-detectors-c5359aeae93d4",
-      "impressions": 7,
-      "clicks": 0,
-      "position": 14.6
-    },
-    {
-      "url": "https://currentwire.us/story/days-long-telus-outage-leaves-calgary-residents-frustrated-cc663e07c79fd",
-      "impressions": 7,
-      "clicks": 0,
-      "position": 41.3
-    },
-    {
-      "url": "https://currentwire.us/story/dozens-of-trader-joes-stores-opening-soon-heres-where-c5c9d75d69638",
-      "impressions": 7,
-      "clicks": 0,
-      "position": 78.4
+      "position": 80
     },
     {
       "url": "https://currentwire.us/story/how-economic-conditions-are-fueling-a-rise-of-u-s-socialism-c07c762f323d8",
-      "impressions": 7,
+      "impressions": 3,
       "clicks": 0,
-      "position": 79.1
+      "position": 77.3
     },
     {
-      "url": "https://currentwire.us/story/trump-administration-moves-to-open-up-logging-in-national-forests-c1096d579bbad",
-      "impressions": 7,
+      "url": "https://currentwire.us/story/hurricane-lala-hits-hawaii-weakens-to-tropical-storm-cc3db8ae47154",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 67.3
+    },
+    {
+      "url": "https://currentwire.us/story/kaplan-fox-advises-bloom-energy-corporation-nyse-be-investors-to-act-before-the-c5ba09cece226",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 8
+    },
+    {
+      "url": "https://currentwire.us/story/nearly-1-000-aftershocks-followed-indonesia-earthquake-that-killed-at-least-53-ccc0dad95dbb7",
+      "impressions": 3,
       "clicks": 0,
       "position": 80.7
     },
     {
-      "url": "https://currentwire.us/story/unauthorized-drugs-seized-from-montreal-store-by-health-canada-c171e055a2287",
-      "impressions": 7,
-      "clicks": 0,
-      "position": 16.9
-    },
-    {
-      "url": "https://currentwire.us/story/mass-homelessness-is-exposing-the-rot-in-chinese-society-ce7eb6ad94169",
-      "impressions": 6,
-      "clicks": 1,
-      "position": 13
-    },
-    {
       "url": "https://currentwire.us/story/nukes-all-around-a-fraying-u-s-nuclear-umbrella-is-pushing-allies-to-weigh-defen-cbf4fb501dac6",
-      "impressions": 6,
-      "clicks": 1,
-      "position": 21.5
-    },
-    {
-      "url": "https://currentwire.us/story/bbc-verify-speaks-to-woman-who-filmed-ice-agent-pointing-gun-at-her-c30182bf149fe",
-      "impressions": 6,
+      "impressions": 3,
       "clicks": 0,
-      "position": 41.8
+      "position": 7.7
     },
     {
-      "url": "https://currentwire.us/story/believe-the-unbelievable-in-this-market-things-can-be-different-this-time-c336828edcabb",
-      "impressions": 6,
+      "url": "https://currentwire.us/story/trump-administration-moves-to-open-up-logging-in-national-forests-c1096d579bbad",
+      "impressions": 3,
       "clicks": 0,
-      "position": 5.2
+      "position": 94
     },
     {
-      "url": "https://currentwire.us/story/ford-hopes-this-hypercar-will-be-its-next-le-mans-winner-cf3e15aca6f1d",
-      "impressions": 6,
-      "clicks": 0,
-      "position": 32.7
-    },
-    {
-      "url": "https://currentwire.us/story/hurricane-lala-hits-hawaii-weakens-to-tropical-storm-cc3db8ae47154",
-      "impressions": 6,
-      "clicks": 0,
-      "position": 69.5
-    },
-    {
-      "url": "https://currentwire.us/story/nvidias-ai-moat-is-shifting-from-chips-to-capital-c69575c583181",
-      "impressions": 6,
-      "clicks": 0,
-      "position": 14.2
-    },
-    {
-      "url": "https://currentwire.us/story/punished-for-dissent-top-municipal-officials-speak-out-about-working-with-ford-g-c33b5eee16669",
-      "impressions": 6,
-      "clicks": 0,
-      "position": 8.5
-    },
-    {
-      "url": "https://currentwire.us/story/the-fair-hill-five-horse-racings-bizarre-transatlantic-betting-coup-explained-cd5e5f13e8e6f",
-      "impressions": 6,
-      "clicks": 0,
-      "position": 33.2
-    },
-    {
-      "url": "https://currentwire.us/story/trump-announces-temporary-pause-on-new-canada-tariffs-cb2bc3e84ddcb",
-      "impressions": 6,
-      "clicks": 0,
-      "position": 83.2
-    },
-    {
-      "url": "https://currentwire.us/sources",
-      "impressions": 5,
-      "clicks": 2,
-      "position": 6
-    },
-    {
-      "url": "https://currentwire.us/topic/white-house",
-      "impressions": 5,
-      "clicks": 1,
-      "position": 37.2
-    },
-    {
-      "url": "https://currentwire.us/topics",
-      "impressions": 5,
-      "clicks": 1,
-      "position": 45.4
-    },
-    {
-      "url": "https://currentwire.us/editorial-standards",
-      "impressions": 5,
-      "clicks": 0,
-      "position": 24.6
-    },
-    {
-      "url": "https://currentwire.us/news-desk",
-      "impressions": 5,
+      "url": "https://currentwire.us/about",
+      "impressions": 2,
       "clicks": 0,
       "position": 2
     },
     {
-      "url": "https://currentwire.us/source/global-news",
-      "impressions": 5,
+      "url": "https://currentwire.us/editorial-standards",
+      "impressions": 2,
       "clicks": 0,
-      "position": 8.8
+      "position": 4
+    },
+    {
+      "url": "https://currentwire.us/privacy",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 8
+    },
+    {
+      "url": "https://currentwire.us/story/are-mass-layoffs-coming-most-states-let-you-check-heres-how-c0a12b597b73a",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 7
+    },
+    {
+      "url": "https://currentwire.us/story/candace-owens-destroyed-by-andrew-wilson-in-charlie-kirk-debate-caecabf8b8a32",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 73
+    },
+    {
+      "url": "https://currentwire.us/story/harvard-figured-out-how-to-corrupt-young-girls-minds-sean-duffy-tells-daughter-c2cf7caa1c31c",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 83
+    },
+    {
+      "url": "https://currentwire.us/story/how-ultra-processed-foods-impact-our-health-cb4b75a60a4f1",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 86.5
+    },
+    {
+      "url": "https://currentwire.us/story/luigi-mangiones-guilty-plea-explained-case-by-case-48-hours-podcast-c1dd8f2839fef",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 94
+    },
+    {
+      "url": "https://currentwire.us/story/playstations-wireless-gaming-speakers-launch-in-november-c64ce06272b7c",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 54.5
+    },
+    {
+      "url": "https://currentwire.us/story/recess-therapy-creator-on-why-adults-should-bring-child-like-behavior-back-into-cf3d744ca6572",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 80
+    },
+    {
+      "url": "https://currentwire.us/story/satellites-are-watching-us-and-each-other-ceb1660ae3006",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 3.5
+    },
+    {
+      "url": "https://currentwire.us/story/tommy-john-pitcher-whose-surgery-changed-baseball-dies-at-age-of-83-c5b4db2199c22",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 79
+    },
+    {
+      "url": "https://currentwire.us/story/trump-announces-temporary-pause-on-new-canada-tariffs-cb2bc3e84ddcb",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 84.5
+    },
+    {
+      "url": "https://currentwire.us/story/trump-rips-fox-news-anchor-shannon-bream-beyond-redemption-c6c48e936f079",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 83.5
+    },
+    {
+      "url": "https://currentwire.us/story/u-s-and-irans-60-day-mou-expires-what-this-means-what-trump-wants-cd04844f6dd54",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 9
+    },
+    {
+      "url": "https://currentwire.us/story/us-firms-that-kept-dei-policies-despite-go-woke-go-broke-threats-thrived-cb7ef6764e2aa",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 88
+    },
+    {
+      "url": "https://currentwire.us/terms",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 6
+    },
+    {
+      "url": "https://currentwire.us/corrections",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 4
+    },
+    {
+      "url": "https://currentwire.us/latest",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 7
+    },
+    {
+      "url": "https://currentwire.us/story/2026-fc-100-kane-yamal-messi-among-best-mens-soccer-players-c28de32636d70",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 73
+    },
+    {
+      "url": "https://currentwire.us/story/amazon-aims-for-delivery-drones-to-reach-500-us-neighborhoods-by-end-of-2026-c2417ab21c9af",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 71
+    },
+    {
+      "url": "https://currentwire.us/story/america-is-short-millions-of-homes-what-if-you-could-build-one-in-a-factory-like-c58347f49802e",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 77
+    },
+    {
+      "url": "https://currentwire.us/story/australias-game-changing-disability-support-is-in-crisis-what-went-wrong-c8112723c76f4",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 89
+    },
+    {
+      "url": "https://currentwire.us/story/baier-pushes-back-on-trumps-strait-of-hormuz-claim-traffic-has-slowed-to-a-trick-c82eb06a9a061",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 4
+    },
+    {
+      "url": "https://currentwire.us/story/bbc-verify-speaks-to-woman-who-filmed-ice-agent-pointing-gun-at-her-c30182bf149fe",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 82
+    },
+    {
+      "url": "https://currentwire.us/story/can-creditors-make-an-estate-sell-a-house-to-pay-debt-cfff34f0fa052",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 100
+    },
+    {
+      "url": "https://currentwire.us/story/democrats-hold-more-favorable-view-of-socialism-than-capitalism-survey-c92d339f24379",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 96
+    },
+    {
+      "url": "https://currentwire.us/story/details-on-potential-motive-behind-tupacs-murder-c55393f874632",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 95
+    },
+    {
+      "url": "https://currentwire.us/story/dozens-of-trader-joes-stores-opening-soon-heres-where-c5c9d75d69638",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 75
+    },
+    {
+      "url": "https://currentwire.us/story/gas-prices-are-rising-but-drivers-using-this-type-of-fuel-have-it-worse-ca10554e7b929",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 7
+    },
+    {
+      "url": "https://currentwire.us/story/hateful-both-parties-slam-house-candidate-dan-bilzerians-antisemitic-attacks-cfdb707a6ff0e",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 91
+    },
+    {
+      "url": "https://currentwire.us/story/hawaii-under-a-hurricane-warning-as-tropical-storm-lala-takes-aim-ca48fe0f953ad",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 99
+    },
+    {
+      "url": "https://currentwire.us/story/heroic-16-year-old-lifeguard-who-saved-child-recognized-at-white-house-cb6ffc6963e37",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 68
     }
   ],
   "queries": {
     "written": true,
-    "strikingDistance": 10,
-    "webRows": 218,
+    "strikingDistance": 0,
+    "webRows": 73,
     "newsRows": 0,
-    "pageQueryRows": 223
+    "pageQueryRows": 73
   },
   "daily": {
     "written": true,
-    "days": 27,
+    "days": 28,
     "trend": {
       "insufficient": false,
       "window": {
-        "from": "2026-09-04",
-        "to": "2026-09-10"
+        "from": "2026-09-12",
+        "to": "2026-09-18"
       },
       "clicks": {
         "current": 0,
-        "prior": 4,
-        "deltaPct": -100
+        "prior": 0,
+        "deltaPct": null
       },
       "impressions": {
-        "current": 3,
-        "prior": 29,
-        "deltaPct": -89.7
+        "current": 2,
+        "prior": 3,
+        "deltaPct": -33.3
       },
       "explained": true
     }
@@ -1195,8 +1144,8 @@
   "liveDatasetVersion": null,
   "ledgerStories": 8189,
   "warnings": [
-    "news sitemap unavailable: news-sitemap.xml 503",
-    "stats endpoint unavailable: /api/stats/coverage 503",
-    "archive-sources unavailable for 2 of 2 chunks (chunk 1/2: 503)"
+    "news sitemap unavailable: news-sitemap.xml 402",
+    "stats endpoint unavailable: /api/stats/coverage 402",
+    "archive-sources unavailable for 1 of 1 chunks (chunk 1/1: 402)"
   ]
 }

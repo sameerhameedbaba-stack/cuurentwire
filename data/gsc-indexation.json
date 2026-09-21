@@ -1,11 +1,12 @@
 {
-  "generatedAt": "2026-09-14T14:26:10.063Z",
+  "generatedAt": "2026-09-21T14:34:42.454Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "counts": {
     "indexed": 1,
-    "not-crawled": 22,
-    "crawled-not-indexed": 11
+    "not-crawled": 21,
+    "crawled-not-indexed": 11,
+    "blocked": 1
   },
   "rows": [
     {
@@ -145,11 +146,11 @@
     },
     {
       "path": "/health",
-      "bucket": "not-crawled",
+      "bucket": "blocked",
       "verdict": "NEUTRAL",
-      "coverageState": "URL is unknown to Google",
+      "coverageState": "Blocked due to other 4xx issue",
       "indexingState": "INDEXING_STATE_UNSPECIFIED",
-      "lastCrawlTime": null,
+      "lastCrawlTime": "2026-09-17T07:41:46Z",
       "googleCanonical": null
     },
     {
