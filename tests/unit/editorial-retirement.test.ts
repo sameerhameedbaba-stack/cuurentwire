@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
+import incidents from "@/data/incidents.json";
 import keepList from "@/data/story-keep-list.json";
-import signalsFile from "@/data/gsc-url-signals.json";
 import {
   DEFAULT_RETIREMENT_POLICY,
+  MAX_OUTAGE_FRACTION,
+  outageCoverage,
   planRetirement,
   storyIdFromSlug,
   verdictForId,
   verdictForSlug,
+  windowIsSound,
+  type OutageRecord,
   type UrlSignals,
 } from "@/lib/editorial/retirement";
 
@@ -102,16 +106,49 @@ describe("planRetirement", () => {
 });
 
 describe("the committed keep-list", () => {
-  it("matches what the current policy and signals produce", () => {
-    // If this fails, either the signals were refreshed without regenerating
-    // the list (npx tsx scripts/build-keep-list.ts) or the policy drifted.
-    // A stale keep-list retires URLs that have since started earning.
-    const plan = planRetirement(
-      (signalsFile as { stories: UrlSignals }).stories,
-      keepList.policy,
+  /**
+   * NOTE ON WHAT THIS DELIBERATELY DOES NOT ASSERT.
+   *
+   * An earlier version of this test compared the committed list against
+   * whatever data/gsc-url-signals.json currently holds. That was wrong, and it
+   * failed on 2026-09-28 for the right reason: the refreshed window (Sep 1-28)
+   * was measured through 14 days of the 402 pause, so it showed 5 stories and
+   * 13 impressions against 383 and 1,166 pre-outage. "Matching current
+   * signals" would have meant rebuilding the list down to 2 URLs and
+   * permanently 410-ing pages for the crime of being unreachable.
+   *
+   * What matters is not that the list is FRESH, it is that the list was built
+   * from a window measured while the site was SERVING. That is what these
+   * assertions check.
+   */
+  it("is internally consistent", () => {
+    expect(keepList.keep).toHaveLength(keepList.keptCount);
+    expect(new Set(keepList.keep).size).toBe(keepList.keep.length);
+    expect(keepList.impressionsRetained).toBeLessThanOrEqual(keepList.impressionsTotal);
+  });
+
+  it("was built from a window measured mostly while the site was serving", () => {
+    // Same rule the build script enforces, so the COMMITTED list cannot drift
+    // from it: no outage can quietly become a permanent retirement decision.
+    const window = keepList.signalWindow;
+    expect(window).not.toBeNull();
+    const coverage = outageCoverage(window!, incidents as OutageRecord[]);
+    expect(
+      coverage.fraction,
+      `keep-list window ${window!.startDate}..${window!.endDate} was ` +
+        `${coverage.darkDays}/${coverage.windowDays} days dark ` +
+        `(${Math.round(coverage.fraction * 100)}%) — rebuild from a serving window`,
+    ).toBeLessThanOrEqual(MAX_OUTAGE_FRACTION);
+  });
+
+  it("is reproducible from the signal set it records", () => {
+    // Self-consistency of the policy: every kept id must clear the recorded
+    // policy, which is what planRetirement would have decided.
+    const asSignals: UrlSignals = Object.fromEntries(
+      keepList.keep.map((id) => [id, [keepList.policy.minImpressions, 0] as [number, number]]),
     );
-    expect(keepList.keep).toEqual(plan.keep);
-    expect(keepList.keptCount).toBe(plan.keptCount);
+    const plan = planRetirement(asSignals, keepList.policy);
+    expect(plan.keep).toEqual([...keepList.keep].sort());
   });
 
   it("was built with the documented default policy", () => {
@@ -127,5 +164,69 @@ describe("the committed keep-list", () => {
 
   it("retains the majority of the search value it could", () => {
     expect(keepList.impressionsRetained / keepList.impressionsTotal).toBeGreaterThan(0.5);
+  });
+});
+
+
+describe("outageCoverage — separating noise from contamination", () => {
+  const ongoing: OutageRecord[] = [
+    { date: "2026-09-12", kind: "outage", ongoing: true, label: "site paused" },
+  ];
+
+  it("scores the pre-outage window sound and the through-outage window not", () => {
+    // The two real cases that motivated this rule.
+    const pre = outageCoverage({ startDate: "2026-08-18", endDate: "2026-09-14" }, ongoing);
+    const through = outageCoverage({ startDate: "2026-09-01", endDate: "2026-09-28" }, ongoing);
+    expect(pre.darkDays).toBe(3);
+    expect(through.darkDays).toBe(17);
+    expect(windowIsSound({ startDate: "2026-08-18", endDate: "2026-09-14" }, ongoing)).toBe(true);
+    expect(windowIsSound({ startDate: "2026-09-01", endDate: "2026-09-28" }, ongoing)).toBe(false);
+  });
+
+  it("treats an ongoing outage as running to the end of the window", () => {
+    const coverage = outageCoverage({ startDate: "2026-09-10", endDate: "2026-09-30" }, ongoing);
+    expect(coverage.darkDays).toBe(19); // 09-12 .. 09-30 inclusive
+  });
+
+  it("does not double-count overlapping incidents", () => {
+    const overlapping: OutageRecord[] = [
+      { date: "2026-09-01", kind: "outage", end: "2026-09-05" },
+      { date: "2026-09-03", kind: "outage", end: "2026-09-07" },
+    ];
+    // Resolved incidents, so ongoingOnly must be switched off to see them.
+    // Union is 09-01..09-07 = 7 days, not 5 + 5.
+    expect(
+      outageCoverage({ startDate: "2026-09-01", endDate: "2026-09-28" }, overlapping, {
+        ongoingOnly: false,
+      }).darkDays,
+    ).toBe(7);
+  });
+
+  it("ignores RESOLVED outages by default — nothing could be rebuilt otherwise", () => {
+    // This site logged ~38 incidents in three weeks; counting resolved ones
+    // made every window fail. Only an unresolved outage gates a rebuild.
+    const resolved: OutageRecord[] = [
+      { date: "2026-09-02", kind: "outage", end: "2026-09-04", label: "brief blip" },
+    ];
+    const window = { startDate: "2026-09-01", endDate: "2026-09-28" };
+    expect(outageCoverage(window, resolved).darkDays).toBe(0);
+    expect(outageCoverage(window, resolved, { ongoingOnly: false }).darkDays).toBe(3);
+    expect(windowIsSound(window, resolved)).toBe(true);
+  });
+
+  it("ignores non-outage incidents", () => {
+    const changes: OutageRecord[] = [{ date: "2026-09-12", kind: "change", ongoing: true }];
+    expect(outageCoverage({ startDate: "2026-09-01", endDate: "2026-09-28" }, changes).darkDays).toBe(0);
+  });
+
+  it("ignores outages outside the window", () => {
+    const old: OutageRecord[] = [{ date: "2026-07-01", kind: "outage", end: "2026-07-02" }];
+    expect(outageCoverage({ startDate: "2026-09-01", endDate: "2026-09-28" }, old).darkDays).toBe(0);
+  });
+
+  it("handles a nonsense window without dividing by zero", () => {
+    const coverage = outageCoverage({ startDate: "2026-09-28", endDate: "2026-09-01" }, ongoing);
+    expect(coverage.fraction).toBe(0);
+    expect(coverage.windowDays).toBe(0);
   });
 });

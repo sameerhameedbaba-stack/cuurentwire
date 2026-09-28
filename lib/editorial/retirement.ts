@@ -148,3 +148,131 @@ export function planRetirement(
     impressionsTotal,
   };
 }
+
+/**
+ * How much of a measurement window was spent behind an outage.
+ *
+ * WHY THIS EXISTS
+ *
+ * A URL earns no impressions while production answers 402, and that is a fact
+ * about the outage, not about the URL. Rebuilding the keep-list from a window
+ * measured through a long outage would retire pages for being unreachable.
+ *
+ * Measured on 2026-09-28, 14 days into the Hobby pause: the refreshed 28-day
+ * window (Sep 1-28) reported 5 stories and 13 impressions, against 383 and
+ * 1,166 in the window ending Sep 14. Rebuilding would have cut the keep-list
+ * from 123 URLs to 2.
+ *
+ * WHY IT COUNTS ONLY *UNRESOLVED* OUTAGES
+ *
+ * The first attempt at this counted every recorded outage and was useless: this
+ * project logged ~38 incidents in three weeks, including a 37-minute 402 and a
+ * four-URL 500, so the "good" pre-outage window scored 46% dark and the
+ * contaminated one 61%. No threshold separates those, because **this site has
+ * no clean 28-day window in its history.** That is a true fact about the
+ * project, not a bug in the check.
+ *
+ * Grading resolved historical blips is not possible from this data: incidents
+ * are dated by day and carry no severity or duration field, so a 37-minute
+ * site-wide 402 and a four-URL 500 are indistinguishable from a two-week
+ * blackout.
+ *
+ * What IS unambiguous is an outage that has not ended. That is the case where a
+ * measurement must not become a permanent decision, and it is the exact mistake
+ * this guard exists to stop (2026-09-28, 14 days into the pause). Counting
+ * ongoing outages only gives real separation: the window ending 2026-09-14 is
+ * 11% dark, the window ending 2026-09-28 is 61%.
+ *
+ * Resolved outages inside a window still add noise, and this function will
+ * report them when asked (`ongoingOnly: false`) — but they do not gate a
+ * rebuild, because if they did, nothing could ever be rebuilt.
+ */
+export interface SignalWindow {
+  startDate: string;
+  endDate: string;
+}
+
+export interface OutageRecord {
+  date: string;
+  kind: string;
+  ongoing?: boolean;
+  end?: string;
+  label?: string;
+}
+
+/** Inclusive day count between two ISO dates; 0 if they are the wrong way round. */
+function inclusiveDays(startDate: string, endDate: string): number {
+  const start = Date.parse(`${startDate}T00:00:00Z`);
+  const end = Date.parse(`${endDate}T00:00:00Z`);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return 0;
+  return Math.round((end - start) / 86_400_000) + 1;
+}
+
+/**
+ * Fraction of `window` (0..1) covered by outage incidents, plus the incidents
+ * responsible. An `ongoing` incident is treated as running to the window's end,
+ * because that is what an unresolved outage means for a measurement taken now.
+ *
+ * @param ongoingOnly default true — count only outages with no recorded end.
+ *                    Pass false to measure total darkness including resolved
+ *                    incidents, which is useful for reporting but must not gate
+ *                    a rebuild (see the note above).
+ */
+export function outageCoverage(
+  window: SignalWindow,
+  incidents: OutageRecord[],
+  { ongoingOnly = true }: { ongoingOnly?: boolean } = {},
+): { fraction: number; darkDays: number; windowDays: number; outages: OutageRecord[] } {
+  const windowDays = inclusiveDays(window.startDate, window.endDate);
+  if (windowDays === 0) {
+    return { fraction: 0, darkDays: 0, windowDays: 0, outages: [] };
+  }
+
+  const dark = new Set<string>();
+  const outages: OutageRecord[] = [];
+
+  for (const incident of incidents) {
+    if (incident.kind !== "outage") continue;
+    if (ongoingOnly && incident.ongoing !== true) continue;
+    const incidentEnd = incident.ongoing
+      ? window.endDate
+      : (incident.end ?? incident.date);
+    // Clamp to the window.
+    const from = incident.date > window.startDate ? incident.date : window.startDate;
+    const to = incidentEnd < window.endDate ? incidentEnd : window.endDate;
+    const overlap = inclusiveDays(from, to);
+    if (overlap === 0) continue;
+    outages.push(incident);
+    // Union the days so two overlapping incidents are not double-counted.
+    const cursor = new Date(`${from}T00:00:00Z`);
+    for (let i = 0; i < overlap; i++) {
+      dark.add(cursor.toISOString().slice(0, 10));
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+  }
+
+  return {
+    fraction: dark.size / windowDays,
+    darkDays: dark.size,
+    windowDays,
+    outages,
+  };
+}
+
+/**
+ * Above this share of days behind an UNRESOLVED outage, a window is not
+ * evidence about URL value.
+ *
+ * 0.25 sits well clear of both observed cases (11% sound, 61% contaminated),
+ * so it does not need to be precise to be useful.
+ */
+export const MAX_OUTAGE_FRACTION = 0.25;
+
+/** Is this window sound enough to base a permanent retirement decision on? */
+export function windowIsSound(
+  window: SignalWindow,
+  incidents: OutageRecord[],
+  maxFraction: number = MAX_OUTAGE_FRACTION,
+): boolean {
+  return outageCoverage(window, incidents).fraction <= maxFraction;
+}
