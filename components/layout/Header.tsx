@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
+import { IS_STATIC_SITE } from "@/lib/site-mode";
 import { MastheadDate } from "./MastheadDate";
 import { MobileMenu } from "./MobileMenu";
 import { NavBar } from "./NavBar";
@@ -18,25 +19,39 @@ export function Header() {
               viewer's current date, not the build day. */}
           <MastheadDate />
           <div className="flex items-center gap-1">
-            <Link
-              href="/latest"
-              className="rounded-news px-2 py-2 text-xs font-semibold text-muted transition-colors hover:text-ink"
-            >
-              Latest
-            </Link>
-            <Link
-              href="/top-100"
-              className="rounded-news px-2 py-2 text-xs font-semibold text-muted transition-colors hover:text-ink"
-            >
-              Top 100
-            </Link>
-            <Link
-              href="/search"
-              aria-label="Search"
-              className="flex h-11 w-11 items-center justify-center rounded-news text-muted transition-colors hover:bg-wash hover:text-ink"
-            >
-              <Search className="h-4 w-4" aria-hidden />
-            </Link>
+            {/* The static site (GitHub Pages) has no /latest, /top-100 or
+                /search — they need a server. Linking them would put a 404 in
+                the chrome of every page. */}
+            {IS_STATIC_SITE ? (
+              <Link
+                href="/articles"
+                className="rounded-news px-2 py-2 text-xs font-semibold text-muted transition-colors hover:text-ink"
+              >
+                Latest articles
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/latest"
+                  className="rounded-news px-2 py-2 text-xs font-semibold text-muted transition-colors hover:text-ink"
+                >
+                  Latest
+                </Link>
+                <Link
+                  href="/top-100"
+                  className="rounded-news px-2 py-2 text-xs font-semibold text-muted transition-colors hover:text-ink"
+                >
+                  Top 100
+                </Link>
+                <Link
+                  href="/search"
+                  aria-label="Search"
+                  className="flex h-11 w-11 items-center justify-center rounded-news text-muted transition-colors hover:bg-wash hover:text-ink"
+                >
+                  <Search className="h-4 w-4" aria-hidden />
+                </Link>
+              </>
+            )}
             <ThemeToggle />
             <MobileMenu />
           </div>

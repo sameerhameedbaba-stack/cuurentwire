@@ -20,20 +20,14 @@ name: Deploy watch
 # so an open alert always means broken right now.
 # $0 — GitHub's own API, no keys, no external services.
 
+# RETIRED 2026-09-28 — schedule and push triggers removed, manual runs still
+# possible. This read the deployments the VERCEL integration writes and alarmed
+# when pushed code stopped reaching production. Production is now GitHub Pages,
+# deployed by .github/workflows/pages.yml, whose own failure opens an
+# [auto-alert] issue — so a stalled deploy is no longer silent and this watch
+# has no subject. Vercel git deployments are switched off in vercel.json.
 on:
-  schedule:
-    # Every 3 hours. A shipping outage is not urgent by the minute — nothing
-    # breaks for readers — but two days of silence is what this exists to end.
-    - cron: "23 */3 * * *"
   workflow_dispatch:
-  push:
-    # On-demand check after a push: touch .github/triggers/deploy-watch.
-    # Vercel writes the deployment status ~10-100s after a push, so the job
-    # waits before reading rather than racing it.
-    paths:
-      - ".github/triggers/deploy-watch"
-      - ".github/workflows/deploy-watch.yml"
-      - "scripts/deploy-watch*.mjs"
 
 permissions:
   contents: read

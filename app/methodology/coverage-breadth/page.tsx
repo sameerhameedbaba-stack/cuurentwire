@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { IS_STATIC_SITE } from "@/lib/site-mode";
 import { ProsePage } from "@/components/layout/ProsePage";
+import { MethodologyNote } from "@/components/editorial/MethodologyNote";
 import { TIER_WEIGHT, type SourceTier } from "@/config/sources";
 import {
   coverageFactor,
@@ -57,6 +59,7 @@ export default function CoverageBreadthPage() {
         title="What Coverage Breadth Measures"
         intro="Coverage breadth is the CurrentWire ranking signal that asks how many newsrooms independently decided an event was worth reporting. This page defines exactly what gets counted, what does not, and how a count becomes points."
       >
+        <MethodologyNote />
         <p>
           This is a reference page for one of the six signals described on the{" "}
           <Link href="/methodology">methodology page</Link>. It goes into the
@@ -281,10 +284,12 @@ export default function CoverageBreadthPage() {
             </Link>{" "}
             — how reports of one event are grouped before they are counted.
           </li>
-          <li>
-            <Link href="/sources">Sources</Link> — the publications currently
-            represented in CurrentWire coverage.
-          </li>
+          {IS_STATIC_SITE ? null : (
+            <li>
+              <Link href="/sources">Sources</Link> — the publications currently
+              represented in CurrentWire coverage.
+            </li>
+          )}
         </ul>
         <p>
           Think a story&rsquo;s source list is wrong? The{" "}

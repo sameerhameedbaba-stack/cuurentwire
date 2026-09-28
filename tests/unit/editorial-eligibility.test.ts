@@ -31,12 +31,19 @@ function makeArticle(overrides: Partial<Article> = {}): Article {
   };
 }
 
-/** Two free, independent, tech sources — the baseline "clean" story. */
+/**
+ * Two free, independent, tech sources — the baseline "clean" story.
+ *
+ * The second outlet has its OWN headline. Two outlets carrying one identical
+ * headline is the signature of wire syndication, which the gate (correctly)
+ * counts as a single report — see the syndication tests below.
+ */
 function cleanArticles(): Article[] {
   return [
     makeArticle(),
     makeArticle({
       id: "a2",
+      title: "Inside the new AI chip built for data centres",
       source: "The Verge",
       sourceSlug: "the-verge",
       sourceDomain: "theverge.com",
@@ -272,5 +279,100 @@ describe("policy constants", () => {
 
   it("launches only into the low-risk verticals", () => {
     expect([...LAUNCH_CATEGORIES].sort()).toEqual(["business", "science", "technology"]);
+  });
+});
+
+
+describe("assessEligibility — syndication: one report on several sites is ONE source", () => {
+  /** The real 2026-09-28 case: one AP story carried by NPR, Global News, ABC. */
+  function syndicatedOpenAiStory(): Article[] {
+    const headline =
+      "OpenAI says its models engaged with US government websites in new model misbehavior disclosure";
+    return [
+      makeArticle({
+        id: "npr", source: "NPR", sourceDomain: "npr.org", title: headline,
+        url: "https://www.npr.org/2026/09/26/openai", canonicalUrl: "https://www.npr.org/2026/09/26/openai",
+      }),
+      makeArticle({
+        id: "global", source: "Global News", sourceDomain: "globalnews.ca", title: headline,
+        url: "https://globalnews.ca/news/1/openai", canonicalUrl: "https://globalnews.ca/news/1/openai",
+      }),
+      makeArticle({
+        id: "abc", source: "ABC News", sourceDomain: "abcnews.go.com", title: headline,
+        url: "https://abcnews.com/Technology/wireStory/openai-1", canonicalUrl: "https://abcnews.com/Technology/wireStory/openai-1",
+      }),
+    ];
+  }
+
+  it("rejects three domains carrying one identical wire headline", () => {
+    const verdict = assessEligibility(makeCluster(syndicatedOpenAiStory(), { title: "OpenAI disclosure" }));
+    expect(verdict.independentDomains).toBe(3);
+    expect(verdict.independentReports).toBe(1);
+    expect(verdict.syndicatedCopies).toBe(2);
+    expect(verdict.eligible).toBe(false);
+    expect(verdict.reasons).toContain("single-source");
+    expect(verdict.reasons).toContain("syndicated-copies");
+  });
+
+  it("treats an ABC /wireStory/ page as the wire's report even when re-headlined", () => {
+    const articles = [
+      makeArticle({
+        id: "tc", source: "TechCrunch", sourceDomain: "techcrunch.com",
+        title: "Nvidia launches new platform for reining in rogue AI agents",
+        url: "https://techcrunch.com/nvidia", canonicalUrl: "https://techcrunch.com/nvidia",
+      }),
+      makeArticle({
+        id: "abc", source: "ABC News", sourceDomain: "abcnews.go.com",
+        title: "Nvidia unveils security platform to stop AI agents from going rogue",
+        url: "https://abcnews.com/Technology/wireStory/nvidia-1", canonicalUrl: "https://abcnews.com/Technology/wireStory/nvidia-1",
+      }),
+      makeArticle({
+        id: "abc2", source: "ABC News", sourceDomain: "abcnews.go.com",
+        title: "Something else entirely about Nvidia",
+        url: "https://abcnews.com/Business/wireStory/nvidia-2", canonicalUrl: "https://abcnews.com/Business/wireStory/nvidia-2",
+      }),
+    ];
+    const verdict = assessEligibility(makeCluster(articles, { title: "Nvidia platform" }));
+    // TechCrunch + the wire = two genuinely separate reports.
+    expect(verdict.independentReports).toBe(2);
+    expect(verdict.eligible).toBe(true);
+  });
+
+  it("does NOT merge genuinely independent reports with similar headlines", () => {
+    // Real pair, similarity 0.667 — two separate newsrooms.
+    const articles = [
+      makeArticle({
+        id: "cbc", source: "CBC News", sourceDomain: "cbc.ca",
+        title: "SpaceX sends giant Starship into orbit for the first time but ends the flight early",
+        url: "https://www.cbc.ca/starship", canonicalUrl: "https://www.cbc.ca/starship",
+      }),
+      makeArticle({
+        id: "pbs", source: "PBS NewsHour", sourceDomain: "pbs.org",
+        title: "SpaceX's supersized Starship launches into orbit for the first time but flight ends early",
+        url: "https://www.pbs.org/starship", canonicalUrl: "https://www.pbs.org/starship",
+      }),
+    ];
+    const verdict = assessEligibility(makeCluster(articles, { category: "science", title: "Starship" }));
+    expect(verdict.independentReports).toBe(2);
+    expect(verdict.eligible).toBe(true);
+  });
+
+  it("counts a report as free when any carrier of it is free", () => {
+    const headline = "Identical wire headline carried by two outlets";
+    const articles = [
+      makeArticle({
+        id: "wsj", source: "The Wall Street Journal", sourceDomain: "wsj.com", title: headline,
+        url: "https://wsj.com/a", canonicalUrl: "https://wsj.com/a",
+      }),
+      makeArticle({ id: "ap", title: headline, url: "https://apnews.com/a", canonicalUrl: "https://apnews.com/a" }),
+      makeArticle({
+        id: "verge", source: "The Verge", sourceDomain: "theverge.com",
+        title: "A different newsroom's own account of it",
+        url: "https://theverge.com/a", canonicalUrl: "https://theverge.com/a",
+      }),
+    ];
+    const verdict = assessEligibility(makeCluster(articles));
+    expect(verdict.independentReports).toBe(2);
+    expect(verdict.freeSources).toBe(2);
   });
 });

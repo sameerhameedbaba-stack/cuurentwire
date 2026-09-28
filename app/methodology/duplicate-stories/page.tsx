@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ProsePage } from "@/components/layout/ProsePage";
+import { MethodologyNote } from "@/components/editorial/MethodologyNote";
 import {
   CONFLICTING_ACTION_MARGIN,
   CROSS_CATEGORY_MARGIN,
@@ -63,6 +64,7 @@ export default function DuplicateStoriesPage() {
         title="How Duplicate Stories Are Merged"
         intro="When ten newsrooms report one event, CurrentWire shows one story with ten sources instead of ten near-identical headlines. This page explains the rules that decide whether two reports describe the same event — and how often they get it right."
       >
+        <MethodologyNote />
         <p>
           The <Link href="/methodology">methodology page</Link> describes this
           step in a paragraph. This is the detail behind it.

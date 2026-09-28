@@ -8,18 +8,27 @@
  * paused and nothing can be verified on the live site until it returns.
  *
  *   npx tsx scripts/editorial-preview.ts [--limit N] [--brief SLUG]
+ *   npx tsx scripts/editorial-preview.ts --live [--briefs-dir DIR]
+ *
+ * --live        run the REAL ingestion over the curated free RSS feeds
+ *               (config/feeds.ts) instead of the mock provider. Needs outbound
+ *               network; touches no database and no paid API.
+ * --briefs-dir  write one Markdown brief per story that would publish, plus
+ *               one per held story, into DIR. This is the hand-off the daily
+ *               publishing routine writes articles from.
  *
  * Source data: whichever dataset the repo has to hand (data/*.json), plus the
  * real Search Console queries in data/gsc-queries.json for keyword targeting.
  */
 
-import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { buildBrief, renderBrief } from "@/lib/editorial/brief";
 import type { GscQueryRow } from "@/lib/editorial/keywords";
 import { reasonTally, selectDaily } from "@/lib/editorial/selection";
 import { clusterArticles } from "@/lib/news/clustering/cluster";
 import { normalizeArticle } from "@/lib/news/normalization/normalize";
+import { runPipeline } from "@/lib/news/pipeline";
 import { generateMockArticles } from "@/lib/news/providers/mock";
 import type { Article, StoryCluster } from "@/lib/news/types";
 
@@ -64,14 +73,34 @@ function loadQueries(): { web: GscQueryRow[]; striking: GscQueryRow[] } {
   return { web: raw?.webQueries ?? [], striking: raw?.strikingDistance ?? [] };
 }
 
-function main(): void {
+/**
+ * Real clusters from the curated free feeds. The env is set here, before the
+ * pipeline reads it, so a caller cannot accidentally run live ingestion
+ * against a paid provider: only the curated RSS list is switched on.
+ */
+async function loadLiveClusters(): Promise<{ clusters: StoryCluster[]; from: string }> {
+  process.env.NEWS_DATA_MODE = "live";
+  process.env.RSS_CURATED_FEEDS = "on";
+  delete process.env.GNEWS_API_KEY;
+  delete process.env.NEWS_API_KEY;
+  const dataset = await runPipeline(new Date());
+  return {
+    clusters: dataset.clusters,
+    from: `live RSS ingestion (${dataset.articles.length} articles, generated ${dataset.generatedAt})`,
+  };
+}
+
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  const live = args.includes("--live");
+  const briefsDirArg = args.indexOf("--briefs-dir");
+  const briefsDir = briefsDirArg >= 0 ? resolve(args[briefsDirArg + 1]) : undefined;
   const limitArg = args.indexOf("--limit");
   const briefArg = args.indexOf("--brief");
   const limit = limitArg >= 0 ? Number(args[limitArg + 1]) : undefined;
   const briefSlug = briefArg >= 0 ? args[briefArg + 1] : undefined;
 
-  const { clusters, from } = loadClusters();
+  const { clusters, from } = live ? await loadLiveClusters() : loadClusters();
   const { web, striking } = loadQueries();
 
   console.log("CurrentWire — editorial dry run (nothing is written or published)");
@@ -93,8 +122,10 @@ function main(): void {
       `  ${String(i + 1).padStart(2)}. [${story.cluster.category}] ${story.cluster.title}`,
     );
     console.log(
-      `      ${story.verdict.independentDomains} independent, ` +
-        `${story.verdict.freeSources} free to read: ${story.verdict.freeSourceNames.join(", ")}`,
+      `      ${story.verdict.independentReports} independent report(s) across ` +
+        `${story.verdict.independentDomains} site(s)` +
+        (story.verdict.syndicatedCopies > 0 ? ` (${story.verdict.syndicatedCopies} syndicated copy)` : "") +
+        `, ${story.verdict.freeSources} free to read: ${story.verdict.freeSourceNames.join(", ")}`,
     );
   }
   if (selection.shortfall) console.log(`  (${selection.shortfall})`);
@@ -117,6 +148,25 @@ function main(): void {
   }
   console.log("");
 
+  if (briefsDir) {
+    mkdirSync(briefsDir, { recursive: true });
+    const write = (story: (typeof selection.publish)[number], prefix: string, index: number) => {
+      const brief = buildBrief(story.cluster, story.verdict, {
+        webQueries: web,
+        strikingDistance: striking,
+      });
+      const file = join(briefsDir, `${prefix}-${String(index + 1).padStart(2, "0")}-${story.cluster.slug}.md`);
+      writeFileSync(file, renderBrief(brief));
+      return file;
+    };
+    const written = [
+      ...selection.publish.map((story, i) => write(story, "publish", i)),
+      ...selection.review.slice(0, 10).map((story, i) => write(story, "held", i)),
+    ];
+    console.log(`Wrote ${written.length} brief(s) to ${briefsDir}`);
+    return;
+  }
+
   const sample =
     selection.publish.find((s) => s.cluster.slug === briefSlug) ??
     selection.review.find((s) => s.cluster.slug === briefSlug) ??
@@ -138,4 +188,7 @@ function main(): void {
   }
 }
 
-main();
+main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});

@@ -346,12 +346,36 @@ const fmtMs = (ms) => (ms === null || ms === undefined ? "-" : `${ms}ms`);
 const fmt = (v) => (v === null || v === undefined ? "-" : String(v));
 
 const now = new Date().toISOString();
-const pages = [`${BASE}/`, `${BASE}/top-100`];
-const story = await firstLiveStoryUrl();
+/**
+ * The first /article/ URL in the live sitemap that actually answers 200.
+ *
+ * Since 2026-09-28 production is the static GitHub Pages site: original
+ * articles replaced /story/ pages, and /top-100 no longer exists (measuring
+ * it would be measuring a 404). The same rule as firstLiveStoryUrl applies —
+ * never record a vital for an error page — so the URL is probed first.
+ */
+async function firstLiveArticleUrl() {
+  try {
+    const res = await fetch(`${BASE}/sitemap.xml`, { signal: AbortSignal.timeout(30_000) });
+    if (!res.ok) return null;
+    const xml = await res.text();
+    const urls = [...xml.matchAll(/<loc>([^<]*\/article\/[^<]+)<\/loc>/g)].map((m) => m[1]);
+    for (const url of urls.slice(0, 5)) {
+      const probe = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(30_000) });
+      if (probe.status === 200) return url;
+    }
+  } catch (error) {
+    console.warn(`[cwv-check] WARN: could not read the sitemap: ${error.message}`);
+  }
+  return null;
+}
+
+const pages = [`${BASE}/`, `${BASE}/articles`];
+const story = (await firstLiveArticleUrl()) ?? (await firstLiveStoryUrl());
 if (story) pages.push(story);
 else
   console.warn(
-    "[cwv-check] WARN: no live /story/ URL available — checking stable surfaces only",
+    "[cwv-check] WARN: no live article or story URL available — checking stable surfaces only",
   );
 
 // With a key: PSI (CrUX field data + a real Lighthouse score). Without one:

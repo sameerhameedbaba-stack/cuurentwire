@@ -7,15 +7,13 @@ It is SEPARATE from `daily.md` (the SEO/health loop) on purpose: the SEO loop
 measures the site, this one fills it. They can run on different days and
 neither should block the other.
 
-## STATUS: NOT YET ENABLED
+## STATUS
 
-Do not run this routine until the owner says so. As of 2026-09-18 production
-answers 402 (Hobby usage pause, expected until ~2026-09-24 — see `daily.md`),
-so nothing published could be verified live, and an unverifiable publish is
-exactly the failure this project has paid for repeatedly.
-
-When the owner enables it, the first run publishes ONE article, not ten. See
-"First run" below.
+Production moved to GitHub Pages on 2026-09-28 (a static site; Vercel stayed
+402 past its reset and offered only "Upgrade"). The first two articles were
+written by hand in the migration session, through exactly the steps below.
+This routine is the daily continuation of that — enable it only when the owner
+says so, and only once currentwire.us is serving the GitHub Pages site.
 
 ## CLOUD MODE — read first
 
@@ -46,9 +44,45 @@ rejected, plus a sample brief. It writes nothing.
 The gate decides, not you. Do NOT publish a story the gate rejected, and do
 NOT publish one it marked `reviewRequired` — those go to the owner.
 
-### 2. Write
+### 2. Read the reports, and count REPORTS — not websites
 
-For each selected story, take its brief and write the article.
+The brief's "facts confirmed" list comes from RSS headlines and one-line
+summaries, so it is usually thin or empty. To write an article with the
+details, open the free-to-read reports the brief lists and read them. Facts
+are not copyrightable; a publication's wording is. Extract facts, then write
+your own sentences — never copy or lightly reword a report's prose.
+
+While reading, do the one check the gate cannot do: **look at the bylines.**
+The feeds carry no author data, so the gate can only catch syndication by URL
+(`abcnews.com/.../wireStory/`) or by an identical headline. Measured on
+2026-09-28 (the first live run), it still let through:
+
+- an OpenAI story on NPR, Global News and ABC News that was ONE Associated
+  Press article (NPR's byline: "The Associated Press") — rejected;
+- a CBC Starship story whose text was the AP story near word for word, with
+  units converted;
+- CBS stories ending "The Associated Press contributed to this report".
+
+Rules that follow:
+
+- Count distinct REPORTS. Two sites carrying one wire story are one report.
+  If fewer than 2 genuinely separate reports remain, do not write the story.
+- List each report ONCE, e.g. `Associated Press (via PBS NewsHour)`.
+- List only publications you actually read. If a site blocks the fetch (CNBC
+  and Axios returned 403 on 2026-09-28), you cannot cite what it said.
+- "X contributed to this report" means partly X's reporting. Do not count it
+  as fully independent of X.
+- **Check the slate for the same event twice.** Clustering misses reworded
+  coverage: on 2026-09-28 Starship's first orbital flight came through as two
+  separate clusters. Write ONE article from both clusters' reports, never two.
+- If reports disagree on a number (altitude, times, counts), either leave it
+  out or attribute each version. Never pick one silently.
+- When in doubt about a politically charged story, hold it. A short day is a
+  good day.
+
+### 3. Write
+
+For each story that survives step 2, write the article.
 
 **You are given facts, not article text.** The brief deliberately excludes the
 source articles' prose so it cannot be rewritten. Write original sentences.
@@ -73,31 +107,34 @@ Hard rules — these are in the brief too, and they are not negotiable:
 Write the file to `content/articles/<YYYY-MM-DD>/<slug>.json`. The shape and
 the rules the schema enforces are in `content/articles/README.md`.
 
-### 3. Verify before committing
+### 4. Verify before committing
 
 ```
 npx vitest run tests/unit/editorial-article.test.ts   # store must stay valid
 npx tsc --noEmit
-npx eslint app lib components config scripts tests
-npx next build
+npx eslint app lib components config scripts tests site
+node scripts/build-static-site.mjs       # the production build (GitHub Pages)
 ```
 
-`next build` is the real check: it renders every article page, so a broken
-article fails the build rather than the site.
+`build-static-site.mjs` is the real check: it renders every article page, and
+fails on any internal link, sitemap URL or llms.txt URL that does not resolve,
+so a broken article fails the build rather than the site.
 
 If the schema rejects an article, FIX THE ARTICLE. Never relax the schema to
 get a piece out — those rules (2+ independent publications, 2+ free to read,
 attributed quotes) are the product.
 
-### 4. Publish
+### 5. Publish
 
-Commit and push. Publishing is a deploy; the diff is the review surface.
+Commit and push to `main`. The GitHub Pages workflow
+(`.github/workflows/pages.yml`) builds the static site and deploys it; the diff
+is the review surface.
 
 Then verify on the LIVE site: fetch the article URL and confirm 200, the
 canonical is right, and the JSON-LD parses. **Not verified live is not
 published** — do not report an article as published on a build alone.
 
-### 5. Record
+### 6. Record
 
 Write `seo/reports/<today>.md`: what published, what the gate held and why,
 what was rejected, and the keyword target each piece was built around. Keep

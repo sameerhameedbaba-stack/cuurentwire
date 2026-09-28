@@ -4,6 +4,14 @@
 > blocks, each with its own list. They are NOT alternatives — read them in this
 > order and the first one that speaks wins:
 >
+> 000. **2026-09-28 — PRODUCTION MOVES TO GITHUB PAGES.** Supersedes the
+>    outage items below: the fix for the Vercel pause is leaving Vercel, not
+>    waiting. Owner switch-over steps: `seo/reports/2026-09-28.md`. Follow-ups
+>    it leaves: (a) enable the publishing routine (owner); (b) the clustering
+>    miss that split Starship's first orbit into two clusters on 09-28 — the
+>    routine now checks the slate by hand, a same-event guard in
+>    `selectDaily` would be better; (c) `gsc-indexation-check.mjs` still
+>    inspects aggregator URLs (weekly data, no alert — harmless, but stale).
 > 00. **WEEKLY DEEP RUN 2026-09-14** (immediately below, corrected
 >    2026-09-15) — THE SITE IS DOWN on a Hobby-plan usage pause that clears
 >    itself ~2026-09-24; there is NO owner action and NO bill to chase.

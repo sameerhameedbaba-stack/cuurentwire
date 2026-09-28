@@ -49,3 +49,6 @@ IMPLEMENTATION_REPORT.md
 AUDIT_RESPONSE_*.md
 PROJECT_BRIEF*.md
 data/local/
+
+# Static-site build scratch copy (scripts/build-static-site.mjs)
+/.static-build/

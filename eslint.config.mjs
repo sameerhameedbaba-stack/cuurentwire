@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     "**/out/**",
     "**/build/**",
     "**/next-env.d.ts",
+    // Scratch copy made by scripts/build-static-site.mjs.
+    "**/.static-build/**",
   ]),
 ]);
 

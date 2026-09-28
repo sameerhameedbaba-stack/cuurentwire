@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { IS_STATIC_SITE } from "@/lib/site-mode";
 import { ProsePage } from "@/components/layout/ProsePage";
+import { MethodologyNote } from "@/components/editorial/MethodologyNote";
 import { RANKING_WEIGHTS } from "@/lib/news/ranking/score";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { TrustPageJsonLd } from "@/lib/seo/structured-data";
@@ -22,28 +24,54 @@ export default function MethodologyPage() {
       title="How CurrentWire Ranks the News"
       intro="CurrentWire uses a combination of freshness, source authority, breadth of coverage, geographic relevance and the speed at which a story is developing to identify major current-affairs stories."
     >
-      <h2>How stories are compiled</h2>
-      <p>
-        CurrentWire collects stories from publisher RSS feeds and news APIs and
-        compiles them <strong>algorithmically</strong>. There are no human
-        journalists on staff and no AI-generated reporting: headlines and
-        summaries are derived from the metadata publishers provide with their
-        own feeds, and every story links to the original reporting. CurrentWire
-        does not host article bodies. The rules this compilation follows are
-        published in our{" "}
-        <Link href="/editorial-standards">editorial standards</Link>.
-      </p>
+      <MethodologyNote />
+      {IS_STATIC_SITE ? (
+        <>
+        <h2>How stories are chosen</h2>
+        <p>
+          CurrentWire reads publisher RSS feeds and groups reports of the same
+          event together. A story becomes eligible for an original article only
+          when at least two independent publications reported it and at least two
+          of them are free to read. Eligible stories are ranked with the signals
+          below, and the highest-scoring are written up first. The full rules are
+          in our <Link href="/editorial-standards">editorial standards</Link>.
+        </p>
 
-      <h2>The “CurrentWire News Desk” byline</h2>
-      <p>
-        Story pages carry the byline <strong>“Compiled by CurrentWire News
-        Desk”</strong>. This byline does not refer to a person or a newsroom —
-        it identifies the automated compilation described on this page:
-        collecting publisher reports, grouping them into one story and ranking
-        them. The journalism itself belongs to the attributed publishers. The{" "}
-        <Link href="/news-desk">news desk page</Link> sets out in full what that
-        byline does and does not mean.
-      </p>
+        <h2>The &ldquo;CurrentWire News Desk&rdquo; byline</h2>
+        <p>
+          Articles carry the byline <strong>&ldquo;CurrentWire News Desk&rdquo;</strong>.
+          It does not refer to a person: articles are written with AI assistance
+          from the facts the publications agree on, and every article says so.
+          The <Link href="/news-desk">news desk page</Link> sets out in full what
+          that byline does and does not mean.
+        </p>
+        </>
+      ) : (
+        <>
+        <h2>How stories are compiled</h2>
+        <p>
+          CurrentWire collects stories from publisher RSS feeds and news APIs and
+          compiles them <strong>algorithmically</strong>. There are no human
+          journalists on staff and no AI-generated reporting: headlines and
+          summaries are derived from the metadata publishers provide with their
+          own feeds, and every story links to the original reporting. CurrentWire
+          does not host article bodies. The rules this compilation follows are
+          published in our{" "}
+          <Link href="/editorial-standards">editorial standards</Link>.
+        </p>
+
+        <h2>The “CurrentWire News Desk” byline</h2>
+        <p>
+          Story pages carry the byline <strong>“Compiled by CurrentWire News
+          Desk”</strong>. This byline does not refer to a person or a newsroom —
+          it identifies the automated compilation described on this page:
+          collecting publisher reports, grouping them into one story and ranking
+          them. The journalism itself belongs to the attributed publishers. The{" "}
+          <Link href="/news-desk">news desk page</Link> sets out in full what that
+          byline does and does not mean.
+        </p>
+        </>
+      )}
 
       <h2>Ranking</h2>
       <p>

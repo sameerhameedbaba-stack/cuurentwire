@@ -47,8 +47,8 @@ export default function ArticlesIndexPage() {
       {articles.length === 0 ? (
         <p className="mt-8 text-muted">
           No articles published yet.{" "}
-          <Link href="/latest" className="underline underline-offset-2 hover:text-brand-ink">
-            See the latest coverage
+          <Link href="/about" className="underline underline-offset-2 hover:text-brand-ink">
+            Read about CurrentWire
           </Link>
           .
         </p>

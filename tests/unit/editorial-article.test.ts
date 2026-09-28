@@ -125,6 +125,33 @@ describe("publishedArticleSchema — the editorial rules are enforced, not trust
     expect(parseArticle(makeRaw({ body: [{ type: "paragraph", text: "Only one." }] })).ok).toBe(false);
   });
 
+  it('refuses copy that says "sources" (standing site rule)', () => {
+    const result = parseArticle(
+      makeRaw({
+        body: [
+          { type: "paragraph", text: "Several sources confirmed the launch." },
+          { type: "paragraph", text: "Two." },
+          { type: "paragraph", text: "Three." },
+        ],
+      }),
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.join()).toContain("sources");
+  });
+
+  it('allows "open-source" and "open source", which are not attribution', () => {
+    const result = parseArticle(
+      makeRaw({
+        body: [
+          { type: "paragraph", text: "The toolkit is open-source software." },
+          { type: "paragraph", text: "Because it is open source, it runs anywhere." },
+          { type: "paragraph", text: "Three." },
+        ],
+      }),
+    );
+    expect(result.ok).toBe(true);
+  });
+
   it("defaults corrections to an empty list", () => {
     const result = parseArticle(makeRaw());
     expect(result.ok && result.article.corrections).toEqual([]);

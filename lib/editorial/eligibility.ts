@@ -21,7 +21,7 @@
 
 import type { CategoryId } from "@/config/categories";
 import { isFreeToRead, resolveAccess, type SourceAccess } from "@/config/sources";
-import { isPressReleaseMember, sourceMix } from "@/lib/news/coverage-analysis";
+import { isPressReleaseMember, sourceMix, titleSimilarity } from "@/lib/news/coverage-analysis";
 import type { Article, StoryCluster } from "@/lib/news/types";
 
 /**
@@ -105,6 +105,7 @@ const MONEY_ADVICE_TERMS: readonly string[] = [
 /** Why a story was rejected or flagged. Stable machine-readable codes. */
 export type EligibilityReason =
   | "single-source"
+  | "syndicated-copies"
   | "not-enough-free-sources"
   | "press-release-only"
   | "opinion-heavy"
@@ -124,9 +125,17 @@ export interface EligibilityVerdict {
   autoPublish: boolean;
   /** Stable reason codes; empty when the story auto-publishes cleanly. */
   reasons: EligibilityReason[];
-  /** Distinct non-press-release domains backing the story. */
+  /** Distinct non-press-release domains carrying the story. */
   independentDomains: number;
-  /** How many of those are free to read. */
+  /**
+   * Distinct REPORTS behind the story — domains carrying the same wire story
+   * collapse into one. This, not the domain count, is what the 2+ rule
+   * applies to. See `reportingOrigins`.
+   */
+  independentReports: number;
+  /** Carriers that turned out to be copies of another carrier's report. */
+  syndicatedCopies: number;
+  /** Independent reports with at least one free-to-read carrier. */
   freeSources: number;
   /** Free-to-read source names, for the brief's "check it yourself" line. */
   freeSourceNames: string[];
@@ -149,6 +158,87 @@ function independentMembers(articles: Article[]): Article[] {
     out.push(article);
   }
   return out;
+}
+
+/**
+ * Headline similarity at or above which two publications are treated as
+ * carrying ONE report (wire syndication), not two.
+ *
+ * Calibrated 2026-09-28 on real clusters, using titleSimilarity:
+ *
+ *   1.000  NPR / Global News / ABC News — one AP story, headline unchanged
+ *   0.750  ABC News / Global News       — one AP story, re-headlined
+ *   0.667  CBC / PBS NewsHour           — genuinely separate reports
+ *   0.583  CBS News / CNBC              — genuinely separate reports
+ *   0.500  CBS News / TechCrunch        — genuinely separate reports
+ *
+ * 0.85 catches the unchanged-headline case with a wide margin over the most
+ * similar genuinely independent pair. It deliberately does NOT catch the
+ * re-headlined copy at 0.75: moving the line that close to 0.667 would start
+ * merging real reporting, and wrongly rejecting a well-sourced story is not
+ * a fix for wrongly accepting a thin one. The re-headlined case is caught by
+ * the wire-URL rule below when the carrier marks it, and by the writer's
+ * byline check (seo/routines/publish.md) when it does not.
+ */
+export const SYNDICATED_HEADLINE_SIMILARITY = 0.85;
+
+/**
+ * Carriers that mark wire copy in the URL. ABC News publishes Associated
+ * Press (and occasionally Reuters) stories under /wireStory/ — measured on
+ * 2026-09-28, both ABC items in the Nvidia and OpenAI clusters were AP copy
+ * with AP bylines. Such a page is the wire's report, not ABC's.
+ */
+function isWireCopyUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return /(^|\.)abcnews\.(go\.)?com$/i.test(parsed.hostname) && parsed.pathname.includes("/wireStory/");
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Group a story's independent carriers by the REPORT they carry.
+ *
+ * WHY: the product promise is "written from two or more independent
+ * publications". On 2026-09-28 the gate passed an OpenAI story carried by NPR,
+ * Global News and ABC News — three domains, and all three were the same
+ * Associated Press article (NPR's byline read "The Associated Press"). Counting
+ * domains, that is three sources; counting reporting, it is one. Publishing it
+ * would have broken the promise on day one.
+ *
+ * Carriers are merged when (a) the URL marks wire copy — all wire copy in one
+ * story is treated as one report, which is conservative — or (b) their
+ * headlines are near-identical (>= SYNDICATED_HEADLINE_SIMILARITY). RSS feeds
+ * carry no author field (all null, measured), so bylines are not available
+ * here; they are checked by the writer when the reports are read.
+ */
+export function reportingOrigins(articles: Article[]): Article[][] {
+  const members = independentMembers(articles);
+  const parent = members.map((_, i) => i);
+  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+  const union = (a: number, b: number) => {
+    parent[find(a)] = find(b);
+  };
+
+  const wire = members.map((m) => isWireCopyUrl(m.url));
+  const firstWire = wire.indexOf(true);
+  for (let i = 0; i < members.length; i++) {
+    if (wire[i] && firstWire >= 0) union(i, firstWire);
+    for (let j = i + 1; j < members.length; j++) {
+      if (titleSimilarity(members[i].title, members[j].title) >= SYNDICATED_HEADLINE_SIMILARITY) {
+        union(i, j);
+      }
+    }
+  }
+
+  const groups = new Map<number, Article[]>();
+  members.forEach((member, i) => {
+    const root = find(i);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root)!.push(member);
+  });
+  return [...groups.values()];
 }
 
 /**
@@ -195,23 +285,32 @@ export function assessEligibility(
 ): EligibilityVerdict {
   const reasons: EligibilityReason[] = [];
   const independent = independentMembers(cluster.articles);
-  const free = independent.filter((a) => isFreeToRead(a.source, a.sourceDomain));
+  const origins = reportingOrigins(cluster.articles);
+  // A report counts as free when any carrier of it is free to read — the
+  // reader can open that one.
+  const freeOrigins = origins.filter((group) =>
+    group.some((a) => isFreeToRead(a.source, a.sourceDomain)),
+  );
+  const freeCarriers = independent.filter((a) => isFreeToRead(a.source, a.sourceDomain));
   const mix = sourceMix(cluster);
 
   // ── Filter 1: may this run at all? ────────────────────────────────────
   if (mix.total > 0 && independent.length === 0) {
     reasons.push("press-release-only");
   }
-  if (independent.length < MIN_INDEPENDENT_DOMAINS) {
+  if (origins.length < MIN_INDEPENDENT_DOMAINS) {
     reasons.push("single-source");
+    // Name the specific failure when several domains were one report: it is
+    // the case that looks well-sourced and is not.
+    if (independent.length >= MIN_INDEPENDENT_DOMAINS) reasons.push("syndicated-copies");
   }
-  if (free.length < MIN_FREE_SOURCES) {
+  if (freeOrigins.length < MIN_FREE_SOURCES) {
     reasons.push("not-enough-free-sources");
   }
   // A story whose independent coverage is mostly comment rather than
   // reporting has no agreed facts to synthesise from.
   if (
-    independent.length >= MIN_INDEPENDENT_DOMAINS &&
+    origins.length >= MIN_INDEPENDENT_DOMAINS &&
     mix.opinionOrAnalysis > mix.total / 2
   ) {
     reasons.push("opinion-heavy");
@@ -241,8 +340,10 @@ export function assessEligibility(
     autoPublish: eligible && sensitive.length === 0,
     reasons,
     independentDomains: independent.length,
-    freeSources: free.length,
-    freeSourceNames: free.map((a) => a.source),
+    independentReports: origins.length,
+    syndicatedCopies: independent.length - origins.length,
+    freeSources: freeOrigins.length,
+    freeSourceNames: freeCarriers.map((a) => a.source),
   };
 }
 

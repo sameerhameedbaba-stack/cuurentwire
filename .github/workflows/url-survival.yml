@@ -9,9 +9,14 @@ name: URL survival probe
 # during the 2026-08 outages — and comments + closes it on the next green
 # run, mirroring .github/workflows/uptime.yml. The probe itself is unchanged.
 
+# RETIRED 2026-09-28 — schedule removed, manual runs still possible.
+# This checked that every published /story/ URL kept answering 200, on the
+# promise that story URLs were permanent. That promise was deliberately
+# withdrawn when production moved to the static GitHub Pages site: the
+# aggregator's story pages are retired and answer 404 by design (llms.txt now
+# says so publicly). Left scheduled, it would alert every day forever and the
+# [auto-alert] issue would stop meaning "broken right now".
 on:
-  schedule:
-    - cron: "17 6 * * *"
   workflow_dispatch:
 
 permissions:

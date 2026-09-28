@@ -73,6 +73,13 @@ itself.
 **Status 2026-09-15:** the selection layer is built and tested
 (`lib/editorial/`, 52 tests); nothing is deployed, production is still paused.
 
+**Status 2026-09-28:** Vercel did not unpause; production moves to a static
+site on GitHub Pages ($0) — see `seo/MEMORY/2026-09-28-moved-to-github-pages.md`.
+The publishing path, article pages and trust pages are built; two launch
+articles are written. The gate now counts independent REPORTS, not websites
+(wire syndication collapsed). Awaiting the owner's switch-over steps
+(`seo/reports/2026-09-28.md`).
+
 **This document is the master plan.** Daily/weekly runs execute the current
 sprint's [automated] items via BACKLOG.md and report against §5. PLAYBOOK.md
 hard constraints override anything here. Do not re-derive strategy ad hoc —

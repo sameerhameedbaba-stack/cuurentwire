@@ -1,0 +1,152 @@
+name: Deploy site (GitHub Pages)
+
+# Production since 2026-09-28: currentwire.us is a static site served by
+# GitHub Pages. Free for public repositories, cannot be paused for usage, and
+# has no paid tier to fall into — the owner's rule is $0. Vercel's free plan
+# paused the old app (402 DEPLOYMENT_DISABLED) and offered only "Upgrade".
+#
+# Every push to main rebuilds and redeploys. There is deliberately NO paths
+# filter: Actions minutes are free for public repos, a needless build costs
+# nothing, and a wrongly skipped one is how this repo once went three days
+# without shipping (see scripts/vercel-ignore-build.sh). When in doubt, build.
+#
+# ONE-TIME SETUP (owner, in the browser — cannot be done from a workflow):
+#   Settings -> Pages -> Build and deployment -> Source: "GitHub Actions"
+#   Settings -> Pages -> Custom domain: currentwire.us, then "Enforce HTTPS"
+# With Actions-based deploys GitHub ignores the CNAME file in the artifact;
+# the custom domain lives in those settings.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; never cancel one mid-flight (a half-finished Pages
+# deployment is worse than a queued one).
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  NEXT_PUBLIC_SITE_URL: https://currentwire.us
+
+jobs:
+  build:
+    name: Test and build the static site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The deploy guards itself: a failing type check or test blocks it.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      # Prunes the aggregator routes in a scratch copy, builds the static
+      # export, then FAILS if any internal link, sitemap URL or llms.txt URL
+      # points at a page that does not exist, or if the demo banner rendered.
+      - name: Build static site
+        run: node scripts/build-static-site.mjs --out out
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Tell IndexNow (Bing, and through Bing: ChatGPT search, Copilot,
+  # DuckDuckGo) about pages changed in the last two days. The script first
+  # checks that currentwire.us is really serving this site; before the DNS
+  # switch it submits nothing. continue-on-error: an IndexNow hiccup must never
+  # read as a failed deploy (the alert job below keys off build + deploy only).
+  indexnow:
+    name: Notify IndexNow
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # GitHub Pages can take a minute to serve a fresh deployment everywhere.
+      - name: Wait for the new build to be served
+        run: sleep 60
+      - name: Submit changed URLs
+        continue-on-error: true
+        run: node scripts/indexnow-ping.mjs
+
+  # A failed deploy leaves the site on its last good build, which looks
+  # healthy from outside — exactly the silent "production stopped shipping"
+  # failure that cost this repo 49 hours in 2026-08. So a failure opens an
+  # [auto-alert] issue (issue creation emails the owner) and the next good
+  # deploy closes it. This replaces the retired deploy-watch workflow.
+  alert:
+    name: Alert on deploy failure / clear on recovery
+    needs: [build, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@v7
+        env:
+          OUTCOME: ${{ needs.build.result == 'success' && needs.deploy.result == 'success' && 'success' || 'failure' }}
+        with:
+          script: |
+            const title = "[auto-alert] site deploy is failing";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const existing = issues.find((i) => i.title === title);
+            if (process.env.OUTCOME === "failure") {
+              const body = [
+                `The GitHub Pages deploy failed for ${context.sha.slice(0, 7)}.`,
+                `currentwire.us is still serving the last good build, so the site looks up — but nothing pushed since is live.`,
+                `Run: ${runUrl}`,
+              ].join("\n\n");
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, body: `Still failing.\n\n${body}`,
+                });
+              } else {
+                await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body });
+              }
+            } else if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number,
+                body: `Recovered — ${context.sha.slice(0, 7)} built, passed its checks and deployed. Closing.\n\nRun: ${runUrl}`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, state: "closed",
+              });
+            }

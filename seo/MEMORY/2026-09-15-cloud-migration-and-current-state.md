@@ -1,5 +1,10 @@
 # 2026-09-15 — Cloud migration + the current state of everything
 
+> **SUPERSEDED IN PART 2026-09-28 — read `2026-09-28-moved-to-github-pages.md`
+> first.** The Vercel pause did not lift at the reset; production moved to a
+> static site on GitHub Pages ($0). Everything below about Vercel, the
+> aggregator and relaunch timing is history, not current state.
+
 The owner moved the SEO automation from local scheduled tasks (which ran only
 while their PC was on) to **cloud routines**. This memo is the state handoff:
 a cloud agent starts with zero context, so read this before acting on

@@ -1,6 +1,9 @@
 import { ImageResponse } from "next/og";
 
 export const size = { width: 180, height: 180 };
+// A fixed image with no request input — static in both builds, and the
+// static export (GitHub Pages) refuses an icon route that does not say so.
+export const dynamic = "force-static";
 export const contentType = "image/png";
 
 /**

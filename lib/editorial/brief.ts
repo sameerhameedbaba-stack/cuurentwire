@@ -87,7 +87,7 @@ export const AI_DISCLOSURE =
  * These are instructions to the writing step, and they are phrased as hard
  * constraints because that is what they are. Two of them encode lessons this
  * project already paid for: the "sources" wording ban is a standing site rule
- * (PLAYBOOK.md), and the keyword rule exists because stuffing is the failure
+ * (seo/routines/daily.md HARD RULES), and the keyword rule exists because stuffing is the failure
  * mode that a keyword-led brief invites.
  */
 export const WRITING_RULES: readonly string[] = [

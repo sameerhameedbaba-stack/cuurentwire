@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { IS_STATIC_SITE } from "@/lib/site-mode";
 
 export const metadata: Metadata = {
   title: "Page not found",
@@ -14,22 +15,22 @@ export default function NotFound() {
         This story couldn’t be found.
       </h1>
       <p className="mt-4 max-w-md text-base leading-relaxed text-muted">
-        It may have moved, expired, or been removed from the CurrentWire index.
-        News moves fast — the story you’re looking for may simply have aged out
-        of the current window.
+        {IS_STATIC_SITE
+          ? "It may have been one of the automated story summaries CurrentWire used to publish. We retired those deliberately in September 2026 and now publish a small number of original articles each day instead."
+          : "It may have moved, expired, or been removed from the CurrentWire index. News moves fast — the story you’re looking for may simply have aged out of the current window."}
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
         <Link
           href="/"
           className="bg-ink px-5 py-3 text-sm font-bold text-paper transition-colors hover:bg-brand hover:text-white"
         >
-          Go to Top Stories
+          {IS_STATIC_SITE ? "Go to the front page" : "Go to Top Stories"}
         </Link>
         <Link
-          href="/search"
+          href={IS_STATIC_SITE ? "/articles" : "/search"}
           className="border border-ink px-5 py-3 text-sm font-bold transition-colors hover:border-brand hover:text-brand-ink dark:border-rule-strong"
         >
-          Search CurrentWire
+          {IS_STATIC_SITE ? "Read the latest articles" : "Search CurrentWire"}
         </Link>
       </div>
     </div>

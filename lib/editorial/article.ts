@@ -118,6 +118,28 @@ export const publishedArticleSchema = z
         message: `needs at least ${MIN_FREE_SOURCES} sources a reader can open without paying, found ${free}`,
       });
     }
+    // Standing site rule (seo/routines/daily.md, HARD RULES): story copy never says "sources" —
+    // it says "reports" or names the publication. Enforced here so the rule
+    // cannot be forgotten by a writer. Plural only, and not "open sources":
+    // "open-source software" is a licensing term, not attribution.
+    const copy = [
+      article.title,
+      article.dek,
+      ...article.body.flatMap((block) =>
+        block.type === "list"
+          ? block.items
+          : block.type === "quote"
+            ? [block.text, block.attribution]
+            : [block.text],
+      ),
+    ].join(" \n ");
+    if (/(?<!open[\s-])\bsources\b/i.test(copy)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["body"],
+        message: 'copy uses the word "sources" — write "reports" or name the publication (site rule)',
+      });
+    }
     if (article.updatedAt && article.updatedAt < article.publishedAt) {
       ctx.addIssue({
         code: "custom",

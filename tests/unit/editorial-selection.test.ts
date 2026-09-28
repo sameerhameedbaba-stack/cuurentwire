@@ -38,6 +38,8 @@ function makeCluster(
   const members = articles ?? [
     makeArticle(),
     makeArticle({
+      // Its own headline: an identical one would read as wire syndication.
+      title: "Inside the new AI chip built for data centres",
       source: "The Verge",
       sourceSlug: "the-verge",
       sourceDomain: "theverge.com",
