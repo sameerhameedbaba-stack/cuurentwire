@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { IS_STATIC_SITE } from "@/lib/site-mode";
 import { ProsePage } from "@/components/layout/ProsePage";
+import { MethodologyNote } from "@/components/editorial/MethodologyNote";
 import { SOURCES, TIER_WEIGHT, type SourceTier } from "@/config/sources";
 import {
   PRESS_RELEASE_AUTHORITY_MULTIPLIER,
@@ -61,11 +63,17 @@ export default function PublisherTiersPage() {
         title="Publisher Authority Tiers"
         intro="Every publication CurrentWire reads sits in one of three authority tiers. Tiers describe journalistic standing and reach — never political orientation. This page is the reference for what they mean, what they are worth, and what they deliberately do not do."
       >
+        <MethodologyNote />
         <p>
           Source authority is one of the six signals described on the{" "}
           <Link href="/methodology">methodology page</Link>. This page covers
-          the tier system behind it. For the publications currently appearing in
-          CurrentWire coverage, see <Link href="/sources">Sources</Link>.
+          the tier system behind it.
+          {IS_STATIC_SITE ? null : (
+            <>
+              {" "}For the publications currently appearing in CurrentWire
+              coverage, see <Link href="/sources">Sources</Link>.
+            </>
+          )}
         </p>
 
         <h2>The three tiers</h2>
@@ -208,11 +216,21 @@ export default function PublisherTiersPage() {
             or agreement in either direction.
           </li>
           <li>
-            <strong>Not a filter.</strong> Tier C reports appear in{" "}
-            <Link href="/latest">Latest</Link>, in search, on their
-            publisher&rsquo;s own page and in the sitemaps exactly like any
-            other. Tier affects one of six signals, worth at most{" "}
-            {RANKING_WEIGHTS.authority} of 100 points.
+            <strong>Not a filter.</strong>{" "}
+            {IS_STATIC_SITE ? (
+              <>
+                A Tier C report counts toward a story&rsquo;s independent
+                publications exactly like any other. Tier affects one of six
+                signals, worth at most {RANKING_WEIGHTS.authority} of 100 points.
+              </>
+            ) : (
+              <>
+                Tier C reports appear in <Link href="/latest">Latest</Link>, in
+                search, on their publisher&rsquo;s own page and in the sitemaps
+                exactly like any other. Tier affects one of six signals, worth at
+                most {RANKING_WEIGHTS.authority} of 100 points.
+              </>
+            )}
           </li>
         </ul>
 
@@ -234,10 +252,12 @@ export default function PublisherTiersPage() {
             </Link>{" "}
             — how one event&rsquo;s reports become one story.
           </li>
-          <li>
-            <Link href="/sources">Sources</Link> — publications currently
-            represented, grouped by tier.
-          </li>
+          {IS_STATIC_SITE ? null : (
+            <li>
+              <Link href="/sources">Sources</Link> — publications currently
+              represented, grouped by tier.
+            </li>
+          )}
         </ul>
         <p>
           A publication placed in the wrong tier, or named incorrectly? The{" "}

@@ -19,6 +19,7 @@ on:
 permissions:
   contents: read
   issues: write
+  actions: write # re-enable sibling scheduled workflows (last step)
 
 jobs:
   check:
@@ -28,8 +29,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # The static site (GitHub Pages, production since 2026-09-28). The old
+      # scripts/seo-health.mjs checks the aggregator's surfaces — news and
+      # archive sitemaps, /api/stats, per-section feeds, /top-100 — which the
+      # static site does not have, so it would fail every day and the alert
+      # would stop meaning anything. It is kept for the dormant Vercel app.
       - name: Run SEO health check
-        run: node scripts/seo-health.mjs
+        run: node scripts/seo-health-static.mjs
       - name: Open or update the alert issue
         if: failure()
         uses: actions/github-script@v7
@@ -74,3 +80,20 @@ jobs:
                 issue_number: existing.number, state: "closed",
               });
             }
+      - name: Re-enable every scheduled workflow
+        # GitHub auto-disables scheduled workflows on public repos after 60
+        # days of repository inactivity. This step re-arms every scheduled
+        # workflow on each run. It moved here from url-survival.yml and
+        # surface-coherence.yml on 2026-09-28, when those two were retired
+        # with the aggregator: uptime.yml and seo-health.yml now carry the
+        # same step, so the two re-arm each other and no single disable can
+        # take the guard down. tests/unit/gsc-crawl-freshness.test.ts fails if
+        # a scheduled workflow is missing from either list. Best-effort.
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for wf in bluesky-post cwv gsc gsc-crawl-freshness pages seo-health uptime; do
+            gh workflow enable "$wf.yml" || true
+          done

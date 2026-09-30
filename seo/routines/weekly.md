@@ -4,6 +4,26 @@ This file IS the instruction set for the "CurrentWire SEO weekly deep run"
 cloud routine (the cloud prompt just points here; edit this file to change
 the routine). It supersedes the retired local scheduled task.
 
+## PRODUCTION IS A STATIC SITE ON GITHUB PAGES (from 2026-09-28)
+
+Read the matching block at the top of `seo/routines/daily.md` first — it
+overrides the aggregator-era instructions here wherever they conflict. For the
+weekly run specifically:
+
+- Health: `node scripts/seo-health-static.mjs`. The site is up only when the
+  home page carries `<meta name="cw-site" content="static">`.
+- Audit score: score the static site that exists — articles, sections, trust
+  pages, sitemap/RSS/llms.txt. Do not deduct for aggregator surfaces
+  (/top-100, /latest, /story/, news and archive sitemaps) that were retired on
+  purpose; their absence is the design, not a regression.
+- Scoreboard: articles published this week, and how many stories the gate
+  cleared vs held vs rejected (and why), alongside the GSC and GA4 numbers.
+  A week of fewer than ten a day is fine; a week of zero is an owner item
+  (is the publishing routine enabled?).
+- Search Console data for the next ~4 weeks spans the outage and the move.
+  Treat any decline before the switch as the outage, not a verdict on the
+  new site.
+
 ## CLOUD MODE — read first
 
 - You run in Anthropic's cloud on a fresh clone of this repo (repo root =
@@ -11,7 +31,8 @@ the routine). It supersedes the retired local scheduled task.
   the owner's PC. Every dashboard-only step below goes to the owner
   checklist — never attempt logins.
 - FIRST read seo/MEMORY/2026-09-15-cloud-migration-and-current-state.md.
-- **PAUSED-SITE MODE:** if https://currentwire.us/ answers 503 **or 402**,
+- **PAUSED-SITE MODE:** if https://currentwire.us/ answers 503 **or 402**, or
+  200 without the static-site marker,
   produce the weekly scoreboard anyway — status of the pause, days down, the latest GSC
   numbers WITH the outage caveat, TXT-record presence (DNS query), and the
   single most important owner decision pending. Skip the audit score (say

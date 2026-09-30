@@ -1,8 +1,15 @@
 /**
  * Bluesky auto-poster for @currentwire.bsky.social.
  *
- * Every run posts AT MOST ONE story: the newest item in the site's /rss
- * feed that the account has not already posted. Dedup is stateless — the
+ * Every run posts AT MOST ONE story: the newest item in the site's feed
+ * that the account has not already posted.
+ *
+ * FEED: /rss.xml since 2026-09-28. The site moved to a static GitHub Pages
+ * build that publishes original articles; the aggregator's extensionless
+ * /rss no longer exists there (a static host picks Content-Type from the file
+ * extension). Article URLs (/article/<slug>) carry no cluster-id token, so
+ * dedupKey falls back to the URL — which is stable, because an article's slug
+ * never changes after publication — plus the headline key below. Dedup is stateless — the
  * account's own recent feed is the ledger (the story URL lives in each
  * post's external-embed uri), so there is no state file and no commit-back.
  * The ledger is keyed by CLUSTER ID rather than URL, because a rewritten
@@ -30,6 +37,7 @@ const IDENTIFIER = process.env.BLUESKY_IDENTIFIER || "currentwire.bsky.social";
 import { dedupKey, headlineAlreadyPosted } from "./bluesky-post-lib.mjs";
 
 const SITE = (process.env.SITE_ORIGIN || "https://currentwire.us").replace(/\/$/, "");
+const FEED_PATH = process.env.FEED_PATH || "/rss.xml";
 const PASSWORD = process.env.BLUESKY_APP_PASSWORD;
 
 /** Bluesky post text limit is 300 graphemes; stay comfortably under it. */
@@ -188,7 +196,7 @@ for (const entry of feed.feed ?? []) {
   if (text) postedTexts.push(text);
 }
 
-const rssResponse = await fetch(`${SITE}/rss`);
+const rssResponse = await fetch(`${SITE}${FEED_PATH}`);
 const rss = await rssResponse.text();
 const items = [...rss.matchAll(/<item>([\s\S]*?)<\/item>/g)]
   .slice(0, RSS_DEPTH)
@@ -203,7 +211,7 @@ if (items.length === 0) {
   // A feed that yields nothing is a broken fetch, not a quiet day — fail
   // loudly so the run goes red instead of green-and-silent.
   console.error(
-    `bluesky-post: /rss yielded no items (status ${rssResponse.status}, ` +
+    `bluesky-post: ${FEED_PATH} yielded no items (status ${rssResponse.status}, ` +
       `body starts: ${JSON.stringify(rss.slice(0, 200))})`,
   );
   process.exit(1);

@@ -408,3 +408,69 @@ export function trustPageSchema({
 export function TrustPageJsonLd(props: Parameters<typeof trustPageSchema>[0]) {
   return <JsonLd data={trustPageSchema(props)} />;
 }
+
+/**
+ * NewsArticle for an ORIGINAL CurrentWire article (the slim relaunch).
+ *
+ * This is the one place the file-header rule above is deliberately inverted,
+ * and the inversion is the point of the 2026-09-15 pivot. On a `/story/` page
+ * CurrentWire summarises someone else's reporting and must never claim to be
+ * its publisher. On an `/article/` page CurrentWire wrote the piece: the text
+ * is ours, so `author` and `publisher` are ours, honestly.
+ *
+ * What stays true either way: `isBasedOn` credits every publication the piece
+ * was researched from, and `citation` names them, so the provenance of the
+ * FACTS is never hidden behind our byline.
+ *
+ * The author is the News Desk, an Organization — never an invented person.
+ * Owner decision, 2026-09-15: no fake human bylines.
+ */
+export function OriginalArticleJsonLd({
+  article,
+}: {
+  article: {
+    slug: string;
+    title: string;
+    dek: string;
+    category: keyof typeof CATEGORIES;
+    publishedAt: string;
+    updatedAt?: string;
+    sources: { name: string; url: string }[];
+  };
+}) {
+  const articleUrl = `${siteConfig.url}/article/${article.slug}`;
+  return (
+    <JsonLd
+      data={{
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        headline: article.title,
+        description: article.dek,
+        articleSection: CATEGORIES[article.category].label,
+        datePublished: article.publishedAt,
+        dateModified: clampDateModified(
+          article.publishedAt,
+          article.updatedAt ?? article.publishedAt,
+        ),
+        url: articleUrl,
+        mainEntityOfPage: articleUrl,
+        image: [`${siteConfig.url}/logo-600.png`],
+        author: {
+          "@type": "Organization",
+          name: "CurrentWire News Desk",
+          url: `${siteConfig.url}/news-desk`,
+        },
+        publisher: PUBLISHER_ORGANIZATION,
+        publishingPrinciples: `${siteConfig.url}/editorial-standards`,
+        correctionsPolicy: `${siteConfig.url}/corrections`,
+        isBasedOn: article.sources.map((s) => s.url),
+        citation: article.sources.map((s) => ({
+          "@type": "CreativeWork",
+          name: s.name,
+          url: s.url,
+        })),
+        isPartOf: PART_OF_WEBSITE,
+      }}
+    />
+  );
+}

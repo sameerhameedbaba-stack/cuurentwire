@@ -4,6 +4,42 @@ This file IS the instruction set for the "CurrentWire SEO daily loop" cloud
 routine (the cloud prompt just points here; edit this file to change the
 routine). It supersedes the retired local scheduled task of the same name.
 
+## PRODUCTION IS A STATIC SITE ON GITHUB PAGES (from 2026-09-28) — read first
+
+Vercel's free plan paused the old aggregator (402 from 2026-09-14) and did
+NOT lift at the ~2026-09-24 reset; its only offer was "Upgrade", refused under
+the $0 rule. Production moved to a static export served free by GitHub Pages:
+original articles (`content/articles/`), section pages, trust pages, sitemap,
+RSS and llms.txt. Built by `node scripts/build-static-site.mjs`, deployed by
+`.github/workflows/pages.yml` on every push to `main`. See
+`seo/MEMORY/2026-09-28-moved-to-github-pages.md`.
+
+This OVERRIDES the aggregator-era instructions further down wherever they
+conflict:
+
+- **Is it up?** It is up when https://currentwire.us/ answers 200 AND the
+  home page carries `<meta name="cw-site" content="static">`. Anything else —
+  402, 404, or a 200 without the marker (DNS still pointing at Vercel, a
+  parking page) — is WATCHDOG MODE below.
+- **Health:** run `node scripts/seo-health-static.mjs` (NOT
+  `scripts/seo-health.mjs`, which checks aggregator surfaces that no longer
+  exist and will fail every time).
+- **Write path heartbeat:** the newest article's date — `<lastBuildDate>` in
+  https://currentwire.us/rss.xml, which is the newest article, never the build
+  clock. Not the news sitemap (retired).
+- **Crawl sample:** 1-2 newest `/article/` pages — canonical, NewsArticle
+  JSON-LD parses, no noindex, AI-assistance notice, 2+ publication links.
+  `/story/` URLs answer 404 by design and are NOT a regression.
+- **Retired monitors:** url-survival, surface-coherence and deploy-watch have
+  no schedule any more. Deploy failures now open "[auto-alert] site deploy is
+  failing" from pages.yml.
+- **One-time cleanup, once the switch is verified live:** close the open
+  `[auto-alert]` issues that belong to the retired monitors or to the Vercel
+  outage (url-survival, surface-coherence, deploy-watch, and the 402-era
+  uptime/seo-health issues if their own workflows have not already closed
+  them on recovery), each with a one-line comment naming the move. After that,
+  an open auto-alert issue means "broken right now" again.
+
 ## CLOUD MODE — read first
 
 - You run in Anthropic's cloud on a fresh clone of this repo; the repo root
@@ -13,13 +49,18 @@ routine). It supersedes the retired local scheduled task of the same name.
   report — never attempt a login or dashboard yourself.
 - FIRST read seo/MEMORY/2026-09-15-cloud-migration-and-current-state.md.
 - **PAUSED-SITE / WATCHDOG MODE:** if https://currentwire.us/ answers 503
-  **or 402**, do NOT run the full loop. Instead: record the status codes of /
-  and /archive-sitemap.xml; check the google-site-verification TXT record
+  **or 402**, or answers 200 WITHOUT the static-site marker, do NOT run the
+  full loop. Instead: record the status codes of / and /sitemap.xml; check the google-site-verification TXT record
   (e.g. `dig TXT currentwire.us +short` or an equivalent DNS query) and
   report whether it is present; note the newest data/gsc-*.json numbers with
   the outage caveat; write a SHORT dated seo/reports/<today>.md; commit and
   push it; list owner-only items. A paused day is a quiet report, not an
   error, and never a reason to try to unpause anything.
+- **SUPERSEDED 2026-09-28 — kept for the record.** The pause did not lift at
+  the reset; the resolution is the move to GitHub Pages above, not waiting.
+  Until the owner has switched DNS, a 402 still means "Vercel is still
+  answering", still NOT an unpaid invoice, and still no billing alarm. The
+  original rule follows.
 - **402 DEPLOYMENT_DISABLED IS EXPECTED UNTIL ~2026-09-24 — DO NOT RAISE A
   BILLING ALARM.** Verified by the owner on the Vercel dashboard 2026-09-15:
   there is **no unpaid invoice**; every invoice reads Paid (August: Pro
@@ -104,8 +145,11 @@ day where nothing ships and nothing breaks is a GOOD day.
    decline outranks all other work: investigate, append the cause to
    data/incidents.json, say so in one plain sentence. You may dispatch
    gsc.yml at most once per day (push a change to .github/triggers/gsc).
-3. **Health and write path.** Run `node scripts/seo-health.mjs` against
-   production. Any failure is top priority. Confirm the newest news-sitemap
+3. **Health and write path.** Run `node scripts/seo-health-static.mjs`
+   against production (static site — see the top of this file; the old
+   `seo-health.mjs` is aggregator-only). Any failure is top priority. The
+   write-path heartbeat is now rss.xml's lastBuildDate. [Aggregator era:]
+   Confirm the newest news-sitemap
    publication_date is recent.
 4. **Crawl sample.** 2-3 new /story/ pages and 1-2 section pages: canonical
    correct, JSON-LD parses, no accidental noindex, sane category. File

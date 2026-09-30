@@ -218,6 +218,38 @@ NOT open a billing item, do NOT ask the owner to check for a bill, and do NOT
 propose Upgrade. The operative rule lives in `seo/routines/daily.md`
 (CLOUD MODE).
 
+## The cron cadence is a cost control (set 2026-09-28) — read before changing it
+
+`vercel.json` runs `/api/cron/news-refresh` **once a day** (`0 10 * * *`). It
+used to run every 15 minutes (`0,15,30,45 * * * *`), and that is what paused
+the site.
+
+Each run ingests ~100 feeds (Fluid CPU), persists the dataset to Neon (DB
+compute), and then calls `revalidatePath()` across the ISR surfaces *and*
+per-story paths. At 96 runs a day that is where the 4.8M ISR writes against a
+200K allowance came from — **not** from pages expiring naturally.
+`/story/[slug]` sits on `revalidate = 2592000` (30 days), so natural expiry was
+never the problem. The cron was.
+
+The arithmetic, which is the whole argument:
+
+| cadence | runs/day | est. ISR writes/cycle | Hobby cap |
+|---|---|---|---|
+| every 15 min (old) | 96 | ~4.8M | 200K |
+| every 6 hours | 4 | ~200K | 200K — at the cap, no margin |
+| **daily (current)** | **1** | **~50K** | 200K — ~25% used |
+
+Daily was chosen over 6-hourly because landing exactly on the cap is the same
+as failing: the site pauses and nothing serves. Aggregation is no longer the
+product (see the SCOPE DECISION in STRATEGY.md) — the product is ~10 original
+articles a day, published as commits, which cost nothing per view and do not
+touch this cron at all.
+
+**Never restore a sub-hourly cadence to make `/latest` fresher.** A fresher
+`/latest` on a paused site is worth nothing. If the legacy surfaces need to be
+more current than daily, the answer is to make them static or retire them, not
+to speed the cron back up.
+
 ## Owner time budget (standing rule, set 2026-08-19)
 
 The owner spends AT MOST 15-20 minutes per week on SEO, all of it on the

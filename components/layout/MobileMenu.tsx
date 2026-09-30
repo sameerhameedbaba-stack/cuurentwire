@@ -4,6 +4,7 @@ import { Menu, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { siteConfig } from "@/config/site";
+import { IS_STATIC_SITE } from "@/lib/site-mode";
 
 /** Accessible mobile navigation drawer (native <dialog>, focus-trapped). */
 export function MobileMenu() {
@@ -57,16 +58,19 @@ export function MobileMenu() {
             </button>
           </div>
 
-          <div className="border-b border-rule px-4 py-3">
-            <Link
-              href="/search"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2 rounded-news border border-rule bg-surface px-3 py-2.5 text-sm text-muted"
-            >
-              <Search className="h-4 w-4" aria-hidden />
-              Search {siteConfig.name}
-            </Link>
-          </div>
+          {/* No /search on the static site — it needs a server. */}
+          {IS_STATIC_SITE ? null : (
+            <div className="border-b border-rule px-4 py-3">
+              <Link
+                href="/search"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-news border border-rule bg-surface px-3 py-2.5 text-sm text-muted"
+              >
+                <Search className="h-4 w-4" aria-hidden />
+                Search {siteConfig.name}
+              </Link>
+            </div>
+          )}
 
           <nav aria-label="Mobile primary" className="flex-1 overflow-y-auto px-2 py-2">
             <ul>
@@ -81,24 +85,29 @@ export function MobileMenu() {
                   </Link>
                 </li>
               ))}
-              <li className="mt-2 border-t border-rule pt-2">
-                <Link
-                  href="/top-10"
-                  onClick={() => setOpen(false)}
-                  className="block rounded-news px-3 py-3 text-base font-bold text-brand-ink hover:bg-wash"
-                >
-                  Top 10 Today
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/top-100"
-                  onClick={() => setOpen(false)}
-                  className="block rounded-news px-3 py-3 text-base font-bold text-brand-ink hover:bg-wash"
-                >
-                  Top 100 Right Now
-                </Link>
-              </li>
+              {/* Aggregator rankings — not built for the static site. */}
+              {IS_STATIC_SITE ? null : (
+                <>
+                  <li className="mt-2 border-t border-rule pt-2">
+                    <Link
+                      href="/top-10"
+                      onClick={() => setOpen(false)}
+                      className="block rounded-news px-3 py-3 text-base font-bold text-brand-ink hover:bg-wash"
+                    >
+                      Top 10 Today
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/top-100"
+                      onClick={() => setOpen(false)}
+                      className="block rounded-news px-3 py-3 text-base font-bold text-brand-ink hover:bg-wash"
+                    >
+                      Top 100 Right Now
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </nav>
         </div>

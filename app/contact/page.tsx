@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { IS_STATIC_SITE } from "@/lib/site-mode";
 import { ProsePage } from "@/components/layout/ProsePage";
 import { siteConfig } from "@/config/site";
 import { pageMetadata } from "@/lib/seo/metadata";
@@ -67,8 +68,9 @@ export default function ContactPage() {
 
       <h2>What to include</h2>
       <p>
-        CurrentWire is an automated aggregator, so the more precisely a message
-        identifies the page and the problem, the faster it can be acted on.
+        {IS_STATIC_SITE
+          ? "The more precisely a message identifies the article and the problem, the faster it can be acted on."
+          : "CurrentWire is an automated aggregator, so the more precisely a message identifies the page and the problem, the faster it can be acted on."}
       </p>
       <ul>
         <li>

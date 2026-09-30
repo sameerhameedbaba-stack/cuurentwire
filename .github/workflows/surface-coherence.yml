@@ -12,9 +12,12 @@ name: Surface coherence probe
 # during the 2026-08 outages — and comments + closes it on the next green
 # run, mirroring .github/workflows/uptime.yml. The probe itself is unchanged.
 
+# RETIRED 2026-09-28 — schedule removed, manual runs still possible.
+# This compared the dataset version stamped on the aggregator's surfaces
+# (/, /latest, /top-100, sections) to catch them rendering from different
+# snapshots. The static GitHub Pages site has no dataset and no snapshots:
+# every page comes from one build. There is nothing left to disagree.
 on:
-  schedule:
-    - cron: "47 6 * * *"
   workflow_dispatch:
 
 permissions:

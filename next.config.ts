@@ -3,6 +3,12 @@ import { buildContentSecurityPolicy } from "./config/csp";
 import { OPTIMIZED_IMAGE_HOSTS } from "./config/image-hosts";
 
 const isDev = process.env.NODE_ENV === "development";
+// Production since 2026-09-28: a static export served by GitHub Pages ($0,
+// cannot be usage-paused). See lib/site-mode.ts. Pages cannot run a server,
+// so headers/redirects/rewrites and the image optimizer do not exist there —
+// the static branch below drops them rather than letting Next warn about
+// config it will silently ignore.
+const isStaticSite = process.env.NEXT_PUBLIC_SITE_MODE === "static";
 const gaEnabled = Boolean(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID);
 // The policy itself lives in config/csp.ts so it can be unit-tested; see the
 // note there about form-action and the newsletter.
@@ -197,4 +203,34 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 };
 
-export default nextConfig;
+/**
+ * The static-export variant of the config.
+ *
+ * - `output: "export"` writes plain HTML/CSS/JS to `out/`.
+ * - `images.unoptimized`: the default loader needs a server. Article pages do
+ *   not render publisher imagery, so nothing is lost.
+ * - trailingSlash stays at the default (false): pages export as `about.html`
+ *   and GitHub Pages serves `/about` from it. Turning it on would make every
+ *   URL end in `/`, so the canonical `/article/x` would 301 to `/article/x/` —
+ *   a canonical that redirects is an SEO defect, and every URL this domain
+ *   ever published (and the Search Console property) is slash-less.
+ * - headers/redirects/rewrites omitted: unsupported by static export
+ *   (node_modules/next/dist/docs/01-app/02-guides/static-exports.md,
+ *   "Unsupported Features"). GitHub Pages redirects www to the apex itself
+ *   once the custom domain is set.
+ */
+const staticSiteConfig: NextConfig = {
+  output: "export",
+  images: { unoptimized: true },
+  // scripts/build-static-site.mjs builds in a scratch copy inside the repo
+  // with node_modules symlinked back to the repo root, so the workspace root
+  // is the repo, not the scratch directory. Stated explicitly so Turbopack
+  // does not have to guess (it warns when it sees two lockfiles).
+  ...(process.env.STATIC_BUILD_TURBOPACK_ROOT
+    ? { turbopack: { root: process.env.STATIC_BUILD_TURBOPACK_ROOT } }
+    : {}),
+  experimental: nextConfig.experimental,
+  poweredByHeader: false,
+};
+
+export default isStaticSite ? staticSiteConfig : nextConfig;

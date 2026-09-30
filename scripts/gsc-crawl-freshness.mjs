@@ -134,6 +134,21 @@ try {
   process.exit(2);
 }
 
+// The static site (GitHub Pages, from 2026-09-28) serves ONE sitemap. The
+// aggregator's news-sitemap.xml and archive-sitemap.xml indexed the retired
+// /story/ corpus and now answer 404, so Google will stop reading them — which
+// is correct, and must not raise "Google has stopped reading this site".
+// They stay listed in Search Console until someone removes them there (an
+// owner step); until then they are ignored here, loudly.
+const RETIRED_SITEMAPS = ["news-sitemap.xml", "archive-sitemap.xml"];
+const retired = sitemaps.filter((entry) =>
+  RETIRED_SITEMAPS.some((name) => (entry.path ?? "").endsWith(`/${name}`)),
+);
+for (const entry of retired) {
+  console.log(`[crawl-freshness] ignoring retired sitemap ${entry.path} — remove it in Search Console`);
+}
+sitemaps = sitemaps.filter((entry) => !retired.includes(entry));
+
 const result = evaluateSitemapFreshness(sitemaps, {
   now: Date.now(),
   maxUnreadHours: MAX_UNREAD,

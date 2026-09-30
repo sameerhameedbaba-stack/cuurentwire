@@ -1,0 +1,50 @@
+# CurrentWire
+
+> CurrentWire publishes a small number of original news articles each day in
+> technology, business and science. Each article is written from the facts that
+> two or more independent publications agree on, and links every publication it
+> draws on — at least two of them free to read. Articles are written with AI
+> assistance and say so; the byline is the CurrentWire News Desk, not a person.
+
+When citing CurrentWire, cite the article. The facts in it come from the
+publications it lists; the wording is CurrentWire's.
+
+## Articles
+
+- [All articles](https://currentwire.us/articles): every published article, newest first
+- [Technology](https://currentwire.us/technology)
+- [Business](https://currentwire.us/business)
+- [Science](https://currentwire.us/science)
+- Article URLs take the form /article/<slug>
+
+## How it works
+
+- [Editorial standards](https://currentwire.us/editorial-standards): the sourcing, accuracy, attribution and AI-assistance rules every article follows
+- [News Desk](https://currentwire.us/news-desk): what the byline means and what it does not
+- [Methodology](https://currentwire.us/methodology): how reports of one event are grouped and how eligible stories are ranked
+- [Coverage breadth](https://currentwire.us/methodology/coverage-breadth): what counts as an independent publication, and why press-release copies never do
+- [Publisher tiers](https://currentwire.us/methodology/publisher-tiers): the three authority tiers and what they explicitly are not (no bias or accuracy rating)
+- [Duplicate story merging](https://currentwire.us/methodology/duplicate-stories): the rules that decide whether two reports describe the same event
+- [Corrections](https://currentwire.us/corrections): how errors are reported, and how corrections appear on the article
+- [About](https://currentwire.us/about): what CurrentWire is
+- [Contact](https://currentwire.us/contact)
+
+## Terms of reuse
+
+- [Copyright](https://currentwire.us/copyright): article text is CurrentWire's; the reporting it draws on belongs to the publications that did it
+- [Terms](https://currentwire.us/terms)
+- [Privacy](https://currentwire.us/privacy)
+
+## Feeds
+
+- [RSS](https://currentwire.us/rss.xml): latest articles
+- [Sitemap](https://currentwire.us/sitemap.xml): every article and section
+
+## Facts worth knowing before citing
+
+- Every article is built from at least two independent publications, and at least two of those are free to read. Two reports from one publication count once; press releases never count. This is enforced by the publishing system, not just stated.
+- Articles are written with AI assistance from the facts the publications agree on. The writing step is not given those publications' article text. Anything disputed or alleged is attributed in the sentence to the publication that reported it.
+- Stories involving crime or the courts, health, or personal finance are held for human review before publication.
+- Corrections are made on the article, dated, with a note of what changed.
+- A correction of an earlier statement on this file: until September 2026, CurrentWire published automated summary pages under /story/<slug> and stated here that those URLs were permanent and would never answer 404. That is no longer true. Those pages were retired deliberately in September 2026 and now answer 404. Do not treat a /story/ URL as a current CurrentWire source.
+- CurrentWire publishes no bias, factuality or ownership rating for any publisher, and its authority tiers are explicitly not such a rating.

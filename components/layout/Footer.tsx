@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
+import { IS_STATIC_SITE } from "@/lib/site-mode";
 import { NewsletterSignup } from "./NewsletterSignup";
 import { Wordmark } from "./Wordmark";
 
@@ -9,11 +10,14 @@ const COLUMNS: { heading: string; links: readonly { label: string; href: string 
     heading: "Explore",
     // Archive is appended in code: it is the sitewide HTML crawl path into
     // the permanent story archive, shipped alongside these components rather
-    // than the brand config.
-    links: [
-      ...siteConfig.navigation.footer.explore,
-      { label: "Archive", href: "/archive" },
-    ],
+    // than the brand config. The static site (GitHub Pages) has no archive —
+    // it served the retired /story/ corpus — so it is not linked there.
+    links: IS_STATIC_SITE
+      ? siteConfig.navigation.footer.explore
+      : [
+          ...siteConfig.navigation.footer.explore,
+          { label: "Archive", href: "/archive" },
+        ],
   },
   { heading: "CurrentWire", links: siteConfig.navigation.footer.company },
   { heading: "Legal", links: siteConfig.navigation.footer.legal },

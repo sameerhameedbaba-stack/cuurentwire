@@ -99,13 +99,17 @@ describe("evaluateSitemapFreshness", () => {
 
 // ── The boundary this change moves ──────────────────────────────────────────
 // GitHub auto-disables SCHEDULED workflows after 60 days of repository
-// inactivity, so url-survival.yml and surface-coherence.yml each re-enable
-// every scheduled workflow on every run — the two guard each other. On
-// 2026-09-04 that list covered 3 of 9 workflows and the gap was found by
-// hand. Adding a scheduled workflow without adding it to both lists
-// re-creates exactly that gap, silently, so it is asserted here instead.
+// inactivity, so two workflows each re-enable every scheduled workflow on
+// every run — the two guard each other. On 2026-09-04 that list covered 3 of
+// 9 workflows and the gap was found by hand. Adding a scheduled workflow
+// without adding it to both lists re-creates exactly that gap, silently, so it
+// is asserted here instead.
+//
+// The pair moved on 2026-09-28 from url-survival + surface-coherence (retired
+// with the aggregator, schedules removed) to uptime + seo-health. This test is
+// what caught that retiring them would have taken the guard down with them.
 const WORKFLOW_DIR = fileURLToPath(new URL("../../.github/workflows/", import.meta.url));
-const RE_ENABLERS = ["url-survival.yml", "surface-coherence.yml"];
+const RE_ENABLERS = ["uptime.yml", "seo-health.yml"];
 
 function scheduledWorkflows(): string[] {
   return readdirSync(WORKFLOW_DIR)
