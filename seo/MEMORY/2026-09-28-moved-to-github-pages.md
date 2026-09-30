@@ -10,7 +10,10 @@
 - **New production:** a static export served free by **GitHub Pages** from
   this public repo. No new account, no card, no usage-based pause, no paid tier
   to fall into. Built by `scripts/build-static-site.mjs`, deployed by
-  `.github/workflows/pages.yml` on every push to `main`.
+  `.github/workflows/pages.yml` on every push to `main`. Its `gate` job skips
+  quietly while Pages is off, and an hourly run deploys `main` by itself once
+  Pages is switched on (added 2026-09-30, so the switch-over needs no
+  "merge it" / re-run step from anyone).
 - **What the static site is:** original articles (`content/articles/`, read
   at build time), `/articles`, section pages for the launch verticals, the
   trust pages (rewritten for the publisher model), `sitemap.xml`, `rss.xml`,

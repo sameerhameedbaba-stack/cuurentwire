@@ -94,6 +94,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for wf in bluesky-post cwv gsc gsc-crawl-freshness seo-health uptime; do
+          for wf in bluesky-post cwv gsc gsc-crawl-freshness pages seo-health uptime; do
             gh workflow enable "$wf.yml" || true
           done
