@@ -1,47 +1,71 @@
 {
-  "generatedAt": "2026-09-28T15:51:20.060Z",
+  "generatedAt": "2026-10-05T16:20:20.050Z",
   "window": {
-    "startDate": "2026-09-01",
-    "endDate": "2026-09-28",
+    "startDate": "2026-09-08",
+    "endDate": "2026-10-05",
     "days": 28
   },
   "webQueries": [
     {
-      "query": "7.7 earthquake",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 62
-    },
-    {
       "query": "7.7 magnitude earthquake indonesia",
-      "impressions": 1,
+      "impressions": 2,
       "clicks": 0,
-      "position": 71
+      "position": 78.5
     },
     {
       "query": "earthquake of indonesia",
-      "impressions": 1,
+      "impressions": 2,
       "clicks": 0,
-      "position": 67
+      "position": 73.5
     },
     {
-      "query": "latest current affair",
+      "query": "7.7 earthquake today",
       "impressions": 1,
       "clicks": 0,
-      "position": 100
+      "position": 65
+    },
+    {
+      "query": "earthquake at indonesia",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 78
+    },
+    {
+      "query": "indonesia earthquake",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 64
+    },
+    {
+      "query": "indonesia earthquake today magnitude",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 182
+    },
+    {
+      "query": "news earthquake indonesia",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 193
     },
     {
       "query": "the wire newspaper",
       "impressions": 1,
       "clicks": 0,
       "position": 81
+    },
+    {
+      "query": "wire report",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 97
     }
   ],
   "newsQueries": [],
   "strikingDistance": [],
   "counts": {
-    "webRows": 5,
+    "webRows": 9,
     "newsRows": 0,
-    "pageQueryRows": 5
+    "pageQueryRows": 9
   }
 }

@@ -1,108 +1,30 @@
 {
-  "generatedAt": "2026-09-28T15:51:20.060Z",
+  "generatedAt": "2026-10-05T16:20:20.050Z",
   "window": {
-    "startDate": "2026-09-01",
-    "endDate": "2026-09-28",
+    "startDate": "2026-09-08",
+    "endDate": "2026-10-05",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
     "insufficient": false,
     "window": {
-      "from": "2026-09-19",
-      "to": "2026-09-25"
+      "from": "2026-09-26",
+      "to": "2026-10-02"
     },
     "clicks": {
-      "current": 0,
+      "current": 1,
       "prior": 0,
       "deltaPct": null
     },
     "impressions": {
-      "current": 6,
-      "prior": 2,
-      "deltaPct": 200
+      "current": 8,
+      "prior": 6,
+      "deltaPct": 33.3
     },
     "explained": true
   },
   "days": [
-    {
-      "date": "2026-09-01",
-      "clicks": 0,
-      "impressions": 0,
-      "ctr": 0,
-      "position": 0,
-      "incidents": [
-        "News-sitemap canonical URL was 308-ing to a merged-away duplicate; archive row cache re-keyed per story (53ad4b1)",
-        "Production stopped shipping code for 49h: vercel.json ignoreCommand crashed on a shallow clone (RESOLVED 2026-09-02 22:41 UTC)",
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
-      ]
-    },
-    {
-      "date": "2026-09-02",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 9,
-      "incidents": [
-        "Dead-image placeholder removed from the RSC flight payload of every image (6c63626) - MERGED, NOT LIVE",
-        "Vercel bot mitigation 403-challenged the SEO loop's own IP for ~15+ min (self-inflicted, not an outage)",
-        "Production stopped shipping code for 49h: vercel.json ignoreCommand crashed on a shallow clone (RESOLVED 2026-09-02 22:41 UTC)",
-        "49h of stranded fixes all went live at once (94c7246)",
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
-      ]
-    },
-    {
-      "date": "2026-09-03",
-      "clicks": 2,
-      "impressions": 2,
-      "ctr": 1,
-      "position": 1.5,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
-      ]
-    },
-    {
-      "date": "2026-09-04",
-      "clicks": 0,
-      "impressions": 0,
-      "ctr": 0,
-      "position": 0,
-      "incidents": [
-        "Three compiled-in data/ files could not deploy on their own; the ignore rule now builds for them (0058fa6)",
-        "Bluesky poster shared one story twice; ledger re-keyed from URL to cluster id",
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
-      ]
-    },
-    {
-      "date": "2026-09-05",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 100,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
-      ]
-    },
-    {
-      "date": "2026-09-06",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 62,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
-      ]
-    },
-    {
-      "date": "2026-09-07",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 10,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21"
-      ]
-    },
     {
       "date": "2026-09-08",
       "clicks": 0,
@@ -350,6 +272,99 @@
         "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
         "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
         "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check"
+      ]
+    },
+    {
+      "date": "2026-09-29",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 134,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check"
+      ]
+    },
+    {
+      "date": "2026-09-30",
+      "clicks": 1,
+      "impressions": 2,
+      "ctr": 0.5,
+      "position": 50,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check"
+      ]
+    },
+    {
+      "date": "2026-10-01",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 79,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check"
+      ]
+    },
+    {
+      "date": "2026-10-02",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 193,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check"
+      ]
+    },
+    {
+      "date": "2026-10-03",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 35.5,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check"
+      ]
+    },
+    {
+      "date": "2026-10-04",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 158.3,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
+      ]
+    },
+    {
+      "date": "2026-10-05",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
       ]
     }
   ]

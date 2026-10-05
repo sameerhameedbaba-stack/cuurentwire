@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-28T15:51:20.060Z",
+  "generatedAt": "2026-10-05T16:20:20.050Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-09-01",
-    "endDate": "2026-09-28",
+    "startDate": "2026-09-08",
+    "endDate": "2026-10-05",
     "days": 28
   },
   "minSampleImpressions": 100,
@@ -13,32 +13,32 @@
       "rows": 9,
       "total": {
         "urls": 9,
-        "impressions": 24,
-        "clicks": 2,
-        "ctr": 0.0833,
-        "avgPosition": 19.3,
-        "impressionsPerUrl": 2.67,
-        "clicksPerUrl": 0.22,
+        "impressions": 31,
+        "clicks": 1,
+        "ctr": 0.0323,
+        "avgPosition": 52.1,
+        "impressionsPerUrl": 3.44,
+        "clicksPerUrl": 0.11,
         "sufficientSample": false
       },
       "templates": {
         "home": {
           "urls": 1,
-          "impressions": 5,
-          "clicks": 2,
-          "ctr": 0.4,
-          "avgPosition": 37.6,
-          "impressionsPerUrl": 5,
-          "clicksPerUrl": 2,
+          "impressions": 4,
+          "clicks": 1,
+          "ctr": 0.25,
+          "avgPosition": 46.3,
+          "impressionsPerUrl": 4,
+          "clicksPerUrl": 1,
           "sufficientSample": false
         },
         "story": {
-          "urls": 5,
-          "impressions": 13,
+          "urls": 6,
+          "impressions": 22,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 19.2,
-          "impressionsPerUrl": 2.6,
+          "avgPosition": 64.2,
+          "impressionsPerUrl": 3.67,
           "clicksPerUrl": 0,
           "sufficientSample": false
         },
@@ -53,12 +53,12 @@
           "sufficientSample": false
         },
         "top-100": {
-          "urls": 1,
-          "impressions": 1,
+          "urls": 0,
+          "impressions": 0,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 10,
-          "impressionsPerUrl": 1,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
           "clicksPerUrl": 0,
           "sufficientSample": false
         },
@@ -788,39 +788,39 @@
       "sufficientSample": false
     },
     "unknown": {
-      "urls": 5,
-      "impressions": 13,
+      "urls": 6,
+      "impressions": 22,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": 19.2,
-      "impressionsPerUrl": 2.6,
+      "avgPosition": 64.2,
+      "impressionsPerUrl": 3.67,
       "clicksPerUrl": 0,
       "sufficientSample": false
     }
   },
   "archiveSources": {
-    "requestedIds": 5,
+    "requestedIds": 6,
     "matchedIds": 0,
     "chunks": 1,
     "failedChunks": 1
   },
   "urlSignals": {
-    "stories": 5,
+    "stories": 6,
     "truncated": false,
     "written": true
   },
   "topUrls": [
     {
-      "url": "https://currentwire.us/",
-      "impressions": 5,
-      "clicks": 2,
-      "position": 37.6
+      "url": "https://currentwire.us/story/powerful-magnitude-7-7-earthquake-kills-at-least-47-in-indonesia-c2aa6f1aaeac9",
+      "impressions": 13,
+      "clicks": 0,
+      "position": 104.8
     },
     {
-      "url": "https://currentwire.us/story/powerful-magnitude-7-7-earthquake-kills-at-least-47-in-indonesia-c2aa6f1aaeac9",
-      "impressions": 5,
-      "clicks": 0,
-      "position": 40.6
+      "url": "https://currentwire.us/",
+      "impressions": 4,
+      "clicks": 1,
+      "position": 46.3
     },
     {
       "url": "https://currentwire.us/methodology",
@@ -829,22 +829,28 @@
       "position": 4.3
     },
     {
-      "url": "https://currentwire.us/story/kaplan-fox-advises-bloom-energy-corporation-nyse-be-investors-to-act-before-the-c5ba09cece226",
-      "impressions": 3,
-      "clicks": 0,
-      "position": 8
-    },
-    {
       "url": "https://currentwire.us/news-desk",
       "impressions": 2,
       "clicks": 0,
       "position": 2
     },
     {
+      "url": "https://currentwire.us/story/kaplan-fox-advises-bloom-energy-corporation-nyse-be-investors-to-act-before-the-c5ba09cece226",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 7.5
+    },
+    {
       "url": "https://currentwire.us/story/satellites-are-watching-us-and-each-other-ceb1660ae3006",
       "impressions": 2,
       "clicks": 0,
       "position": 3
+    },
+    {
+      "url": "https://currentwire.us/story/the-nations-cartoonists-on-the-week-in-politics-ccfbc4474e762",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 6.5
     },
     {
       "url": "https://currentwire.us/story/watch-why-has-trump-shifted-on-north-korea-cb366b2a094e9",
@@ -857,20 +863,14 @@
       "impressions": 1,
       "clicks": 0,
       "position": 5
-    },
-    {
-      "url": "https://currentwire.us/top-100?country=us",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 10
     }
   ],
   "queries": {
     "written": true,
     "strikingDistance": 0,
-    "webRows": 5,
+    "webRows": 9,
     "newsRows": 0,
-    "pageQueryRows": 5
+    "pageQueryRows": 9
   },
   "daily": {
     "written": true,
@@ -878,25 +878,25 @@
     "trend": {
       "insufficient": false,
       "window": {
-        "from": "2026-09-19",
-        "to": "2026-09-25"
+        "from": "2026-09-26",
+        "to": "2026-10-02"
       },
       "clicks": {
-        "current": 0,
+        "current": 1,
         "prior": 0,
         "deltaPct": null
       },
       "impressions": {
-        "current": 6,
-        "prior": 2,
-        "deltaPct": 200
+        "current": 8,
+        "prior": 6,
+        "deltaPct": 33.3
       },
       "explained": true
     }
   },
   "liveCoverage": null,
   "liveDatasetVersion": null,
-  "ledgerStories": 8189,
+  "ledgerStories": 8056,
   "warnings": [
     "news sitemap unavailable: news-sitemap.xml 402",
     "stats endpoint unavailable: /api/stats/coverage 402",
