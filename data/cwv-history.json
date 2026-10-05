@@ -848,5 +848,36 @@
         }
       }
     ]
+  },
+  {
+    "date": "2026-10-05T15:59:43.251Z",
+    "base": "https://currentwire.us",
+    "strategy": "mobile",
+    "tool": "psi",
+    "warmedConnection": false,
+    "pages": [
+      {
+        "tool": "psi",
+        "url": "https://currentwire.us/",
+        "field": null,
+        "lab": {
+          "lcpMs": 788,
+          "cls": 0,
+          "tbtMs": 0,
+          "score": 100
+        }
+      },
+      {
+        "tool": "psi",
+        "url": "https://currentwire.us/articles",
+        "field": null,
+        "lab": {
+          "lcpMs": 790,
+          "cls": 0,
+          "tbtMs": 0,
+          "score": 100
+        }
+      }
+    ]
   }
 ]
