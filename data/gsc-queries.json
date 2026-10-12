@@ -1,11 +1,17 @@
 {
-  "generatedAt": "2026-10-05T16:20:20.050Z",
+  "generatedAt": "2026-10-12T16:57:04.139Z",
   "window": {
-    "startDate": "2026-09-08",
-    "endDate": "2026-10-05",
+    "startDate": "2026-09-15",
+    "endDate": "2026-10-12",
     "days": 28
   },
   "webQueries": [
+    {
+      "query": "earthquake of indonesia",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 73.3
+    },
     {
       "query": "7.7 magnitude earthquake indonesia",
       "impressions": 2,
@@ -13,10 +19,16 @@
       "position": 78.5
     },
     {
-      "query": "earthquake of indonesia",
+      "query": "news earthquake indonesia",
       "impressions": 2,
       "clicks": 0,
-      "position": 73.5
+      "position": 189
+    },
+    {
+      "query": "7.7 earthquake",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 55
     },
     {
       "query": "7.7 earthquake today",
@@ -25,10 +37,34 @@
       "position": 65
     },
     {
+      "query": "current earthquake in indonesia",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 95
+    },
+    {
       "query": "earthquake at indonesia",
       "impressions": 1,
       "clicks": 0,
       "position": 78
+    },
+    {
+      "query": "earthquake in indonesia",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 69
+    },
+    {
+      "query": "earthquake in indonesia today",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 86
+    },
+    {
+      "query": "earthquake today 7.7",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 64
     },
     {
       "query": "indonesia earthquake",
@@ -43,16 +79,22 @@
       "position": 182
     },
     {
-      "query": "news earthquake indonesia",
+      "query": "most current",
       "impressions": 1,
       "clicks": 0,
-      "position": 193
+      "position": 70
     },
     {
       "query": "the wire newspaper",
       "impressions": 1,
       "clicks": 0,
       "position": 81
+    },
+    {
+      "query": "today earthquake in indonesia",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 87
     },
     {
       "query": "wire report",
@@ -64,8 +106,8 @@
   "newsQueries": [],
   "strikingDistance": [],
   "counts": {
-    "webRows": 9,
+    "webRows": 16,
     "newsRows": 0,
-    "pageQueryRows": 9
+    "pageQueryRows": 16
   }
 }
