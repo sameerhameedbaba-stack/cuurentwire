@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { siteConfig } from "@/config/site";
 import {
   NEWS_SITEMAP_MAX_ENTRIES,
   NEWS_SITEMAP_WINDOW_HOURS,
@@ -87,7 +88,9 @@ describe("renderNewsSitemap", () => {
       [makeCluster({ slug: "big-story-c1", title: "Big story", firstPublishedAt: first, lastPublishedAt: last })],
       NOW,
     );
-    expect(xml).toContain("<loc>http://localhost:3000/story/big-story-c1</loc>");
+    // siteConfig.url, not a literal host: the Pages deploy runs the tests with
+    // NEXT_PUBLIC_SITE_URL set to production.
+    expect(xml).toContain(`<loc>${siteConfig.url}/story/big-story-c1</loc>`);
     expect(xml).toContain("<news:name>CurrentWire</news:name>");
     expect(xml).toContain("<news:language>en</news:language>");
     expect(xml).toContain(`<news:publication_date>${first}</news:publication_date>`);
