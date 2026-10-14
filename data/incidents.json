@@ -9,7 +9,7 @@
   {
     "date": "2026-08-19",
     "kind": "change",
-    "label": "ISR enabled on all dynamic routes (3e8397a) — TTFB win, quota burn begins",
+    "label": "ISR enabled on all dynamic routes (3e8397a) \u2014 TTFB win, quota burn begins",
     "detail": "Story TTFB 557ms -> 110-125ms; ISR write/CPU burn started that paused the account five days later."
   },
   {
@@ -22,13 +22,13 @@
     "date": "2026-08-24",
     "kind": "change",
     "label": "Retitle wave 1 deployed (b33d8c1): homepage, categories, briefing, latest, most-covered",
-    "detail": "Search-phrased titles; Google re-processes titles over days — short-term position wobble is expected, judge at 2-4 weeks."
+    "detail": "Search-phrased titles; Google re-processes titles over days \u2014 short-term position wobble is expected, judge at 2-4 weeks."
   },
   {
     "date": "2026-08-24",
     "kind": "fix",
     "label": "News-sitemap integrity: listed URLs gated on archive standing (2515c55)",
-    "detail": "Before this, Googlebot-News could fetch listed URLs that answered 500 or 308 — a direct News-trust hit while it lasted."
+    "detail": "Before this, Googlebot-News could fetch listed URLs that answered 500 or 308 \u2014 a direct News-trust hit while it lasted."
   },
   {
     "date": "2026-08-25",
@@ -66,7 +66,7 @@
     "date": "2026-08-29",
     "kind": "fix",
     "label": "Live story revalidation window rotated so all 726 live stories stay fresh (a0d26f0)",
-    "detail": "The cron burst marked clusters.slice(0,150) — always the same top 150 by ranking score — while the live dataset holds 726 clusters (/api/stats/coverage). The other 576 live story pages (79%) had no freshness path: the story route carries a 30-day ISR TTL and an archive-rendered page performs no tagged read, so revalidateTag never reached them. A page that rendered from the archive before its cluster entered the live snapshot kept serving that archived copy indefinitely, with dateModified frozen and isBasedOn under-reporting later pickups — the mechanism behind [auto-alert] #2 (surface coherence), reproduced on two clusters listed live on / this run. selectRevalidationSlugs keeps 150 marks per burst (the billed quantity is unchanged) and spends them as a fixed head of 100 plus a rotating 50-URL tail slice, covering every live story within 13 bursts (~6.5 h)."
+    "detail": "The cron burst marked clusters.slice(0,150) \u2014 always the same top 150 by ranking score \u2014 while the live dataset holds 726 clusters (/api/stats/coverage). The other 576 live story pages (79%) had no freshness path: the story route carries a 30-day ISR TTL and an archive-rendered page performs no tagged read, so revalidateTag never reached them. A page that rendered from the archive before its cluster entered the live snapshot kept serving that archived copy indefinitely, with dateModified frozen and isBasedOn under-reporting later pickups \u2014 the mechanism behind [auto-alert] #2 (surface coherence), reproduced on two clusters listed live on / this run. selectRevalidationSlugs keeps 150 marks per burst (the billed quantity is unchanged) and spends them as a fixed head of 100 plus a rotating 50-URL tail slice, covering every live story within 13 bursts (~6.5 h)."
   },
   {
     "date": "2026-09-01",
@@ -159,5 +159,12 @@
     "ongoing": true,
     "label": "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
     "detail": "Measured this run: GitHub repo API now reports has_pages: true (was false when the 2026-09-30 report checked it), and https://sameerhameedbaba-stack.github.io/cuurentwire/ answers 404 'Site not found' rather than a DNS-level error - consistent with Settings > Pages > Source: GitHub Actions having been turned on, step 1 of the 4-step checklist in seo/reports/2026-09-30.md. Hostinger DNS is UNCHANGED (A record still 216.198.79.1, Vercel) - step 2 has not happened, so nothing user-facing has moved and there is no risk yet. But the Pages deploy itself still cannot succeed: all 21 scheduled/pushed runs of pages.yml since it started on 2026-09-30 have failed (confirmed via Actions API this run, latest failure 2026-10-04T18:48 UTC, run 37225780747), and the job log for that latest run shows the EXACT SAME failure diagnosed 2026-10-01 and never applied: tests/unit/news-sitemap.test.ts:90 hardcodes '<loc>http://localhost:3000/story/big-story-c1</loc>' and fails as soon as NEXT_PUBLIC_SITE_URL is set to the production URL, which pages.yml does and ci.yml does not. The one-line fix (assert against siteConfig.url instead of the literal host, verified working 2026-10-01) is outside seo/ and data/, so no watchdog or paused-site-mode run can push it. This is now the single blocker between 'owner has started the switch-over' and 'static site actually live': landing that one line (next unrestricted run, or the owner editing the file directly) unblocks the deploy; nothing else in the 4-step checklist is gated on it. Close with an end date once pages.yml deploys successfully."
+  },
+  {
+    "date": "2026-10-14",
+    "kind": "change",
+    "ongoing": true,
+    "label": "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+    "detail": "Measured this run 2026-10-14 ~21:45 UTC: dns.google A record for currentwire.us now returns 185.199.108.153/109.153/110.153/111.153 (GitHub Pages anycast IPs) and www CNAME resolves to sameerhameedbaba-stack.github.io - both unchanged from yesterday's 216.198.79.1 (Vercel), confirming the owner completed the Hostinger DNS switch (step 1 of the checklist in seo/reports/2026-10-13.md) sometime between that report and this run. Plain curl -I http://currentwire.us/ returns a clean HTTP 200 from server: GitHub.com with the full static page (title, cw-site=static marker, last-modified Tue 13 Oct 2026 21:47:41 GMT matching the known-good deploy), so the GitHub Pages origin itself is healthy and serving the right build. google-site-verification TXT record still present via dns.google. BUT https://currentwire.us/ fails strict TLS verification: curl (60) \"no alternative certificate subject name matches target host name\", because the server presents the generic *.github.io certificate instead of one issued for currentwire.us - GitHub has not finished issuing/attaching a certificate for the custom domain. scripts/seo-health-static.mjs, which always targets https://currentwire.us, failed all 10 checks this run (robots.txt, sitemap.xml, rss.xml, llms.txt, IndexNow key, home, both soft-404 probes, www redirect, https redirect all FAIL HTTP 503) and its own https-redirect check shows http://currentwire.us/ answering 200 directly instead of redirecting to https - confirming Enforce HTTPS is not active in Settings -> Pages. pages.yml has deployed successfully on every scheduled run today (runs 66-70, all conclusion=success), so this is not a deploy or build problem. This is owner-dashboard-only: GitHub Pages auto-issues the Let's Encrypt certificate for a custom domain once DNS is correctly pointed, which can take anywhere from minutes to about a day, and sometimes needs the custom domain field in Settings -> Pages re-saved to kick a stuck issuance. No code change in this repo can fix it. Until it clears, the routine stays in watchdog-style reporting (no backlog work, no live claim) because the file's own is-it-up bar (https 200 + marker) is not met. Close with an end date once https://currentwire.us/ passes strict TLS and scripts/seo-health-static.mjs is clean."
   }
 ]
