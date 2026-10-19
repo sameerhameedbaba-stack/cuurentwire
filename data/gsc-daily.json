@@ -1,115 +1,30 @@
 {
-  "generatedAt": "2026-10-12T16:57:04.139Z",
+  "generatedAt": "2026-10-19T14:55:58.178Z",
   "window": {
-    "startDate": "2026-09-15",
-    "endDate": "2026-10-12",
+    "startDate": "2026-09-22",
+    "endDate": "2026-10-19",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
     "insufficient": false,
     "window": {
-      "from": "2026-10-03",
-      "to": "2026-10-09"
+      "from": "2026-10-10",
+      "to": "2026-10-16"
     },
     "clicks": {
       "current": 0,
-      "prior": 1,
-      "deltaPct": -100
+      "prior": 0,
+      "deltaPct": null
     },
     "impressions": {
-      "current": 18,
-      "prior": 8,
-      "deltaPct": 125
+      "current": 15,
+      "prior": 18,
+      "deltaPct": -16.7
     },
     "explained": true
   },
   "days": [
-    {
-      "date": "2026-09-15",
-      "clicks": 0,
-      "impressions": 0,
-      "ctr": 0,
-      "position": 0,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Search Console ownership record was missing (no google-site-verification TXT on currentwire.us) - RESOLVED 2026-09-15, TXT restored and resolving",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
-      ]
-    },
-    {
-      "date": "2026-09-16",
-      "clicks": 0,
-      "impressions": 0,
-      "ctr": 0,
-      "position": 0,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
-      ]
-    },
-    {
-      "date": "2026-09-17",
-      "clicks": 0,
-      "impressions": 0,
-      "ctr": 0,
-      "position": 0,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
-      ]
-    },
-    {
-      "date": "2026-09-18",
-      "clicks": 0,
-      "impressions": 2,
-      "ctr": 0,
-      "position": 7.5,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
-      ]
-    },
-    {
-      "date": "2026-09-19",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 81,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
-      ]
-    },
-    {
-      "date": "2026-09-20",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 71,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
-      ]
-    },
-    {
-      "date": "2026-09-21",
-      "clicks": 0,
-      "impressions": 0,
-      "ctr": 0,
-      "position": 0,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)"
-      ]
-    },
     {
       "date": "2026-09-22",
       "clicks": 0,
@@ -378,6 +293,49 @@
     {
       "date": "2026-10-12",
       "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 81,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
+      ]
+    },
+    {
+      "date": "2026-10-13",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 81,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
+      ]
+    },
+    {
+      "date": "2026-10-14",
+      "clicks": 0,
+      "impressions": 6,
+      "ctr": 0,
+      "position": 66,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet"
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "clicks": 0,
       "impressions": 0,
       "ctr": 0,
       "position": 0,
@@ -386,7 +344,77 @@
         "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
         "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
         "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
-        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar"
+      ]
+    },
+    {
+      "date": "2026-10-16",
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 79.5,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar",
+        "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15"
+      ]
+    },
+    {
+      "date": "2026-10-17",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 85,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar",
+        "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15"
+      ]
+    },
+    {
+      "date": "2026-10-18",
+      "clicks": 0,
+      "impressions": 2,
+      "ctr": 0,
+      "position": 83.5,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar",
+        "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15"
+      ]
+    },
+    {
+      "date": "2026-10-19",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 97,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar",
+        "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15"
       ]
     }
   ]

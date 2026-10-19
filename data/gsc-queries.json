@@ -1,28 +1,46 @@
 {
-  "generatedAt": "2026-10-12T16:57:04.139Z",
+  "generatedAt": "2026-10-19T14:55:58.178Z",
   "window": {
-    "startDate": "2026-09-15",
-    "endDate": "2026-10-12",
+    "startDate": "2026-09-22",
+    "endDate": "2026-10-19",
     "days": 28
   },
   "webQueries": [
     {
       "query": "earthquake of indonesia",
-      "impressions": 3,
+      "impressions": 5,
       "clicks": 0,
-      "position": 73.3
+      "position": 74.8
     },
     {
-      "query": "7.7 magnitude earthquake indonesia",
+      "query": "earthquake in indonesia",
       "impressions": 2,
       "clicks": 0,
-      "position": 78.5
+      "position": 76
+    },
+    {
+      "query": "earthquake indonesia",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 82
+    },
+    {
+      "query": "eartquake indonesia",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 81.5
     },
     {
       "query": "news earthquake indonesia",
       "impressions": 2,
       "clicks": 0,
       "position": 189
+    },
+    {
+      "query": "today earthquake in indonesia",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 86
     },
     {
       "query": "7.7 earthquake",
@@ -37,6 +55,12 @@
       "position": 65
     },
     {
+      "query": "7.7 magnitude earthquake indonesia",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 86
+    },
+    {
       "query": "current earthquake in indonesia",
       "impressions": 1,
       "clicks": 0,
@@ -47,12 +71,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 78
-    },
-    {
-      "query": "earthquake in indonesia",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 69
     },
     {
       "query": "earthquake in indonesia today",
@@ -67,6 +85,18 @@
       "position": 64
     },
     {
+      "query": "earthquake today indonesia",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 86
+    },
+    {
+      "query": "indoensia earthquake",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 71
+    },
+    {
       "query": "indonesia earthquake",
       "impressions": 1,
       "clicks": 0,
@@ -79,22 +109,46 @@
       "position": 182
     },
     {
+      "query": "indonesia earthquake.",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 72
+    },
+    {
+      "query": "indonesia earthquale",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 74
+    },
+    {
+      "query": "indonesia latest earthquake",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 80
+    },
+    {
+      "query": "indonesia's earthquake",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 73
+    },
+    {
       "query": "most current",
       "impressions": 1,
       "clicks": 0,
       "position": 70
     },
     {
-      "query": "the wire newspaper",
+      "query": "most recent earthquake in indonesia",
       "impressions": 1,
       "clicks": 0,
       "position": 81
     },
     {
-      "query": "today earthquake in indonesia",
+      "query": "news about earthquake in indonesia",
       "impressions": 1,
       "clicks": 0,
-      "position": 87
+      "position": 96
     },
     {
       "query": "wire report",
@@ -106,8 +160,8 @@
   "newsQueries": [],
   "strikingDistance": [],
   "counts": {
-    "webRows": 16,
+    "webRows": 25,
     "newsRows": 0,
-    "pageQueryRows": 16
+    "pageQueryRows": 25
   }
 }

@@ -1,44 +1,44 @@
 {
-  "generatedAt": "2026-10-12T16:57:04.139Z",
+  "generatedAt": "2026-10-19T14:55:58.178Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-09-15",
-    "endDate": "2026-10-12",
+    "startDate": "2026-09-22",
+    "endDate": "2026-10-19",
     "days": 28
   },
   "minSampleImpressions": 100,
   "surfaces": {
     "web": {
-      "rows": 10,
+      "rows": 9,
       "total": {
-        "urls": 10,
-        "impressions": 50,
+        "urls": 9,
+        "impressions": 64,
         "clicks": 1,
-        "ctr": 0.02,
-        "avgPosition": 52.2,
-        "impressionsPerUrl": 5,
-        "clicksPerUrl": 0.1,
+        "ctr": 0.0156,
+        "avgPosition": 59.9,
+        "impressionsPerUrl": 7.11,
+        "clicksPerUrl": 0.11,
         "sufficientSample": false
       },
       "templates": {
         "home": {
           "urls": 1,
-          "impressions": 6,
+          "impressions": 5,
           "clicks": 1,
-          "ctr": 0.1667,
-          "avgPosition": 42.7,
-          "impressionsPerUrl": 6,
+          "ctr": 0.2,
+          "avgPosition": 35,
+          "impressionsPerUrl": 5,
           "clicksPerUrl": 1,
           "sufficientSample": false
         },
         "story": {
-          "urls": 6,
-          "impressions": 35,
+          "urls": 5,
+          "impressions": 50,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 66.3,
-          "impressionsPerUrl": 5.83,
+          "avgPosition": 72.5,
+          "impressionsPerUrl": 10,
           "clicksPerUrl": 0,
           "sufficientSample": false
         },
@@ -788,39 +788,39 @@
       "sufficientSample": false
     },
     "unknown": {
-      "urls": 6,
-      "impressions": 35,
+      "urls": 5,
+      "impressions": 50,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": 66.3,
-      "impressionsPerUrl": 5.83,
+      "avgPosition": 72.5,
+      "impressionsPerUrl": 10,
       "clicksPerUrl": 0,
       "sufficientSample": false
     }
   },
   "archiveSources": {
-    "requestedIds": 6,
+    "requestedIds": 5,
     "matchedIds": 0,
     "chunks": 1,
     "failedChunks": 1
   },
   "urlSignals": {
-    "stories": 6,
+    "stories": 5,
     "truncated": false,
     "written": true
   },
   "topUrls": [
     {
       "url": "https://currentwire.us/story/powerful-magnitude-7-7-earthquake-kills-at-least-47-in-indonesia-c2aa6f1aaeac9",
-      "impressions": 24,
+      "impressions": 40,
       "clicks": 0,
-      "position": 94.3
+      "position": 89.3
     },
     {
       "url": "https://currentwire.us/",
-      "impressions": 6,
+      "impressions": 5,
       "clicks": 1,
-      "position": 42.7
+      "position": 35
     },
     {
       "url": "https://currentwire.us/methodology",
@@ -835,16 +835,16 @@
       "position": 2
     },
     {
+      "url": "https://currentwire.us/story/the-nations-cartoonists-on-the-week-in-politics-ccfbc4474e762",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 7
+    },
+    {
       "url": "https://currentwire.us/story/watch-why-has-trump-shifted-on-north-korea-cb366b2a094e9",
       "impressions": 3,
       "clicks": 0,
       "position": 4.7
-    },
-    {
-      "url": "https://currentwire.us/story/kaplan-fox-advises-bloom-energy-corporation-nyse-be-investors-to-act-before-the-c5ba09cece226",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 7.5
     },
     {
       "url": "https://currentwire.us/story/kariba-ferry-death-toll-rises-to-93-making-it-zimbabwes-deadliest-transport-disa-c3cc2fc193796",
@@ -859,12 +859,6 @@
       "position": 3
     },
     {
-      "url": "https://currentwire.us/story/the-nations-cartoonists-on-the-week-in-politics-ccfbc4474e762",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 6.5
-    },
-    {
       "url": "https://currentwire.us/top-100?country=us",
       "impressions": 1,
       "clicks": 0,
@@ -874,9 +868,9 @@
   "queries": {
     "written": true,
     "strikingDistance": 0,
-    "webRows": 16,
+    "webRows": 25,
     "newsRows": 0,
-    "pageQueryRows": 16
+    "pageQueryRows": 25
   },
   "daily": {
     "written": true,
@@ -884,28 +878,28 @@
     "trend": {
       "insufficient": false,
       "window": {
-        "from": "2026-10-03",
-        "to": "2026-10-09"
+        "from": "2026-10-10",
+        "to": "2026-10-16"
       },
       "clicks": {
         "current": 0,
-        "prior": 1,
-        "deltaPct": -100
+        "prior": 0,
+        "deltaPct": null
       },
       "impressions": {
-        "current": 18,
-        "prior": 8,
-        "deltaPct": 125
+        "current": 15,
+        "prior": 18,
+        "deltaPct": -16.7
       },
       "explained": true
     }
   },
   "liveCoverage": null,
   "liveDatasetVersion": null,
-  "ledgerStories": 4966,
+  "ledgerStories": 2120,
   "warnings": [
-    "news sitemap unavailable: news-sitemap.xml 402",
-    "stats endpoint unavailable: /api/stats/coverage 402",
-    "archive-sources unavailable for 1 of 1 chunks (chunk 1/1: 402)"
+    "news sitemap unavailable: fetch failed",
+    "stats endpoint unavailable: fetch failed",
+    "archive-sources unavailable for 1 of 1 chunks (chunk 1/1: fetch failed)"
   ]
 }
