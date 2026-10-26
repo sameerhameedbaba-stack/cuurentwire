@@ -1,44 +1,44 @@
 {
-  "generatedAt": "2026-10-19T14:55:58.178Z",
+  "generatedAt": "2026-10-26T14:30:56.093Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-09-22",
-    "endDate": "2026-10-19",
+    "startDate": "2026-09-29",
+    "endDate": "2026-10-26",
     "days": 28
   },
   "minSampleImpressions": 100,
   "surfaces": {
     "web": {
-      "rows": 9,
+      "rows": 17,
       "total": {
-        "urls": 9,
-        "impressions": 64,
+        "urls": 17,
+        "impressions": 95,
         "clicks": 1,
-        "ctr": 0.0156,
-        "avgPosition": 59.9,
-        "impressionsPerUrl": 7.11,
-        "clicksPerUrl": 0.11,
+        "ctr": 0.0105,
+        "avgPosition": 52.9,
+        "impressionsPerUrl": 5.59,
+        "clicksPerUrl": 0.06,
         "sufficientSample": false
       },
       "templates": {
         "home": {
-          "urls": 1,
-          "impressions": 5,
+          "urls": 2,
+          "impressions": 7,
           "clicks": 1,
-          "ctr": 0.2,
-          "avgPosition": 35,
-          "impressionsPerUrl": 5,
-          "clicksPerUrl": 1,
+          "ctr": 0.1429,
+          "avgPosition": 24.9,
+          "impressionsPerUrl": 3.5,
+          "clicksPerUrl": 0.5,
           "sufficientSample": false
         },
         "story": {
-          "urls": 5,
-          "impressions": 50,
+          "urls": 10,
+          "impressions": 78,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 72.5,
-          "impressionsPerUrl": 10,
+          "avgPosition": 61.9,
+          "impressionsPerUrl": 7.8,
           "clicksPerUrl": 0,
           "sufficientSample": false
         },
@@ -73,12 +73,12 @@
           "sufficientSample": false
         },
         "topic": {
-          "urls": 0,
-          "impressions": 0,
+          "urls": 2,
+          "impressions": 6,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": null,
-          "impressionsPerUrl": 0,
+          "avgPosition": 2.5,
+          "impressionsPerUrl": 3,
           "clicksPerUrl": 0,
           "sufficientSample": false
         },
@@ -174,11 +174,11 @@
         },
         "other": {
           "urls": 2,
-          "impressions": 8,
+          "impressions": 3,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 3,
-          "impressionsPerUrl": 4,
+          "avgPosition": 2.3,
+          "impressionsPerUrl": 1.5,
           "clicksPerUrl": 0,
           "sufficientSample": false
         }
@@ -788,51 +788,75 @@
       "sufficientSample": false
     },
     "unknown": {
-      "urls": 5,
-      "impressions": 50,
+      "urls": 10,
+      "impressions": 78,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": 72.5,
-      "impressionsPerUrl": 10,
+      "avgPosition": 61.9,
+      "impressionsPerUrl": 7.8,
       "clicksPerUrl": 0,
       "sufficientSample": false
     }
   },
   "archiveSources": {
-    "requestedIds": 5,
+    "requestedIds": 10,
     "matchedIds": 0,
     "chunks": 1,
     "failedChunks": 1
   },
   "urlSignals": {
-    "stories": 5,
+    "stories": 10,
     "truncated": false,
     "written": true
   },
   "topUrls": [
     {
       "url": "https://currentwire.us/story/powerful-magnitude-7-7-earthquake-kills-at-least-47-in-indonesia-c2aa6f1aaeac9",
-      "impressions": 40,
+      "impressions": 52,
       "clicks": 0,
-      "position": 89.3
+      "position": 89.4
     },
     {
       "url": "https://currentwire.us/",
-      "impressions": 5,
+      "impressions": 4,
       "clicks": 1,
-      "position": 35
+      "position": 42.8
     },
     {
-      "url": "https://currentwire.us/methodology",
-      "impressions": 5,
+      "url": "https://currentwire.us/story/watch-why-has-trump-shifted-on-north-korea-cb366b2a094e9",
+      "impressions": 4,
       "clicks": 0,
-      "position": 3.6
+      "position": 5.3
     },
     {
-      "url": "https://currentwire.us/news-desk",
+      "url": "http://currentwire.us/",
       "impressions": 3,
       "clicks": 0,
-      "position": 2
+      "position": 1
+    },
+    {
+      "url": "https://currentwire.us/story/blanche-reiterates-that-anti-weaponization-fund-is-dead-ce12e2e947afb",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 4
+    },
+    {
+      "url": "https://currentwire.us/story/buttigieg-endorses-poindexter-in-house-race-against-miller-c221a8b0fd54b",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 5
+    },
+    {
+      "url": "https://currentwire.us/story/home-depot-reaffirms-guidance-amid-frozen-housing-market-conditions-cdb30ae9114f2",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 7
+    },
+    {
+      "url": "https://currentwire.us/story/makhachev-tops-garry-at-ufc-330-17th-win-in-row-c5bea625fbdbc",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 10
     },
     {
       "url": "https://currentwire.us/story/the-nations-cartoonists-on-the-week-in-politics-ccfbc4474e762",
@@ -841,22 +865,46 @@
       "position": 7
     },
     {
-      "url": "https://currentwire.us/story/watch-why-has-trump-shifted-on-north-korea-cb366b2a094e9",
+      "url": "https://currentwire.us/story/thrill-seeking-influencers-chasing-shark-selfies-are-getting-bitten-c95ceb1bcce62",
       "impressions": 3,
       "clicks": 0,
-      "position": 4.7
+      "position": 8
+    },
+    {
+      "url": "https://currentwire.us/story/treating-lindsay-clancy-case-by-case-48-hours-podcast-ce14ddfbcc0b4",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 9
+    },
+    {
+      "url": "https://currentwire.us/topic/covid-19",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 3
+    },
+    {
+      "url": "https://currentwire.us/topic/wildfires",
+      "impressions": 3,
+      "clicks": 0,
+      "position": 2
+    },
+    {
+      "url": "https://currentwire.us/methodology",
+      "impressions": 2,
+      "clicks": 0,
+      "position": 2.5
+    },
+    {
+      "url": "https://currentwire.us/news-desk",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 2
     },
     {
       "url": "https://currentwire.us/story/kariba-ferry-death-toll-rises-to-93-making-it-zimbabwes-deadliest-transport-disa-c3cc2fc193796",
-      "impressions": 2,
+      "impressions": 1,
       "clicks": 0,
       "position": 5
-    },
-    {
-      "url": "https://currentwire.us/story/satellites-are-watching-us-and-each-other-ceb1660ae3006",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 3
     },
     {
       "url": "https://currentwire.us/top-100?country=us",
@@ -868,9 +916,9 @@
   "queries": {
     "written": true,
     "strikingDistance": 0,
-    "webRows": 25,
+    "webRows": 33,
     "newsRows": 0,
-    "pageQueryRows": 25
+    "pageQueryRows": 33
   },
   "daily": {
     "written": true,
@@ -878,8 +926,8 @@
     "trend": {
       "insufficient": false,
       "window": {
-        "from": "2026-10-10",
-        "to": "2026-10-16"
+        "from": "2026-10-17",
+        "to": "2026-10-23"
       },
       "clicks": {
         "current": 0,
@@ -887,16 +935,16 @@
         "deltaPct": null
       },
       "impressions": {
-        "current": 15,
-        "prior": 18,
-        "deltaPct": -16.7
+        "current": 12,
+        "prior": 15,
+        "deltaPct": -20
       },
       "explained": true
     }
   },
   "liveCoverage": null,
   "liveDatasetVersion": null,
-  "ledgerStories": 2120,
+  "ledgerStories": 389,
   "warnings": [
     "news sitemap unavailable: fetch failed",
     "stats endpoint unavailable: fetch failed",

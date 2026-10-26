@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-19T14:55:58.178Z",
+  "generatedAt": "2026-10-26T14:30:56.093Z",
   "window": {
-    "startDate": "2026-09-22",
-    "endDate": "2026-10-19",
+    "startDate": "2026-09-29",
+    "endDate": "2026-10-26",
     "days": 28
   },
   "surfaces": [
@@ -12,10 +12,22 @@
   "minImpressions": 1,
   "stories": {
     "c2aa6f1aaeac9": [
-      40,
+      52,
       0
     ],
     "cb366b2a094e9": [
+      4,
+      0
+    ],
+    "c221a8b0fd54b": [
+      3,
+      0
+    ],
+    "c5bea625fbdbc": [
+      3,
+      0
+    ],
+    "c95ceb1bcce62": [
       3,
       0
     ],
@@ -23,12 +35,20 @@
       3,
       0
     ],
-    "c3cc2fc193796": [
-      2,
+    "cdb30ae9114f2": [
+      3,
       0
     ],
-    "ceb1660ae3006": [
-      2,
+    "ce12e2e947afb": [
+      3,
+      0
+    ],
+    "ce14ddfbcc0b4": [
+      3,
+      0
+    ],
+    "c3cc2fc193796": [
+      1,
       0
     ]
   }
