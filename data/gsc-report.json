@@ -1,44 +1,44 @@
 {
-  "generatedAt": "2026-10-26T14:30:56.093Z",
+  "generatedAt": "2026-11-02T17:23:49.946Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-09-29",
-    "endDate": "2026-10-26",
+    "startDate": "2026-10-06",
+    "endDate": "2026-11-02",
     "days": 28
   },
   "minSampleImpressions": 100,
   "surfaces": {
     "web": {
-      "rows": 17,
+      "rows": 18,
       "total": {
-        "urls": 17,
-        "impressions": 95,
-        "clicks": 1,
-        "ctr": 0.0105,
-        "avgPosition": 52.9,
-        "impressionsPerUrl": 5.59,
-        "clicksPerUrl": 0.06,
+        "urls": 18,
+        "impressions": 85,
+        "clicks": 0,
+        "ctr": 0,
+        "avgPosition": 44.8,
+        "impressionsPerUrl": 4.72,
+        "clicksPerUrl": 0,
         "sufficientSample": false
       },
       "templates": {
         "home": {
           "urls": 2,
           "impressions": 7,
-          "clicks": 1,
-          "ctr": 0.1429,
-          "avgPosition": 24.9,
+          "clicks": 0,
+          "ctr": 0,
+          "avgPosition": 12.7,
           "impressionsPerUrl": 3.5,
-          "clicksPerUrl": 0.5,
+          "clicksPerUrl": 0,
           "sufficientSample": false
         },
         "story": {
-          "urls": 10,
-          "impressions": 78,
+          "urls": 11,
+          "impressions": 69,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 61.9,
-          "impressionsPerUrl": 7.8,
+          "avgPosition": 53.5,
+          "impressionsPerUrl": 6.27,
           "clicksPerUrl": 0,
           "sufficientSample": false
         },
@@ -174,11 +174,11 @@
         },
         "other": {
           "urls": 2,
-          "impressions": 3,
+          "impressions": 2,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 2.3,
-          "impressionsPerUrl": 1.5,
+          "avgPosition": 2.5,
+          "impressionsPerUrl": 1,
           "clicksPerUrl": 0,
           "sufficientSample": false
         }
@@ -789,11 +789,11 @@
     },
     "unknown": {
       "urls": 10,
-      "impressions": 78,
+      "impressions": 68,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": 61.9,
-      "impressionsPerUrl": 7.8,
+      "avgPosition": 54.1,
+      "impressionsPerUrl": 6.8,
       "clicksPerUrl": 0,
       "sufficientSample": false
     }
@@ -812,27 +812,27 @@
   "topUrls": [
     {
       "url": "https://currentwire.us/story/powerful-magnitude-7-7-earthquake-kills-at-least-47-in-indonesia-c2aa6f1aaeac9",
-      "impressions": 52,
+      "impressions": 43,
       "clicks": 0,
-      "position": 89.4
+      "position": 81.8
     },
     {
-      "url": "https://currentwire.us/",
+      "url": "http://currentwire.us/",
+      "impressions": 6,
+      "clicks": 0,
+      "position": 3.2
+    },
+    {
+      "url": "https://currentwire.us/story/thrill-seeking-influencers-chasing-shark-selfies-are-getting-bitten-c95ceb1bcce62",
       "impressions": 4,
-      "clicks": 1,
-      "position": 42.8
+      "clicks": 0,
+      "position": 6.8
     },
     {
       "url": "https://currentwire.us/story/watch-why-has-trump-shifted-on-north-korea-cb366b2a094e9",
       "impressions": 4,
       "clicks": 0,
-      "position": 5.3
-    },
-    {
-      "url": "http://currentwire.us/",
-      "impressions": 3,
-      "clicks": 0,
-      "position": 1
+      "position": 5
     },
     {
       "url": "https://currentwire.us/story/blanche-reiterates-that-anti-weaponization-fund-is-dead-ce12e2e947afb",
@@ -859,18 +859,6 @@
       "position": 10
     },
     {
-      "url": "https://currentwire.us/story/the-nations-cartoonists-on-the-week-in-politics-ccfbc4474e762",
-      "impressions": 3,
-      "clicks": 0,
-      "position": 7
-    },
-    {
-      "url": "https://currentwire.us/story/thrill-seeking-influencers-chasing-shark-selfies-are-getting-bitten-c95ceb1bcce62",
-      "impressions": 3,
-      "clicks": 0,
-      "position": 8
-    },
-    {
       "url": "https://currentwire.us/story/treating-lindsay-clancy-case-by-case-48-hours-podcast-ce14ddfbcc0b4",
       "impressions": 3,
       "clicks": 0,
@@ -889,10 +877,16 @@
       "position": 2
     },
     {
-      "url": "https://currentwire.us/methodology",
-      "impressions": 2,
+      "url": "https://currentwire.us/",
+      "impressions": 1,
       "clicks": 0,
-      "position": 2.5
+      "position": 70
+    },
+    {
+      "url": "https://currentwire.us/methodology",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 3
     },
     {
       "url": "https://currentwire.us/news-desk",
@@ -901,10 +895,22 @@
       "position": 2
     },
     {
+      "url": "https://currentwire.us/story/c6514fd9d5e4b",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 10
+    },
+    {
       "url": "https://currentwire.us/story/kariba-ferry-death-toll-rises-to-93-making-it-zimbabwes-deadliest-transport-disa-c3cc2fc193796",
       "impressions": 1,
       "clicks": 0,
       "position": 5
+    },
+    {
+      "url": "https://currentwire.us/story/the-nations-cartoonists-on-the-week-in-politics-ccfbc4474e762",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 8
     },
     {
       "url": "https://currentwire.us/top-100?country=us",
@@ -916,9 +922,9 @@
   "queries": {
     "written": true,
     "strikingDistance": 0,
-    "webRows": 33,
+    "webRows": 29,
     "newsRows": 0,
-    "pageQueryRows": 33
+    "pageQueryRows": 29
   },
   "daily": {
     "written": true,
@@ -926,8 +932,8 @@
     "trend": {
       "insufficient": false,
       "window": {
-        "from": "2026-10-17",
-        "to": "2026-10-23"
+        "from": "2026-10-24",
+        "to": "2026-10-30"
       },
       "clicks": {
         "current": 0,
@@ -935,16 +941,16 @@
         "deltaPct": null
       },
       "impressions": {
-        "current": 12,
-        "prior": 15,
-        "deltaPct": -20
+        "current": 14,
+        "prior": 12,
+        "deltaPct": 16.7
       },
       "explained": true
     }
   },
   "liveCoverage": null,
   "liveDatasetVersion": null,
-  "ledgerStories": 389,
+  "ledgerStories": 0,
   "warnings": [
     "news sitemap unavailable: fetch failed",
     "stats endpoint unavailable: fetch failed",

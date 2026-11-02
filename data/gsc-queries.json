@@ -1,17 +1,11 @@
 {
-  "generatedAt": "2026-10-26T14:30:56.093Z",
+  "generatedAt": "2026-11-02T17:23:49.946Z",
   "window": {
-    "startDate": "2026-09-29",
-    "endDate": "2026-10-26",
+    "startDate": "2026-10-06",
+    "endDate": "2026-11-02",
     "days": 28
   },
   "webQueries": [
-    {
-      "query": "earthquake of indonesia",
-      "impressions": 4,
-      "clicks": 0,
-      "position": 76.8
-    },
     {
       "query": "earthquake in indonesia today",
       "impressions": 3,
@@ -19,10 +13,10 @@
       "position": 84.7
     },
     {
-      "query": "earthquake at indonesia",
-      "impressions": 2,
+      "query": "earthquake of indonesia",
+      "impressions": 3,
       "clicks": 0,
-      "position": 78.5
+      "position": 75.7
     },
     {
       "query": "earthquake in indonesia",
@@ -52,19 +46,13 @@
       "query": "indonesia earthquake",
       "impressions": 2,
       "clicks": 0,
-      "position": 71
+      "position": 84
     },
     {
       "query": "indonesia earthquake today",
       "impressions": 2,
       "clicks": 0,
       "position": 86.5
-    },
-    {
-      "query": "news earthquake indonesia",
-      "impressions": 2,
-      "clicks": 0,
-      "position": 189
     },
     {
       "query": "today earthquake in indonesia",
@@ -79,22 +67,16 @@
       "position": 55
     },
     {
-      "query": "7.7 earthquake today",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 65
-    },
-    {
-      "query": "7.7 magnitude earthquake indonesia",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 86
-    },
-    {
       "query": "current earthquake in indonesia",
       "impressions": 1,
       "clicks": 0,
       "position": 95
+    },
+    {
+      "query": "earthquake at indonesia",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 79
     },
     {
       "query": "earthquake in indonesia just now",
@@ -137,12 +119,6 @@
       "impressions": 1,
       "clicks": 0,
       "position": 71
-    },
-    {
-      "query": "indonesia earthquake today magnitude",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 182
     },
     {
       "query": "indonesia earthquake.",
@@ -193,23 +169,23 @@
       "position": 96
     },
     {
+      "query": "news earthquake indonesia",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 185
+    },
+    {
       "query": "today earthquake indonesia",
       "impressions": 1,
       "clicks": 0,
       "position": 85
-    },
-    {
-      "query": "wire report",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 97
     }
   ],
   "newsQueries": [],
   "strikingDistance": [],
   "counts": {
-    "webRows": 33,
+    "webRows": 29,
     "newsRows": 0,
-    "pageQueryRows": 33
+    "pageQueryRows": 29
   }
 }
