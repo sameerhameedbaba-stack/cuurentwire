@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-11-02T17:23:49.946Z",
+  "generatedAt": "2026-11-09T17:45:44.749Z",
   "window": {
-    "startDate": "2026-10-06",
-    "endDate": "2026-11-02",
+    "startDate": "2026-10-13",
+    "endDate": "2026-11-09",
     "days": 28
   },
   "lagDays": 3,
   "trend": {
     "insufficient": false,
     "window": {
-      "from": "2026-10-24",
-      "to": "2026-10-30"
+      "from": "2026-10-31",
+      "to": "2026-11-06"
     },
     "clicks": {
       "current": 0,
@@ -18,111 +18,13 @@
       "deltaPct": null
     },
     "impressions": {
-      "current": 14,
-      "prior": 12,
-      "deltaPct": 16.7
+      "current": 4,
+      "prior": 14,
+      "deltaPct": -71.4
     },
     "explained": true
   },
   "days": [
-    {
-      "date": "2026-10-06",
-      "clicks": 0,
-      "impressions": 3,
-      "ctr": 0,
-      "position": 109,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
-        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
-        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
-      ]
-    },
-    {
-      "date": "2026-10-07",
-      "clicks": 0,
-      "impressions": 3,
-      "ctr": 0,
-      "position": 70.3,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
-        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
-        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
-      ]
-    },
-    {
-      "date": "2026-10-08",
-      "clicks": 0,
-      "impressions": 3,
-      "ctr": 0,
-      "position": 86.7,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
-        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
-        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
-      ]
-    },
-    {
-      "date": "2026-10-09",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 69,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
-        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
-        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
-      ]
-    },
-    {
-      "date": "2026-10-10",
-      "clicks": 0,
-      "impressions": 1,
-      "ctr": 0,
-      "position": 95,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
-        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
-        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
-      ]
-    },
-    {
-      "date": "2026-10-11",
-      "clicks": 0,
-      "impressions": 0,
-      "ctr": 0,
-      "position": 0,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
-        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
-        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
-      ]
-    },
-    {
-      "date": "2026-10-12",
-      "clicks": 0,
-      "impressions": 3,
-      "ctr": 0,
-      "position": 81,
-      "incidents": [
-        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
-        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
-        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
-        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
-        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel"
-      ]
-    },
     {
       "date": "2026-10-13",
       "clicks": 0,
@@ -494,6 +396,143 @@
         "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15",
         "Certificate rollout now looks COMPLETE (all 4 Pages edge IPs present a currentwire.us-matched cert, no more split result) but the HTTP 503 backend-origin error from 2026-10-16 is unchanged 5 days later - the remaining blocker is isolated to Pages serving, not TLS",
         "10-21's 'certificate rollout complete' finding does not hold network-wide: GitHub's OWN Actions runners (unproxied - no Anthropic egress proxy involved) got the wrong *.github.io cert for currentwire.us twice today from two different Azure regions, while this run's own cloud-sandbox probe to the 4 known edge IPs still showed the correct cert on all 4 - the mismatch is real and is edge-node/path dependent, not a sandbox artifact"
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar",
+        "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15",
+        "Certificate rollout now looks COMPLETE (all 4 Pages edge IPs present a currentwire.us-matched cert, no more split result) but the HTTP 503 backend-origin error from 2026-10-16 is unchanged 5 days later - the remaining blocker is isolated to Pages serving, not TLS",
+        "10-21's 'certificate rollout complete' finding does not hold network-wide: GitHub's OWN Actions runners (unproxied - no Anthropic egress proxy involved) got the wrong *.github.io cert for currentwire.us twice today from two different Azure regions, while this run's own cloud-sandbox probe to the 4 known edge IPs still showed the correct cert on all 4 - the mismatch is real and is edge-node/path dependent, not a sandbox artifact"
+      ]
+    },
+    {
+      "date": "2026-11-04",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar",
+        "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15",
+        "Certificate rollout now looks COMPLETE (all 4 Pages edge IPs present a currentwire.us-matched cert, no more split result) but the HTTP 503 backend-origin error from 2026-10-16 is unchanged 5 days later - the remaining blocker is isolated to Pages serving, not TLS",
+        "10-21's 'certificate rollout complete' finding does not hold network-wide: GitHub's OWN Actions runners (unproxied - no Anthropic egress proxy involved) got the wrong *.github.io cert for currentwire.us twice today from two different Azure regions, while this run's own cloud-sandbox probe to the 4 known edge IPs still showed the correct cert on all 4 - the mismatch is real and is edge-node/path dependent, not a sandbox artifact"
+      ]
+    },
+    {
+      "date": "2026-11-05",
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 2,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar",
+        "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15",
+        "Certificate rollout now looks COMPLETE (all 4 Pages edge IPs present a currentwire.us-matched cert, no more split result) but the HTTP 503 backend-origin error from 2026-10-16 is unchanged 5 days later - the remaining blocker is isolated to Pages serving, not TLS",
+        "10-21's 'certificate rollout complete' finding does not hold network-wide: GitHub's OWN Actions runners (unproxied - no Anthropic egress proxy involved) got the wrong *.github.io cert for currentwire.us twice today from two different Azure regions, while this run's own cloud-sandbox probe to the 4 known edge IPs still showed the correct cert on all 4 - the mismatch is real and is edge-node/path dependent, not a sandbox artifact"
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "clicks": 0,
+      "impressions": 3,
+      "ctr": 0,
+      "position": 88.7,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar",
+        "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15",
+        "Certificate rollout now looks COMPLETE (all 4 Pages edge IPs present a currentwire.us-matched cert, no more split result) but the HTTP 503 backend-origin error from 2026-10-16 is unchanged 5 days later - the remaining blocker is isolated to Pages serving, not TLS",
+        "10-21's 'certificate rollout complete' finding does not hold network-wide: GitHub's OWN Actions runners (unproxied - no Anthropic egress proxy involved) got the wrong *.github.io cert for currentwire.us twice today from two different Azure regions, while this run's own cloud-sandbox probe to the 4 known edge IPs still showed the correct cert on all 4 - the mismatch is real and is edge-node/path dependent, not a sandbox artifact",
+        "New symptom on the same ongoing incident: the GitHub Pages deploy API itself stalled and timed out for one run, not just HTTPS serving - self-recovered on the next scheduled run with no code change"
+      ]
+    },
+    {
+      "date": "2026-11-07",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar",
+        "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15",
+        "Certificate rollout now looks COMPLETE (all 4 Pages edge IPs present a currentwire.us-matched cert, no more split result) but the HTTP 503 backend-origin error from 2026-10-16 is unchanged 5 days later - the remaining blocker is isolated to Pages serving, not TLS",
+        "10-21's 'certificate rollout complete' finding does not hold network-wide: GitHub's OWN Actions runners (unproxied - no Anthropic egress proxy involved) got the wrong *.github.io cert for currentwire.us twice today from two different Azure regions, while this run's own cloud-sandbox probe to the 4 known edge IPs still showed the correct cert on all 4 - the mismatch is real and is edge-node/path dependent, not a sandbox artifact",
+        "New symptom on the same ongoing incident: the GitHub Pages deploy API itself stalled and timed out for one run, not just HTTPS serving - self-recovered on the next scheduled run with no code change"
+      ]
+    },
+    {
+      "date": "2026-11-08",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar",
+        "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15",
+        "Certificate rollout now looks COMPLETE (all 4 Pages edge IPs present a currentwire.us-matched cert, no more split result) but the HTTP 503 backend-origin error from 2026-10-16 is unchanged 5 days later - the remaining blocker is isolated to Pages serving, not TLS",
+        "10-21's 'certificate rollout complete' finding does not hold network-wide: GitHub's OWN Actions runners (unproxied - no Anthropic egress proxy involved) got the wrong *.github.io cert for currentwire.us twice today from two different Azure regions, while this run's own cloud-sandbox probe to the 4 known edge IPs still showed the correct cert on all 4 - the mismatch is real and is edge-node/path dependent, not a sandbox artifact",
+        "New symptom on the same ongoing incident: the GitHub Pages deploy API itself stalled and timed out for one run, not just HTTPS serving - self-recovered on the next scheduled run with no code change"
+      ]
+    },
+    {
+      "date": "2026-11-09",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "incidents": [
+        "Googlebot effectively stopped crawling the site (ongoing): sitemap downloads stopped Aug 24, crawl requests flat since Aug 21",
+        "Vercel paused the production deployment: whole site 503 DEPLOYMENT_PAUSED (ongoing since ~11:49 UTC 2026-09-12)",
+        "Vercel production changed from 503 DEPLOYMENT_PAUSED to 402 DEPLOYMENT_DISABLED - CONFIRMED a Hobby-plan USAGE pause, not an unpaid invoice (lifts at the cycle reset ~2026-09-24)",
+        "The 2026-09-14 entry's '~2026-09-24 self-clear' expectation did NOT hold: still 402 DEPLOYMENT_DISABLED as of the first daily check strictly after that date, and still 402 as of the 2026-09-27 weekly re-check",
+        "Owner flipped step 1 of the GitHub Pages switch-over (repo has_pages: true, was false on 2026-09-30) - but the Pages deploy still cannot complete, so currentwire.us is unaffected and still 402 on Vercel",
+        "Hostinger DNS switched to GitHub Pages overnight (owner checklist step 1 done) - plain HTTP now serves the live static site, but HTTPS is still broken on a certificate mismatch, so the site does not pass the daily routine's own is-it-up bar yet",
+        "No change from 2026-10-14: HTTP still serves the live static site cleanly, HTTPS still fails the exact same certificate mismatch a full day later - still owner-dashboard-only, still blocking the routine's is-it-up bar",
+        "Failure signature changed from a pure TLS cert mismatch to an HTTP 503 backend-origin error, and cert evidence within this run is inconsistent (some paths now show a currentwire.us-matched cert) - reads as an in-progress rollout, not the identical stuck state of 10-14/10-15",
+        "Certificate rollout now looks COMPLETE (all 4 Pages edge IPs present a currentwire.us-matched cert, no more split result) but the HTTP 503 backend-origin error from 2026-10-16 is unchanged 5 days later - the remaining blocker is isolated to Pages serving, not TLS",
+        "10-21's 'certificate rollout complete' finding does not hold network-wide: GitHub's OWN Actions runners (unproxied - no Anthropic egress proxy involved) got the wrong *.github.io cert for currentwire.us twice today from two different Azure regions, while this run's own cloud-sandbox probe to the 4 known edge IPs still showed the correct cert on all 4 - the mismatch is real and is edge-node/path dependent, not a sandbox artifact",
+        "New symptom on the same ongoing incident: the GitHub Pages deploy API itself stalled and timed out for one run, not just HTTPS serving - self-recovered on the next scheduled run with no code change"
       ]
     }
   ]

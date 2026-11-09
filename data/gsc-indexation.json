@@ -1,21 +1,22 @@
 {
-  "generatedAt": "2026-11-02T17:27:28.487Z",
+  "generatedAt": "2026-11-09T17:49:29.143Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "counts": {
-    "blocked": 2,
+    "indexed": 1,
     "not-crawled": 21,
-    "crawled-not-indexed": 11
+    "crawled-not-indexed": 11,
+    "blocked": 1
   },
   "rows": [
     {
       "path": "/",
-      "bucket": "blocked",
-      "verdict": "NEUTRAL",
-      "coverageState": "Blocked due to other 4xx issue",
-      "indexingState": "INDEXING_STATE_UNSPECIFIED",
-      "lastCrawlTime": "2026-10-06T15:18:18Z",
-      "googleCanonical": null
+      "bucket": "indexed",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-11-04T14:55:21Z",
+      "googleCanonical": "https://currentwire.us/"
     },
     {
       "path": "/briefing",

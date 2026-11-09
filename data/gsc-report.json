@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-02T17:23:49.946Z",
+  "generatedAt": "2026-11-09T17:45:44.749Z",
   "site": "sc-domain:currentwire.us",
   "base": "https://currentwire.us",
   "window": {
-    "startDate": "2026-10-06",
-    "endDate": "2026-11-02",
+    "startDate": "2026-10-13",
+    "endDate": "2026-11-09",
     "days": 28
   },
   "minSampleImpressions": 100,
@@ -13,11 +13,11 @@
       "rows": 18,
       "total": {
         "urls": 18,
-        "impressions": 85,
+        "impressions": 76,
         "clicks": 0,
         "ctr": 0,
-        "avgPosition": 44.8,
-        "impressionsPerUrl": 4.72,
+        "avgPosition": 37.9,
+        "impressionsPerUrl": 4.22,
         "clicksPerUrl": 0,
         "sufficientSample": false
       },
@@ -27,18 +27,18 @@
           "impressions": 7,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 12.7,
+          "avgPosition": 3,
           "impressionsPerUrl": 3.5,
           "clicksPerUrl": 0,
           "sufficientSample": false
         },
         "story": {
-          "urls": 11,
-          "impressions": 69,
+          "urls": 13,
+          "impressions": 62,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 53.5,
-          "impressionsPerUrl": 6.27,
+          "avgPosition": 45.8,
+          "impressionsPerUrl": 4.77,
           "clicksPerUrl": 0,
           "sufficientSample": false
         },
@@ -53,12 +53,12 @@
           "sufficientSample": false
         },
         "top-100": {
-          "urls": 1,
-          "impressions": 1,
+          "urls": 0,
+          "impressions": 0,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 9,
-          "impressionsPerUrl": 1,
+          "avgPosition": null,
+          "impressionsPerUrl": 0,
           "clicksPerUrl": 0,
           "sufficientSample": false
         },
@@ -173,11 +173,11 @@
           "sufficientSample": false
         },
         "other": {
-          "urls": 2,
-          "impressions": 2,
+          "urls": 1,
+          "impressions": 1,
           "clicks": 0,
           "ctr": 0,
-          "avgPosition": 2.5,
+          "avgPosition": 3,
           "impressionsPerUrl": 1,
           "clicksPerUrl": 0,
           "sufficientSample": false
@@ -788,33 +788,33 @@
       "sufficientSample": false
     },
     "unknown": {
-      "urls": 10,
-      "impressions": 68,
+      "urls": 12,
+      "impressions": 61,
       "clicks": 0,
       "ctr": 0,
-      "avgPosition": 54.1,
-      "impressionsPerUrl": 6.8,
+      "avgPosition": 46.4,
+      "impressionsPerUrl": 5.08,
       "clicksPerUrl": 0,
       "sufficientSample": false
     }
   },
   "archiveSources": {
-    "requestedIds": 10,
+    "requestedIds": 12,
     "matchedIds": 0,
     "chunks": 1,
     "failedChunks": 1
   },
   "urlSignals": {
-    "stories": 10,
+    "stories": 12,
     "truncated": false,
     "written": true
   },
   "topUrls": [
     {
       "url": "https://currentwire.us/story/powerful-magnitude-7-7-earthquake-kills-at-least-47-in-indonesia-c2aa6f1aaeac9",
-      "impressions": 43,
+      "impressions": 34,
       "clicks": 0,
-      "position": 81.8
+      "position": 77.9
     },
     {
       "url": "http://currentwire.us/",
@@ -880,22 +880,28 @@
       "url": "https://currentwire.us/",
       "impressions": 1,
       "clicks": 0,
-      "position": 70
-    },
-    {
-      "url": "https://currentwire.us/methodology",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 3
+      "position": 2
     },
     {
       "url": "https://currentwire.us/news-desk",
       "impressions": 1,
       "clicks": 0,
-      "position": 2
+      "position": 3
     },
     {
       "url": "https://currentwire.us/story/c6514fd9d5e4b",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 10
+    },
+    {
+      "url": "https://currentwire.us/story/current-immigration-policy-is-hurting-the-workforce-and-economy-ce943846b2237",
+      "impressions": 1,
+      "clicks": 0,
+      "position": 5
+    },
+    {
+      "url": "https://currentwire.us/story/democrats-big-hope-for-midterms-governors-c75fde7c6749d",
       "impressions": 1,
       "clicks": 0,
       "position": 10
@@ -911,20 +917,14 @@
       "impressions": 1,
       "clicks": 0,
       "position": 8
-    },
-    {
-      "url": "https://currentwire.us/top-100?country=us",
-      "impressions": 1,
-      "clicks": 0,
-      "position": 9
     }
   ],
   "queries": {
     "written": true,
     "strikingDistance": 0,
-    "webRows": 29,
+    "webRows": 22,
     "newsRows": 0,
-    "pageQueryRows": 29
+    "pageQueryRows": 22
   },
   "daily": {
     "written": true,
@@ -932,8 +932,8 @@
     "trend": {
       "insufficient": false,
       "window": {
-        "from": "2026-10-24",
-        "to": "2026-10-30"
+        "from": "2026-10-31",
+        "to": "2026-11-06"
       },
       "clicks": {
         "current": 0,
@@ -941,9 +941,9 @@
         "deltaPct": null
       },
       "impressions": {
-        "current": 14,
-        "prior": 12,
-        "deltaPct": 16.7
+        "current": 4,
+        "prior": 14,
+        "deltaPct": -71.4
       },
       "explained": true
     }

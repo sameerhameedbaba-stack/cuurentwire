@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-02T17:23:49.946Z",
+  "generatedAt": "2026-11-09T17:45:44.749Z",
   "window": {
-    "startDate": "2026-10-06",
-    "endDate": "2026-11-02",
+    "startDate": "2026-10-13",
+    "endDate": "2026-11-09",
     "days": 28
   },
   "surfaces": [
@@ -12,7 +12,7 @@
   "minImpressions": 1,
   "stories": {
     "c2aa6f1aaeac9": [
-      43,
+      34,
       0
     ],
     "c95ceb1bcce62": [
@@ -47,7 +47,15 @@
       1,
       0
     ],
+    "c75fde7c6749d": [
+      1,
+      0
+    ],
     "ccfbc4474e762": [
+      1,
+      0
+    ],
+    "ce943846b2237": [
       1,
       0
     ]
