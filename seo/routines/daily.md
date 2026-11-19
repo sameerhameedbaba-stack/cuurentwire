@@ -4,6 +4,19 @@ This file IS the instruction set for the "CurrentWire SEO daily loop" cloud
 routine (the cloud prompt just points here; edit this file to change the
 routine). It supersedes the retired local scheduled task of the same name.
 
+## ⛔ PAUSED BY THE OWNER (2026-11-19) — read this first, then STOP
+
+The owner has dropped CurrentWire for now: "I don't want currentwire.us to
+run for a while." Every scheduled GitHub workflow was disabled on 2026-11-19
+(Actions → each workflow → "disabled manually"), and this routine is meant to
+be switched off too.
+
+If you are reading this as a scheduled run: **do nothing.** Do not measure the
+site, do not write a report, do not commit, do not push, do not re-enable any
+workflow, and do not message the owner. End with one line: "CurrentWire is
+paused by the owner — no run." Only the owner un-pauses it, in chat, by
+removing this block.
+
 ## PRODUCTION IS A STATIC SITE ON GITHUB PAGES (from 2026-09-28) — read first
 
 Vercel's free plan paused the old aggregator (402 from 2026-09-14) and did
